@@ -25,7 +25,7 @@ export default function MetricasPage() {
     [exId]
   );
 
-  const empty = overview && overview.totalDays === 0;
+  const empty = overview && overview.totalWorkouts === 0;
 
   return (
     <div className="px-4">
@@ -40,10 +40,10 @@ export default function MetricasPage() {
       ) : (
         <>
           <div className="grid grid-cols-2 gap-2">
-            <StatTile value={overview.totalDays} label="dias treinados" accent={AC} />
-            <StatTile value={overview.last30} label="últimos 30 dias" />
-            <StatTile value={overview.currentStreak} label="streak atual" accent={AC} />
-            <StatTile value={overview.longestStreak} label="maior streak" />
+            <StatTile value={overview.totalWorkouts} label="treinos realizados" accent={AC} />
+            <StatTile value={overview.last30Workouts} label="treinos em 30 dias" />
+            <StatTile value={overview.currentStreak} label="sequência de dias" accent={AC} />
+            <StatTile value={overview.longestStreak} label="maior sequência" />
             <StatTile
               value={overview.avgRpe4w ?? "—"}
               label="RPE médio (4 sem)"

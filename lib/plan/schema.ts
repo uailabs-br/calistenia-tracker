@@ -70,15 +70,16 @@ export const planSchema = z
   })
   .strict()
   .superRefine((plan, ctx) => {
-    // IDs de exercício devem ser únicos em todo o plano (histórico depende disso)
-    const seen = new Set<string>();
+    // IDs de exercício: o mesmo movimento compartilha ID entre dias (histórico
+    // e flags agregam por movimento). Único DENTRO de um dia, repetível ENTRE dias.
     for (const day of plan.days) {
+      const seen = new Set<string>();
       for (const block of day.blocks) {
         for (const ex of block.exercises) {
           if (seen.has(ex.id)) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
-              message: `ID de exercício duplicado: ${ex.id}`,
+              message: `ID de exercício duplicado no mesmo dia (${day.label}): ${ex.id}`,
               path: ["days"],
             });
           }

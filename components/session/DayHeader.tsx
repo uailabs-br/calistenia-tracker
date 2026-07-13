@@ -1,4 +1,5 @@
 import type { PlanDay } from "@/lib/plan/schema";
+import { CollapsibleTip } from "./CollapsibleTip";
 
 export function DayHeader({ day }: { day: PlanDay }) {
   return (
@@ -23,14 +24,7 @@ export function DayHeader({ day }: { day: PlanDay }) {
           {day.warmup}
         </p>
       )}
-      {day.tip && (
-        <p
-          className="mt-3 rounded-card border-l-2 bg-surface px-3 py-2 text-sm leading-relaxed text-muted"
-          style={{ borderColor: day.accent }}
-        >
-          {day.tip}
-        </p>
-      )}
+      <CollapsibleTip tip={day.tip} accent={day.accent} />
     </header>
   );
 }

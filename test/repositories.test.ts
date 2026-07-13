@@ -104,15 +104,12 @@ describe("última performance", () => {
       skipped: false,
     });
     await completeSession(s.id, 3, null);
-    const perf = await getLastPerformance(
-      planDayId(1),
-      "mu-puxada-explosiva"
-    );
+    const perf = await getLastPerformance("mu-puxada-explosiva");
     expect(perf.kind).toBe("as_target");
   });
 
   it("sem histórico → none", async () => {
-    const perf = await getLastPerformance(planDayId(1), "mu-puxada-explosiva");
+    const perf = await getLastPerformance("mu-puxada-explosiva");
     expect(perf.kind).toBe("none");
   });
 
@@ -127,12 +124,30 @@ describe("última performance", () => {
       skipped: false,
     });
     await completeSession(s.id, 3, null);
-    const perf = await getLastPerformance(
-      planDayId(1),
-      "mu-puxada-explosiva",
-      s.id
-    );
+    const perf = await getLastPerformance("mu-puxada-explosiva", s.id);
     expect(perf.kind).toBe("none");
+  });
+
+  it("é cross-day: exercício com ID compartilhado vê histórico de outro dia", async () => {
+    // mu-false-grip-hang aparece na Seg (1) e na Qui (4).
+    // Registra na segunda; na quinta a última performance deve enxergar.
+    const seg = await createSession(1);
+    await upsertLog({
+      session_id: seg.id,
+      exercise_id: "mu-false-grip-hang",
+      as_target: false,
+      sets: [
+        { index: 0, value: 22 },
+        { index: 1, value: 18 },
+      ],
+      flags_selected: [],
+      skipped: false,
+    });
+    await completeSession(seg.id, 3, null);
+
+    const perf = await getLastPerformance("mu-false-grip-hang");
+    expect(perf.kind).toBe("sets");
+    if (perf.kind === "sets") expect(perf.values).toEqual([22, 18]);
   });
 });
 

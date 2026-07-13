@@ -6,7 +6,6 @@ import type { PlanDay } from "@/lib/plan/schema";
 import type { Session, ExerciseLog } from "@/lib/db/schema";
 import { getLogsForSession, upsertLog } from "@/lib/db/repositories/logs";
 import { completeSession } from "@/lib/db/repositories/sessions";
-import { planDayId } from "@/lib/plan/loader";
 import { useWakeLock } from "@/lib/utils/useWakeLock";
 import { ExerciseCard, type RecordInput } from "./ExerciseCard";
 import { RpeSheet } from "./RpeSheet";
@@ -74,7 +73,6 @@ export function SessionRunner({
     onFinished();
   };
 
-  const pdId = planDayId(day.weekday);
   let lastBlock = "";
 
   return (
@@ -94,7 +92,6 @@ export function SessionRunner({
                 exercise={item.exercise}
                 isSkill={item.isSkill}
                 accent={day.accent}
-                planDayId={pdId}
                 sessionId={session.id}
                 log={logByExercise.get(item.exercise.id)}
                 active={i === activeIndex}

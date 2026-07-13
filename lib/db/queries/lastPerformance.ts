@@ -10,17 +10,16 @@ export type LastPerf =
   | { kind: "skipped"; date: string };
 
 /**
- * Última performance de um exercício no mesmo plan_day_id.
+ * Última performance de um exercício — centrada no MOVIMENTO, não no dia.
+ * Como o mesmo ID é compartilhado entre dias, o histórico segue o exercício
+ * (fazer o treino de terça na segunda mantém a continuidade).
  * `excludeSessionId` evita que a sessão em andamento conte como histórico.
  */
 export async function getLastPerformance(
-  planDayId: string,
   exerciseId: string,
   excludeSessionId?: string
 ): Promise<LastPerf> {
-  const sessions = (
-    await db.sessions.where("plan_day_id").equals(planDayId).toArray()
-  )
+  const sessions = (await db.sessions.toArray())
     .filter(
       (s) =>
         s.status === "completed" &&

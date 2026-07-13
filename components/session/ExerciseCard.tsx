@@ -25,7 +25,6 @@ interface Props {
   exercise: PlanExercise;
   isSkill: boolean;
   accent: string;
-  planDayId: string;
   sessionId: string;
   log: ExerciseLog | undefined;
   active: boolean;
@@ -37,7 +36,6 @@ export function ExerciseCard({
   exercise,
   isSkill,
   accent,
-  planDayId,
   sessionId,
   log,
   active,
@@ -66,8 +64,8 @@ export function ExerciseCard({
   }, [log?.id]);
 
   const lastPerf = useLiveQuery(
-    () => getLastPerformance(planDayId, exercise.id, sessionId),
-    [planDayId, exercise.id, sessionId]
+    () => getLastPerformance(exercise.id, sessionId),
+    [exercise.id, sessionId]
   );
 
   // ── long-press para pular ──────────────────────────────────────────

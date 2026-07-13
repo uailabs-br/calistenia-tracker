@@ -10,7 +10,7 @@ import {
 } from "./icons";
 
 const items = [
-  { href: "/", label: "Hoje", Icon: DumbbellIcon },
+  { href: "/", label: "Treino", Icon: DumbbellIcon },
   { href: "/historico", label: "Histórico", Icon: HistoryIcon },
   { href: "/metricas", label: "Métricas", Icon: ChartIcon },
   { href: "/config", label: "Config", Icon: CogIcon },

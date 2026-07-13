@@ -206,7 +206,7 @@
           "is_skill": true,
           "exercises": [
             {
-              "id": "hs-kickup-livre-pratica",
+              "id": "hs-kickup-livre",
               "name": "Kick-up livre",
               "target": "8-10 entradas",
               "parsed": null,
@@ -287,7 +287,7 @@
               "flags": ["usou balanço", "grip falhou antes do core"]
             },
             {
-              "id": "mu-false-grip-hang-qui",
+              "id": "mu-false-grip-hang",
               "name": "False grip hang",
               "target": "2 × 15-20s",
               "parsed": { "sets": 2, "target": 20, "unit": "seconds", "per_side": false },
@@ -339,7 +339,7 @@
               "flags": ["entrada limpa", "chutou com pressa", "passou do ponto"]
             },
             {
-              "id": "hs-frog-to-hs-negativa-sex",
+              "id": "hs-frog-to-hs-negativa",
               "name": "Frog to HS negativa",
               "target": "3 rep",
               "parsed": { "sets": 1, "target": 3, "unit": "reps", "per_side": false },

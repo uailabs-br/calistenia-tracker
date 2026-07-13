@@ -1,5 +1,10 @@
 import { db, type Session, type ExerciseLog } from "@/lib/db/schema";
-import { getExerciseById, plan } from "@/lib/plan/loader";
+import {
+  getExerciseById,
+  getExerciseInDay,
+  uniqueExercises,
+  plan,
+} from "@/lib/plan/loader";
 import { totalVolume } from "@/lib/domain/volume";
 import { daysBetween, localDateKey } from "@/lib/utils/date";
 
@@ -16,8 +21,8 @@ async function activeLogs(): Promise<ExerciseLog[]> {
 }
 
 export interface Overview {
-  totalDays: number;
-  last30: number;
+  totalWorkouts: number;
+  last30Workouts: number;
   currentStreak: number;
   longestStreak: number;
   avgRpe4w: number | null;
@@ -29,9 +34,15 @@ export async function getOverview(): Promise<Overview> {
   const dates = [...new Set(sessions.map((s) => s.date))].sort();
 
   const today = localDateKey();
-  const last30 = dates.filter((d) => daysBetween(d, today) < 30).length;
 
-  // Streak: dias consecutivos com treino terminando em hoje ou ontem
+  // Contagem por TREINO (sessão concluída), não por dia único.
+  const totalWorkouts = sessions.length;
+  const last30Workouts = sessions.filter(
+    (s) => daysBetween(s.date, today) < 30
+  ).length;
+
+  // Streak permanece por DIA: sequência de dias consecutivos com ao menos um
+  // treino, terminando em hoje ou ontem. (Streak por treino não faz sentido.)
   const dateSet = new Set(dates);
   let currentStreak = 0;
   {
@@ -83,8 +94,8 @@ export async function getOverview(): Promise<Overview> {
   void planWeekdays;
 
   return {
-    totalDays: dates.length,
-    last30,
+    totalWorkouts,
+    last30Workouts,
     currentStreak,
     longestStreak,
     avgRpe4w,
@@ -114,33 +125,29 @@ export async function getFlagIncidence(): Promise<FlagIncidence[]> {
   }
 
   const result: FlagIncidence[] = [];
-  // percorre exercícios do plano que têm flags
-  for (const day of plan.days) {
-    for (const block of day.blocks) {
-      for (const ex of block.exercises) {
-        if (ex.flags.length === 0) continue;
-        for (const flag of ex.flags) {
-          const series: { date: string; occurred: boolean }[] = [];
-          for (const session of sessions) {
-            const log = (logsBySession.get(session.id) ?? []).find(
-              (l) => l.exercise_id === ex.id
-            );
-            if (!log || log.skipped) continue; // exercício não feito nessa sessão
-            series.push({
-              date: session.date,
-              occurred: log.flags_selected.includes(flag),
-            });
-          }
-          // só interessa flags que apareceram ao menos uma vez
-          if (series.some((p) => p.occurred)) {
-            result.push({
-              exerciseId: ex.id,
-              exerciseName: ex.name,
-              flag,
-              series,
-            });
-          }
-        }
+  // percorre exercícios ÚNICOS (ID compartilhado entre dias conta uma vez)
+  for (const ex of uniqueExercises()) {
+    if (ex.flags.length === 0) continue;
+    for (const flag of ex.flags) {
+      const series: { date: string; occurred: boolean }[] = [];
+      for (const session of sessions) {
+        const log = (logsBySession.get(session.id) ?? []).find(
+          (l) => l.exercise_id === ex.id
+        );
+        if (!log || log.skipped) continue; // exercício não feito nessa sessão
+        series.push({
+          date: session.date,
+          occurred: log.flags_selected.includes(flag),
+        });
+      }
+      // só interessa flags que apareceram ao menos uma vez
+      if (series.some((p) => p.occurred)) {
+        result.push({
+          exerciseId: ex.id,
+          exerciseName: ex.name,
+          flag,
+          series,
+        });
       }
     }
   }
@@ -158,8 +165,6 @@ export async function getExerciseVolume(
 ): Promise<VolumePoint[]> {
   const sessions = await completedSessions();
   const logs = await activeLogs();
-  const ex = getExerciseById(exerciseId);
-  const parsed = ex?.parsed ?? null;
 
   const points: VolumePoint[] = [];
   for (const session of sessions) {
@@ -167,6 +172,9 @@ export async function getExerciseVolume(
       (l) => l.session_id === session.id && l.exercise_id === exerciseId
     );
     if (!log || log.skipped) continue;
+    // parsed do dia da sessão: o alvo pode variar entre dias para o mesmo ID
+    const parsed =
+      getExerciseInDay(session.weekday, exerciseId)?.parsed ?? null;
     points.push({ date: session.date, volume: totalVolume(log, parsed) });
   }
   return points;

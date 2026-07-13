@@ -100,14 +100,15 @@ const planSchema = z
   })
   .strict()
   .superRefine((p, ctx) => {
-    const seen = new Set();
+    // Único dentro de um dia; o mesmo movimento pode repetir o ID entre dias.
     for (const d of p.days) {
+      const seen = new Set();
       for (const b of d.blocks) {
         for (const ex of b.exercises) {
           if (seen.has(ex.id)) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
-              message: `ID de exercício duplicado: ${ex.id}`,
+              message: `ID de exercício duplicado no mesmo dia (${d.label}): ${ex.id}`,
             });
           }
           seen.add(ex.id);
