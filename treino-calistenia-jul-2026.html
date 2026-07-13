@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Treino Calistenia</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0E0E0F;
+    --surface: #181819;
+    --surface2: #222224;
+    --border: #2A2A2D;
+    --text: #F0EFE8;
+    --muted: #7A7A82;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  header { padding: 20px 20px 0; margin-bottom: 6px; }
+
+  .header-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+
+  .week-scroll {
+    display: flex;
+    gap: 10px;
+    padding: 16px 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .week-scroll::-webkit-scrollbar { display: none; }
+
+  .day-pill {
+    flex-shrink: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    min-width: 130px;
+  }
+  .day-pill.active { border-color: var(--ac); background: var(--ac-bg); }
+
+  .pill-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 3px;
+  }
+  .day-pill.active .pill-label { color: var(--ac); opacity: 0.7; }
+
+  .pill-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+
+  .pill-badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--ac-bg);
+    color: var(--ac);
+    border: 1px solid var(--ac);
+    opacity: 0.8;
+  }
+  .day-pill.active .pill-badge { opacity: 1; }
+
+  .rest-dot {
+    display: inline-block;
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: #1C1C1F;
+    color: #8A8A92;
+    border: 1px solid #34343A;
+    margin-bottom: 4px;
+  }
+
+  .detail {
+    margin: 0 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  .detail-head {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .detail-title {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .detail-time {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+    padding-top: 2px;
+  }
+
+  .section { padding: 0 20px; }
+
+  .section-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 14px 0 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .warmup-text {
+    padding: 12px 0 4px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .ex-row {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 12px;
+    align-items: start;
+  }
+  .ex-row:last-child { border-bottom: none; }
+
+  .ex-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .ex-name.skill { color: var(--ac); }
+
+  .ex-vol {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--ac);
+    font-weight: 500;
+    grid-column: 2;
+    grid-row: 1;
+    white-space: nowrap;
+    text-align: right;
+  }
+  .ex-vol.plain { color: var(--muted); }
+
+  .ex-rest {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+  }
+
+  .ex-obs {
+    font-size: 12px;
+    color: var(--muted);
+    grid-column: 1 / -1;
+    grid-row: 2;
+    line-height: 1.5;
+  }
+
+  .tip-box {
+    margin: 0 16px 12px;
+    background: var(--surface2);
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .tip-box strong { color: var(--ac); font-weight: 500; }
+
+  .micro-box {
+    margin: 0 16px 12px;
+    background: #132820;
+    border: 1px solid #1F4A38;
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 13px;
+    color: #8DD4BA;
+    line-height: 1.6;
+  }
+  .micro-box strong { color: #6ECFAB; font-weight: 500; }
+
+  /* Critério de avanço colapsável */
+  .prog-toggle {
+    margin: 0 16px 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .prog-toggle:hover { color: var(--text); }
+
+  .prog-arrow {
+    display: inline-block;
+    transition: transform 0.2s;
+    font-size: 10px;
+  }
+  .prog-toggle.open .prog-arrow { transform: rotate(90deg); }
+
+  .prog-panel {
+    margin: 0 16px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+  }
+  .prog-panel.open {
+    max-height: 400px;
+    opacity: 1;
+  }
+
+  .prog-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .prog-item:last-child { border-bottom: none; }
+
+  .prog-skill {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ac);
+    min-width: 90px;
+    padding-top: 1px;
+    letter-spacing: 0.04em;
+  }
+
+  .prog-text {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .prog-text strong { color: var(--text); font-weight: 500; }
+
+  .spacer { height: 16px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-label">Programa · Seg–Dom</div>
+  <h1>Calistenia</h1>
+</header>
+
+<div class="week-scroll" id="weekScroll"></div>
+<div id="detailWrap"></div>
+
+<script>
+const days = [
+  {
+    label: "Seg", title: "Muscle Up", rest: false,
+    skill: "Muscle Up",
+    ac: "#A89CFF", acBg: "#1E1B35",
+    duration: "~32 min",
+    warmup: "Hang passivo 30s · scapular pull 8 rep · wrist circles — 2 min",
+    blocks: [
+      { label: "Skill — Componentes do MU · 16 min", sk: true, rows: [
+        ["Puxada explosiva", "4 × 4", "Puxa até o esterno/umbigo, explosiva — NÃO até o queixo. É a altura que mata o kip e o chicken wing", "descanso 120s"],
+        ["False grip pull-up", "3 × 4", "Pulso sobre a barra o set inteiro. Se o grip solta, a transição morre", "descanso 120s"],
+        ["Negativa transição (banda 35kg)", "3 × 2", "Parte do topo do dip, desce lento 3-4s pela transição até o false grip pull. Sem chicken wing — se aparecer, próxima rep com menos velocidade", "descanso 120s"],
+        ["False grip hang", "2 × 20s", "Base do grip — pulso sobre a barra, não no meio", "descanso 60s"],
+      ]},
+      { label: "Suporte · 12 min", sk: false, rows: [
+        ["Straight bar dip", "3 × 6", "Monta 1x no início do set (do jeito que conseguir), faz as reps em cima. Força de empurrar no topo do MU", "descanso 90s"],
+        ["Toes to bar", "3 × 8", "Controle de escápula no hang — core inicia, não o balanço", "descanso 60s"],
+      ]},
+    ],
+    tip: "Sem MU completo na barra alta ainda. Tu passa um cotovelo de cada vez (chicken wing), e cada tentativa grava esse padrão. A negativa com banda constrói a transição simétrica no eccentric, e a puxada explosiva ataca a altura. Jumping MU na quinta cuida do movimento completo em ambiente controlado.",
+    micro: false,
+    progressao: [
+      ["Puxada explosiva", "Quando puxar consistente até o esterno por <strong>2 sessões</strong> → mira mais alto (umbigo) ou adiciona reps. É o que destrava a transição simétrica"],
+      ["False grip pull-up", "Quando fizer 3×4 sem o grip soltar → sobe pra 3×5-6"],
+      ["Negativa transição", "Quando 3×2 saírem sem chicken wing por <strong>2 sessões</strong> → sobe pra 3×3 ou reduz banda (ex. dobra a banda mais alto)"],
+      ["MU completo (barra alta)", "Tenta quando: puxada explosiva consistente no umbigo + jumping MU com impulso mínimo + negativa sem assimetria. Antes disso, tentar reforça o chicken wing"],
+    ]
+  },
+  {
+    label: "Ter", title: "Handstand + Frog to HS", rest: false,
+    skill: "HS / Frog to HS",
+    ac: "#6ECFAB", acBg: "#132820",
+    duration: "~28 min",
+    warmup: "Wrist prep completo · shoulder circles · frog stand 20s — 2 min",
+    blocks: [
+      { label: "Skill — Entrada de HS + Frog to HS · 14 min", sk: true, rows: [
+        ["Kick-up livre (entrada)", "10-12 tentativas", "Sem parede. Foco em achar o balanço e corrigir com os dedos. Consistência da entrada é o objetivo, não tempo de hold", "30-45s entre tentativas"],
+        ["Frog to HS negativa", "5 rep", "Sobe à parede, desce lento (4s) com controle total da inclinação e do quadril", "descanso 90s"],
+      ]},
+      { label: "Suporte · 14 min", sk: false, rows: [
+        ["Pike push-up elevado", "4 × 8", "Pés em cadeira — força de empurrar com braço dobrado, igual à fase inicial do frog to HS", "descanso 90s"],
+        ["L-sit no chão", "3 × 10-15s", "Mãos no chão ao lado do quadril, ombro deprimido empurrando o chão, pernas retas sem tocar. Se raspar, joelhos dobram um pouco — mas mira reto", "descanso 75s"],
+        ["Single leg deadlift", "3 × 8/lado", "Posterior e glúteo — joelho levemente flexionado", "descanso 60s"],
+      ]},
+    ],
+    tip: "Teu HS já segura 15-30s livre — o gargalo é a consistência da entrada, não força nem a parede. Por isso a entrada virou volume de repetição livre. A parede não treina equilíbrio porque tira justamente a correção que tu precisa aprender.",
+    micro: false,
+    progressao: [
+      ["Kick-up livre", "Quando entrar e estabilizar em metade das tentativas por <strong>2 sessões</strong> → foca em entradas mais limpas e altas, com menos correção"],
+      ["Consistência HS", "Quando estabilizar na maioria das entradas → o objetivo tá batido; aí sim dá pra perseguir tempo ou variações"],
+      ["Frog to HS negativa", "Quando 5 reps com 4s de descida controlada por 2 sessões → tenta subir do frog sem parede, mesmo que 1-2s"],
+      ["L-sit no chão", "Quando 3×15s sair com pernas retas e sem raspar → sobe pra 3×20s, depois testa nas paralelas em dia que tiver acesso"],
+    ]
+  },
+  {
+    label: "Qua", title: "Prática — Handstand", rest: true,
+    skill: "Folga",
+    ac: "#7FA896", acBg: "#141C18",
+    duration: "10-12 min",
+    warmup: "Wrist prep · shoulder circles — 1 min",
+    blocks: [
+      { label: "Prática · 10 min", sk: true, rows: [
+        ["Kick-up livre", "8-10 entradas", "Sem parede. Acha o balanço, corrige com os dedos. Qualidade da entrada, não tempo", "30-45s entre tentativas"],
+      ]},
+    ],
+    tip: "Folga é prática, não treino. Se sair cansado, fez errado — para nas primeiras boas tentativas. Frequência de entrada livre é o que constrói consistência de HS, e é por isso que os dias de folga entram no plano.",
+    micro: false,
+    progressao: []
+  },
+  {
+    label: "Qui", title: "Puxar + MU", rest: false,
+    skill: "MU",
+    ac: "#FF9066", acBg: "#2A1810",
+    duration: "~32 min",
+    warmup: "Hang passivo 40s · scapular depression hold · wrist prep — 2 min",
+    blocks: [
+      { label: "Skill — MU na barra baixa · 10 min", sk: true, rows: [
+        ["Jumping MU (barra baixa)", "3 × 3", "Impulso mínimo — só o necessário pra puxada completar. Pausa 1s no topo da puxada (peito na barra) antes de empurrar. Sem pausa = próxima rep com menos impulso", "descanso 120s"],
+      ]},
+      { label: "Puxar + suporte · 18 min", sk: false, rows: [
+        ["Tuck FL hold", "3 × 10s", "Manutenção — depressão escapular total, quadril ao nível dos ombros. Sem progressão ativa esse ciclo", "descanso 60s"],
+        ["Pull-up peso morto", "3 × 5-6", "Força de puxada geral, sem false grip. Escápula ativa desde o começo", "descanso 120s"],
+        ["Row inverso (barra baixa)", "3 × 8-10", "Puxada horizontal — corpo reto, peito toca a barra. Escápula retrai antes do braço puxar", "descanso 60s"],
+        ["Hanging knee raise", "3 × 12", "Sem swing — core inicia o movimento", "descanso 45s"],
+        ["False grip hang", "2 × 15-20s", "Segunda exposição semanal — mantém adaptação de punho/antebraço entre as quintas e as próximas segundas", "descanso 45s"],
+      ]},
+    ],
+    tip: "Quinta agora é dia de puxada + MU controlado. Jumping MU só faz sentido enquanto o padrão é simétrico e a pausa de 1s no topo aparece — se qualquer um dos dois falhar, é sinal de que o impulso tá mascarando. Grava de lado quando puder pra confirmar simetria dos cotovelos. FL vira manutenção pra não perder depressão escapular, sem foco de progressão.",
+    micro: false,
+    progressao: [
+      ["Jumping MU", "Quando 3×3 saírem com impulso mínimo e pausa 1s consistente por <strong>2 sessões</strong> → tenta 2-3 MU completos na barra alta sem impulso na segunda"],
+      ["Row inverso", "Quando 3×10 saírem fáceis → eleva os pés numa cadeira ou passa pra 4×10"],
+      ["Tuck FL hold", "Sem progressão esse ciclo — mantém 3×10s. Volta a atacar depois que MU tiver destravado"],
+    ]
+  },
+  {
+    label: "Sex", title: "Empurrar + Pernas", rest: false,
+    skill: "Frog to HS",
+    ac: "#6EB4FF", acBg: "#101E2E",
+    duration: "~28 min",
+    warmup: "Hip circles · squat profundo · wrist prep — 2 min",
+    blocks: [
+      { label: "Skill — Frog to HS · 8 min", sk: true, rows: [
+        ["Kick-up controlado", "6 tentativas", "Entrada devagar — sem chutar, sem pressa", "45s entre tentativas"],
+        ["Frog to HS negativa", "3 rep", "4s de descida — controle até o fim", "descanso 90s"],
+      ]},
+      { label: "Suporte · 16 min", sk: false, rows: [
+        ["Pistol squat ou split squat", "4 × 6/lado", "Calcanhar no chão, controle total", "descanso 75s"],
+        ["Push-up com pausa", "4 × 10", "2s em baixo, explosivo em cima", "descanso 60s"],
+        ["Dragon flag negativa", "3 × 4", "4s de descida — core total", "descanso 90s"],
+      ]},
+    ],
+    tip: "É o dia mais expendável se a recuperação tiver ruim — os 3 primeiros dias de treino cobrem o essencial. Mas se vier, soma bem em empurrar e pernas.",
+    micro: false,
+    progressao: [
+      ["Pistol squat", "Quando 4×6/lado estiver sólido por 2 sessões → adiciona pausa de 2s no fundo"],
+      ["Dragon flag", "Quando 3×4 com 4s de descida estiver controlado → passa pra 3×5"],
+    ]
+  }
+];
+
+let active = 0;
+let progOpen = false;
+
+function renderWeek() {
+  document.getElementById('weekScroll').innerHTML = days.map((d, i) => `
+    <div class="day-pill ${i===active?'active':''}"
+         style="--ac:${d.ac};--ac-bg:${d.acBg}"
+         onclick="sel(${i})">
+      ${d.rest ? '<div class="rest-dot">folga</div>' : ''}
+      <div class="pill-label">${d.label}</div>
+      <div class="pill-title">${d.title}</div>
+      <span class="pill-badge">${d.skill}</span>
+    </div>
+  `).join('');
+}
+
+function renderDetail() {
+  const d = days[active];
+
+  const blocks = d.blocks.map(b => `
+    <div class="section">
+      <div class="section-title">${b.label}</div>
+      ${b.rows.map(r => `
+        <div class="ex-row">
+          <div class="ex-name ${b.sk?'skill':''}">${r[0]}</div>
+          <div class="ex-vol ${b.sk?'':'plain'}">
+            ${r[1]}
+            ${r[3] ? `<div class="ex-rest">${r[3]}</div>` : ''}
+          </div>
+          <div class="ex-obs">${r[2]}</div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+
+  const microHtml = d.micro ? `
+    <div class="micro-box">
+      <strong>Dias de descanso</strong> — prática leve de entrada livre de HS. Não é treino, é prática. Frequência é o que desenvolve equilíbrio.
+    </div>` : '';
+
+  const progItems = d.progressao.map(p => `
+    <div class="prog-item">
+      <div class="prog-skill">${p[0]}</div>
+      <div class="prog-text">${p[1]}</div>
+    </div>
+  `).join('');
+
+  const progHtml = d.progressao.length ? `
+    <button class="prog-toggle" id="progToggle" onclick="toggleProg()" style="--ac:${d.ac}">
+      <span class="prog-arrow">▶</span> quando progredir
+    </button>
+    <div class="prog-panel" id="progPanel" style="--ac:${d.ac}">
+      ${progItems}
+    </div>` : '';
+
+  const warmupHtml = d.blocks.length ? `
+      <div class="section">
+        <div class="section-title">Aquecimento</div>
+        <div class="warmup-text">${d.warmup}</div>
+      </div>` : `
+      <div class="section">
+        <div class="warmup-text" style="padding: 18px 0;">${d.warmup}</div>
+      </div>`;
+
+  document.getElementById('detailWrap').innerHTML = `
+    <div class="detail" style="--ac:${d.ac};--ac-bg:${d.acBg}">
+      <div class="detail-head">
+        <div class="detail-title">${d.label} — ${d.title}</div>
+        <div class="detail-time">${d.duration}</div>
+      </div>
+      ${warmupHtml}
+      ${blocks}
+      <div class="spacer"></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="tip-box" style="--ac:${d.ac}">
+      <strong>Coach</strong> — ${d.tip}
+    </div>
+    ${microHtml}
+    ${progHtml}
+  `;
+
+  progOpen = false;
+}
+
+function toggleProg() {
+  progOpen = !progOpen;
+  const t = document.getElementById('progToggle');
+  const p = document.getElementById('progPanel');
+  if (!t || !p) return;
+  t.classList.toggle('open', progOpen);
+  p.classList.toggle('open', progOpen);
+}
+
+function sel(i) {
+  active = i;
+  renderWeek();
+  renderDetail();
+  document.getElementById('detailWrap').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+renderWeek();
+renderDetail();
+</script>
+</body>
+</html>

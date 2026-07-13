@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+/* ── Tema: paleta do plano HTML (dark-only) ─────────────────────────── */
+@theme {
+  --color-bg: #0e0e0f;
+  --color-surface: #181819;
+  --color-surface2: #222224;
+  --color-border: #2a2a2d;
+  --color-text: #f0efe8;
+  --color-muted: #7a7a82;
+
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-dm-mono), ui-monospace, monospace;
+
+  --radius-card: 14px;
+}
+
+/* Accent do dia — sobrescrito inline por --ac / --ac-bg via style prop */
+:root {
+  --ac: #a89cff;
+  --ac-bg: #1e1b35;
+  color-scheme: dark;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  overscroll-behavior-y: none;
+}
+
+body {
+  /* respeita safe areas do iOS (notch / home bar) */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+  min-height: 100dvh;
+}
+
+/* Utilitário: alvo de toque mínimo 44px */
+@utility tap {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Números monoespaçados alinhados */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+}
