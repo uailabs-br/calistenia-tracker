@@ -19,7 +19,7 @@ export function useWakeLock(active: boolean) {
       try {
         sentinel = await wl.request("screen");
       } catch {
-        /* negado / bateria baixa — segue sem lock */
+        /* negado / bateria baixa - segue sem lock */
       }
     };
 

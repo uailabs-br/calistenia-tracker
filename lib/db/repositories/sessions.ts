@@ -70,3 +70,24 @@ export async function softDeleteSession(id: string): Promise<void> {
   const ts = now();
   await db.sessions.update(id, { deleted_at: ts, updated_at: ts });
 }
+
+/**
+ * Descarta uma sessão em andamento sem salvar o progresso: soft-delete da
+ * sessão e de todos os seus registros de exercício. Some do "ativo",
+ * do histórico e das métricas.
+ */
+export async function discardSession(id: string): Promise<void> {
+  const ts = now();
+  await db.transaction("rw", db.sessions, db.exerciseLogs, async () => {
+    const logs = await db.exerciseLogs
+      .where("session_id")
+      .equals(id)
+      .toArray();
+    for (const l of logs) {
+      if (!l.deleted_at) {
+        await db.exerciseLogs.update(l.id, { deleted_at: ts, updated_at: ts });
+      }
+    }
+    await db.sessions.update(id, { deleted_at: ts, updated_at: ts });
+  });
+}

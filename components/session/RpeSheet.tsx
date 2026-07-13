@@ -25,8 +25,8 @@ export function RpeSheet({
   const [note, setNote] = useState("");
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/60">
-      <div className="w-full max-w-md rounded-t-2xl border-t border-border bg-surface p-5 pb-8">
+    <div className="anim-fade-in fixed inset-0 z-40 flex items-end justify-center bg-black/60">
+      <div className="anim-slide-up w-full max-w-md rounded-t-2xl border-t border-border bg-surface p-5 pb-8">
         <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border" />
         <h2 className="text-lg font-semibold">Como foi a sessão?</h2>
         {pendingCount > 0 && (

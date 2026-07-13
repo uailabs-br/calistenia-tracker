@@ -138,6 +138,17 @@ export function markExported(sessionCount: number): void {
   );
 }
 
+/** Apaga TODOS os dados locais (sessões + registros). Irreversível. */
+export async function resetAll(): Promise<void> {
+  await db.transaction("rw", db.sessions, db.exerciseLogs, async () => {
+    await db.exerciseLogs.clear();
+    await db.sessions.clear();
+  });
+  if (typeof localStorage !== "undefined") {
+    localStorage.removeItem(LAST_EXPORT_KEY);
+  }
+}
+
 export function sessionsSinceExport(currentCompleted: number): number {
   if (typeof localStorage === "undefined") return 0;
   const raw = localStorage.getItem(LAST_EXPORT_KEY);

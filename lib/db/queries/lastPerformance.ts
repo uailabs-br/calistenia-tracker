@@ -10,7 +10,7 @@ export type LastPerf =
   | { kind: "skipped"; date: string };
 
 /**
- * Última performance de um exercício — centrada no MOVIMENTO, não no dia.
+ * Última performance de um exercício - centrada no MOVIMENTO, não no dia.
  * Como o mesmo ID é compartilhado entre dias, o histórico segue o exercício
  * (fazer o treino de terça na segunda mantém a continuidade).
  * `excludeSessionId` evita que a sessão em andamento conte como histórico.

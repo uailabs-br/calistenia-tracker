@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import type { PlanExercise } from "@/lib/plan/schema";
 import type { ExerciseLog, SetValue } from "@/lib/db/schema";
-import { targetSets } from "@/lib/domain/parseTarget";
+import { adjustSets } from "@/lib/domain/parseTarget";
 import { effectiveSets } from "@/lib/domain/volume";
 import {
   getLastPerformance,
@@ -43,10 +43,9 @@ export function ExerciseCard({
   onRecord,
 }: Props) {
   const parsed = exercise.parsed;
-  const hasStepper = parsed !== null;
 
   const [adjusting, setAdjusting] = useState(false);
-  const [values, setValues] = useState<number[]>(() => targetSets(parsed));
+  const [values, setValues] = useState<number[]>(() => adjustSets(parsed));
   const [flags, setFlags] = useState<string[]>([]);
 
   // Sincroniza estado local com o log persistido (retomada / edição)
@@ -55,10 +54,10 @@ export function ExerciseCard({
       setFlags(log.flags_selected);
       const s = effectiveSets(log, parsed);
       if (s.length > 0) setValues(s);
-      else setValues(targetSets(parsed));
+      else setValues(adjustSets(parsed));
       setAdjusting(!log.as_target && !log.skipped && (log.sets?.length ?? 0) > 0);
     } else {
-      setValues(targetSets(parsed));
+      setValues(adjustSets(parsed));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [log?.id]);
@@ -136,7 +135,7 @@ export function ExerciseCard({
           </div>
           {done ? (
             <span
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
+              className="anim-pop flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
               style={{ background: accent, color: "#0e0e0f" }}
             >
               <CheckIcon className="h-4 w-4" />
@@ -154,7 +153,7 @@ export function ExerciseCard({
   // ── Card ativo (expandido) ─────────────────────────────────────────
   return (
     <div
-      className="rounded-card border bg-surface px-4 py-4"
+      className="anim-fade-in-up rounded-card border bg-surface px-4 py-4"
       style={{ borderColor: accent }}
       onTouchStart={startPress}
       onTouchEnd={cancelPress}
@@ -191,20 +190,18 @@ export function ExerciseCard({
               style={{ background: accent, color: "#0e0e0f" }}
             >
               <CheckIcon className="h-5 w-5" />
-              {hasStepper ? "fiz como previsto" : "feito"}
+              fiz como previsto
             </button>
-            {hasStepper && (
-              <button
-                type="button"
-                onClick={() => setAdjusting(true)}
-                className="tap rounded-xl border border-border bg-surface2 px-4 font-medium text-text"
-              >
-                ajustar
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => setAdjusting(true)}
+              className="tap rounded-xl border border-border bg-surface2 px-4 font-medium text-text"
+            >
+              ajustar
+            </button>
           </div>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="anim-fade-in flex flex-col gap-2">
             {values.map((v, i) => (
               <Stepper
                 key={i}

@@ -45,7 +45,7 @@ export default function MetricasPage() {
             <StatTile value={overview.currentStreak} label="sequência de dias" accent={AC} />
             <StatTile value={overview.longestStreak} label="maior sequência" />
             <StatTile
-              value={overview.avgRpe4w ?? "—"}
+              value={overview.avgRpe4w ?? "-"}
               label="RPE médio (4 sem)"
             />
           </div>
@@ -69,7 +69,7 @@ export default function MetricasPage() {
             ))}
           </div>
 
-          {/* Incidência de flags — métrica principal */}
+          {/* Incidência de flags - métrica principal */}
           <h2 className="mb-1 mt-6 text-sm font-semibold">Incidência de flags</h2>
           <p className="mb-2 text-xs text-muted">
             Cheia = padrão ocorreu. Antigas → recentes.

@@ -1,12 +1,12 @@
 import Dexie, { type EntityTable } from "dexie";
 
-/** Modelo de dados — PRD seção 5. Convenções: UUID, updated_at, soft delete. */
+/** Modelo de dados - PRD seção 5. Convenções: UUID, updated_at, soft delete. */
 
 export type SessionStatus = "in_progress" | "completed" | "abandoned";
 
 export interface Session {
   id: string; // UUID
-  plan_day_id: string; // `${plan.id}:${weekday}` — estável entre versões
+  plan_day_id: string; // `${plan.id}:${weekday}` - estável entre versões
   plan_version: number;
   weekday: number;
   date: string; // dateKey local YYYY-MM-DD

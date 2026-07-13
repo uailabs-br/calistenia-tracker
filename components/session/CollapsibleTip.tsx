@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ChevronDownIcon } from "@/components/ui/icons";
 
-/** Dica do dia — colapsada por padrão para não ocupar a tela. */
+/** Dica do dia - colapsada por padrão para não ocupar a tela. */
 export function CollapsibleTip({
   tip,
   accent,

@@ -40,7 +40,7 @@ export function SwUpdater() {
         registration.addEventListener("updatefound", onUpdateFound);
       })
       .catch(() => {
-        /* SW indisponível — app segue funcionando online */
+        /* SW indisponível - app segue funcionando online */
       });
 
     let refreshing = false;

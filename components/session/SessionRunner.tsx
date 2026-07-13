@@ -5,8 +5,9 @@ import { useLiveQuery } from "dexie-react-hooks";
 import type { PlanDay } from "@/lib/plan/schema";
 import type { Session, ExerciseLog } from "@/lib/db/schema";
 import { getLogsForSession, upsertLog } from "@/lib/db/repositories/logs";
-import { completeSession } from "@/lib/db/repositories/sessions";
+import { completeSession, discardSession } from "@/lib/db/repositories/sessions";
 import { useWakeLock } from "@/lib/utils/useWakeLock";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ExerciseCard, type RecordInput } from "./ExerciseCard";
 import { RpeSheet } from "./RpeSheet";
 
@@ -50,6 +51,7 @@ export function SessionRunner({
     manualActive !== null ? manualActive : firstUnlogged === -1 ? -1 : firstUnlogged;
 
   const [showRpe, setShowRpe] = useState(false);
+  const [showExit, setShowExit] = useState(false);
 
   const pending = flat.filter((f) => !logByExercise.has(f.exercise.id)).length;
 
@@ -73,10 +75,16 @@ export function SessionRunner({
     onFinished();
   };
 
+  const confirmExit = async () => {
+    await discardSession(session.id);
+    setShowExit(false);
+    onFinished();
+  };
+
   let lastBlock = "";
 
   return (
-    <div className="px-4">
+    <div className="anim-fade-in px-4">
       <div className="flex flex-col gap-2">
         {flat.map((item, i) => {
           const showBlock = item.blockLabel !== lastBlock;
@@ -112,12 +120,31 @@ export function SessionRunner({
         Finalizar treino
       </button>
 
+      <button
+        type="button"
+        onClick={() => setShowExit(true)}
+        className="tap mt-2 mb-2 w-full rounded-xl py-3 text-sm font-medium text-muted"
+      >
+        Sair sem salvar
+      </button>
+
       {showRpe && (
         <RpeSheet
           accent={day.accent}
           pendingCount={pending}
           onConfirm={confirmFinalize}
           onCancel={() => setShowRpe(false)}
+        />
+      )}
+
+      {showExit && (
+        <ConfirmDialog
+          title="Sair do treino?"
+          message="O progresso desta sessão não será salvo. Os exercícios já registrados serão descartados."
+          confirmLabel="Sair sem salvar"
+          danger
+          onConfirm={confirmExit}
+          onCancel={() => setShowExit(false)}
         />
       )}
     </div>

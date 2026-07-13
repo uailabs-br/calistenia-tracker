@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Schema Zod do plan.json — espelha o PRD seção 5.
+ * Schema Zod do plan.json - espelha o PRD seção 5.
  * Usado em build (scripts/validate-plan.mjs) e disponível para dev.
  */
 

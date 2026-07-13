@@ -3,6 +3,7 @@ import { DM_Sans, DM_Mono } from "next/font/google";
 import "./globals.css";
 import { BottomNav } from "@/components/ui/BottomNav";
 import { SwUpdater } from "@/components/ui/SwUpdater";
+import { PageTransition } from "@/components/ui/PageTransition";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -22,7 +23,7 @@ const APP_NAME = "Calistenia Tracker";
 
 export const metadata: Metadata = {
   title: APP_NAME,
-  description: "Registro de treino de calistenia — MU + HS",
+  description: "Registro de treino de calistenia (MU + HS)",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
@@ -52,7 +53,7 @@ export default function RootLayout({
       <body>
         <SwUpdater />
         <main className="mx-auto min-h-dvh w-full max-w-md pb-24">
-          {children}
+          <PageTransition>{children}</PageTransition>
         </main>
         <BottomNav />
       </body>

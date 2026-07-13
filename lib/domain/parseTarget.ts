@@ -10,6 +10,16 @@ export function targetSets(parsed: Parsed | null): number[] {
   return Array.from({ length: parsed.sets }, () => parsed.target);
 }
 
+/**
+ * Valores iniciais dos steppers ao ajustar. Diferente de `targetSets`,
+ * sempre devolve ao menos uma série - mesmo sem `parsed` - para que
+ * qualquer exercício possa ter as reps realizadas ajustadas.
+ */
+export function adjustSets(parsed: Parsed | null): number[] {
+  const t = targetSets(parsed);
+  return t.length > 0 ? t : [1];
+}
+
 /** Rótulo curto de unidade para exibição junto ao stepper. */
 export function unitLabel(parsed: Parsed | null): string {
   if (!parsed) return "";

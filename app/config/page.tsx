@@ -5,6 +5,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/db/schema";
 import { plan } from "@/lib/plan/loader";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import {
   exportAll,
   backupToBlob,
@@ -12,12 +13,14 @@ import {
   importMerge,
   markExported,
   sessionsSinceExport,
+  resetAll,
   type ImportResult,
 } from "@/lib/db/backup";
 
 export default function ConfigPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [showReset, setShowReset] = useState(false);
 
   const completed = useLiveQuery(async () => {
     const rows = await db.sessions.where("status").equals("completed").toArray();
@@ -45,7 +48,7 @@ export default function ConfigPage() {
         setMsg({ ok: true, text: "Backup compartilhado." });
         return;
       } catch {
-        /* usuário cancelou — cai no download */
+        /* usuário cancelou - cai no download */
       }
     }
     const url = URL.createObjectURL(blob);
@@ -80,6 +83,20 @@ export default function ConfigPage() {
     }
   };
 
+  const handleReset = async () => {
+    setShowReset(false);
+    setMsg(null);
+    try {
+      await resetAll();
+      setMsg({ ok: true, text: "Dados apagados. Tudo começa do zero." });
+    } catch (err) {
+      setMsg({
+        ok: false,
+        text: err instanceof Error ? err.message : "Falha ao resetar.",
+      });
+    }
+  };
+
   return (
     <div className="px-4">
       <PageHeader title="Config" subtitle="Backup e dados" />
@@ -97,7 +114,7 @@ export default function ConfigPage() {
         <h2 className="font-semibold">Exportar</h2>
         <p className="mt-1 text-sm text-muted">
           Baixa todo o histórico (sessões + registros) num arquivo JSON. Guarde
-          em local seguro — o navegador do iOS pode apagar os dados sob pressão
+          em local seguro. O navegador do iOS pode apagar os dados sob pressão
           de armazenamento.
         </p>
         <button
@@ -143,6 +160,24 @@ export default function ConfigPage() {
         </p>
       )}
 
+      <section className="mt-6 rounded-card border px-4 py-4" style={{ borderColor: "#FF6B6B33" }}>
+        <h2 className="font-semibold" style={{ color: "#FF6B6B" }}>
+          Zona de perigo
+        </h2>
+        <p className="mt-1 text-sm text-muted">
+          Apaga todo o histórico (sessões e registros) deste dispositivo. Não dá
+          para desfazer. Exporte um backup antes se quiser guardar.
+        </p>
+        <button
+          type="button"
+          onClick={() => setShowReset(true)}
+          className="tap mt-3 w-full rounded-xl border py-3 font-medium"
+          style={{ borderColor: "#FF6B6B", color: "#FF6B6B" }}
+        >
+          Resetar dados
+        </button>
+      </section>
+
       <section className="mt-6 text-xs text-muted">
         <p>
           Plano: {plan.name} (v{plan.version})
@@ -150,6 +185,17 @@ export default function ConfigPage() {
         <p>Sessões concluídas: {completed ?? "…"}</p>
       </section>
       <div className="h-4" />
+
+      {showReset && (
+        <ConfirmDialog
+          title="Resetar todos os dados?"
+          message="Todo o histórico de sessões e registros será apagado deste dispositivo. Esta ação não pode ser desfeita."
+          confirmLabel="Apagar tudo"
+          danger
+          onConfirm={handleReset}
+          onCancel={() => setShowReset(false)}
+        />
+      )}
     </div>
   );
 }

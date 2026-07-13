@@ -54,7 +54,7 @@ export async function upsertLog(input: LogInput): Promise<ExerciseLog> {
   return log;
 }
 
-/** Remove (soft) o log de um exercício — usado ao desmarcar. */
+/** Remove (soft) o log de um exercício - usado ao desmarcar. */
 export async function removeLog(
   session_id: string,
   exercise_id: string

@@ -27,7 +27,7 @@ export function DayPills({
               type="button"
               onClick={() => onSelect(d.weekday)}
               aria-pressed={active}
-              className="tap flex shrink-0 flex-col items-start rounded-xl border px-3 py-2 transition-colors duration-200"
+              className="tap flex shrink-0 flex-col items-start rounded-xl border px-3 py-2 transition-colors duration-200 active:scale-[0.97]"
               style={
                 active
                   ? { borderColor: d.accent, background: d.accent_bg }

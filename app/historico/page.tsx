@@ -44,7 +44,7 @@ export default function HistoricoPage() {
                 </div>
                 <div className="text-right">
                   <p className="tnum text-sm" style={{ color: day?.accent }}>
-                    RPE {s.rpe ?? "—"}
+                    RPE {s.rpe ?? "-"}
                   </p>
                 </div>
               </li>
