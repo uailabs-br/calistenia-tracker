@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  DumbbellIcon,
+  HomeIcon,
   HistoryIcon,
   ChartIcon,
   CogIcon,
 } from "./icons";
 
 const items = [
-  { href: "/", label: "Treino", Icon: DumbbellIcon },
+  { href: "/", label: "Início", Icon: HomeIcon },
   { href: "/historico", label: "Histórico", Icon: HistoryIcon },
   { href: "/metricas", label: "Métricas", Icon: ChartIcon },
   { href: "/config", label: "Config", Icon: CogIcon },

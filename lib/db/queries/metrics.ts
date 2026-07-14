@@ -6,7 +6,12 @@ import {
   plan,
 } from "@/lib/plan/loader";
 import { totalVolume } from "@/lib/domain/volume";
-import { daysBetween, localDateKey } from "@/lib/utils/date";
+import {
+  daysBetween,
+  localDateKey,
+  weekStartKey,
+  weekdayOf,
+} from "@/lib/utils/date";
 
 async function completedSessions(): Promise<Session[]> {
   const rows = await db.sessions.toArray();
@@ -23,10 +28,18 @@ async function activeLogs(): Promise<ExerciseLog[]> {
 export interface Overview {
   totalWorkouts: number;
   last30Workouts: number;
+  /** Semanas consecutivas com ao menos um treino (não zera no fim de semana). */
   currentStreak: number;
   longestStreak: number;
   avgRpe4w: number | null;
   adherenceByWeekday: { weekday: number; label: string; pct: number }[];
+}
+
+/** Segunda da semana deslocada em `weeks` semanas. */
+function shiftWeek(mondayDateKey: string, weeks: number): string {
+  const d = new Date(mondayDateKey + "T00:00:00");
+  d.setDate(d.getDate() + weeks * 7);
+  return localDateKey(d);
 }
 
 export async function getOverview(): Promise<Overview> {
@@ -41,29 +54,31 @@ export async function getOverview(): Promise<Overview> {
     (s) => daysBetween(s.date, today) < 30
   ).length;
 
-  // Streak permanece por DIA: sequência de dias consecutivos com ao menos um
-  // treino, terminando em hoje ou ontem. (Streak por treino não faz sentido.)
-  const dateSet = new Set(dates);
+  // Streak SEMANAL: semanas consecutivas com ao menos um treino. Um plano de
+  // Seg–Sex zeraria toda semana num streak por dia; por semana isso não ocorre.
+  const weekSet = new Set(dates.map(weekStartKey));
+
   let currentStreak = 0;
   {
-    const cursor = new Date();
-    // se não treinou hoje, começa de ontem
-    if (!dateSet.has(localDateKey(cursor))) cursor.setDate(cursor.getDate() - 1);
-    while (dateSet.has(localDateKey(cursor))) {
+    let cursor = weekStartKey(today);
+    // grace: se a semana atual ainda está sem treino, começa da semana passada
+    if (!weekSet.has(cursor)) cursor = shiftWeek(cursor, -1);
+    while (weekSet.has(cursor)) {
       currentStreak++;
-      cursor.setDate(cursor.getDate() - 1);
+      cursor = shiftWeek(cursor, -1);
     }
   }
 
-  // Maior streak histórico
+  // Maior streak histórico (semanas consecutivas)
+  const mondays = [...weekSet].sort();
   let longestStreak = 0;
   let run = 0;
   let prev: string | null = null;
-  for (const d of dates) {
-    if (prev && daysBetween(prev, d) === 1) run++;
+  for (const m of mondays) {
+    if (prev && daysBetween(prev, m) === 7) run++;
     else run = 1;
     longestStreak = Math.max(longestStreak, run);
-    prev = d;
+    prev = m;
   }
 
   // RPE médio 4 semanas
@@ -192,4 +207,105 @@ export async function getLoggedExercises(): Promise<
       return ex ? { id, name: ex.name } : null;
     })
     .filter((x): x is { id: string; name: string } => x !== null);
+}
+
+const WEEKDAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+export interface WeekDayStatus {
+  weekday: number;
+  label: string;
+  isPlanDay: boolean;
+  done: boolean;
+  isToday: boolean;
+}
+
+export interface WeekStatus {
+  /** dias distintos treinados na semana atual. */
+  done: number;
+  /** dias de treino previstos no plano. */
+  planTotal: number;
+  /** 7 dias (Seg→Dom) com estado para o mini-calendário. */
+  days: WeekDayStatus[];
+}
+
+/** Estado da semana corrente: dias concluídos vs. plano, para home. */
+export async function getWeekStatus(): Promise<WeekStatus> {
+  const sessions = await completedSessions();
+  const today = localDateKey();
+  const monday = weekStartKey(today);
+  const todayWeekday = weekdayOf();
+
+  // Datas (weekday real) treinadas nesta semana.
+  const doneWeekdays = new Set<number>();
+  for (const s of sessions) {
+    const diff = daysBetween(monday, s.date);
+    if (diff >= 0 && diff <= 6) doneWeekdays.add(weekdayOf(new Date(s.date + "T00:00:00")));
+  }
+
+  const planWeekdays = new Set(plan.days.map((d) => d.weekday));
+  const planLabelByWeekday = new Map(plan.days.map((d) => [d.weekday, d.label]));
+
+  // Ordem Seg(1)→Dom(0) para o mini-calendário.
+  const order = [1, 2, 3, 4, 5, 6, 0];
+  const days: WeekDayStatus[] = order.map((weekday) => ({
+    weekday,
+    label: planLabelByWeekday.get(weekday) ?? WEEKDAY_LABELS[weekday],
+    isPlanDay: planWeekdays.has(weekday),
+    done: doneWeekdays.has(weekday),
+    isToday: weekday === todayWeekday,
+  }));
+
+  return {
+    done: doneWeekdays.size,
+    planTotal: plan.days.length,
+    days,
+  };
+}
+
+export interface HeroEvolution {
+  id: string;
+  name: string;
+  points: VolumePoint[];
+  /** variação % da última sessão vs. a anterior (null se não dá pra comparar). */
+  deltaPct: number | null;
+}
+
+/**
+ * Exercício-destaque para a home: o mais registrado (não pulado) em sessões
+ * concluídas. Retorna a série de volume e a variação recente. null se não há
+ * dados suficientes para uma tendência (< 2 pontos).
+ */
+export async function getHeroEvolution(): Promise<HeroEvolution | null> {
+  const sessions = await completedSessions();
+  const sessionIds = new Set(sessions.map((s) => s.id));
+  const logs = (await activeLogs()).filter(
+    (l) => !l.skipped && sessionIds.has(l.session_id)
+  );
+
+  const counts = new Map<string, number>();
+  for (const l of logs) counts.set(l.exercise_id, (counts.get(l.exercise_id) ?? 0) + 1);
+
+  let bestId = "";
+  let best = 0;
+  for (const [id, c] of counts) {
+    if (c > best) {
+      best = c;
+      bestId = id;
+    }
+  }
+  if (!bestId || best < 2) return null;
+
+  const points = await getExerciseVolume(bestId);
+  if (points.length < 2) return null;
+
+  const last = points[points.length - 1].volume;
+  const prev = points[points.length - 2].volume;
+  const deltaPct = prev > 0 ? Math.round(((last - prev) / prev) * 100) : null;
+
+  return {
+    id: bestId,
+    name: getExerciseById(bestId)?.name ?? bestId,
+    points,
+    deltaPct,
+  };
 }

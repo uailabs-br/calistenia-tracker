@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { MetricsSkeleton } from "@/components/ui/Skeleton";
 import { StatTile } from "@/components/metrics/StatTile";
 import { FlagIncidenceRow } from "@/components/metrics/FlagIncidenceRow";
 import { Sparkline } from "@/components/metrics/Sparkline";
+import { ChevronDownIcon } from "@/components/ui/icons";
 import {
   getOverview,
   getFlagIncidence,
@@ -31,19 +33,19 @@ export default function MetricasPage() {
     <div className="px-4">
       <PageHeader title="Métricas" subtitle="do log, sem invenção" />
 
-      {empty ? (
+      {!overview ? (
+        <MetricsSkeleton />
+      ) : empty ? (
         <p className="mt-8 text-center text-muted">
           Registre sessões para ver métricas.
         </p>
-      ) : !overview ? (
-        <p className="text-muted">Carregando…</p>
       ) : (
         <>
           <div className="grid grid-cols-2 gap-2">
             <StatTile value={overview.totalWorkouts} label="treinos realizados" accent={AC} />
             <StatTile value={overview.last30Workouts} label="treinos em 30 dias" />
-            <StatTile value={overview.currentStreak} label="sequência de dias" accent={AC} />
-            <StatTile value={overview.longestStreak} label="maior sequência" />
+            <StatTile value={overview.currentStreak} label="semanas seguidas" accent={AC} />
+            <StatTile value={overview.longestStreak} label="recorde de semanas" />
             <StatTile
               value={overview.avgRpe4w ?? "-"}
               label="RPE médio (4 sem)"
@@ -94,18 +96,21 @@ export default function MetricasPage() {
           <h2 className="mb-2 mt-6 text-sm font-semibold">Volume por exercício</h2>
           {exercises && exercises.length > 0 ? (
             <div className="rounded-card border border-border bg-surface px-4 py-3">
-              <select
-                value={exId}
-                onChange={(e) => setExId(e.target.value)}
-                className="tap w-full rounded-lg border border-border bg-surface2 px-3 py-2 text-sm outline-none"
-              >
-                <option value="">Escolha um exercício…</option>
-                {exercises.map((ex) => (
-                  <option key={ex.id} value={ex.id}>
-                    {ex.name}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={exId}
+                  onChange={(e) => setExId(e.target.value)}
+                  className="tap w-full appearance-none rounded-lg border border-border bg-surface2 px-3 py-2 pr-9 text-base text-text outline-none focus:border-muted"
+                >
+                  <option value="">Escolha um exercício…</option>
+                  {exercises.map((ex) => (
+                    <option key={ex.id} value={ex.id}>
+                      {ex.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDownIcon className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+              </div>
               {exId && (
                 <div className="mt-3">
                   <Sparkline points={volume ?? []} accent={AC} />

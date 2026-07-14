@@ -4,20 +4,23 @@ import { useEffect, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import type { PlanExercise } from "@/lib/plan/schema";
 import type { ExerciseLog, SetValue } from "@/lib/db/schema";
-import { adjustSets } from "@/lib/domain/parseTarget";
+import { adjustSets, parseRestSeconds } from "@/lib/domain/parseTarget";
 import { effectiveSets } from "@/lib/domain/volume";
 import {
   getLastPerformance,
   formatLastPerf,
+  type LastPerf,
 } from "@/lib/db/queries/lastPerformance";
-import { CheckIcon } from "@/components/ui/icons";
+import { CheckIcon, TimerIcon } from "@/components/ui/icons";
 import { Stepper } from "./Stepper";
 import { FlagChips } from "./FlagChips";
+import { ExerciseNote } from "./ExerciseNote";
 
 export interface RecordInput {
   as_target: boolean;
   sets: SetValue[] | null;
   flags_selected: string[];
+  note: string | null;
   skipped: boolean;
 }
 
@@ -29,7 +32,12 @@ interface Props {
   log: ExerciseLog | undefined;
   active: boolean;
   onActivate: () => void;
+  /** Ação de registro (avança, dá undo e inicia descanso). */
   onRecord: (input: RecordInput) => void;
+  /** Persistência silenciosa (flags/nota) — sem avançar nem tocar o descanso. */
+  onPersist: (input: RecordInput) => void;
+  /** Inicia um descanso manual (entre séries) com a duração em segundos. */
+  onRest?: (seconds: number) => void;
 }
 
 export function ExerciseCard({
@@ -41,17 +49,24 @@ export function ExerciseCard({
   active,
   onActivate,
   onRecord,
+  onPersist,
+  onRest,
 }: Props) {
   const parsed = exercise.parsed;
+  const stepFor = parsed?.unit === "seconds" ? 5 : 1;
+  const restSeconds = parseRestSeconds(exercise.rest) ?? 90;
 
   const [adjusting, setAdjusting] = useState(false);
   const [values, setValues] = useState<number[]>(() => adjustSets(parsed));
   const [flags, setFlags] = useState<string[]>([]);
+  const [note, setNote] = useState("");
+  const cardRef = useRef<HTMLDivElement>(null);
 
   // Sincroniza estado local com o log persistido (retomada / edição)
   useEffect(() => {
     if (log) {
       setFlags(log.flags_selected);
+      setNote(log.note ?? "");
       const s = effectiveSets(log, parsed);
       if (s.length > 0) setValues(s);
       else setValues(adjustSets(parsed));
@@ -67,31 +82,41 @@ export function ExerciseCard({
     [exercise.id, sessionId]
   );
 
-  // ── long-press para pular ──────────────────────────────────────────
-  const pressTimer = useRef<number | null>(null);
-  const startPress = () => {
-    pressTimer.current = window.setTimeout(() => {
-      onRecord({ as_target: false, sets: null, flags_selected: flags, skipped: true });
-      pressTimer.current = null;
-    }, 550);
-  };
-  const cancelPress = () => {
-    if (pressTimer.current) {
-      window.clearTimeout(pressTimer.current);
-      pressTimer.current = null;
-    }
-  };
+  // Auto-scroll: ao virar o card ativo, traz para o centro da viewport.
+  useEffect(() => {
+    if (!active) return;
+    const reduce = window.matchMedia?.(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    cardRef.current?.scrollIntoView({
+      behavior: reduce ? "auto" : "smooth",
+      block: "center",
+    });
+  }, [active]);
+
+  const baseInput = () => ({
+    flags_selected: flags,
+    note: note.trim() ? note.trim() : null,
+  });
 
   const recordAsTarget = () =>
-    onRecord({ as_target: true, sets: null, flags_selected: flags, skipped: false });
+    onRecord({ as_target: true, sets: null, skipped: false, ...baseInput() });
 
   const recordAdjusted = () =>
     onRecord({
       as_target: false,
       sets: values.map((value, index) => ({ index, value })),
-      flags_selected: flags,
       skipped: false,
+      ...baseInput(),
     });
+
+  const recordSkipped = () =>
+    onRecord({ as_target: false, sets: null, skipped: true, ...baseInput() });
+
+  const startAdjust = () => {
+    if (!log) setValues(seedAdjustValues(parsed, lastPerf));
+    setAdjusting(true);
+  };
 
   const toggleFlag = (flag: string) => {
     const next = flags.includes(flag)
@@ -100,10 +125,24 @@ export function ExerciseCard({
     setFlags(next);
     // se já registrado, persiste imediatamente preservando o tipo de registro
     if (log && !log.skipped) {
-      onRecord({
+      onPersist({
         as_target: log.as_target,
         sets: log.sets,
         flags_selected: next,
+        note: note.trim() ? note.trim() : null,
+        skipped: false,
+      });
+    }
+  };
+
+  const commitNote = (value: string) => {
+    setNote(value);
+    if (log && !log.skipped) {
+      onPersist({
+        as_target: log.as_target,
+        sets: log.sets,
+        flags_selected: flags,
+        note: value.trim() ? value.trim() : null,
         skipped: false,
       });
     }
@@ -136,7 +175,8 @@ export function ExerciseCard({
           {done ? (
             <span
               className="anim-pop flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
-              style={{ background: accent, color: "#0e0e0f" }}
+              style={{ background: accent, color: "var(--color-on-accent)" }}
+              aria-label="concluído"
             >
               <CheckIcon className="h-4 w-4" />
             </span>
@@ -153,14 +193,9 @@ export function ExerciseCard({
   // ── Card ativo (expandido) ─────────────────────────────────────────
   return (
     <div
-      className="anim-fade-in-up rounded-card border bg-surface px-4 py-4"
+      ref={cardRef}
+      className="anim-fade-in-up scroll-mt-20 rounded-card border bg-surface px-4 py-4"
       style={{ borderColor: accent }}
-      onTouchStart={startPress}
-      onTouchEnd={cancelPress}
-      onTouchMove={cancelPress}
-      onMouseDown={startPress}
-      onMouseUp={cancelPress}
-      onMouseLeave={cancelPress}
     >
       <div className="flex items-baseline justify-between gap-2">
         <h3
@@ -187,17 +222,17 @@ export function ExerciseCard({
               type="button"
               onClick={recordAsTarget}
               className="tap flex flex-1 items-center justify-center gap-2 rounded-xl py-3 font-medium active:scale-[0.99]"
-              style={{ background: accent, color: "#0e0e0f" }}
+              style={{ background: accent, color: "var(--color-on-accent)" }}
             >
               <CheckIcon className="h-5 w-5" />
-              fiz como previsto
+              Fiz como previsto
             </button>
             <button
               type="button"
-              onClick={() => setAdjusting(true)}
+              onClick={startAdjust}
               className="tap rounded-xl border border-border bg-surface2 px-4 font-medium text-text"
             >
-              ajustar
+              Ajustar
             </button>
           </div>
         ) : (
@@ -208,6 +243,7 @@ export function ExerciseCard({
                 index={i}
                 value={v}
                 unit={parsed?.unit === "seconds" ? "s" : ""}
+                step={stepFor}
                 onChange={(next) =>
                   setValues((prev) => prev.map((x, j) => (j === i ? next : x)))
                 }
@@ -217,10 +253,10 @@ export function ExerciseCard({
               type="button"
               onClick={recordAdjusted}
               className="tap mt-1 flex items-center justify-center gap-2 rounded-xl py-3 font-medium active:scale-[0.99]"
-              style={{ background: accent, color: "#0e0e0f" }}
+              style={{ background: accent, color: "var(--color-on-accent)" }}
             >
               <CheckIcon className="h-5 w-5" />
-              confirmar
+              Confirmar
             </button>
           </div>
         )}
@@ -233,10 +269,50 @@ export function ExerciseCard({
         onToggle={toggleFlag}
       />
 
-      <p className="mt-3 font-mono text-[11px] text-muted">
-        {exercise.rest} · segure p/ pular
-      </p>
+      <ExerciseNote value={note} accent={accent} onCommit={commitNote} />
+
+      <div className="mt-3 flex items-center justify-between gap-2">
+        {onRest ? (
+          <button
+            type="button"
+            onClick={() => onRest(restSeconds)}
+            aria-label={`Iniciar descanso de ${restSeconds}s`}
+            className="tap flex items-center gap-1.5 rounded-lg border border-border bg-surface2 px-2.5 py-1.5 font-mono text-[11px] text-muted active:scale-[0.98]"
+            style={{ color: accent }}
+          >
+            <TimerIcon className="h-3.5 w-3.5" />
+            {exercise.rest || `descanso ${restSeconds}s`}
+          </button>
+        ) : (
+          <p className="font-mono text-[11px] text-muted">{exercise.rest}</p>
+        )}
+        <button
+          type="button"
+          onClick={recordSkipped}
+          className="tap -mr-1 rounded-lg px-2 py-1 font-mono text-[11px] text-muted"
+        >
+          pular exercício
+        </button>
+      </div>
     </div>
+  );
+}
+
+/** Semente dos steppers ao ajustar: usa a última performance se ficou
+ *  abaixo do alvo (torna a progressão visível), senão o alvo. */
+function seedAdjustValues(
+  parsed: PlanExercise["parsed"],
+  lastPerf: LastPerf | undefined
+): number[] {
+  const target = adjustSets(parsed);
+  if (!parsed || !lastPerf || lastPerf.kind !== "sets") return target;
+  const lastSum = lastPerf.values.reduce((a, b) => a + b, 0);
+  const targetSum = target.reduce((a, b) => a + b, 0);
+  if (lastSum >= targetSum) return target;
+  const last = lastPerf.values;
+  return Array.from(
+    { length: parsed.sets },
+    (_, i) => last[i] ?? last[last.length - 1] ?? target[i]
   );
 }
 

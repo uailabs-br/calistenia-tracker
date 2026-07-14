@@ -38,3 +38,22 @@ export function formatValue(value: number, parsed: Parsed | null): string {
   if (!parsed) return String(value);
   return parsed.unit === "seconds" ? `${value}s` : String(value);
 }
+
+/**
+ * Extrai os segundos de descanso do texto livre do plano.
+ * Ex: "descanso 120s" → 120 · "30-45s entre tentativas" → 45 (limite superior).
+ * Retorna null quando não há número plausível.
+ */
+export function parseRestSeconds(rest: string): number | null {
+  const nums = (rest.match(/\d+/g) ?? []).map(Number).filter((n) => n > 0 && n <= 600);
+  if (nums.length === 0) return null;
+  return Math.max(...nums);
+}
+
+/** mm:ss a partir de segundos. */
+export function formatClock(totalSeconds: number): string {
+  const s = Math.max(0, Math.round(totalSeconds));
+  const m = Math.floor(s / 60);
+  const rem = s % 60;
+  return `${m}:${String(rem).padStart(2, "0")}`;
+}

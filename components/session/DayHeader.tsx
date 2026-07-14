@@ -1,6 +1,8 @@
 import type { PlanDay } from "@/lib/plan/schema";
-import { CollapsibleTip } from "./CollapsibleTip";
 
+/** Cabeçalho da tela de treino: apenas título + metadados. O "por que" e o
+ *  aquecimento são renderizados depois do progresso (ver SessionRunner e a
+ *  tela de treino) para a sequência: título → progresso → por que → aquec. */
 export function DayHeader({ day }: { day: PlanDay }) {
   return (
     <header className="pt-8 pb-4">
@@ -17,14 +19,6 @@ export function DayHeader({ day }: { day: PlanDay }) {
         )}
       </div>
       <h1 className="mt-2 text-2xl font-semibold leading-tight">{day.title}</h1>
-
-      {day.warmup && (
-        <p className="mt-3 text-sm text-muted">
-          <span className="font-mono uppercase tracking-wide">aquec.</span>{" "}
-          {day.warmup}
-        </p>
-      )}
-      <CollapsibleTip tip={day.tip} accent={day.accent} />
     </header>
   );
 }

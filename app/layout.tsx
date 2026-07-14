@@ -4,6 +4,7 @@ import "./globals.css";
 import { BottomNav } from "@/components/ui/BottomNav";
 import { SwUpdater } from "@/components/ui/SwUpdater";
 import { PageTransition } from "@/components/ui/PageTransition";
+import { ToastProvider } from "@/components/ui/Toast";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -40,8 +41,7 @@ export const viewport: Viewport = {
   themeColor: "#0e0e0f",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  // zoom liberado (WCAG 1.4.4). Inputs usam 16px p/ evitar auto-zoom do iOS.
   viewportFit: "cover",
 };
 
@@ -51,11 +51,13 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${dmSans.variable} ${dmMono.variable}`}>
       <body>
-        <SwUpdater />
-        <main className="mx-auto min-h-dvh w-full max-w-md pb-24">
-          <PageTransition>{children}</PageTransition>
-        </main>
-        <BottomNav />
+        <ToastProvider>
+          <SwUpdater />
+          <main className="mx-auto min-h-dvh w-full max-w-md pb-24">
+            <PageTransition>{children}</PageTransition>
+          </main>
+          <BottomNav />
+        </ToastProvider>
       </body>
     </html>
   );

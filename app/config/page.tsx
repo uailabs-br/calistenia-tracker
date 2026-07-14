@@ -104,7 +104,7 @@ export default function ConfigPage() {
       {pendingBackup >= 4 && (
         <div
           className="mb-4 rounded-card border px-4 py-3 text-sm"
-          style={{ borderColor: "#FF9066", color: "#FF9066" }}
+          style={{ borderColor: "var(--color-warn)", color: "var(--color-warn)" }}
         >
           {pendingBackup} sessões sem backup. Exporte para não perder o histórico.
         </div>
@@ -152,16 +152,19 @@ export default function ConfigPage() {
         <p
           className="mt-3 rounded-card border px-4 py-3 text-sm"
           style={{
-            borderColor: msg.ok ? "#6ECFAB" : "#FF6B6B",
-            color: msg.ok ? "#6ECFAB" : "#FF6B6B",
+            borderColor: msg.ok ? "var(--color-success)" : "var(--color-danger)",
+            color: msg.ok ? "var(--color-success)" : "var(--color-danger)",
           }}
         >
           {msg.text}
         </p>
       )}
 
-      <section className="mt-6 rounded-card border px-4 py-4" style={{ borderColor: "#FF6B6B33" }}>
-        <h2 className="font-semibold" style={{ color: "#FF6B6B" }}>
+      <section
+        className="mt-6 rounded-card border px-4 py-4"
+        style={{ borderColor: "color-mix(in srgb, var(--color-danger) 25%, transparent)" }}
+      >
+        <h2 className="font-semibold" style={{ color: "var(--color-danger)" }}>
           Zona de perigo
         </h2>
         <p className="mt-1 text-sm text-muted">
@@ -172,7 +175,7 @@ export default function ConfigPage() {
           type="button"
           onClick={() => setShowReset(true)}
           className="tap mt-3 w-full rounded-xl border py-3 font-medium"
-          style={{ borderColor: "#FF6B6B", color: "#FF6B6B" }}
+          style={{ borderColor: "var(--color-danger)", color: "var(--color-danger)" }}
         >
           Resetar dados
         </button>

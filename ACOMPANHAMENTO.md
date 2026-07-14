@@ -20,10 +20,11 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
-> **Estado atual (2026-07-13):** app completo e rodando local. Build de produção
-> OK, 18 testes passando, fluxo de sessão validado em browser real (Começar →
-> registrar → auto-avanço → última performance). Falta só o deploy no Vercel e a
-> Etapa 7 (uso real na semana).
+> **Estado atual (2026-07-14):** app completo, rodando local e passando por uma
+> rodada de polimento de UX/acessibilidade (home reformulada, timer de descanso,
+> notas por exercício, toasts, install prompt, streak semanal, error boundary).
+> Typecheck limpo, 19 testes passando. Falta só o deploy no Vercel e a Etapa 7
+> (uso real na semana).
 
 ---
 
@@ -174,3 +175,13 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 - **2026-07-13 (ajuste)** — Dois pedidos do usuário:
   1. **IDs de exercício iguais entre dias** — unificados `mu-false-grip-hang` (Seg+Qui), `hs-frog-to-hs-negativa` (Ter+Sex), `hs-kickup-livre` (Ter+Qua). Regra de unicidade mudou para *única por dia, repetível entre dias*. Última performance e incidência de flags agora são **centradas no movimento** (histórico agrega entre dias). Volume usa o `parsed` do dia da sessão (alvo pode diferir, ex. frog-to-hs 5 rep vs 3). *Nota: "Kick-up controlado" (Sex) ficou com ID próprio por ser cue distinto — dizer se quer unificar.*
   2. **Selecionar qualquer template de treino** — cada "dia" virou template selecionável (`DayPills`); dá pra fazer o treino de terça numa segunda. A sessão grava o template escolhido (`weekday`) + a data real. Sessão ativa passou a usar o `weekday` da própria sessão (bug corrigido). Verificado em headless: escolher "Ter" na segunda gravou `weekday:2` com `date` de hoje. 19 testes passando (novo teste cross-day), build OK. Desativado o overlay de dev do Next que cobria a navegação.
+- **2026-07-14** — Rodada de polimento de UX e acessibilidade (pós-v1):
+  - **Home reformulada** — painel com saudação por horário (`HomeGreeting`), banner de retomada (`ResumeBanner`), card do treino de hoje com CTA de 1 toque e lista expansível (`TodayCard`), constância com mini-calendário da semana (`ConsistencyCard`), próximos treinos (`WeekStrip`) e métricas-resumo com sparkline de evolução (`HomeMetrics`).
+  - **Timer de descanso** (`RestTimer`) — countdown por relógio de parede (robusto a throttling de aba), centralizado na tela sobre overlay escurecido, com foco no card ao iniciar, +15s, pular e feedback tátil/sonoro ao terminar. Descanso automático pós-registro (duração extraída do plano via `parseRestSeconds`).
+  - **Notas por exercício** (`ExerciseNote`) — campo curto opcional, colapsado por padrão, persistido no blur. Novo campo `note` em `ExerciseLog` (backup mantém compatibilidade com defaults).
+  - **Toasts** (`ToastProvider`/`useToast`) — feedback efêmero de registro/erro com ação "Desfazer" no registro de série.
+  - **Instalação PWA** (`InstallPrompt`) — nudge de "adicionar à tela inicial" (Android via `beforeinstallprompt`, iOS com instrução), mitigando limpeza de IndexedDB.
+  - **Streak semanal** — `currentStreak`/`longestStreak` passaram de dias para **semanas** consecutivas (um plano Seg–Sex não zera mais todo fim de semana). Novo `getWeekStatus` (estado da semana p/ a home) e `getHeroEvolution` (exercício-destaque + tendência).
+  - **Acessibilidade** — hook `useModalA11y` (scroll-lock, focus-trap, Esc, restauração de foco) aplicado a `RestTimer`, `RpeSheet` e `ConfirmDialog`; zoom liberado no viewport (WCAG 1.4.4). `RpeSheet` com drag-to-dismiss.
+  - **Robustez** — `app/error.tsx` (error boundary de rota), skeletons de carregamento (histórico/métricas), `SwUpdater` limpa SW órfão em dev (evita `ChunkLoadError`), `Stepper` com press-and-hold.
+  - **Limpeza nesta revisão** — `useModalA11y` agora estabiliza `onClose` via ref e roda o setup só na montagem (sem re-travar scroll/re-roubar foco em re-render); `mondayKey` duplicado removido de `metrics.ts` em favor de `weekStartKey` compartilhado; `RestTimer` simplificado; comentário de `longDate` corrigido. Typecheck limpo, 19 testes passando, rotas servindo 200 em dev.

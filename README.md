@@ -25,17 +25,17 @@ Cada dia é um **template selecionável**: dá pra fazer o treino de terça numa
 ## Como funciona (fluxo)
 
 ```
-Abrir → treino de hoje já na tela → Começar
+Abrir → painel (treino de hoje, constância, próximos) → Começar
    ↓
 Card ativo expandido, resto colapsado
    ↓
 [✓ fiz como previsto]  ou  [ajustar → steppers por série]
    ↓  (colapsa e abre o próximo automaticamente)
-opcional: chips "como foi?" · segurar p/ pular
-   ↓
+opcional: chips "como foi?" · nota curta · pular exercício
+   ↓  (timer de descanso automático entre séries)
 Finalizar → RPE (1–5) → nota opcional → salvo
    ↓
-Métricas: sequência, aderência, volume, incidência de flags
+Métricas: sequência semanal, aderência, volume, incidência de flags
 ```
 
 ## Arquitetura

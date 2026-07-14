@@ -7,7 +7,14 @@
   --color-surface2: #222224;
   --color-border: #2a2a2d;
   --color-text: #f0efe8;
-  --color-muted: #7a7a82;
+  /* muted clareado de #7a7a82 → ~5.2:1 sobre o bg (WCAG AA em texto pequeno) */
+  --color-muted: #8b8b95;
+
+  /* Cores de sistema (antes hardcoded em style props) */
+  --color-danger: #ff6b6b;
+  --color-success: #6ecfab;
+  --color-warn: #ff9066;
+  --color-on-accent: #0e0e0f; /* texto sobre fundo no accent do dia */
 
   --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-dm-mono), ui-monospace, monospace;
@@ -19,11 +26,24 @@
 :root {
   --ac: #a89cff;
   --ac-bg: #1e1b35;
+  /* Altura da barra de navegação (conteúdo, sem safe-area). Usada para
+     posicionar elementos fixos sem números mágicos espalhados. */
+  --nav-height: 58px;
   color-scheme: dark;
 }
 
 * {
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Foco visível para navegação por teclado (sem afetar toque/mouse) */
+:focus-visible {
+  outline: 2px solid var(--ac);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
 }
 
 html,
@@ -125,6 +145,17 @@ a {
   }
 }
 
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @keyframes pop {
   0% {
     transform: scale(0);
@@ -144,7 +175,10 @@ a {
   animation: fade-in-up 0.28s ease both;
 }
 .anim-page {
-  animation: page-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: page-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.anim-toast {
+  animation: toast-in 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .anim-slide-up {
   animation: slide-up 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;

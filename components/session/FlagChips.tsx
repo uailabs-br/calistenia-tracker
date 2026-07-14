@@ -48,7 +48,7 @@ export function FlagChips({
                 className="tap rounded-full border px-3 text-sm transition-colors duration-200"
                 style={
                   on
-                    ? { background: accent, borderColor: accent, color: "#0e0e0f" }
+                    ? { background: accent, borderColor: accent, color: "var(--color-on-accent)" }
                     : { borderColor: "var(--color-border)", color: "var(--color-muted)" }
                 }
               >

@@ -1,131 +1,76 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/db/schema";
-import { getDayByWeekday, plan } from "@/lib/plan/loader";
-import { getActiveSession, createSession } from "@/lib/db/repositories/sessions";
+import { getDayByWeekday } from "@/lib/plan/loader";
+import { getActiveSession } from "@/lib/db/repositories/sessions";
+import {
+  getOverview,
+  getWeekStatus,
+  getHeroEvolution,
+} from "@/lib/db/queries/metrics";
 import { weekdayOf, localDateKey } from "@/lib/utils/date";
-import { DayHeader } from "@/components/session/DayHeader";
-import { DayPills } from "@/components/session/DayPills";
-import { SessionRunner } from "@/components/session/SessionRunner";
+import { HomeGreeting } from "@/components/home/HomeGreeting";
+import { ResumeBanner } from "@/components/home/ResumeBanner";
+import { TodayCard } from "@/components/home/TodayCard";
+import { WeekStrip } from "@/components/home/WeekStrip";
+import { ConsistencyCard } from "@/components/home/ConsistencyCard";
+import { HomeMetrics } from "@/components/home/HomeMetrics";
+import { InstallPrompt } from "@/components/ui/InstallPrompt";
 
-export default function TodayPage() {
-  const [starting, setStarting] = useState(false);
+export default function HomePage() {
   const today = weekdayOf();
   const todayKey = localDateKey();
+  const todayDay = getDayByWeekday(today) ?? null;
 
-  // Template selecionado: hoje, se hoje for dia de treino; senão o primeiro.
-  const [selected, setSelected] = useState<number>(() =>
-    getDayByWeekday(today) ? today : plan.days[0].weekday
-  );
-  const day = getDayByWeekday(selected)!;
+  const active = useLiveQuery(async () => (await getActiveSession()) ?? null, []);
+  const overview = useLiveQuery(() => getOverview(), []);
+  const weekStatus = useLiveQuery(() => getWeekStatus(), []);
+  const hero = useLiveQuery(async () => (await getHeroEvolution()) ?? null, []);
 
-  const active = useLiveQuery(() => getActiveSession(), []);
-
-  // Sem sessão ativa (tela de preview) → destrava o botão "Começar".
-  // Evita que ele fique preso em "abrindo…" ao voltar de um treino finalizado.
-  useEffect(() => {
-    if (!active) setStarting(false);
-  }, [active]);
-  const completedForSelected = useLiveQuery(async () => {
+  const completedToday = useLiveQuery(async () => {
     const rows = await db.sessions.where("date").equals(todayKey).toArray();
-    return rows.find(
-      (s) => s.status === "completed" && !s.deleted_at && s.weekday === selected
+    return rows.some(
+      (s) => s.status === "completed" && !s.deleted_at && s.weekday === today
     );
-  }, [todayKey, selected]);
+  }, [todayKey, today]);
 
-  // Sessão em andamento → runner do template da PRÓPRIA sessão (não do dia atual)
-  if (active) {
-    const activeDay = getDayByWeekday(active.weekday) ?? day;
-    return (
-      <div style={{ ["--ac" as string]: activeDay.accent }}>
-        <div className="px-4">
-          <DayHeader day={activeDay} />
-        </div>
-        <SessionRunner session={active} day={activeDay} onFinished={() => {}} />
-      </div>
-    );
-  }
-
-  const start = async () => {
-    setStarting(true);
-    await createSession(selected);
-    // useLiveQuery detecta a nova sessão e troca para o runner
-  };
+  const activeDay = active ? getDayByWeekday(active.weekday) : undefined;
 
   return (
     <div className="px-4">
-      <div className="pt-6">
-        <DayPills selected={selected} today={today} onSelect={setSelected} />
-      </div>
+      <HomeGreeting />
 
-      <DayHeader day={day} />
+      <InstallPrompt />
 
-      {!getDayByWeekday(today) && (
-        <div className="mb-4 rounded-card border border-border bg-surface px-4 py-3 text-sm text-muted">
-          Hoje é folga no plano. Escolha acima um treino para fazer mesmo assim.
+      {active && activeDay && <ResumeBanner day={activeDay} />}
+
+      {/* Constância primeiro: resultado atual em 1 olhada */}
+      {weekStatus && (
+        <div className="mb-4">
+          <ConsistencyCard
+            streak={overview?.currentStreak ?? 0}
+            weekStatus={weekStatus}
+          />
         </div>
       )}
 
-      {completedForSelected && (
-        <div
-          className="mb-4 rounded-card border px-4 py-3 text-sm"
-          style={{ borderColor: day.accent, color: day.accent }}
-        >
-          Esse treino já foi registrado hoje. Começar de novo cria uma nova sessão.
-        </div>
-      )}
+      <TodayCard
+        day={todayDay}
+        today={today}
+        completedToday={completedToday ?? false}
+        activeToday={active?.weekday === today}
+      />
 
-      <ul className="flex flex-col gap-2">
-        {day.blocks.map((block) => (
-          <li key={block.label}>
-            <p className="mb-1 mt-3 font-mono text-[11px] uppercase tracking-wide text-muted">
-              {block.label}
-            </p>
-            <ul className="flex flex-col gap-2">
-              {block.exercises.map((ex) => (
-                <li
-                  key={ex.id}
-                  className="rounded-card border border-border bg-surface px-4 py-3"
-                >
-                  <div className="flex items-baseline justify-between gap-2">
-                    <span
-                      className="font-medium"
-                      style={block.is_skill ? { color: day.accent } : undefined}
-                    >
-                      {ex.name}
-                    </span>
-                    <span className="tnum shrink-0 text-sm text-muted">
-                      {ex.target}
-                    </span>
-                  </div>
-                  {ex.obs && (
-                    <p className="mt-1 text-xs leading-snug text-muted">
-                      {ex.obs}
-                    </p>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </li>
-        ))}
-      </ul>
+      <WeekStrip today={today} weekStatus={weekStatus} />
 
-      <button
-        type="button"
-        onClick={start}
-        disabled={starting}
-        className="tap fixed inset-x-0 bottom-[76px] z-20 mx-auto w-[calc(100%-2rem)] max-w-[calc(28rem-2rem)] rounded-xl py-4 text-center font-semibold shadow-lg transition-transform active:scale-[0.99] disabled:opacity-60"
-        style={{ background: day.accent, color: "#0e0e0f" }}
-      >
-        {starting
-          ? "abrindo…"
-          : completedForSelected
-            ? "Treinar de novo"
-            : `Começar · ${day.title}`}
-      </button>
-      <div className="h-16" />
+      <HomeMetrics
+        last30={overview?.last30Workouts ?? 0}
+        avgRpe={overview?.avgRpe4w ?? null}
+        hero={hero ?? null}
+      />
+
+      <div className="h-8" />
     </div>
   );
 }

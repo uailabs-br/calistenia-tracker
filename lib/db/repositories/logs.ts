@@ -9,6 +9,7 @@ interface LogInput {
   as_target: boolean;
   sets: SetValue[] | null;
   flags_selected: string[];
+  note?: string | null;
   skipped: boolean;
 }
 
@@ -30,6 +31,7 @@ export async function upsertLog(input: LogInput): Promise<ExerciseLog> {
       as_target: input.as_target,
       sets: input.sets,
       flags_selected: input.flags_selected,
+      note: input.note ?? null,
       skipped: input.skipped,
       logged_at: ts,
       updated_at: ts,
@@ -45,6 +47,7 @@ export async function upsertLog(input: LogInput): Promise<ExerciseLog> {
     as_target: input.as_target,
     sets: input.sets,
     flags_selected: input.flags_selected,
+    note: input.note ?? null,
     skipped: input.skipped,
     logged_at: ts,
     updated_at: ts,

@@ -32,6 +32,8 @@ const logSchema = z.object({
   as_target: z.boolean(),
   sets: z.array(setValueSchema).nullable(),
   flags_selected: z.array(z.string()),
+  // backups antigos não têm `note` — default null p/ compatibilidade.
+  note: z.string().nullable().optional().default(null),
   skipped: z.boolean(),
   logged_at: z.number(),
   updated_at: z.number(),

@@ -10,11 +10,30 @@ export function SwUpdater() {
   const [waiting, setWaiting] = useState<ServiceWorker | null>(null);
 
   useEffect(() => {
-    if (
-      typeof window === "undefined" ||
-      !("serviceWorker" in navigator) ||
-      process.env.NODE_ENV !== "production"
-    ) {
+    if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
+      return;
+    }
+
+    // DEV: um SW de um build de produção anterior pode continuar controlando
+    // esta origem e servir chunks obsoletos (ChunkLoadError / "missing required
+    // error components"). Remove qualquer SW órfão e limpa os caches, com um
+    // reload único para escapar do controller antigo.
+    if (process.env.NODE_ENV !== "production") {
+      navigator.serviceWorker
+        .getRegistrations()
+        .then(async (regs) => {
+          if (regs.length === 0) return;
+          await Promise.all(regs.map((r) => r.unregister()));
+          if (typeof window.caches !== "undefined") {
+            const keys = await caches.keys();
+            await Promise.all(keys.map((k) => caches.delete(k)));
+          }
+          if (!sessionStorage.getItem("sw-killed")) {
+            sessionStorage.setItem("sw-killed", "1");
+            window.location.reload();
+          }
+        })
+        .catch(() => {});
       return;
     }
 

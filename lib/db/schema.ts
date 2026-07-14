@@ -31,6 +31,7 @@ export interface ExerciseLog {
   as_target: boolean;
   sets: SetValue[] | null; // presente só se ajustou
   flags_selected: string[];
+  note: string | null; // nota curta opcional por exercício
   skipped: boolean;
   logged_at: number; // instrumentação: quando foi registrado
   updated_at: number;
