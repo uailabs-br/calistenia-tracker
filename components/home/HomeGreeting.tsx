@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getProfileName } from "@/lib/utils/profile";
 
 const WEEKDAYS = [
   "Domingo",
@@ -21,7 +22,11 @@ function greetingFor(hour: number): string {
 /** Saudação por horário + dia/data. Só monta no cliente (evita mismatch). */
 export function HomeGreeting() {
   const [now, setNow] = useState<Date | null>(null);
-  useEffect(() => setNow(new Date()), []);
+  const [name, setName] = useState("");
+  useEffect(() => {
+    setNow(new Date());
+    setName(getProfileName());
+  }, []);
 
   if (!now) return <div className="h-14 pt-8" />;
 
@@ -37,6 +42,7 @@ export function HomeGreeting() {
       </p>
       <h1 className="mt-1 text-2xl font-semibold leading-tight">
         {greetingFor(now.getHours())}
+        {name ? `, ${name}` : ""}
       </h1>
     </header>
   );

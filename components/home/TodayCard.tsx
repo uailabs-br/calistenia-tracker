@@ -48,11 +48,10 @@ export function TodayCard({
     b.exercises.map((e) => ({ ...e, isSkill: b.is_skill }))
   );
 
-  const ctaLabel = completedToday
-    ? "Treinar de novo"
-    : activeToday
-      ? "Continuar treino"
-      : "Começar";
+  // Concluído (e sem sessão em andamento): o destaque é a conclusão;
+  // "treinar de novo" vira link discreto. Retomar sessão ativa segue como CTA.
+  const doneState = completedToday && !activeToday;
+  const ctaLabel = activeToday ? "Continuar treino" : "Começar treino";
 
   return (
     <section
@@ -74,22 +73,30 @@ export function TodayCard({
 
       <h2 className="mt-2 text-2xl font-semibold leading-tight">{day.title}</h2>
 
-      {completedToday && (
-        <p
-          className="mt-2 inline-flex items-center gap-1 text-sm font-medium"
-          style={{ color: day.accent }}
+      {doneState ? (
+        <>
+          <div
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border py-3.5 font-semibold"
+            style={{ borderColor: day.accent, color: day.accent }}
+          >
+            <CheckIcon className="h-5 w-5" /> Treino concluído
+          </div>
+          <Link
+            href={`/treino/${today}`}
+            className="tap mt-1 flex w-full items-center justify-center py-2 text-sm text-muted"
+          >
+            Treinar de novo →
+          </Link>
+        </>
+      ) : (
+        <Link
+          href={`/treino/${today}`}
+          className="tap mt-4 flex w-full items-center justify-center rounded-xl py-3.5 text-center font-semibold active:scale-[0.99]"
+          style={{ background: day.accent, color: "var(--color-on-accent)" }}
         >
-          <CheckIcon className="h-4 w-4" /> Concluído hoje
-        </p>
+          {ctaLabel}
+        </Link>
       )}
-
-      <Link
-        href={`/treino/${today}`}
-        className="tap mt-4 flex w-full items-center justify-center rounded-xl py-3.5 text-center font-semibold active:scale-[0.99]"
-        style={{ background: day.accent, color: "var(--color-on-accent)" }}
-      >
-        {ctaLabel} · {day.title}
-      </Link>
 
       <button
         type="button"

@@ -1,48 +1,47 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  getDeferredInstall,
+  isIOS,
+  isStandalone,
+  promptInstall,
+  subscribeInstall,
+} from "@/lib/utils/installPrompt";
 
 const DISMISS_KEY = "calistenia:install-dismissed";
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-}
 
 /**
  * Nudge de instalação. Só aparece fora do modo standalone — instalar na tela
  * inicial é a mitigação real contra o iOS apagar o IndexedDB sob pressão de
- * armazenamento. Android/Chrome usa beforeinstallprompt; iOS mostra instrução.
+ * armazenamento. Android/Chrome usa beforeinstallprompt (via singleton
+ * compartilhado com Config); iOS mostra instrução.
  */
 export function InstallPrompt() {
   const [visible, setVisible] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
-  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
+  const [ios, setIos] = useState(false);
+  const [canPrompt, setCanPrompt] = useState(false);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
     if (localStorage.getItem(DISMISS_KEY)) return;
+    if (isStandalone()) return;
 
-    const standalone =
-      window.matchMedia?.("(display-mode: standalone)").matches ||
-      (window.navigator as Navigator & { standalone?: boolean }).standalone ===
-        true;
-    if (standalone) return;
-
-    const ios = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
-    setIsIOS(ios);
-
-    const onBIP = (e: Event) => {
-      e.preventDefault();
-      setDeferred(e as BeforeInstallPromptEvent);
-      setVisible(true);
-    };
-    window.addEventListener("beforeinstallprompt", onBIP);
+    const iosDevice = isIOS();
+    setIos(iosDevice);
 
     // iOS não dispara beforeinstallprompt — mostra instrução manual.
-    if (ios) setVisible(true);
-
-    return () => window.removeEventListener("beforeinstallprompt", onBIP);
+    if (iosDevice) {
+      setVisible(true);
+      return;
+    }
+    if (getDeferredInstall()) {
+      setCanPrompt(true);
+      setVisible(true);
+    }
+    return subscribeInstall(() => {
+      setCanPrompt(true);
+      setVisible(true);
+    });
   }, []);
 
   const dismiss = () => {
@@ -51,9 +50,7 @@ export function InstallPrompt() {
   };
 
   const install = async () => {
-    if (!deferred) return;
-    await deferred.prompt();
-    await deferred.userChoice;
+    await promptInstall();
     dismiss();
   };
 
@@ -65,11 +62,11 @@ export function InstallPrompt() {
         <div className="min-w-0">
           <p className="text-sm font-medium">Instale o app</p>
           <p className="mt-1 text-xs leading-snug text-muted">
-            {isIOS
+            {ios
               ? "No Safari: toque em Compartilhar e depois em “Adicionar à Tela de Início”. Protege seu histórico contra limpeza automática do iOS."
               : "Adicione à tela inicial para abrir offline e proteger seu histórico contra limpeza de armazenamento."}
           </p>
-          {!isIOS && deferred && (
+          {!ios && canPrompt && (
             <button
               type="button"
               onClick={install}

@@ -26,6 +26,13 @@ export function daysBetween(a: string, b: string): number {
   return Math.round((db - da) / 86_400_000);
 }
 
+/** Desloca uma dateKey em `days` dias (negativo volta no tempo). */
+export function shiftDays(dateKey: string, days: number): string {
+  const d = new Date(dateKey + "T00:00:00");
+  d.setDate(d.getDate() + days);
+  return localDateKey(d);
+}
+
 /** Segunda-feira (dateKey) da semana de uma dateKey. */
 export function weekStartKey(dateKey: string): string {
   const d = new Date(dateKey + "T00:00:00");

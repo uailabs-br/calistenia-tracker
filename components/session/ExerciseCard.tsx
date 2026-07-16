@@ -53,7 +53,6 @@ export function ExerciseCard({
   onRest,
 }: Props) {
   const parsed = exercise.parsed;
-  const stepFor = parsed?.unit === "seconds" ? 5 : 1;
   const restSeconds = parseRestSeconds(exercise.rest) ?? 90;
 
   const [adjusting, setAdjusting] = useState(false);
@@ -243,7 +242,6 @@ export function ExerciseCard({
                 index={i}
                 value={v}
                 unit={parsed?.unit === "seconds" ? "s" : ""}
-                step={stepFor}
                 onChange={(next) =>
                   setValues((prev) => prev.map((x, j) => (j === i ? next : x)))
                 }

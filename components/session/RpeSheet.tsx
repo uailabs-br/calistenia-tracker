@@ -11,6 +11,36 @@ const RPE_LABELS = [
   { v: 5, label: "no limite" },
 ];
 
+// Boca por nível: sorriso largo → neutro → careta (traço, estilo dos ícones do app)
+const MOUTHS: Record<number, string> = {
+  1: "M8.5 13.5c1.2 2 5.8 2 7 0",
+  2: "M9 14c1.2 1.2 4.8 1.2 6 0",
+  3: "M9 14.75h6",
+  4: "M9 15.5c1.2-1.2 4.8-1.2 6 0",
+};
+
+/** Carinha de esforço (1 leve → 5 no limite). SVG stroke, currentColor. */
+function EffortFace({ level, className }: { level: number; className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+      <circle cx="9" cy="9.5" r="1.1" fill="currentColor" />
+      <circle cx="15" cy="9.5" r="1.1" fill="currentColor" />
+      {level === 5 ? (
+        // boca aberta: esforço máximo
+        <ellipse cx="12" cy="15" rx="2" ry="2.4" stroke="currentColor" strokeWidth="1.8" />
+      ) : (
+        <path
+          d={MOUTHS[level]}
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        />
+      )}
+    </svg>
+  );
+}
+
 export function RpeSheet({
   accent,
   pendingCount,
@@ -88,7 +118,7 @@ export function RpeSheet({
                 onClick={() => setRpe(v)}
                 aria-pressed={on}
                 aria-label={`RPE ${v} — ${label}`}
-                className="tap flex flex-col items-center justify-center gap-1 rounded-xl border py-3 transition-colors duration-200"
+                className="tap flex flex-col items-center justify-center gap-1 rounded-xl border py-2.5 transition-colors duration-200"
                 style={
                   on
                     ? { background: accent, borderColor: accent, color: "var(--color-on-accent)" }
@@ -98,7 +128,8 @@ export function RpeSheet({
                       }
                 }
               >
-                <span className="tnum text-lg font-semibold">{v}</span>
+                <EffortFace level={v} className="h-6 w-6" />
+                <span className="tnum text-xs font-semibold">{v}</span>
                 <span className="text-[10px] leading-none">{label}</span>
               </button>
             );

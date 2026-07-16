@@ -1,24 +1,17 @@
 ##ONLY IDEAS - DO NOT IMPLEMENT YET 
 
-1. make an evolution graph on the statistics tab
-2. 
 
-
-
-1. make an evolution graph on the statistics tab: for each exercise, plot the max reps and best form
-2. make a plan editor on the settings tab: allow users to edit the exercises and sets in the plan
-3. make a calendar view of the week. 
-    when you click on a day, it shows the exercises for that day.
-    when you click on an exercise, it shows the history of that exercise.
-
-4. make a widget for the home screen  - Android/IOS 
-5. make a home screen com treinos da semana começando pelo treino do dia. (  ao clicar no treino do dia, abre a tela de treino.  
-
-    ao clicar no botão de ligar do exercício, abre a tela de treino para aquele exercício.  
-    )
-    mostra também as métricas mais importantes de constância, de evolução, de força, etc.
 
 Gameficar: criar badges de consistencia (streak - 1, 3, 7, 15, 30, 60, 100, 180, 365 dias), força (somar todas as repetições de um exercício feitas na semana, comparar com a semana anterior e dar um badge se tiver melhorado), técnica (qualidade das execuções) de cada exercício, ao longo do tempo.
-   
 
-    
+
+melhorias
+- botao de comecar treino: texto apenas "Começar treino" 
+- centralizar o timer na tela. deixar o efeito de regressao do relógio contínuo para ficar mais fluido. melhorar o visual do timer
+- no timer dentro do exercício, adicionar um botão para diminuir o tempo, e ajustar o tempo adicionado/removido para 5s.
+- nos ajustes de tempo de execuçao do exercicio, deixar o stepper deve ser 1s ao invés de 5s.
+- agrupar notas e como foi no mesmo colapso. O como foi acho que poderia ser substituido por algo mais simples descrever, como uma nota em relacao a qualidade de execucao (tem que pensar do ponto de vista de valor pro usuário e processamento no sistema)
+- colocar a opçao de baixar o app no menu de configuraçoes
+- adionar icones no feedback de esforço
+- colocar um perfil com nome (text box editavel). na home, adicionar o nome da pessoa apos o bom dia/boa tarde/boa noite (ex.: Boa noite, Ruan) 
+- no final ou inicio de cada semana (verificar qual faz mais sentido), dar um feedback sobre a ultima semana de treino, mostrando o que foi bom e o que precisa melhorar. tambem uma frase de motivaçao para seguir (sem ser tão cliche). vamos começar com um mvp para essa feature e depois evoluimos 

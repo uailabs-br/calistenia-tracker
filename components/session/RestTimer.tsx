@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { formatClock } from "@/lib/domain/parseTarget";
-import { PlusIcon } from "@/components/ui/icons";
+import { MinusIcon, PlusIcon } from "@/components/ui/icons";
 import { useModalA11y } from "@/lib/utils/useModalA11y";
 
 /**
@@ -18,23 +18,24 @@ export function RestTimer({
   accent: string;
   onDone: () => void;
 }) {
-  const [total, setTotal] = useState(seconds);
-  const [remaining, setRemaining] = useState(seconds);
+  const [totalMs, setTotalMs] = useState(seconds * 1000);
+  const [remainingMs, setRemainingMs] = useState(seconds * 1000);
   const [finished, setFinished] = useState(false);
   const endRef = useRef(Date.now() + seconds * 1000);
 
   // Centraliza o timer, trava o fundo, foca o card ao iniciar e fecha no Esc.
   const modalRef = useModalA11y<HTMLDivElement>(onDone);
 
-  // Countdown por relógio de parede (robusto a throttling de aba em background)
+  // Countdown por relógio de parede (robusto a throttling de aba em background).
+  // Tick de 100ms + precisão de ms: o anel anda contínuo, não em degraus de 1s.
   useEffect(() => {
     const tick = () => {
-      const left = Math.max(0, Math.round((endRef.current - Date.now()) / 1000));
-      setRemaining(left);
+      const left = Math.max(0, endRef.current - Date.now());
+      setRemainingMs(left);
       if (left <= 0) setFinished(true);
     };
     tick();
-    const id = window.setInterval(tick, 250);
+    const id = window.setInterval(tick, 100);
     return () => window.clearInterval(id);
   }, []);
 
@@ -47,13 +48,17 @@ export function RestTimer({
     return () => window.clearTimeout(id);
   }, [finished, onDone]);
 
-  const addTime = () => {
-    endRef.current += 15_000;
-    setTotal((t) => t + 15);
-    setFinished(false);
+  // Ajuste de ±5s. No "−", clampa em agora: com menos de 5s restantes,
+  // encurtar encerra o descanso naturalmente no próximo tick.
+  const adjust = (deltaSec: number) => {
+    endRef.current = Math.max(Date.now(), endRef.current + deltaSec * 1000);
+    setTotalMs((t) => Math.max(1000, t + deltaSec * 1000));
   };
 
-  const pct = total > 0 ? Math.max(0, (remaining / total) * 100) : 0;
+  const pct =
+    totalMs > 0 ? Math.min(100, Math.max(0, (remainingMs / totalMs) * 100)) : 0;
+  // ceil: mostra o segundo corrente até ele de fato acabar
+  const remaining = Math.ceil(remainingMs / 1000);
 
   // Anel de progresso (SVG), centralizado sobre o overlay escurecido.
   const size = 176;
@@ -98,7 +103,7 @@ export function RestTimer({
               strokeLinecap="round"
               strokeDasharray={circ}
               strokeDashoffset={finished ? 0 : circ * (1 - pct / 100)}
-              className="transition-[stroke-dashoffset] duration-300 ease-linear"
+              className="transition-[stroke-dashoffset] duration-150 ease-linear"
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -116,14 +121,26 @@ export function RestTimer({
 
         <div className="flex items-center gap-2">
           {!finished && (
-            <button
-              type="button"
-              onClick={addTime}
-              className="tap flex items-center gap-1 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium"
-            >
-              <PlusIcon className="h-4 w-4" />
-              15s
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => adjust(-5)}
+                aria-label="Diminuir 5 segundos"
+                className="tap flex items-center gap-1 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium"
+              >
+                <MinusIcon className="h-4 w-4" />
+                5s
+              </button>
+              <button
+                type="button"
+                onClick={() => adjust(5)}
+                aria-label="Aumentar 5 segundos"
+                className="tap flex items-center gap-1 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium"
+              >
+                <PlusIcon className="h-4 w-4" />
+                5s
+              </button>
+            </>
           )}
           <button
             type="button"

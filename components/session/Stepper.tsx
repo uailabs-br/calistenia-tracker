@@ -7,14 +7,11 @@ export function Stepper({
   index,
   value,
   unit,
-  step = 1,
   onChange,
 }: {
   index: number;
   value: number;
   unit: string;
-  /** incremento por toque (5 para segundos, 1 para reps) */
-  step?: number;
   onChange: (next: number) => void;
 }) {
   // press-and-hold: repete enquanto segura, acelerando levemente
@@ -35,7 +32,7 @@ export function Stepper({
   useEffect(() => clearHold, []);
 
   const apply = (dir: 1 | -1) =>
-    onChange(Math.max(0, valueRef.current + dir * step));
+    onChange(Math.max(0, valueRef.current + dir));
 
   const startHold = (dir: 1 | -1) => {
     handledByPointer.current = true;

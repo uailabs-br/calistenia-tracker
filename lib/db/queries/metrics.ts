@@ -9,6 +9,7 @@ import { totalVolume } from "@/lib/domain/volume";
 import {
   daysBetween,
   localDateKey,
+  shiftDays,
   weekStartKey,
   weekdayOf,
 } from "@/lib/utils/date";
@@ -35,13 +36,6 @@ export interface Overview {
   adherenceByWeekday: { weekday: number; label: string; pct: number }[];
 }
 
-/** Segunda da semana deslocada em `weeks` semanas. */
-function shiftWeek(mondayDateKey: string, weeks: number): string {
-  const d = new Date(mondayDateKey + "T00:00:00");
-  d.setDate(d.getDate() + weeks * 7);
-  return localDateKey(d);
-}
-
 export async function getOverview(): Promise<Overview> {
   const sessions = await completedSessions();
   const dates = [...new Set(sessions.map((s) => s.date))].sort();
@@ -62,10 +56,10 @@ export async function getOverview(): Promise<Overview> {
   {
     let cursor = weekStartKey(today);
     // grace: se a semana atual ainda está sem treino, começa da semana passada
-    if (!weekSet.has(cursor)) cursor = shiftWeek(cursor, -1);
+    if (!weekSet.has(cursor)) cursor = shiftDays(cursor, -7);
     while (weekSet.has(cursor)) {
       currentStreak++;
-      cursor = shiftWeek(cursor, -1);
+      cursor = shiftDays(cursor, -7);
     }
   }
 

@@ -1,11 +1,20 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/db/schema";
 import { plan } from "@/lib/plan/loader";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { getProfileName, setProfileName } from "@/lib/utils/profile";
+import pkg from "@/package.json";
+import {
+  getDeferredInstall,
+  isIOS,
+  isStandalone,
+  promptInstall,
+  subscribeInstall,
+} from "@/lib/utils/installPrompt";
 import {
   exportAll,
   backupToBlob,
@@ -17,10 +26,36 @@ import {
   type ImportResult,
 } from "@/lib/db/backup";
 
+/** Estado da instalação PWA nesta visita. */
+type InstallState = "standalone" | "ios" | "prompt" | "manual";
+
 export default function ConfigPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [showReset, setShowReset] = useState(false);
+  const [name, setName] = useState("");
+  const [install, setInstall] = useState<InstallState | null>(null);
+
+  // Só no cliente: localStorage (nome) e detecção de instalação.
+  useEffect(() => {
+    setName(getProfileName());
+    if (isStandalone()) {
+      setInstall("standalone");
+      return;
+    }
+    if (isIOS()) {
+      setInstall("ios");
+      return;
+    }
+    setInstall(getDeferredInstall() ? "prompt" : "manual");
+    // se o beforeinstallprompt chegar depois do mount, habilita o botão
+    return subscribeInstall(() => setInstall("prompt"));
+  }, []);
+
+  const handleInstall = async () => {
+    const accepted = await promptInstall();
+    setInstall(accepted ? "standalone" : "manual");
+  };
 
   const completed = useLiveQuery(async () => {
     const rows = await db.sessions.where("status").equals("completed").toArray();
@@ -99,7 +134,27 @@ export default function ConfigPage() {
 
   return (
     <div className="px-4">
-      <PageHeader title="Config" subtitle="Backup e dados" />
+      <PageHeader title="Config" subtitle="Perfil, backup e dados" />
+
+      <section className="mb-3 rounded-card border border-border bg-surface px-4 py-4">
+        <h2 className="font-semibold">Perfil</h2>
+        <p className="mt-1 text-sm text-muted">
+          Seu nome aparece na saudação da tela inicial.
+        </p>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => {
+            setName(e.target.value);
+            setProfileName(e.target.value);
+          }}
+          placeholder="Seu nome"
+          aria-label="Seu nome"
+          maxLength={30}
+          autoComplete="given-name"
+          className="mt-3 w-full rounded-xl border border-border bg-surface2 px-3 py-2.5 text-base outline-none placeholder:text-muted focus:border-muted"
+        />
+      </section>
 
       {pendingBackup >= 4 && (
         <div
@@ -160,6 +215,40 @@ export default function ConfigPage() {
         </p>
       )}
 
+      <section className="mt-3 rounded-card border border-border bg-surface px-4 py-4">
+        <h2 className="font-semibold">Instalar app</h2>
+        {install === "standalone" ? (
+          <p className="mt-1 text-sm text-muted">
+            Já instalado neste dispositivo. Abrindo pela tela inicial, o app
+            funciona offline e o histórico fica protegido contra limpeza
+            automática de armazenamento.
+          </p>
+        ) : (
+          <>
+            <p className="mt-1 text-sm text-muted">
+              {install === "ios"
+                ? "No Safari: toque em Compartilhar e depois em “Adicionar à Tela de Início”. Protege seu histórico contra limpeza automática do iOS."
+                : "Adicione à tela inicial para abrir offline e proteger seu histórico contra limpeza de armazenamento."}
+            </p>
+            {install === "prompt" && (
+              <button
+                type="button"
+                onClick={handleInstall}
+                className="tap mt-3 w-full rounded-xl border border-border bg-surface2 py-3 font-medium"
+              >
+                Instalar
+              </button>
+            )}
+            {install === "manual" && (
+              <p className="mt-2 text-xs text-muted">
+                Se o botão de instalar não aparecer, use o menu do navegador →
+                “Adicionar à tela inicial”.
+              </p>
+            )}
+          </>
+        )}
+      </section>
+
       <section
         className="mt-6 rounded-card border px-4 py-4"
         style={{ borderColor: "color-mix(in srgb, var(--color-danger) 25%, transparent)" }}
@@ -182,10 +271,10 @@ export default function ConfigPage() {
       </section>
 
       <section className="mt-6 text-xs text-muted">
+        <p>Calistenia Tracker v{pkg.version.split(".").slice(0, 2).join(".")}</p>
         <p>
           Plano: {plan.name} (v{plan.version})
         </p>
-        <p>Sessões concluídas: {completed ?? "…"}</p>
       </section>
       <div className="h-4" />
 

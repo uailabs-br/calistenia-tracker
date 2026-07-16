@@ -15,6 +15,7 @@ import { ResumeBanner } from "@/components/home/ResumeBanner";
 import { TodayCard } from "@/components/home/TodayCard";
 import { WeekStrip } from "@/components/home/WeekStrip";
 import { ConsistencyCard } from "@/components/home/ConsistencyCard";
+import { WeekReviewCard } from "@/components/home/WeekReviewCard";
 import { HomeMetrics } from "@/components/home/HomeMetrics";
 import { InstallPrompt } from "@/components/ui/InstallPrompt";
 
@@ -44,6 +45,9 @@ export default function HomePage() {
       <InstallPrompt />
 
       {active && activeDay && <ResumeBanner day={activeDay} />}
+
+      {/* Feedback da última semana: só na 1ª abertura de cada semana nova */}
+      <WeekReviewCard />
 
       {/* Constância primeiro: resultado atual em 1 olhada */}
       {weekStatus && (
