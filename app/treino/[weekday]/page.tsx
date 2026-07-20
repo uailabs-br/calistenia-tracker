@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/db/schema";
@@ -12,6 +13,7 @@ import { DayPills } from "@/components/session/DayPills";
 import { SessionRunner } from "@/components/session/SessionRunner";
 import { CollapsibleTip } from "@/components/session/CollapsibleTip";
 import { WarmupCard } from "@/components/session/WarmupCard";
+import { ChevronRightIcon } from "@/components/ui/icons";
 
 export default function TreinoPage() {
   const params = useParams<{ weekday: string }>();
@@ -107,6 +109,16 @@ export default function TreinoPage() {
         >
           Esse treino já foi registrado hoje. Começar de novo cria uma nova sessão.
         </div>
+      )}
+
+      {day.progression.length > 0 && (
+        <Link
+          href={`/skills/${day.weekday}`}
+          className="tap mt-3 flex items-center justify-between rounded-card border border-border bg-surface px-4 py-3 active:scale-[0.99]"
+        >
+          <span className="text-sm font-medium">Mapa da skill · {day.skill}</span>
+          <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted" />
+        </Link>
       )}
 
       {/* título → começar → por que → aquecimento → exercícios */}

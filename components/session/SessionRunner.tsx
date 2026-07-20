@@ -11,6 +11,7 @@ import {
 } from "@/lib/db/repositories/logs";
 import { completeSession, discardSession } from "@/lib/db/repositories/sessions";
 import { parseRestSeconds } from "@/lib/domain/parseTarget";
+import { computePR, formatPR } from "@/lib/db/queries/pr";
 import { useWakeLock } from "@/lib/utils/useWakeLock";
 import { useToast } from "@/components/ui/Toast";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -19,6 +20,7 @@ import { RpeSheet } from "./RpeSheet";
 import { RestTimer } from "./RestTimer";
 import { CollapsibleTip } from "./CollapsibleTip";
 import { WarmupCard } from "./WarmupCard";
+import { ProgressionNudge } from "./ProgressionNudge";
 
 export function SessionRunner({
   session,
@@ -135,8 +137,23 @@ export function SessionRunner({
 
     advanceFrom(exerciseId);
 
+    const item = flat.find((f) => f.exercise.id === exerciseId);
+    let pr: Awaited<ReturnType<typeof computePR>> = null;
+    if (!input.skipped) {
+      try {
+        pr = await computePR(exerciseId, input, item?.exercise.parsed ?? null);
+      } catch {
+        /* PR é enfeite: nunca bloqueia o registro */
+      }
+    }
+
     toast({
-      message: input.skipped ? "Exercício pulado" : "Registrado",
+      message: pr
+        ? `🏆 Novo recorde — ${formatPR(pr)} de ${item?.exercise.name ?? ""}`
+        : input.skipped
+          ? "Exercício pulado"
+          : "Registrado",
+      variant: pr ? "success" : undefined,
       action: { label: "Desfazer", onClick: () => undoRecord(exerciseId, prev) },
     });
 
@@ -239,6 +256,8 @@ export function SessionRunner({
           );
         })}
       </div>
+
+      {pending === 0 && <ProgressionNudge day={day} accent={day.accent} />}
 
       <button
         type="button"

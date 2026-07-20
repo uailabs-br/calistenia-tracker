@@ -5,7 +5,9 @@ import {
   uniqueExercises,
   plan,
 } from "@/lib/plan/loader";
-import { totalVolume } from "@/lib/domain/volume";
+import { totalVolume, effectiveSets } from "@/lib/domain/volume";
+import { streakWithFreeze } from "@/lib/domain/streak";
+import { getWeekGoal } from "@/lib/utils/profile";
 import {
   daysBetween,
   localDateKey,
@@ -29,7 +31,7 @@ async function activeLogs(): Promise<ExerciseLog[]> {
 export interface Overview {
   totalWorkouts: number;
   last30Workouts: number;
-  /** Semanas consecutivas com ao menos um treino (não zera no fim de semana). */
+  /** Semanas consecutivas batendo a meta semanal, com freeze (ver streak.ts). */
   currentStreak: number;
   longestStreak: number;
   avgRpe4w: number | null;
@@ -48,31 +50,39 @@ export async function getOverview(): Promise<Overview> {
     (s) => daysBetween(s.date, today) < 30
   ).length;
 
-  // Streak SEMANAL: semanas consecutivas com ao menos um treino. Um plano de
-  // Seg–Sex zeraria toda semana num streak por dia; por semana isso não ocorre.
-  const weekSet = new Set(dates.map(weekStartKey));
+  // Streak SEMANAL por META (2.2): unidade = semana em que a meta foi batida.
+  // Dias executados distintos por semana → meta batida quando ≥ goal.
+  const goal = getWeekGoal() ?? plan.days.length;
+  const weekDays = new Map<string, Set<number>>();
+  for (const s of sessions) {
+    const wk = weekStartKey(s.date);
+    const set = weekDays.get(wk) ?? new Set<number>();
+    set.add(weekdayOf(new Date(s.date + "T00:00:00")));
+    weekDays.set(wk, set);
+  }
+  const currentWeek = weekStartKey(today);
+  const metOf = (wk: string) => (weekDays.get(wk)?.size ?? 0) >= goal;
 
   let currentStreak = 0;
-  {
-    let cursor = weekStartKey(today);
-    // grace: se a semana atual ainda está sem treino, começa da semana passada
-    if (!weekSet.has(cursor)) cursor = shiftDays(cursor, -7);
-    while (weekSet.has(cursor)) {
-      currentStreak++;
-      cursor = shiftDays(cursor, -7);
-    }
-  }
-
-  // Maior streak histórico (semanas consecutivas)
-  const mondays = [...weekSet].sort();
   let longestStreak = 0;
-  let run = 0;
-  let prev: string | null = null;
-  for (const m of mondays) {
-    if (prev && daysBetween(prev, m) === 7) run++;
-    else run = 1;
-    longestStreak = Math.max(longestStreak, run);
-    prev = m;
+  if (dates.length > 0) {
+    // semanas passadas (a corrente entra só se já batida — pendente não quebra)
+    const weeksMet: boolean[] = [];
+    for (
+      let wk = weekStartKey(dates[0]);
+      daysBetween(wk, currentWeek) > 0;
+      wk = shiftDays(wk, 7)
+    ) {
+      weeksMet.push(metOf(wk));
+    }
+    if (metOf(currentWeek)) weeksMet.push(true);
+
+    currentStreak = streakWithFreeze(weeksMet);
+    let run = 0;
+    for (const met of weeksMet) {
+      run = met ? run + 1 : 0;
+      longestStreak = Math.max(longestStreak, run);
+    }
   }
 
   // RPE médio 4 semanas
@@ -91,16 +101,21 @@ export async function getOverview(): Promise<Overview> {
     dates.length > 0
       ? Math.max(1, Math.ceil((daysBetween(dates[0], today) + 1) / 7))
       : 1;
-  const planWeekdays = new Set(plan.days.map((d) => d.weekday));
+  // Crédito por dia EXECUTADO (não o sugerido pelo plano): um treino adiantado
+  // conta no dia em que foi feito. Mesmo cálculo de weekday que getWeekStatus.
+  const executedCounts = new Map<number, number>();
+  for (const s of sessions) {
+    const wd = weekdayOf(new Date(s.date + "T00:00:00"));
+    executedCounts.set(wd, (executedCounts.get(wd) ?? 0) + 1);
+  }
   const byWeekday = plan.days.map((d) => {
-    const count = sessions.filter((s) => s.weekday === d.weekday).length;
+    const count = executedCounts.get(d.weekday) ?? 0;
     return {
       weekday: d.weekday,
       label: d.label,
       pct: Math.min(100, Math.round((count / weeksElapsed) * 100)),
     };
   });
-  void planWeekdays;
 
   return {
     totalWorkouts,
@@ -185,6 +200,28 @@ export async function getExerciseVolume(
     const parsed =
       getExerciseInDay(session.weekday, exerciseId)?.parsed ?? null;
     points.push({ date: session.date, volume: totalVolume(log, parsed) });
+  }
+  return points;
+}
+
+/**
+ * Melhor hold (maior série única, não a soma) por sessão de uma isometria.
+ * Métrica-rainha das isometrias (unit "seconds"), separada do volume.
+ */
+export async function getBestHold(exerciseId: string): Promise<VolumePoint[]> {
+  const sessions = await completedSessions();
+  const logs = await activeLogs();
+
+  const points: VolumePoint[] = [];
+  for (const session of sessions) {
+    const log = logs.find(
+      (l) => l.session_id === session.id && l.exercise_id === exerciseId
+    );
+    if (!log || log.skipped) continue;
+    const parsed = getExerciseInDay(session.weekday, exerciseId)?.parsed ?? null;
+    const values = effectiveSets(log, parsed);
+    if (values.length === 0) continue;
+    points.push({ date: session.date, volume: Math.max(...values) });
   }
   return points;
 }

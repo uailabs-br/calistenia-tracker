@@ -6,7 +6,13 @@ import { db } from "@/lib/db/schema";
 import { plan } from "@/lib/plan/loader";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { getProfileName, setProfileName } from "@/lib/utils/profile";
+import { ReminderSettings } from "@/components/config/ReminderSettings";
+import {
+  getProfileName,
+  setProfileName,
+  getWeekGoal,
+  setWeekGoal,
+} from "@/lib/utils/profile";
 import pkg from "@/package.json";
 import {
   getDeferredInstall,
@@ -34,11 +40,13 @@ export default function ConfigPage() {
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [showReset, setShowReset] = useState(false);
   const [name, setName] = useState("");
+  const [goal, setGoal] = useState(plan.days.length);
   const [install, setInstall] = useState<InstallState | null>(null);
 
-  // Só no cliente: localStorage (nome) e detecção de instalação.
+  // Só no cliente: localStorage (nome, meta) e detecção de instalação.
   useEffect(() => {
     setName(getProfileName());
+    setGoal(getWeekGoal() ?? plan.days.length);
     if (isStandalone()) {
       setInstall("standalone");
       return;
@@ -154,7 +162,29 @@ export default function ConfigPage() {
           autoComplete="given-name"
           className="mt-3 w-full rounded-xl border border-border bg-surface2 px-3 py-2.5 text-base outline-none placeholder:text-muted focus:border-muted"
         />
+
+        <label htmlFor="week-goal" className="mt-4 block text-sm font-medium">
+          Meta semanal
+        </label>
+        <p className="mt-0.5 text-sm text-muted">
+          Quantos treinos por semana fecham o anel. Padrão: {plan.days.length}.
+        </p>
+        <input
+          id="week-goal"
+          type="number"
+          min={1}
+          max={7}
+          value={goal}
+          onChange={(e) => {
+            const n = Number(e.target.value);
+            setGoal(n);
+            setWeekGoal(n === plan.days.length ? null : n);
+          }}
+          className="tnum mt-2 w-20 rounded-xl border border-border bg-surface2 px-3 py-2.5 text-base outline-none focus:border-muted"
+        />
       </section>
+
+      <ReminderSettings />
 
       {pendingBackup >= 4 && (
         <div

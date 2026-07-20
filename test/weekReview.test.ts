@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { db, type Session } from "@/lib/db/schema";
 import {
   getWeekReview,
+  getWeekHistory,
   buildWeekReviewTexts,
   type WeekReview,
 } from "@/lib/db/queries/weekReview";
@@ -102,6 +103,30 @@ describe("getWeekReview", () => {
     await db.sessions.add(session(lastMonday, null));
     const r = await getWeekReview();
     expect(r!.avgRpe).toBeNull();
+  });
+
+  it("revisa uma semana arbitrária pelo argumento monday", async () => {
+    const s = session(prevMonday);
+    await db.sessions.add(s);
+    await addLog(s.id, 10);
+    const r = await getWeekReview(prevMonday);
+    expect(r!.weekStart).toBe(prevMonday);
+    expect(r!.daysDone).toBe(1);
+  });
+});
+
+describe("getWeekHistory", () => {
+  it("lista semanas passadas com treino, da mais recente à mais antiga", async () => {
+    const a = session(prevMonday);
+    const b = session(lastMonday);
+    await db.sessions.bulkAdd([a, b]);
+    await addLog(a.id, 8);
+    await addLog(b.id, 10);
+    // sessão desta semana não deve entrar
+    await db.sessions.add(session(localDateKey()));
+
+    const history = await getWeekHistory();
+    expect(history.map((r) => r.weekStart)).toEqual([lastMonday, prevMonday]);
   });
 });
 

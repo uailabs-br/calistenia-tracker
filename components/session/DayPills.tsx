@@ -16,7 +16,7 @@ export function DayPills({
   onSelect: (weekday: number) => void;
 }) {
   return (
-    <div className="-mx-4 overflow-x-auto px-4">
+    <div className="no-scrollbar -mx-4 overflow-x-auto px-4">
       <div className="flex gap-2 pb-1">
         {plan.days.map((d) => {
           const active = d.weekday === selected;
@@ -27,7 +27,7 @@ export function DayPills({
               type="button"
               onClick={() => onSelect(d.weekday)}
               aria-pressed={active}
-              className="tap flex shrink-0 flex-col items-start rounded-xl border px-3 py-2 transition-colors duration-200 active:scale-[0.97]"
+              className="tap flex shrink-0 flex-col items-start justify-center rounded-xl border px-3.5 py-3 transition-colors duration-200 active:scale-[0.97]"
               style={
                 active
                   ? { borderColor: d.accent, background: d.accent_bg }

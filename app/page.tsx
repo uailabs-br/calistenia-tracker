@@ -66,7 +66,7 @@ export default function HomePage() {
         activeToday={active?.weekday === today}
       />
 
-      <WeekStrip today={today} weekStatus={weekStatus} />
+      <WeekStrip today={today} />
 
       <HomeMetrics
         last30={overview?.last30Workouts ?? 0}

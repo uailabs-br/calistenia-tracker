@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { formatClock } from "@/lib/domain/parseTarget";
 import { MinusIcon, PlusIcon } from "@/components/ui/icons";
 import { useModalA11y } from "@/lib/utils/useModalA11y";
+import { Portal } from "@/components/ui/Portal";
 
 /**
  * Timer de descanso pós-registro. Countdown no accent do dia, com feedback
@@ -59,6 +60,8 @@ export function RestTimer({
     totalMs > 0 ? Math.min(100, Math.max(0, (remainingMs / totalMs) * 100)) : 0;
   // ceil: mostra o segundo corrente até ele de fato acabar
   const remaining = Math.ceil(remainingMs / 1000);
+  // reta final: pulsa nos últimos 5s para avisar sem depender do olhar no número
+  const ending = !finished && remaining <= 5;
 
   // Anel de progresso (SVG), centralizado sobre o overlay escurecido.
   const size = 176;
@@ -68,6 +71,7 @@ export function RestTimer({
   const color = finished ? "var(--color-success)" : accent;
 
   return (
+    <Portal>
     <div
       className="anim-fade-in fixed inset-0 z-40 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
       role="status"
@@ -78,7 +82,10 @@ export function RestTimer({
         className="anim-scale-in flex flex-col items-center gap-4 rounded-2xl border bg-surface2 px-7 py-6 shadow-2xl outline-none"
         style={{ borderColor: color }}
       >
-        <div className="relative" style={{ width: size, height: size }}>
+        <div
+          className={`relative ${ending ? "anim-pulse" : ""}`}
+          style={{ width: size, height: size }}
+        >
           <svg
             width={size}
             height={size}
@@ -157,6 +164,7 @@ export function RestTimer({
         </div>
       </div>
     </div>
+    </Portal>
   );
 }
 

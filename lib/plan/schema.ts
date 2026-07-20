@@ -23,6 +23,8 @@ export const exerciseSchema = z
     obs: z.string(),
     rest: z.string(),
     flags: z.array(z.string()),
+    // labels de flags que contam como execução "suja" (subconjunto de `flags`)
+    neg_flags: z.array(z.string()).optional(),
   })
   .strict();
 
@@ -84,6 +86,15 @@ export const planSchema = z
             });
           }
           seen.add(ex.id);
+          for (const neg of ex.neg_flags ?? []) {
+            if (!ex.flags.includes(neg)) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `neg_flag inexistente em flags (${day.label} / ${ex.id}): ${neg}`,
+                path: ["days"],
+              });
+            }
+          }
         }
       }
     }

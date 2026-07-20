@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { PlanDay } from "@/lib/plan/schema";
 import { plan } from "@/lib/plan/loader";
+import { durationLabel } from "@/lib/domain/estimateDuration";
 import {
   ChevronDownIcon,
   PlayIcon,
@@ -65,7 +66,7 @@ export function TodayCard({
         >
           {day.label}
         </span>
-        <span className="font-mono text-xs text-muted">{day.duration}</span>
+        <span className="font-mono text-xs text-muted">{durationLabel(day)}</span>
         <span className="font-mono text-xs text-muted">
           · {exercises.length} exercícios
         </span>

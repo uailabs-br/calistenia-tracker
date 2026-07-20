@@ -1,4 +1,5 @@
 import type { PlanDay } from "@/lib/plan/schema";
+import { durationLabel } from "@/lib/domain/estimateDuration";
 
 /** Cabeçalho da tela de treino: apenas título + metadados. O "por que" e o
  *  aquecimento são renderizados depois do progresso (ver SessionRunner e a
@@ -13,7 +14,7 @@ export function DayHeader({ day }: { day: PlanDay }) {
         >
           {day.label}
         </span>
-        <span className="font-mono text-xs text-muted">{day.duration}</span>
+        <span className="font-mono text-xs text-muted">{durationLabel(day)}</span>
         {day.is_practice && (
           <span className="font-mono text-xs text-muted">· prática</span>
         )}

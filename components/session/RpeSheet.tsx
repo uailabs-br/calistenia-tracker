@@ -2,6 +2,7 @@
 
 import { useId, useRef, useState } from "react";
 import { useModalA11y } from "@/lib/utils/useModalA11y";
+import { Portal } from "@/components/ui/Portal";
 
 const RPE_LABELS = [
   { v: 1, label: "leve" },
@@ -75,6 +76,7 @@ export function RpeSheet({
   };
 
   return (
+    <Portal>
     <div
       className="anim-fade-in fixed inset-0 z-40 flex items-end justify-center bg-black/60"
       onClick={onCancel}
@@ -165,5 +167,6 @@ export function RpeSheet({
         </div>
       </div>
     </div>
+    </Portal>
   );
 }

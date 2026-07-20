@@ -53,6 +53,7 @@ const exercise = z
     obs: z.string(),
     rest: z.string(),
     flags: z.array(z.string()),
+    neg_flags: z.array(z.string()).optional(),
   })
   .strict();
 
@@ -112,6 +113,14 @@ const planSchema = z
             });
           }
           seen.add(ex.id);
+          for (const neg of ex.neg_flags ?? []) {
+            if (!ex.flags.includes(neg)) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `neg_flag inexistente em flags (${d.label} / ${ex.id}): ${neg}`,
+              });
+            }
+          }
         }
       }
     }

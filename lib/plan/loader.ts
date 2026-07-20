@@ -70,6 +70,19 @@ export function uniqueExercises(): {
   }));
 }
 
+/** Flags negativas ("execução suja") de um movimento, unindo as definições entre dias. */
+export function negFlagsOf(id: string): string[] {
+  const set = new Set<string>();
+  for (const day of plan.days) {
+    for (const block of day.blocks) {
+      for (const ex of block.exercises) {
+        if (ex.id === id) ex.neg_flags?.forEach((f) => set.add(f));
+      }
+    }
+  }
+  return [...set];
+}
+
 /** plan_day_id estável = `${plan.id}:${weekday}`. Sobrevive a mudanças de versão. */
 export function planDayId(weekday: number): string {
   return `${plan.id}:${weekday}`;

@@ -1,11 +1,14 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { WeekStatus } from "@/lib/db/queries/metrics";
+import { getWeekGoal } from "@/lib/utils/profile";
+import { ProgressRing } from "@/components/ui/ProgressRing";
 
 const DAY_LETTERS = ["S", "T", "Q", "Q", "S", "S", "D"]; // Seg→Dom
 
-/** Constância: streak de semanas + mini-calendário da semana atual. */
+/** Constância: anel da meta semanal + streak + mini-calendário da semana. */
 export function ConsistencyCard({
   streak,
   weekStatus,
@@ -13,6 +16,13 @@ export function ConsistencyCard({
   streak: number;
   weekStatus: WeekStatus;
 }) {
+  const [goal, setGoal] = useState(weekStatus.planTotal);
+  useEffect(() => {
+    setGoal(getWeekGoal() ?? weekStatus.planTotal);
+  }, [weekStatus.planTotal]);
+
+  const complete = weekStatus.done >= goal;
+
   return (
     <Link
       href="/metricas"
@@ -22,15 +32,14 @@ export function ConsistencyCard({
         <div>
           <p className="text-sm font-semibold">Constância</p>
           <p className="mt-0.5 text-xs text-muted">
-            {streak > 0
-              ? `${streak} ${streak === 1 ? "semana" : "semanas"} seguidas 🔥`
-              : "comece sua sequência"}
+            {complete
+              ? "meta da semana batida 🎉"
+              : streak > 0
+                ? `${streak} ${streak === 1 ? "semana" : "semanas"} seguidas 🔥`
+                : "comece sua sequência"}
           </p>
         </div>
-        <p className="tnum text-3xl font-semibold" style={{ color: "var(--ac)" }}>
-          {weekStatus.done}
-          <span className="text-base text-muted">/{weekStatus.planTotal}</span>
-        </p>
+        <ProgressRing value={weekStatus.done} total={goal} />
       </div>
 
       <div className="mt-3 flex justify-between">

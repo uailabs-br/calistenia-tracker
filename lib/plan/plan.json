@@ -28,7 +28,8 @@
               "parsed": { "sets": 4, "target": 4, "unit": "reps", "per_side": false },
               "obs": "Puxa até o esterno/umbigo, explosiva — NÃO até o queixo. É a altura que mata o kip e o chicken wing",
               "rest": "descanso 120s",
-              "flags": ["chegou no esterno", "parou no queixo", "kip apareceu"]
+              "flags": ["chegou no esterno", "parou no queixo", "kip apareceu"],
+              "neg_flags": ["parou no queixo", "kip apareceu"]
             },
             {
               "id": "mu-false-grip-pullup",
@@ -37,7 +38,8 @@
               "parsed": { "sets": 3, "target": 4, "unit": "reps", "per_side": false },
               "obs": "Pulso sobre a barra o set inteiro. Se o grip solta, a transição morre",
               "rest": "descanso 120s",
-              "flags": ["grip soltou", "grip firme o set todo", "punho doeu"]
+              "flags": ["grip soltou", "grip firme o set todo", "punho doeu"],
+              "neg_flags": ["grip soltou"]
             },
             {
               "id": "mu-negativa-transicao",
@@ -46,7 +48,8 @@
               "parsed": { "sets": 3, "target": 2, "unit": "reps", "per_side": false },
               "obs": "Parte do topo do dip, desce lento 3-4s pela transição até o false grip pull. Sem chicken wing — se aparecer, próxima rep com menos velocidade",
               "rest": "descanso 120s",
-              "flags": ["chicken wing", "transição simétrica", "descida rápida demais"]
+              "flags": ["chicken wing", "transição simétrica", "descida rápida demais"],
+              "neg_flags": ["chicken wing", "descida rápida demais"]
             },
             {
               "id": "mu-false-grip-hang",
@@ -55,7 +58,8 @@
               "parsed": { "sets": 2, "target": 20, "unit": "seconds", "per_side": false },
               "obs": "Base do grip — pulso sobre a barra, não no meio",
               "rest": "descanso 60s",
-              "flags": ["pulso escorregou", "punho doeu"]
+              "flags": ["pulso escorregou", "punho doeu"],
+              "neg_flags": ["pulso escorregou"]
             }
           ]
         },
@@ -242,7 +246,8 @@
               "parsed": { "sets": 3, "target": 3, "unit": "reps", "per_side": false },
               "obs": "Impulso mínimo — só o necessário pra puxada completar. Pausa 1s no topo da puxada (peito na barra) antes de empurrar. Sem pausa = próxima rep com menos impulso",
               "rest": "descanso 120s",
-              "flags": ["chicken wing", "pausa 1s no topo", "impulso demais", "peito não chegou na barra"]
+              "flags": ["chicken wing", "pausa 1s no topo", "impulso demais", "peito não chegou na barra"],
+              "neg_flags": ["chicken wing", "impulso demais", "peito não chegou na barra"]
             }
           ]
         },
@@ -293,7 +298,8 @@
               "parsed": { "sets": 2, "target": 20, "unit": "seconds", "per_side": false },
               "obs": "Segunda exposição semanal — mantém adaptação de punho/antebraço entre as quintas e as próximas segundas",
               "rest": "descanso 45s",
-              "flags": ["pulso escorregou", "punho doeu"]
+              "flags": ["pulso escorregou", "punho doeu"],
+              "neg_flags": ["pulso escorregou"]
             }
           ]
         }

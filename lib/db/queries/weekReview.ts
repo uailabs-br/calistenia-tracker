@@ -29,20 +29,24 @@ export interface WeekReview {
   skippedCount: number;
 }
 
-export async function getWeekReview(): Promise<WeekReview | null> {
-  const today = localDateKey();
-  const lastMonday = shiftDays(weekStartKey(today), -7);
-  const prevMonday = shiftDays(lastMonday, -7);
+/**
+ * Resumo de uma semana. `monday` = segunda da semana a revisar; sem argumento,
+ * revisa a semana anterior à corrente (uso do card da home). Generalizado para
+ * permitir consulta de qualquer semana passada (5.2).
+ */
+export async function getWeekReview(monday?: string): Promise<WeekReview | null> {
+  const reviewMonday = monday ?? shiftDays(weekStartKey(localDateKey()), -7);
+  const prevMonday = shiftDays(reviewMonday, -7);
 
   const sessions = (await db.sessions.toArray()).filter(
     (s) => s.status === "completed" && !s.deleted_at
   );
-  const inWeek = (s: Session, monday: string) => {
-    const diff = daysBetween(monday, s.date);
+  const inWeek = (s: Session, mon: string) => {
+    const diff = daysBetween(mon, s.date);
     return diff >= 0 && diff <= 6;
   };
 
-  const lastWeek = sessions.filter((s) => inWeek(s, lastMonday));
+  const lastWeek = sessions.filter((s) => inWeek(s, reviewMonday));
   if (lastWeek.length === 0) return null;
   const prevWeek = sessions.filter((s) => inWeek(s, prevMonday));
 
@@ -90,8 +94,8 @@ export async function getWeekReview(): Promise<WeekReview | null> {
   );
 
   return {
-    weekStart: lastMonday,
-    weekEnd: shiftDays(lastMonday, 6),
+    weekStart: reviewMonday,
+    weekEnd: shiftDays(reviewMonday, 6),
     daysDone: new Set(lastWeek.map((s) => s.date)).size,
     planTotal: plan.days.length,
     volume,
@@ -99,6 +103,27 @@ export async function getWeekReview(): Promise<WeekReview | null> {
     avgRpe,
     skippedCount,
   };
+}
+
+/** Segundas (mais recente → antiga) de semanas passadas com treino, para consulta. */
+export async function getReviewableWeeks(): Promise<string[]> {
+  const currentMonday = weekStartKey(localDateKey());
+  const sessions = (await db.sessions.toArray()).filter(
+    (s) => s.status === "completed" && !s.deleted_at
+  );
+  const weeks = new Set<string>();
+  for (const s of sessions) {
+    const wk = weekStartKey(s.date);
+    if (daysBetween(wk, currentMonday) > 0) weeks.add(wk); // só semanas passadas
+  }
+  return [...weeks].sort().reverse();
+}
+
+/** Resumos de todas as semanas passadas consultáveis (recente → antiga). */
+export async function getWeekHistory(): Promise<WeekReview[]> {
+  const weeks = await getReviewableWeeks();
+  const reviews = await Promise.all(weeks.map((w) => getWeekReview(w)));
+  return reviews.filter((r): r is WeekReview => r !== null);
 }
 
 // ── Textos do card ───────────────────────────────────────────────────

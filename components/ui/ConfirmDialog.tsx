@@ -2,6 +2,7 @@
 
 import { useId } from "react";
 import { useModalA11y } from "@/lib/utils/useModalA11y";
+import { Portal } from "./Portal";
 
 /** Diálogo modal de confirmação para ações destrutivas (sair, resetar). */
 export function ConfirmDialog({
@@ -26,6 +27,7 @@ export function ConfirmDialog({
   const descId = useId();
 
   return (
+    <Portal>
     <div
       className="anim-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
       onClick={onCancel}
@@ -69,5 +71,6 @@ export function ConfirmDialog({
         </div>
       </div>
     </div>
+    </Portal>
   );
 }
