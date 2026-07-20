@@ -1,29 +1,31 @@
 import { describe, it, expect } from "vitest";
-import { chainPosition, stepStatus } from "@/lib/domain/skillMap";
-import type { Progression } from "@/lib/plan/schema";
+import { skillPosition, stepStatus } from "@/lib/domain/skillMap";
 
-const step = (exercise_id: string | null): Progression =>
-  ({ exercise_id, criteria: "" }) as Progression;
+// escada com etapas mapeadas (a,b,c) e marcos sem exercício (labels) + goal
+const steps = [
+  { exercise_id: "a" },
+  { exercise_id: "b" },
+  {}, // marco canônico fora do plano
+  { exercise_id: "c" },
+  {}, // objetivo final
+];
 
-// cadeia estilo MU: 3 passos + goal
-const chain = [step("a"), step("b"), step("c"), step(null)];
-
-describe("chainPosition", () => {
-  it("nenhum conquistado → foco no 1º passo", () => {
-    expect(chainPosition(chain, new Set())).toBe(0);
+describe("skillPosition", () => {
+  it("nada conquistado → foco na 1ª etapa", () => {
+    expect(skillPosition(steps, new Set())).toBe(0);
   });
 
-  it("dois primeiros conquistados → foco no 3º", () => {
-    expect(chainPosition(chain, new Set(["a", "b"]))).toBe(2);
+  it("etapa mapeada conquistada → foco logo depois", () => {
+    expect(skillPosition(steps, new Set(["a"]))).toBe(1);
   });
 
-  it("todos os passos com id conquistados → foco no goal", () => {
-    expect(chainPosition(chain, new Set(["a", "b", "c"]))).toBe(3);
+  it("conquista avançada arrasta os marcos anteriores como concluídos", () => {
+    // 'c' (índice 3) conquistado → posição 4, mesmo com o marco do índice 2 sem exercício
+    expect(skillPosition(steps, new Set(["c"]))).toBe(4);
   });
 
-  it("conquista fora de ordem não pula o passo pendente anterior", () => {
-    // 'c' feito mas 'b' não → foco continua em 'b' (índice 1)
-    expect(chainPosition(chain, new Set(["a", "c"]))).toBe(1);
+  it("usa a etapa mapeada mais avançada, não a contagem", () => {
+    expect(skillPosition(steps, new Set(["a", "b"]))).toBe(2);
   });
 });
 

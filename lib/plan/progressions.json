@@ -1,0 +1,946 @@
+{
+  "version": "1.0",
+  "sources": [
+    "Overcoming Gravity (2nd Edition) — Steven Low",
+    "r/bodyweightfitness Recommended Routine Wiki",
+    "Gymnastic Bodies — Coach Christopher Sommer",
+    "Gold Medal Bodies — Ryan Hurst"
+  ],
+  "skills": [
+
+    {
+      "id": "pull_up",
+      "name": "Pull-up",
+      "group": "pull",
+      "source": "Overcoming Gravity — Steven Low; BWF Wiki",
+      "equipment_required": ["pull_up_bar"],
+      "equipment_alternatives": {
+        "sem_barra": "Row australiano com mesa ou barra baixa",
+        "argolas": "Ring row progressivo"
+      },
+      "progressions": [
+        {
+          "level": 1,
+          "name": "Dead Hang",
+          "description": "Sustentar o peso do corpo pendurado na barra com braços estendidos e escápulas neutras.",
+          "volume_target": { "sets": 3, "duration_seconds": 30 },
+          "advancement_criteria": "3x30s com RPE ≤ 7",
+          "equipment": ["pull_up_bar"],
+          "video_reference": "https://www.youtube.com/watch?v=HoE-C85ZlCE"
+        },
+        {
+          "level": 2,
+          "name": "Scapular Pull",
+          "description": "Pendurado na barra, deprimir e retrair as escápulas sem dobrar os cotovelos. Ativa o serrátil e romboides.",
+          "volume_target": { "sets": 3, "reps": 10 },
+          "advancement_criteria": "3x10 com RPE ≤ 7",
+          "equipment": ["pull_up_bar"],
+          "video_reference": "https://www.youtube.com/watch?v=NBY9-kTuHEk"
+        },
+        {
+          "level": 3,
+          "name": "Pull-up Negativo",
+          "description": "Subir com auxílio (pulo ou caixa) e descer de forma controlada em 5 segundos.",
+          "volume_target": { "sets": 3, "reps": 5 },
+          "advancement_criteria": "3x5 com descida ≥ 5s e RPE ≤ 7",
+          "equipment": ["pull_up_bar"],
+          "video_reference": "https://www.youtube.com/watch?v=DVswXZhVFcc"
+        },
+        {
+          "level": 4,
+          "name": "Chin-up (Supinado)",
+          "description": "Pull-up com pegada supinada (palmas para você). Maior ativação do bíceps, mais acessível que pronado.",
+          "volume_target": { "sets": 3, "reps": 8 },
+          "advancement_criteria": "3x8 com RPE ≤ 7",
+          "equipment": ["pull_up_bar"],
+          "video_reference": "https://www.youtube.com/watch?v=brhRXlOhsAM"
+        },
+        {
+          "level": 5,
+          "name": "Pull-up (Pronado)",
+          "description": "Pull-up padrão com pegada pronada na largura dos ombros. Queixo acima da barra, descida controlada.",
+          "volume_target": { "sets": 3, "reps": 8 },
+          "advancement_criteria": "3x8 com RPE ≤ 7",
+          "equipment": ["pull_up_bar"],
+          "video_reference": "https://www.youtube.com/watch?v=eGo4IYlbE5g"
+        },
+        {
+          "level": 6,
+          "name": "Pull-up Pegada Larga",
+          "description": "Pull-up com pegada mais larga que os ombros. Maior ênfase no grande dorsal.",
+          "volume_target": { "sets": 3, "reps": 8 },
+          "advancement_criteria": "3x8 com RPE ≤ 7",
+          "equipment": ["pull_up_bar"],
+          "video_reference": "https://www.youtube.com/watch?v=is4dBHPBBkE"
+        },
+        {
+          "level": 7,
+          "name": "Archer Pull-up",
+          "description": "Um braço puxa enquanto o outro se estende lateralmente com cotovelo levemente flexionado. Transição para one-arm.",
+          "volume_target": { "sets": 3, "reps": 5 },
+          "advancement_criteria": "3x5 cada lado com RPE ≤ 7",
+          "equipment": ["pull_up_bar"],
+          "video_reference": "https://www.youtube.com/watch?v=3Bz2mBJzrqU"
+        },
+        {
+          "level": 8,
+          "name": "L-sit Pull-up",
+          "description": "Pull-up com quadris em 90° (pernas paralelas ao chão). Combina força de pull com core.",
+          "volume_target": { "sets": 3, "reps": 5 },
+          "advancement_criteria": "3x5 com RPE ≤ 7",
+          "equipment": ["pull_up_bar"],
+          "video_reference": "https://www.youtube.com/watch?v=XB_7En-zf_M"
+        }
+      ]
+    },
+
+    {
+      "id": "muscle_up",
+      "name": "Muscle-up",
+      "group": "pull",
+      "source": "Overcoming Gravity — Steven Low; BWF Wiki",
+      "equipment_required": ["pull_up_bar"],
+      "equipment_alternatives": {
+        "argolas": "Muscle-up em argolas (mais difícil, maior estabilização)"
+      },
+      "prerequisites": ["pull_up level >= 5", "dip level >= 3"],
+      "progressions": [
+        {
+          "level": 1,
+          "name": "Chest-to-Bar Pull-up",
+          "description": "Pull-up onde o peito toca a barra. Essencial para o transition do muscle-up.",
+          "volume_target": { "sets": 3, "reps": 5 },
+          "advancement_criteria": "3x5 com peito tocando a barra e RPE ≤ 7",
+          "equipment": ["pull_up_bar"],
+          "video_reference": "https://www.youtube.com/watch?v=5k7Tl2hZkbk"
+        },
+        {
+          "level": 2,
+          "name": "Muscle-up Negativo",
+          "description": "Começar no topo (suporte acima da barra) e descer de forma controlada pela transição até o dead hang.",
+          "volume_target": { "sets": 3, "reps": 3 },
+          "advancement_criteria": "3x3 com transição controlada e RPE ≤ 7",
+          "equipment": ["pull_up_bar"],
+          "video_reference": "https://www.youtube.com/watch?v=ZLp9amPEFaw"
+        },
+        {
+          "level": 3,
+          "name": "Muscle-up com Kipping",
+          "description": "Muscle-up com impulso das pernas para auxiliar a transição. Forma válida para aprender o movimento.",
+          "volume_target": { "sets": 3, "reps": 3 },
+          "advancement_criteria": "3x3 com RPE ≤ 7",
+          "equipment": ["pull_up_bar"],
+          "video_reference": "https://www.youtube.com/watch?v=gLGubTqMkQA"
+        },
+        {
+          "level": 4,
+          "name": "Muscle-up Estrito",
+          "description": "Muscle-up sem impulso. Movimento limpo da tração até o suporte com corpo controlado.",
+          "volume_target": { "sets": 3, "reps": 3 },
+          "advancement_criteria": "3x3 estrito com RPE ≤ 7",
+          "equipment": ["pull_up_bar"],
+          "video_reference": "https://www.youtube.com/watch?v=rBSJQL--mrc"
+        },
+        {
+          "level": 5,
+          "name": "Muscle-up em Argolas (Estrito)",
+          "description": "Muscle-up estrito em argolas. Maior demanda de estabilização e força.",
+          "volume_target": { "sets": 3, "reps": 3 },
+          "advancement_criteria": "3x3 com argolas estabilizadas e RPE ≤ 7",
+          "equipment": ["rings"],
+          "video_reference": "https://www.youtube.com/watch?v=TcYI8IIwFUU"
+        }
+      ]
+    },
+
+    {
+      "id": "front_lever",
+      "name": "Front Lever",
+      "group": "pull",
+      "source": "Overcoming Gravity — Steven Low",
+      "equipment_required": ["pull_up_bar", "rings"],
+      "equipment_alternatives": null,
+      "progressions": [
+        {
+          "level": 1,
+          "name": "Tuck Front Lever",
+          "description": "Pendurado na barra, subir os quadris até a linha dos ombros com joelhos dobrados junto ao peito. Corpo em posição de bola.",
+          "volume_target": { "sets": 3, "duration_seconds": 10 },
+          "advancement_criteria": "3x10s com corpo paralelo ao chão e RPE ≤ 7",
+          "equipment": ["pull_up_bar", "rings"],
+          "video_reference": "https://www.youtube.com/watch?v=UBMzD6Bklgk"
+        },
+        {
+          "level": 2,
+          "name": "Advanced Tuck Front Lever",
+          "description": "Igual ao tuck, mas com os joelhos afastados do peito até as coxas ficarem paralelas ao chão. Costas planas.",
+          "volume_target": { "sets": 3, "duration_seconds": 10 },
+          "advancement_criteria": "3x10s com costas planas e RPE ≤ 7",
+          "equipment": ["pull_up_bar", "rings"],
+          "video_reference": "https://www.youtube.com/watch?v=UBMzD6Bklgk"
+        },
+        {
+          "level": 3,
+          "name": "Straddle Front Lever",
+          "description": "Corpo estendido com pernas abertas em straddle (afastadas lateralmente). Reduz o braço de alavanca.",
+          "volume_target": { "sets": 3, "duration_seconds": 10 },
+          "advancement_criteria": "3x10s com quadril na linha dos ombros e RPE ≤ 7",
+          "equipment": ["pull_up_bar", "rings"],
+          "video_reference": "https://www.youtube.com/watch?v=UBMzD6Bklgk"
+        },
+        {
+          "level": 4,
+          "name": "One Leg Front Lever",
+          "description": "Uma perna estendida, a outra dobrada. Intermediário entre straddle e full.",
+          "volume_target": { "sets": 3, "duration_seconds": 10 },
+          "advancement_criteria": "3x10s cada lado com RPE ≤ 7",
+          "equipment": ["pull_up_bar", "rings"],
+          "video_reference": "https://www.youtube.com/watch?v=UBMzD6Bklgk"
+        },
+        {
+          "level": 5,
+          "name": "Full Front Lever",
+          "description": "Corpo completamente estendido e paralelo ao chão. Pernas juntas, quadril na altura dos ombros.",
+          "volume_target": { "sets": 3, "duration_seconds": 8 },
+          "advancement_criteria": "3x8s com corpo rígido e RPE ≤ 7",
+          "equipment": ["pull_up_bar", "rings"],
+          "video_reference": "https://www.youtube.com/watch?v=UBMzD6Bklgk"
+        }
+      ]
+    },
+
+    {
+      "id": "back_lever",
+      "name": "Back Lever",
+      "group": "pull",
+      "source": "Overcoming Gravity — Steven Low",
+      "equipment_required": ["pull_up_bar", "rings"],
+      "equipment_alternatives": null,
+      "progressions": [
+        {
+          "level": 1,
+          "name": "Skin the Cat (German Hang)",
+          "description": "Girar o corpo para baixo da barra passando as pernas por entre os braços até o german hang. Mobilidade de ombro essencial.",
+          "volume_target": { "sets": 3, "reps": 5 },
+          "advancement_criteria": "3x5 com german hang confortável e RPE ≤ 7",
+          "equipment": ["pull_up_bar", "rings"],
+          "video_reference": "https://www.youtube.com/watch?v=o_Ej6EU8e2k"
+        },
+        {
+          "level": 2,
+          "name": "Tuck Back Lever",
+          "description": "No german hang, subir os quadris até os joelhos dobrarem junto ao peito. Corpo em bola abaixo da barra.",
+          "volume_target": { "sets": 3, "duration_seconds": 10 },
+          "advancement_criteria": "3x10s com RPE ≤ 7",
+          "equipment": ["pull_up_bar", "rings"],
+          "video_reference": "https://www.youtube.com/watch?v=oHJgvkDhsLA"
+        },
+        {
+          "level": 3,
+          "name": "Advanced Tuck Back Lever",
+          "description": "Tuck back lever com costas planas — joelhos afastados do peito, coxas paralelas ao chão.",
+          "volume_target": { "sets": 3, "duration_seconds": 10 },
+          "advancement_criteria": "3x10s com costas planas e RPE ≤ 7",
+          "equipment": ["pull_up_bar", "rings"],
+          "video_reference": "https://www.youtube.com/watch?v=oHJgvkDhsLA"
+        },
+        {
+          "level": 4,
+          "name": "Straddle Back Lever",
+          "description": "Corpo estendido abaixo da barra com pernas abertas em straddle. Paralelo ao chão.",
+          "volume_target": { "sets": 3, "duration_seconds": 10 },
+          "advancement_criteria": "3x10s com corpo paralelo ao chão e RPE ≤ 7",
+          "equipment": ["pull_up_bar", "rings"],
+          "video_reference": "https://www.youtube.com/watch?v=oHJgvkDhsLA"
+        },
+        {
+          "level": 5,
+          "name": "Full Back Lever",
+          "description": "Corpo completamente estendido e paralelo ao chão abaixo da barra. Pernas juntas.",
+          "volume_target": { "sets": 3, "duration_seconds": 8 },
+          "advancement_criteria": "3x8s com corpo rígido e RPE ≤ 7",
+          "equipment": ["pull_up_bar", "rings"],
+          "video_reference": "https://www.youtube.com/watch?v=oHJgvkDhsLA"
+        }
+      ]
+    },
+
+    {
+      "id": "push_up",
+      "name": "Push-up",
+      "group": "push",
+      "source": "Overcoming Gravity — Steven Low; BWF Wiki",
+      "equipment_required": [],
+      "equipment_alternatives": null,
+      "progressions": [
+        {
+          "level": 1,
+          "name": "Flexão na Parede",
+          "description": "Mãos na parede na altura dos ombros. Corpo inclinado, empurrar e voltar com corpo rígido.",
+          "volume_target": { "sets": 3, "reps": 15 },
+          "advancement_criteria": "3x15 com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=Eh00_rniF8E"
+        },
+        {
+          "level": 2,
+          "name": "Flexão Inclinada",
+          "description": "Mãos em superfície elevada (cadeira, caixa). Quanto mais alta, mais fácil.",
+          "volume_target": { "sets": 3, "reps": 12 },
+          "advancement_criteria": "3x12 com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=Eh00_rniF8E"
+        },
+        {
+          "level": 3,
+          "name": "Flexão no Chão",
+          "description": "Flexão padrão. Corpo rígido, cotovelos a 45° do tronco, peito toca o chão.",
+          "volume_target": { "sets": 3, "reps": 10 },
+          "advancement_criteria": "3x10 com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=IODxDxX7oi4"
+        },
+        {
+          "level": 4,
+          "name": "Flexão Diamante",
+          "description": "Mãos juntas formando losango abaixo do peito. Maior ativação de tríceps.",
+          "volume_target": { "sets": 3, "reps": 10 },
+          "advancement_criteria": "3x10 com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=J0DnG1_S92I"
+        },
+        {
+          "level": 5,
+          "name": "Archer Push-up",
+          "description": "Um braço empurra enquanto o outro se estende lateralmente. Transição para one-arm push-up.",
+          "volume_target": { "sets": 3, "reps": 6 },
+          "advancement_criteria": "3x6 cada lado com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=mfqsAWUPAMM"
+        },
+        {
+          "level": 6,
+          "name": "One-Arm Push-up",
+          "description": "Flexão com um braço. Pés mais afastados para estabilidade. Corpo rígido.",
+          "volume_target": { "sets": 3, "reps": 5 },
+          "advancement_criteria": "3x5 cada lado com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=NPimAEXHAEM"
+        }
+      ]
+    },
+
+    {
+      "id": "dips",
+      "name": "Dips",
+      "group": "push",
+      "source": "Overcoming Gravity — Steven Low",
+      "equipment_required": ["parallel_bars", "rings"],
+      "equipment_alternatives": {
+        "sem_paralelas": "Bench dip com pés no chão",
+        "cadeiras": "Dip entre duas cadeiras estáveis"
+      },
+      "progressions": [
+        {
+          "level": 1,
+          "name": "Support Hold (Suporte Estático)",
+          "description": "Braços estendidos em suporte nas paralelas. Escápulas deprimidas, corpo rígido. Base para todos os dips.",
+          "volume_target": { "sets": 3, "duration_seconds": 30 },
+          "advancement_criteria": "3x30s com RPE ≤ 7",
+          "equipment": ["parallel_bars"],
+          "video_reference": "https://www.youtube.com/watch?v=3qzAzjCDFgQ"
+        },
+        {
+          "level": 2,
+          "name": "Dip Negativo",
+          "description": "Começar no suporte e descer de forma controlada em 5 segundos até 90° de cotovelo.",
+          "volume_target": { "sets": 3, "reps": 5 },
+          "advancement_criteria": "3x5 com descida ≥ 5s e RPE ≤ 7",
+          "equipment": ["parallel_bars"],
+          "video_reference": "https://www.youtube.com/watch?v=5XWfRlQtW4c"
+        },
+        {
+          "level": 3,
+          "name": "Dip Completo",
+          "description": "Dip em paralelas com amplitude completa. Descer até ombros abaixo dos cotovelos.",
+          "volume_target": { "sets": 3, "reps": 10 },
+          "advancement_criteria": "3x10 com RPE ≤ 7",
+          "equipment": ["parallel_bars"],
+          "video_reference": "https://www.youtube.com/watch?v=2z8JmcrW-As"
+        },
+        {
+          "level": 4,
+          "name": "Ring Dip",
+          "description": "Dip em argolas. Exige maior estabilização dos ombros. Argolas devem ficar voltadas para fora no topo.",
+          "volume_target": { "sets": 3, "reps": 8 },
+          "advancement_criteria": "3x8 com argolas estabilizadas e RPE ≤ 7",
+          "equipment": ["rings"],
+          "video_reference": "https://www.youtube.com/watch?v=RThGcpLWsIc"
+        },
+        {
+          "level": 5,
+          "name": "Korean Dip",
+          "description": "Dip com barra atrás do corpo. Ombros em rotação interna extrema. Alta demanda de mobilidade.",
+          "volume_target": { "sets": 3, "reps": 8 },
+          "advancement_criteria": "3x8 com RPE ≤ 7",
+          "equipment": ["parallel_bars"],
+          "video_reference": "https://www.youtube.com/watch?v=PoTkPKrIjOI"
+        }
+      ]
+    },
+
+    {
+      "id": "planche",
+      "name": "Planche",
+      "group": "push",
+      "source": "Overcoming Gravity — Steven Low; Gymnastic Bodies — Coach Sommer",
+      "equipment_required": [],
+      "equipment_alternatives": {
+        "parallettes": "Recomendado para proteção dos pulsos"
+      },
+      "progressions": [
+        {
+          "level": 1,
+          "name": "Planche Lean",
+          "description": "No suporte (paralelas ou chão), inclinar o corpo para frente com braços retos até ombros passarem das mãos. Ativa o serrátil.",
+          "volume_target": { "sets": 3, "duration_seconds": 20 },
+          "advancement_criteria": "3x20s com ângulo máximo e RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=5ikjMkJ6DkQ"
+        },
+        {
+          "level": 2,
+          "name": "Tuck Planche",
+          "description": "Suporte com joelhos dobrados junto ao peito, quadril elevado, costas arredondadas. Corpo suspenso.",
+          "volume_target": { "sets": 3, "duration_seconds": 10 },
+          "advancement_criteria": "3x10s com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=7oHNOVBqoFU"
+        },
+        {
+          "level": 3,
+          "name": "Advanced Tuck Planche",
+          "description": "Tuck planche com costas planas — joelhos afastados do peito, coxas paralelas ao chão.",
+          "volume_target": { "sets": 3, "duration_seconds": 10 },
+          "advancement_criteria": "3x10s com costas planas e RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=7oHNOVBqoFU"
+        },
+        {
+          "level": 4,
+          "name": "Straddle Planche",
+          "description": "Corpo estendido paralelo ao chão com pernas abertas em straddle. Braços retos.",
+          "volume_target": { "sets": 3, "duration_seconds": 8 },
+          "advancement_criteria": "3x8s com quadril na linha dos ombros e RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=7oHNOVBqoFU"
+        },
+        {
+          "level": 5,
+          "name": "Full Planche",
+          "description": "Corpo completamente estendido e paralelo ao chão. Pernas juntas, braços retos.",
+          "volume_target": { "sets": 3, "duration_seconds": 5 },
+          "advancement_criteria": "3x5s com corpo rígido e RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=7oHNOVBqoFU"
+        }
+      ]
+    },
+
+    {
+      "id": "hspu",
+      "name": "Handstand Push-up (HSPU)",
+      "group": "push",
+      "source": "Overcoming Gravity — Steven Low; BWF Wiki",
+      "equipment_required": [],
+      "equipment_alternatives": null,
+      "prerequisites": ["handstand_hold level >= 3"],
+      "progressions": [
+        {
+          "level": 1,
+          "name": "Pike Push-up",
+          "description": "Quadril elevado, corpo em V invertido, flexão da cabeça em direção ao chão. Simula o HSPU.",
+          "volume_target": { "sets": 3, "reps": 10 },
+          "advancement_criteria": "3x10 com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=_S5C_ptpGiA"
+        },
+        {
+          "level": 2,
+          "name": "Pike Push-up Elevado (Pés em Cadeira)",
+          "description": "Pés em superfície elevada, quadril acima dos ombros. Maior ângulo, mais difícil.",
+          "volume_target": { "sets": 3, "reps": 8 },
+          "advancement_criteria": "3x8 com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=_S5C_ptpGiA"
+        },
+        {
+          "level": 3,
+          "name": "HSPU Negativo na Parede",
+          "description": "Handstand com peito à parede, descer a cabeça até o chão de forma controlada em 5s.",
+          "volume_target": { "sets": 3, "reps": 5 },
+          "advancement_criteria": "3x5 com descida ≥ 5s e RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=7kgZnJqzNaU"
+        },
+        {
+          "level": 4,
+          "name": "HSPU na Parede (Amplitude Parcial)",
+          "description": "HSPU com peito à parede, amplitude de 90° no cotovelo.",
+          "volume_target": { "sets": 3, "reps": 5 },
+          "advancement_criteria": "3x5 com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=7kgZnJqzNaU"
+        },
+        {
+          "level": 5,
+          "name": "HSPU na Parede (Amplitude Total)",
+          "description": "HSPU com peito à parede, cabeça toca o chão a cada repetição.",
+          "volume_target": { "sets": 3, "reps": 5 },
+          "advancement_criteria": "3x5 com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=7kgZnJqzNaU"
+        },
+        {
+          "level": 6,
+          "name": "HSPU Livre (Freestanding)",
+          "description": "HSPU sem apoio da parede. Exige controle de handstand e força de ombro avançada.",
+          "volume_target": { "sets": 3, "reps": 3 },
+          "advancement_criteria": "3x3 com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=b5bE_h0MRXU"
+        },
+        {
+          "level": 7,
+          "name": "Deficit HSPU",
+          "description": "HSPU com mãos em parallettes ou blocos, cabeça desce abaixo das mãos. Maior amplitude.",
+          "volume_target": { "sets": 3, "reps": 3 },
+          "advancement_criteria": "3x3 com RPE ≤ 7",
+          "equipment": ["parallettes"],
+          "video_reference": "https://www.youtube.com/watch?v=YiAoNWH_3vA"
+        }
+      ]
+    },
+
+    {
+      "id": "handstand_hold",
+      "name": "Handstand (Equilíbrio)",
+      "group": "push",
+      "source": "Gold Medal Bodies — Ryan Hurst; Gymnastic Bodies — Coach Sommer",
+      "equipment_required": [],
+      "equipment_alternatives": null,
+      "progressions": [
+        {
+          "level": 1,
+          "name": "Box Position (Quadrupedia Elevada)",
+          "description": "Joelhos sobre os cotovelos, inclinar para frente equilibrando. Base de equilíbrio invertido.",
+          "volume_target": { "sets": 3, "duration_seconds": 20 },
+          "advancement_criteria": "3x20s estável com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=SqVhfcWCoBg"
+        },
+        {
+          "level": 2,
+          "name": "Crow Pose (Kakasana)",
+          "description": "Joelhos apoiados nos cotovelos, pés do chão. Primeiro equilíbrio real invertido.",
+          "volume_target": { "sets": 3, "duration_seconds": 20 },
+          "advancement_criteria": "3x20s estável com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=vH_n-wFBYMo"
+        },
+        {
+          "level": 3,
+          "name": "Handstand com Peito à Parede",
+          "description": "Chutar para handstand com peito à parede. Corpo em linha reta, olhar para parede.",
+          "volume_target": { "sets": 3, "duration_seconds": 30 },
+          "advancement_criteria": "3x30s com corpo alinhado e RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=MzCx_RLMAYY"
+        },
+        {
+          "level": 4,
+          "name": "Handstand com Costas à Parede",
+          "description": "Costas tocando levemente a parede. Aprende o alinhamento correto e o bail (saída segura).",
+          "volume_target": { "sets": 3, "duration_seconds": 30 },
+          "advancement_criteria": "3x30s sem apoiar peso na parede e RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=b5bE_h0MRXU"
+        },
+        {
+          "level": 5,
+          "name": "Kick-up para Handstand Livre",
+          "description": "Chutar para handstand sem parede. Foco em encontrar o ponto de equilíbrio.",
+          "volume_target": { "sets": 5, "duration_seconds": 5 },
+          "advancement_criteria": "5x5s estável com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=MzCx_RLMAYY"
+        },
+        {
+          "level": 6,
+          "name": "Handstand Livre (10–30s)",
+          "description": "Handstand estável sem apoio. Dedos ativados para micro-ajustes de equilíbrio.",
+          "volume_target": { "sets": 3, "duration_seconds": 20 },
+          "advancement_criteria": "3x20s estável com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=MzCx_RLMAYY"
+        },
+        {
+          "level": 7,
+          "name": "Handstand com Giro (Pirouette)",
+          "description": "Girar 90° durante o handstand sem perder equilíbrio. Controle avançado.",
+          "volume_target": { "sets": 3, "reps": 3 },
+          "advancement_criteria": "3x3 giros controlados com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=MzCx_RLMAYY"
+        }
+      ]
+    },
+
+    {
+      "id": "press_handstand",
+      "name": "Press Handstand",
+      "group": "push",
+      "source": "Overcoming Gravity — Steven Low; Gymnastic Bodies — Coach Sommer",
+      "equipment_required": [],
+      "equipment_alternatives": {
+        "parallettes": "Recomendado para maior amplitude"
+      },
+      "prerequisites": ["handstand_hold level >= 6", "l_sit level >= 4"],
+      "progressions": [
+        {
+          "level": 1,
+          "name": "Compressão de Quadril (L-sit para Tuck)",
+          "description": "Do L-sit, aproximar os joelhos do peito usando flexores do quadril. Desenvolve compressão necessária para o press.",
+          "volume_target": { "sets": 3, "reps": 10 },
+          "advancement_criteria": "3x10 com quadril acima do nível das mãos e RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=IFpEL_bqRMk"
+        },
+        {
+          "level": 2,
+          "name": "Straddle L Compressão",
+          "description": "Sentado com pernas abertas em straddle, inclinar para frente até peito tocar o chão. Compressão passiva e ativa.",
+          "volume_target": { "sets": 3, "duration_seconds": 30 },
+          "advancement_criteria": "3x30s com peito no chão e RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=IFpEL_bqRMk"
+        },
+        {
+          "level": 3,
+          "name": "Tuck Press Negativo",
+          "description": "Do handstand, descer de forma controlada em tuck até o chão. Aprende o movimento do press ao contrário.",
+          "volume_target": { "sets": 3, "reps": 3 },
+          "advancement_criteria": "3x3 com descida controlada e RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=IFpEL_bqRMk"
+        },
+        {
+          "level": 4,
+          "name": "Straddle Press Handstand",
+          "description": "Do straddle L-sit, pressionar o chão e elevar o quadril passando pelas pernas abertas até o handstand.",
+          "volume_target": { "sets": 3, "reps": 3 },
+          "advancement_criteria": "3x3 com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=IFpEL_bqRMk"
+        },
+        {
+          "level": 5,
+          "name": "Pike Press Handstand (Full)",
+          "description": "Do pike, pressionar e elevar o quadril com pernas juntas até o handstand. Máxima exigência de compressão.",
+          "volume_target": { "sets": 3, "reps": 3 },
+          "advancement_criteria": "3x3 com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=IFpEL_bqRMk"
+        }
+      ]
+    },
+
+    {
+      "id": "l_sit",
+      "name": "L-sit",
+      "group": "core",
+      "source": "Overcoming Gravity — Steven Low; BWF Wiki",
+      "equipment_required": [],
+      "equipment_alternatives": {
+        "parallettes": "Permite maior amplitude e desenvolvimento",
+        "cadeiras": "Alternativa para maior clearance do chão"
+      },
+      "progressions": [
+        {
+          "level": 1,
+          "name": "Tuck L-sit no Chão",
+          "description": "Mãos no chão ao lado dos quadris, elevar os joelhos dobrados acima do nível das mãos.",
+          "volume_target": { "sets": 3, "duration_seconds": 10 },
+          "advancement_criteria": "3x10s com quadris elevados e RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=IUZJoSP66HI"
+        },
+        {
+          "level": 2,
+          "name": "L-sit com Uma Perna Estendida",
+          "description": "Tuck L-sit com uma perna estendida horizontalmente. Alternar lados.",
+          "volume_target": { "sets": 3, "duration_seconds": 10 },
+          "advancement_criteria": "3x10s cada lado com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=IUZJoSP66HI"
+        },
+        {
+          "level": 3,
+          "name": "Full L-sit no Chão",
+          "description": "Ambas as pernas estendidas horizontalmente, quadril elevado. Exige força de tríceps e flexores do quadril.",
+          "volume_target": { "sets": 3, "duration_seconds": 10 },
+          "advancement_criteria": "3x10s com pernas paralelas ao chão e RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=IUZJoSP66HI"
+        },
+        {
+          "level": 4,
+          "name": "L-sit em Parallettes ou Barras",
+          "description": "L-sit com as mãos em parallettes ou barras paralelas. Permite mais clearance e progressão para V-sit.",
+          "volume_target": { "sets": 3, "duration_seconds": 20 },
+          "advancement_criteria": "3x20s com RPE ≤ 7",
+          "equipment": ["parallel_bars", "parallettes"],
+          "video_reference": "https://www.youtube.com/watch?v=IUZJoSP66HI"
+        }
+      ]
+    },
+
+    {
+      "id": "v_sit",
+      "name": "V-sit / Manna",
+      "group": "core",
+      "source": "Overcoming Gravity — Steven Low; Gymnastic Bodies — Coach Sommer",
+      "equipment_required": [],
+      "equipment_alternatives": null,
+      "prerequisites": ["l_sit level >= 4"],
+      "progressions": [
+        {
+          "level": 1,
+          "name": "L-sit para V-sit Transição",
+          "description": "Do L-sit, elevar as pernas progressivamente acima de 45°. Trabalha compressão ativa.",
+          "volume_target": { "sets": 3, "reps": 5 },
+          "advancement_criteria": "3x5 com pernas acima de 45° e RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=eXrH20e0OC4"
+        },
+        {
+          "level": 2,
+          "name": "Straddle V-sit",
+          "description": "Pernas abertas em straddle elevadas acima de 45°. Mais acessível que V-sit fechado.",
+          "volume_target": { "sets": 3, "duration_seconds": 10 },
+          "advancement_criteria": "3x10s com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=eXrH20e0OC4"
+        },
+        {
+          "level": 3,
+          "name": "V-sit Completo",
+          "description": "Pernas juntas elevadas a 45°+ acima horizontal. Corpo forma V invertido.",
+          "volume_target": { "sets": 3, "duration_seconds": 10 },
+          "advancement_criteria": "3x10s com pernas a 45°+ e RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=eXrH20e0OC4"
+        },
+        {
+          "level": 4,
+          "name": "Manna",
+          "description": "Progressão além do V-sit: quadris elevados, pernas apontando para cima, corpo quase vertical. Skill extremamente avançado.",
+          "volume_target": { "sets": 3, "duration_seconds": 5 },
+          "advancement_criteria": "3x5s com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=eXrH20e0OC4"
+        }
+      ]
+    },
+
+    {
+      "id": "dragon_flag",
+      "name": "Dragon Flag",
+      "group": "core",
+      "source": "Overcoming Gravity — Steven Low",
+      "equipment_required": ["bench", "pull_up_bar"],
+      "equipment_alternatives": {
+        "escada": "Apoiar a cabeça em degrau e segurar os lados",
+        "barra_baixa": "Apoiar a cabeça e segurar a barra"
+      },
+      "progressions": [
+        {
+          "level": 1,
+          "name": "Hollow Body Hold",
+          "description": "Deitado, baixar pernas e ombros do chão mantendo lombar pressionada. Base de tensão corporal.",
+          "volume_target": { "sets": 3, "duration_seconds": 30 },
+          "advancement_criteria": "3x30s com lombar no chão e RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=LlDNef_Ztsc"
+        },
+        {
+          "level": 2,
+          "name": "Tuck Dragon Flag",
+          "description": "Agarrar banco ou barra, elevar quadril com joelhos dobrados junto ao peito em posição vertical, descer controlado.",
+          "volume_target": { "sets": 3, "reps": 5 },
+          "advancement_criteria": "3x5 com descida controlada e RPE ≤ 7",
+          "equipment": ["bench", "pull_up_bar"],
+          "video_reference": "https://www.youtube.com/watch?v=nipBRZGKjyg"
+        },
+        {
+          "level": 3,
+          "name": "Dragon Flag Negativo",
+          "description": "Elevar o corpo reto com apoio e descer de forma controlada em 5 segundos.",
+          "volume_target": { "sets": 3, "reps": 5 },
+          "advancement_criteria": "3x5 com descida ≥ 5s e RPE ≤ 7",
+          "equipment": ["bench", "pull_up_bar"],
+          "video_reference": "https://www.youtube.com/watch?v=nipBRZGKjyg"
+        },
+        {
+          "level": 4,
+          "name": "Dragon Flag Parcial",
+          "description": "Amplitude parcial — descer até 45° e subir. Construção de força antes da amplitude total.",
+          "volume_target": { "sets": 3, "reps": 5 },
+          "advancement_criteria": "3x5 com RPE ≤ 7",
+          "equipment": ["bench", "pull_up_bar"],
+          "video_reference": "https://www.youtube.com/watch?v=nipBRZGKjyg"
+        },
+        {
+          "level": 5,
+          "name": "Dragon Flag Completo",
+          "description": "Amplitude total — corpo horizontal paralelo ao chão na posição mais baixa. Bruce Lee's move.",
+          "volume_target": { "sets": 3, "reps": 5 },
+          "advancement_criteria": "3x5 com amplitude total e RPE ≤ 7",
+          "equipment": ["bench", "pull_up_bar"],
+          "video_reference": "https://www.youtube.com/watch?v=nipBRZGKjyg"
+        }
+      ]
+    },
+
+    {
+      "id": "human_flag",
+      "name": "Human Flag",
+      "group": "core",
+      "source": "Overcoming Gravity — Steven Low; Gold Medal Bodies — Ryan Hurst",
+      "equipment_required": ["vertical_pole", "parallel_bars"],
+      "equipment_alternatives": null,
+      "progressions": [
+        {
+          "level": 1,
+          "name": "Side Plank",
+          "description": "Prancha lateral no chão. Base de força lateral necessária para o human flag.",
+          "volume_target": { "sets": 3, "duration_seconds": 30 },
+          "advancement_criteria": "3x30s cada lado com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=TN0mQ1HRqjE"
+        },
+        {
+          "level": 2,
+          "name": "Clutch Flag (Vertical Flag)",
+          "description": "Segurar um poste vertical com braços acima e abaixo, elevar o corpo horizontalmente. Mais acessível que o flag clássico.",
+          "volume_target": { "sets": 3, "duration_seconds": 5 },
+          "advancement_criteria": "3x5s com corpo horizontal e RPE ≤ 7",
+          "equipment": ["vertical_pole"],
+          "video_reference": "https://www.youtube.com/watch?v=TN0mQ1HRqjE"
+        },
+        {
+          "level": 3,
+          "name": "Tuck Human Flag",
+          "description": "Human flag com joelhos dobrados junto ao peito. Braço inferior empurra, braço superior puxa.",
+          "volume_target": { "sets": 3, "duration_seconds": 5 },
+          "advancement_criteria": "3x5s com RPE ≤ 7",
+          "equipment": ["vertical_pole", "parallel_bars"],
+          "video_reference": "https://www.youtube.com/watch?v=TN0mQ1HRqjE"
+        },
+        {
+          "level": 4,
+          "name": "Straddle Human Flag",
+          "description": "Human flag com pernas abertas em straddle. Reduz braço de alavanca.",
+          "volume_target": { "sets": 3, "duration_seconds": 5 },
+          "advancement_criteria": "3x5s com RPE ≤ 7",
+          "equipment": ["vertical_pole", "parallel_bars"],
+          "video_reference": "https://www.youtube.com/watch?v=TN0mQ1HRqjE"
+        },
+        {
+          "level": 5,
+          "name": "Full Human Flag",
+          "description": "Corpo completamente estendido e horizontal. Pernas juntas, corpo rígido.",
+          "volume_target": { "sets": 3, "duration_seconds": 5 },
+          "advancement_criteria": "3x5s com corpo rígido e RPE ≤ 7",
+          "equipment": ["vertical_pole", "parallel_bars"],
+          "video_reference": "https://www.youtube.com/watch?v=TN0mQ1HRqjE"
+        }
+      ]
+    },
+
+    {
+      "id": "pistol_squat",
+      "name": "Pistol Squat",
+      "group": "legs",
+      "source": "Overcoming Gravity — Steven Low; BWF Wiki",
+      "equipment_required": [],
+      "equipment_alternatives": null,
+      "progressions": [
+        {
+          "level": 1,
+          "name": "Agachamento Profundo",
+          "description": "Agachamento bilateral com amplitude máxima (ass to grass). Calcanhar no chão.",
+          "volume_target": { "sets": 3, "reps": 15 },
+          "advancement_criteria": "3x15 com amplitude total e RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=qBlCQHYlEpM"
+        },
+        {
+          "level": 2,
+          "name": "Agachamento Búlgaro (Bulgarian Split Squat)",
+          "description": "Pé traseiro elevado em cadeira, descer o joelho traseiro ao chão. Alto volume de unilateral.",
+          "volume_target": { "sets": 3, "reps": 10 },
+          "advancement_criteria": "3x10 cada lado com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=2C-uNgKwPLE"
+        },
+        {
+          "level": 3,
+          "name": "Shrimp Squat Assistido",
+          "description": "Agachamento unilateral com joelho traseiro dobrado, segurando parede ou poste para equilíbrio.",
+          "volume_target": { "sets": 3, "reps": 8 },
+          "advancement_criteria": "3x8 cada lado com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=TKt0-c83GSc"
+        },
+        {
+          "level": 4,
+          "name": "Shrimp Squat",
+          "description": "Agachamento unilateral sem apoio, joelho traseiro dobrado, mãos livres ou nos quadris.",
+          "volume_target": { "sets": 3, "reps": 8 },
+          "advancement_criteria": "3x8 cada lado com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=TKt0-c83GSc"
+        },
+        {
+          "level": 5,
+          "name": "Pistol Squat Assistido",
+          "description": "Agachamento pistol segurando suporte. Perna livre estendida à frente, descer até coxa paralela.",
+          "volume_target": { "sets": 3, "reps": 8 },
+          "advancement_criteria": "3x8 cada lado com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=qBlCQHYlEpM"
+        },
+        {
+          "level": 6,
+          "name": "Pistol Squat (Caixa Baixa)",
+          "description": "Pistol squat até sentar em caixa ou banco baixo. Remove a parte mais difícil do movimento.",
+          "volume_target": { "sets": 3, "reps": 8 },
+          "advancement_criteria": "3x8 cada lado com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=qBlCQHYlEpM"
+        },
+        {
+          "level": 7,
+          "name": "Pistol Squat Completo",
+          "description": "Pistol squat com amplitude total sem apoio. Glúteo toca o calcanhar na posição mais baixa.",
+          "volume_target": { "sets": 3, "reps": 8 },
+          "advancement_criteria": "3x8 cada lado com RPE ≤ 7",
+          "equipment": [],
+          "video_reference": "https://www.youtube.com/watch?v=qBlCQHYlEpM"
+        }
+      ]
+    }
+
+  ]
+}

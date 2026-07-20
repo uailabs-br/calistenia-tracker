@@ -29,13 +29,13 @@ export function Badges({ accent }: { accent: string }) {
       <p className="mb-2 text-xs text-muted">
         {earned.length}/{badges.length} desbloqueadas.
       </p>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
         {badges.map((b) => {
           const isNew = b.earned && seen !== null && !seen.has(b.id);
           return (
             <div
               key={b.id}
-              className="relative rounded-card border px-3 py-2.5"
+              className="relative w-36 shrink-0 rounded-card border px-3 py-2.5"
               style={
                 b.earned
                   ? { borderColor: accent, background: "var(--color-surface)" }
@@ -56,7 +56,7 @@ export function Badges({ accent }: { accent: string }) {
               >
                 {b.title}
               </p>
-              <p className="mt-0.5 text-xs text-muted">{b.description}</p>
+              <p className="mt-0.5 text-xs leading-snug text-muted">{b.description}</p>
             </div>
           );
         })}

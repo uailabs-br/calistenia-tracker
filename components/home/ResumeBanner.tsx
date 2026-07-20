@@ -9,7 +9,7 @@ export function ResumeBanner({ day }: { day: PlanDay }) {
   return (
     <Link
       href={`/treino/${day.weekday}`}
-      className="tap anim-fade-in-up mb-3 flex items-center justify-between gap-3 rounded-card border px-4 py-3 active:scale-[0.99]"
+      className="tap anim-fade-in-up flex items-center justify-between gap-3 rounded-card border px-4 py-3 active:scale-[0.99]"
       style={{ borderColor: day.accent, background: day.accent_bg }}
     >
       <div>

@@ -39,7 +39,7 @@ export default function HomePage() {
   const activeDay = active ? getDayByWeekday(active.weekday) : undefined;
 
   return (
-    <div className="px-4">
+    <div className="flex flex-col gap-6 px-4 pb-8">
       <HomeGreeting />
 
       <InstallPrompt />
@@ -51,12 +51,10 @@ export default function HomePage() {
 
       {/* Constância primeiro: resultado atual em 1 olhada */}
       {weekStatus && (
-        <div className="mb-4">
-          <ConsistencyCard
-            streak={overview?.currentStreak ?? 0}
-            weekStatus={weekStatus}
-          />
-        </div>
+        <ConsistencyCard
+          streak={overview?.currentStreak ?? 0}
+          weekStatus={weekStatus}
+        />
       )}
 
       <TodayCard
@@ -73,8 +71,6 @@ export default function HomePage() {
         avgRpe={overview?.avgRpe4w ?? null}
         hero={hero ?? null}
       />
-
-      <div className="h-8" />
     </div>
   );
 }

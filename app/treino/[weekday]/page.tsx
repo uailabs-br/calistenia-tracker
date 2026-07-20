@@ -6,6 +6,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/db/schema";
 import { getDayByWeekday, plan } from "@/lib/plan/loader";
+import { skillIdForDay } from "@/lib/plan/skills";
 import { getActiveSession, createSession } from "@/lib/db/repositories/sessions";
 import { localDateKey } from "@/lib/utils/date";
 import { DayHeader } from "@/components/session/DayHeader";
@@ -111,12 +112,12 @@ export default function TreinoPage() {
         </div>
       )}
 
-      {day.progression.length > 0 && (
+      {skillIdForDay(day.skill) && (
         <Link
-          href={`/skills/${day.weekday}`}
+          href={`/skills/${skillIdForDay(day.skill)}`}
           className="tap mt-3 flex items-center justify-between rounded-card border border-border bg-surface px-4 py-3 active:scale-[0.99]"
         >
-          <span className="text-sm font-medium">Mapa da skill · {day.skill}</span>
+          <span className="text-sm font-medium">Progressão · {day.skill}</span>
           <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted" />
         </Link>
       )}

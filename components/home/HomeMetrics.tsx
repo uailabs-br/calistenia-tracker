@@ -18,7 +18,7 @@ export function HomeMetrics({
   hero: HeroEvolution | null;
 }) {
   return (
-    <section className="mt-6">
+    <section>
       <div className="mb-2 flex items-center justify-between">
         <h2 className="text-sm font-semibold">Métricas</h2>
         <Link href="/metricas" className="tap text-xs text-muted">

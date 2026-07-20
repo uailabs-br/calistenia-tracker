@@ -8,7 +8,8 @@ import { StatTile } from "@/components/metrics/StatTile";
 import { Badges } from "@/components/metrics/Badges";
 import { FlagIncidenceRow } from "@/components/metrics/FlagIncidenceRow";
 import { Sparkline } from "@/components/metrics/Sparkline";
-import { ChevronDownIcon } from "@/components/ui/icons";
+import Link from "next/link";
+import { ChevronDownIcon, ChevronRightIcon } from "@/components/ui/icons";
 import {
   getOverview,
   getFlagIncidence,
@@ -17,8 +18,6 @@ import {
   getBestHold,
 } from "@/lib/db/queries/metrics";
 import { getExerciseById } from "@/lib/plan/loader";
-import { getWeekHistory, buildWeekReviewTexts } from "@/lib/db/queries/weekReview";
-import { shortDate } from "@/lib/utils/date";
 
 const AC = "#a89cff"; // accent neutro das métricas (roxo MU)
 
@@ -36,8 +35,6 @@ export default function MetricasPage() {
     () => (exId && isHold ? getBestHold(exId) : Promise.resolve([])),
     [exId, isHold]
   );
-  const weekHistory = useLiveQuery(() => getWeekHistory(), []);
-
   const empty = overview && overview.totalWorkouts === 0;
 
   return (
@@ -62,6 +59,15 @@ export default function MetricasPage() {
               label="RPE médio (4 sem)"
             />
           </div>
+
+          {/* Trilhas de progressão */}
+          <Link
+            href="/skills"
+            className="tap mt-4 flex items-center justify-between rounded-card border border-border bg-surface px-4 py-3 active:scale-[0.99]"
+          >
+            <span className="text-sm font-medium">Skills · progressões</span>
+            <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted" />
+          </Link>
 
           {/* Conquistas */}
           <Badges accent={AC} />
@@ -153,45 +159,6 @@ export default function MetricasPage() {
             </div>
           ) : (
             <p className="text-xs text-muted">Sem exercícios registrados.</p>
-          )}
-
-          {/* Histórico semanal consultável */}
-          {weekHistory && weekHistory.length > 0 && (
-            <>
-              <h2 className="mb-2 mt-6 text-sm font-semibold">Histórico semanal</h2>
-              <div className="flex flex-col gap-2">
-                {weekHistory.map((r) => {
-                  const t = buildWeekReviewTexts(r);
-                  return (
-                    <div
-                      key={r.weekStart}
-                      className="rounded-card border border-border bg-surface px-4 py-3"
-                    >
-                      <div className="flex items-baseline justify-between gap-2">
-                        <span className="font-mono text-xs uppercase tracking-wide text-muted">
-                          {shortDate(r.weekStart)}–{shortDate(r.weekEnd)}
-                        </span>
-                        <span className="tnum text-sm font-semibold">
-                          {r.daysDone}/{r.planTotal}
-                          {r.volumeDeltaPct !== null && (
-                            <span className="ml-2 text-xs font-normal text-muted">
-                              vol {r.volumeDeltaPct > 0 ? "+" : ""}
-                              {r.volumeDeltaPct}%
-                            </span>
-                          )}
-                          {r.avgRpe !== null && (
-                            <span className="ml-2 text-xs font-normal text-muted">
-                              rpe {r.avgRpe}
-                            </span>
-                          )}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-xs text-muted">{t.good}</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </>
           )}
 
           <div className="h-4" />

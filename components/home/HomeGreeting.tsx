@@ -36,7 +36,7 @@ export function HomeGreeting() {
   });
 
   return (
-    <header className="pt-8 pb-2">
+    <header className="pt-8">
       <p className="font-mono text-xs uppercase tracking-wide text-muted">
         {WEEKDAYS[now.getDay()]} · {date}
       </p>

@@ -20,7 +20,7 @@ export function WeekStrip({ today }: { today: number }) {
   const hidden = upcoming.length - visible.length;
 
   return (
-    <section className="mt-6">
+    <section>
       <h2 className="mb-2 text-sm font-semibold">Próximos treinos</h2>
       <ul className="flex flex-col gap-2">
         {visible.map((d) => (

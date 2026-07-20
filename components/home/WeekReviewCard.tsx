@@ -38,7 +38,7 @@ export function WeekReviewCard() {
       : String(review.volume);
 
   return (
-    <section className="anim-fade-in-up mt-4 rounded-card border border-border bg-surface px-4 py-4">
+    <section className="anim-fade-in-up rounded-card border border-border bg-surface px-4 py-4">
       <p className="font-mono text-xs uppercase tracking-wide text-muted">
         Resumo da semana · {shortDate(review.weekStart)}–
         {shortDate(review.weekEnd)}

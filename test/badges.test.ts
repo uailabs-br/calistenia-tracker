@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { evaluateBadges, type BadgeStats } from "@/lib/domain/badges";
 
-const base: BadgeStats = { totalWorkouts: 0, longestStreak: 0, cleanStreaks: [] };
+const base: BadgeStats = { totalWorkouts: 0, longestStreak: 0 };
 const earnedIds = (stats: BadgeStats) =>
   new Set(evaluateBadges(stats).filter((b) => b.earned).map((b) => b.id));
 
@@ -23,22 +23,9 @@ describe("evaluateBadges — consistência", () => {
   });
 });
 
-describe("evaluateBadges — técnica", () => {
-  it("3 sessões limpas seguidas destravam o selo do movimento", () => {
-    const two = evaluateBadges({
-      ...base,
-      cleanStreaks: [{ id: "mu-x", name: "Puxada", streak: 2 }],
-    });
-    expect(two.find((b) => b.id === "tecnica-mu-x")?.earned).toBe(false);
-
-    const three = evaluateBadges({
-      ...base,
-      cleanStreaks: [{ id: "mu-x", name: "Puxada", streak: 3 }],
-    });
-    expect(three.find((b) => b.id === "tecnica-mu-x")?.earned).toBe(true);
-  });
-
-  it("sem movimentos com neg_flags, não há selos de técnica", () => {
-    expect(evaluateBadges(base).some((b) => b.family === "tecnica")).toBe(false);
+describe("evaluateBadges — famílias", () => {
+  it("só jornada e consistência (sem técnica)", () => {
+    const families = new Set(evaluateBadges(base).map((b) => b.family));
+    expect([...families].sort()).toEqual(["consistencia", "jornada"]);
   });
 });

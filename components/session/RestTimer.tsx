@@ -82,10 +82,7 @@ export function RestTimer({
         className="anim-scale-in flex flex-col items-center gap-4 rounded-2xl border bg-surface2 px-7 py-6 shadow-2xl outline-none"
         style={{ borderColor: color }}
       >
-        <div
-          className={`relative ${ending ? "anim-pulse" : ""}`}
-          style={{ width: size, height: size }}
-        >
+        <div className="relative" style={{ width: size, height: size }}>
           <svg
             width={size}
             height={size}
@@ -115,7 +112,7 @@ export function RestTimer({
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span
-              className="tnum text-[3.25rem] font-semibold leading-none tabular-nums"
+              className={`tnum text-[3.25rem] font-semibold leading-none tabular-nums ${ending ? "anim-pulse" : ""}`}
               style={{ color }}
             >
               {finished ? "✓" : formatClock(remaining)}

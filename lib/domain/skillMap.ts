@@ -1,20 +1,20 @@
-import type { Progression } from "@/lib/plan/schema";
-
 export type StepStatus = "done" | "focus" | "locked";
 
 /**
- * Índice do passo "em foco" na cadeia = primeiro passo ainda não conquistado.
- * Um passo com `exercise_id` conta como conquistado quando está em `achieved`
- * (teve sucesso limpo). O goal (`exercise_id: null`) nunca é auto-conquistado.
+ * Posição do usuário numa escada de skill = índice da etapa em foco = logo após
+ * a etapa mapeada mais avançada que já foi conquistada (sucesso limpo nos logs).
+ * Etapas anteriores a essa contam como concluídas mesmo sem exercício mapeado.
+ * Nada conquistado → foco na 1ª etapa (índice 0).
  */
-export function chainPosition(steps: Progression[], achieved: Set<string>): number {
-  let i = 0;
-  while (i < steps.length) {
-    const id = steps[i].exercise_id;
-    if (id === null || !achieved.has(id)) break;
-    i++;
-  }
-  return i;
+export function skillPosition(
+  steps: { exercise_id?: string }[],
+  achieved: Set<string>
+): number {
+  let maxAchieved = -1;
+  steps.forEach((s, i) => {
+    if (s.exercise_id && achieved.has(s.exercise_id)) maxAchieved = i;
+  });
+  return maxAchieved + 1;
 }
 
 export function stepStatus(index: number, position: number): StepStatus {

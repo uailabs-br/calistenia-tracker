@@ -57,7 +57,7 @@ export function InstallPrompt() {
   if (!visible) return null;
 
   return (
-    <div className="mt-4 rounded-card border border-border bg-surface px-4 py-3">
+    <div className="rounded-card border border-border bg-surface px-4 py-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-medium">Instale o app</p>
