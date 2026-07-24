@@ -9,12 +9,10 @@
 ---
 
 ## Ideias
-- quero poder sair do timer ao clicar fora do timer. ele deve ficar visivel na parte superior ou inferior do app. ao clicar nele, ele volta a ser tela cheia. isso é para possibilitar o usuário a navegar no app enquanto espera o descanso
-- o feedback de novo recorde aparece muito rapido, mal da tempo de ver. repensar como mostrar isso pro usuario. sugestão: deixar mais tempo na tela e fixar um trofeuzinho no card de exercício.
-- adicione um icone de foguinho no card de constancia na home, como era no passado. aumente o tamanho do numero de vezes que treinei. ex.: 3/5 (o 3 deve ser um pouco maior que o 5). reveja o subtitulo do card tambem, nao faz muito sentido (comece sua sequencia)
-- 
-- rever se o app está realmente funcionando offline. tive alguns problemas quando fiquei sem sinal de internet, nao me parece que está funcionando bem.
-- repensar as flags, nao estou achando um bom feedback, nao retrata com precisao o que rolou no treino
+- repensar as flags: microcopy "se foi a maioria das reps" já ativa (custo zero, v1.5).
+  Segue aberta a ideia maior de trocar o binário por um tri-estado (não rolou / rolou
+  pouco / rolou na maioria) pra não perder nuance — não implementado, avaliar com mais
+  uso real se a microcopy já resolve ou se vale investir na versão maior.
 
 ---
 
@@ -22,7 +20,7 @@
 
 | # | Item | Fase | Valor | Esforço | Status |
 |---|------|------|-------|---------|--------|
-| 5.1 | Notificação/lembrete de treino (push, tom leve) | 4 · Retenção | Médio-Alto | Médio | ◑ parcial — UI/copy/permissão prontos; falta entrega em background |
+| 5.1 | Notificação/lembrete de treino (push, tom leve) | 4 · Retenção | Médio-Alto | Médio | ◑ parcial — UI/copy/permissão prontos; **arquitetura de entrega real desenhada** (ver detalhe abaixo), implementação adiada por decisão do usuário |
 | 7.3 | Referência técnica visual (cues estruturados, sem vídeo) | 5 · Polish | Médio | Baixo/Médio | ⏳ conteúdo/curadoria |
 | — | Checkpoint do spike: validar "o mapa é viciante" com uso real | 7 · Validação | — | — | ⏳ depende de uso na semana |
 
@@ -34,9 +32,21 @@
 Lembrete configurado pelo usuário da hora do treino: push com tom leve (sem ser forçado),
 variações ao longo da semana.
 - **Feito:** seção em Config (`ReminderSettings`), copy determinística por dia (`reminderCopy.ts`),
-  pedido de permissão, preferências em `profile.ts`.
-- **Falta (R4):** entrega em background **confiável** — push em iOS PWA é o ponto de risco.
-  Validar permissão/entrega por plataforma cedo e degradar para sem-push sem quebrar.
+  pedido de permissão, preferências em `profile.ts`. Confirmado em uso real (2026-07-24) que
+  **nada disso entrega notificação de verdade** — não é config de navegador, a feature nunca
+  teve mecanismo de disparo (sem listener `push` no SW, sem servidor, sem agendamento).
+- **Arquitetura desenhada (2026-07-24), implementação adiada:** Web Push real com VAPID —
+  primeiro componente de servidor do projeto (exceção deliberada e escopada ao guard-rail
+  "100% cliente"; continua sem login/conta, cada subscription é identificada só pelo
+  `endpoint` da própria Push API). Persistência em Upstash Redis (Vercel Marketplace, free
+  tier). Como o plano no Vercel é Hobby (Cron nativo só roda 1x/dia), o gatilho periódico
+  seria um **GitHub Actions agendado** (grátis, a cada ~10min) chamando um endpoint protegido
+  por secret. Reusaria `getDayByWeekday` (sem push em dia de folga) e `reminderCopy.ts`
+  (mensagem) sem alterar nenhum dos dois. Riscos aceitos no desenho: push no iOS só funciona
+  em PWA instalada (16.4+), GitHub Actions cron é best-effort e desliga sozinho em repositório
+  com 60+ dias sem atividade.
+- **Falta (R4):** retomar a implementação (rotas de API, service worker, client de subscribe,
+  setup manual de VAPID/Upstash/secrets) quando decidido priorizar.
 
 ### [7.3] Referência técnica visual (cues estruturados)
 Sem vídeo (protege o offline-first). Estruturar `obs`/`tip` como cues; no máximo uma

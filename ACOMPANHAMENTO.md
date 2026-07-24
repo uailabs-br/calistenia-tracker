@@ -20,14 +20,16 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
-> **Estado atual (2026-07-20, v1.4):** app **em produção no Vercel**
-> (`calistenia-tracker.vercel.app`). Sobre a base v1, quatro levas de melhorias de
+> **Estado atual (2026-07-24, v1.5):** app **em produção no Vercel**
+> (`calistenia-tracker.vercel.app`). Sobre a base v1, cinco levas de melhorias de
 > produto: v1.1 (seletor de treino, IDs por movimento), v1.2 (reset de dados,
 > animações de página), v1.3 (feedback semanal, perfil, instalação em config,
-> polimento do loop de treino) e **v1.4** (Plano V2: confiança + hábito + skill map;
+> polimento do loop de treino), v1.4 (Plano V2: confiança + hábito + skill map;
 > redesign do mapa de skills como catálogo canônico de 15 skills; ajuste manual de
-> nível; histórico semanal realocado para o Histórico). Typecheck limpo, 67 testes
-> passando. Falta a Etapa 7 (uso real na semana).
+> nível; histórico semanal realocado para o Histórico) e **v1.5** (timer minimizável,
+> resumo de fim de treino, polimento de home/constância, microcopy das flags, fix de
+> `reloadOnOnline`). Typecheck limpo, 67 testes passando. Falta a Etapa 7 (uso real
+> na semana).
 
 ---
 
@@ -211,3 +213,12 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
   - **Histórico semanal realocado** — saiu das Métricas e virou o cabeçalho de cada semana no **Histórico**; semanas fechadas viram card de resumo com os treinos do dia **recolhíveis dentro do card**; semana corrente fica expandida.
   - **Home** — espaçamento padronizado num container `flex gap-6` (24px), sem margens soltas nos blocos — elimina a classe de bug "card colado" (gaps só existem entre blocos realmente renderizados).
   - **Infra** — bump para `1.4.0` (`package.json` + lock sincronizado). Typecheck limpo, **67 testes** passando; deploy de produção via push na `main` (`983ebcc..6f1b6e1`).
+- **2026-07-24** — **v1.5: polimento de sessão/home e correção de fluxo de finalização, a partir de pedidos pontuais do usuário.**
+  - **Flags** — microcopy "se foi a maioria das reps" em `FlagChips.tsx`: a heurística de quando marcar uma flag negativa já existia só como decisão de planejamento (`PLANO_IMPLEMENTACAO_V2.md` §1.1), nunca tinha chegado na UI. Fix de custo zero, sem mudança de schema. A ideia maior (trocar o binário por um tri-estado de severidade) segue em aberto no `IDEAS.md`.
+  - **Timer de descanso** (`RestTimer.tsx`) — toque no fundo escurecido minimiza o timer num pill fixo no topo (countdown continua rodando); toque no pill expande de volta. `useModalA11y` ganhou um parâmetro `active` pra desligar scroll-lock/focus-trap sem desmontar o componente enquanto minimizado.
+  - **PR (recorde pessoal)** — troféu (`TrophyIcon`, novo em `icons.tsx`) fica fixo no card do exercício que bateu recorde na sessão (antes só o toast, que sumia); toast de PR com duração maior (6.5s).
+  - **`SessionSummary.tsx` (novo)** — tela ao finalizar o treino: nº de exercícios registrados, reps totais (soma só de exercícios em unidade "reps", pra não misturar com holds/tentativas), lista de recordes da sessão (troféu + nome + valor) e uma frase curta — headline fixa quando bate recorde, ou uma de 6 frases de encorajamento (rotação determinística por sessão, sem repetir a cada render) quando não bate. Corrigido no caminho: `app/treino/[weekday]/page.tsx` desmontava o `SessionRunner` assim que a sessão saía de "em andamento" no banco (`completeSession`), derrubando essa tela antes do usuário ver — resolvido avisando o pai *antes* de gravar a conclusão (`onCompleted`), não depois.
+  - **Home** — removida a seção "Métricas" (duplicada com `/metricas`) e a query órfã `getHeroEvolution`; `ConsistencyCard` com anel/número maiores (`ProgressRing` ganhou props `size`/`stroke` escaláveis) e subtítulo do estado zero mais motivador ("sua sequência começa aqui 💪").
+  - **Offline** — achada a causa provável do travamento relatado pelo usuário: `reloadOnOnline: true` (Serwist, `next.config.mjs`) recarrega a página inteira a cada evento `online` do navegador, mesmo sem atualização pendente — arriscado em sinal instável, já que o app tem fluxo próprio de update via prompt (`SwUpdater.tsx`). Desligado.
+  - **Notificação push real (5.1)** — usuário confirmou que o lembrete nunca funcionou (feature sempre foi só UI/permissão, sem entrega). Arquitetura desenhada em modo de planejamento (Web Push/VAPID, Upstash Redis, cron via GitHub Actions dado o plano Hobby do Vercel) e aprovada, mas **implementação adiada** por decisão do usuário — ver detalhe em `IDEAS.md` §5.1.
+  - **Infra** — bump para `1.5.0` (`package.json` + lock sincronizado). Typecheck limpo, **67 testes** passando; merge `dev → main` e deploy de produção (`6f1b6e1..c2a6a17`).

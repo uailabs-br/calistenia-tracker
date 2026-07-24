@@ -42,7 +42,7 @@ Legenda: ✅ feito e coberto por teste/validador · ◑ parcial · ⏳ pendente 
 | 6.5 Scroll dos dias sem barra | ✅ | `.no-scrollbar`, `DayPills.tsx` |
 | 6.1 Badges | ✅ | `lib/domain/badges.ts`, `getBadges`, `components/metrics/Badges.tsx`, `test/badges.test.ts` |
 | 6.4 Instalar cross-browser | ✅ | já atendido por `installPrompt.ts` + `InstallPrompt.tsx` + Config (prompt/iOS/manual) |
-| 5.1 Lembrete (copy + permissão) | ◑ | `reminderCopy.ts` (+teste), `ReminderSettings.tsx`, prefs em `profile.ts`. **Falta:** entrega em background confiável (R4) |
+| 5.1 Lembrete (copy + permissão) | ◑ | `reminderCopy.ts` (+teste), `ReminderSettings.tsx`, prefs em `profile.ts`. **Falta:** entrega em background confiável (R4) — arquitetura (Web Push/VAPID + Upstash + cron via GitHub Actions) desenhada em 2026-07-24, ver `IDEAS.md` §5.1; implementação adiada |
 | 7.2a checkpoint do spike | ⏳ | validar hipótese "mapa é viciante" com uso real |
 | 7.1 / 7.2 Rollout demais skills | ✅ | v1.4: via catálogo `progressions.json` (15 skills) + ajuste manual de nível — não via curadoria do `plan.json` |
 | 7.3 Referência técnica (cues) | ⏳ | conteúdo/visual, sem deliverable de código claro |
