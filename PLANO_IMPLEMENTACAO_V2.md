@@ -11,9 +11,17 @@ prioridade: Fases 0–2 e `∥` detalhadas; 3–5 mais enxutas (re-detalhar ao p
 
 ---
 
-## Status de implementação (2026-07-19)
+## Status de implementação (2026-07-20, v1.4)
 
 Legenda: ✅ feito e coberto por teste/validador · ◑ parcial · ⏳ pendente · 🔒 gated (aguarda checkpoint do spike).
+
+> **Atualização v1.4 (2026-07-20):** o mapa de skills foi **redesenhado** — de trilha
+> por-dia para **catálogo canônico de 15 skills** derivado de `lib/plan/progressions.json`
+> (fontes: Overcoming Gravity, BWF Wiki, Gymnastic Bodies, GMB), desacoplado do `plan.json`.
+> Isso cumpre 7.1/7.2 por outra via (conteúdo *sourced*, não curadoria manual). Somados:
+> **ajuste manual de nível** (`max(logs, manual)`, `lib/utils/skillLevel.ts`) e realocação do
+> **histórico semanal** para o Histórico. A posição por logs segue via `LEVEL_EXERCISE`
+> (níveis mapeados a exercícios do plano).
 
 | Item | Status | Onde |
 |---|---|---|
@@ -23,12 +31,12 @@ Legenda: ✅ feito e coberto por teste/validador · ◑ parcial · ⏳ pendente 
 | 1.1 Regra de execução limpa (decisão) | ✅ | refletida em `neg_flags` + guard-rails 4.1/3.1/7.2a |
 | 7.1a `neg_flags` do MU + validador | ✅ | `plan.json`, `schema.ts`, `validate-plan.mjs` |
 | 4.1 Progressão "pronto pra subir" | ✅ | `lib/db/queries/progressionReady.ts`, `ProgressionNudge.tsx`, `test/progressionReady.test.ts` |
-| 7.2a Mapa read-only da skill | ✅ | `app/skills/[weekday]`, `lib/domain/skillMap.ts`, `test/skillMap.test.ts` |
+| 7.2a Mapa read-only da skill | ✅ | redesenhado (v1.4): catálogo genérico — `app/skills/`, `lib/plan/skills.ts`, `lib/domain/skillMap.ts`, `test/skillMap.test.ts` |
 | 2.1 Anel da meta semanal | ✅ | `ProgressRing.tsx`, `ConsistencyCard.tsx`, override em Config |
 | 2.2 Streak por meta + freeze | ✅ | `lib/domain/streak.ts`, `metrics.ts`, `test/streak.test.ts` |
 | 3.1 PR no registro | ✅ | `lib/db/queries/pr.ts`, `SessionRunner.tsx`, `test/pr.test.ts` |
 | 3.2 Isometrias (melhor hold) | ✅ | `getBestHold`, Métricas, `test/bestHold.test.ts` |
-| 5.2 Histórico semanal consultável | ✅ | `getWeekReview(monday)`/`getWeekHistory`, Métricas, `test/weekReview.test.ts` |
+| 5.2 Histórico semanal consultável | ✅ | `getWeekReview(monday)`/`getWeekHistory`, **Histórico** (movido das Métricas na v1.4), `test/weekReview.test.ts` |
 | 6.2 Timer de descanso (pulse 5s) | ✅ | `RestTimer.tsx` (som/centro já existiam) |
 | 6.3 Dialogs via portal | ✅ | `components/ui/Portal.tsx` + Confirm/Rpe/RestTimer |
 | 6.5 Scroll dos dias sem barra | ✅ | `.no-scrollbar`, `DayPills.tsx` |
@@ -36,7 +44,7 @@ Legenda: ✅ feito e coberto por teste/validador · ◑ parcial · ⏳ pendente 
 | 6.4 Instalar cross-browser | ✅ | já atendido por `installPrompt.ts` + `InstallPrompt.tsx` + Config (prompt/iOS/manual) |
 | 5.1 Lembrete (copy + permissão) | ◑ | `reminderCopy.ts` (+teste), `ReminderSettings.tsx`, prefs em `profile.ts`. **Falta:** entrega em background confiável (R4) |
 | 7.2a checkpoint do spike | ⏳ | validar hipótese "mapa é viciante" com uso real |
-| 7.1 / 7.2 Rollout demais skills | 🔒 | só após o checkpoint (custo = curadoria) |
+| 7.1 / 7.2 Rollout demais skills | ✅ | v1.4: via catálogo `progressions.json` (15 skills) + ajuste manual de nível — não via curadoria do `plan.json` |
 | 7.3 Referência técnica (cues) | ⏳ | conteúdo/visual, sem deliverable de código claro |
 
 ---
@@ -274,5 +282,5 @@ movimento-chave. **DoD:** movimento-chave mostra cues estruturados. **Teste:** v
 2. ✅ **M1 · Destravar** — 1.1 (decisão) + `neg_flags` da skill do spike.
 3. ✅ **M2 · Spike do mapa** — 7.1a → 4.1 → 7.2a. **Código pronto; falta o checkpoint da hipótese (R1/R2) com uso real.**
 4. ✅ **M∥ · Ganhos baratos** — 2.1, 2.2, 3.1, 3.2. Em paralelo desde o M0.
-5. 🔒 **M3 · Rollout mapa** — 7.1, 7.2 (só se M2 confirmar).
-6. ◑ **M4/M5 · Retenção + polish** — 5.2, 6.1, 6.2, 6.3, 6.4, 6.5 ✅; 5.1 parcial (◑, falta background); 7.3 pendente (conteúdo).
+5. ✅ **M3 · Rollout mapa** — entregue na v1.4 por outra via: catálogo canônico `progressions.json` (15 skills) + ajuste manual de nível, desacoplado da curadoria do `plan.json`. Checkpoint da hipótese (R1/R2) segue pendente com uso real.
+6. ◑ **M4/M5 · Retenção + polish** — 5.2 (movido p/ Histórico), 6.1, 6.2, 6.3, 6.4, 6.5 ✅; 5.1 parcial (◑, falta background); 7.3 pendente (conteúdo).

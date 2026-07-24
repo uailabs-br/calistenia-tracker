@@ -11,7 +11,7 @@ import {
   formatLastPerf,
   type LastPerf,
 } from "@/lib/db/queries/lastPerformance";
-import { CheckIcon, TimerIcon } from "@/components/ui/icons";
+import { CheckIcon, TimerIcon, TrophyIcon } from "@/components/ui/icons";
 import { Stepper } from "./Stepper";
 import { FlagChips } from "./FlagChips";
 import { ExerciseNote } from "./ExerciseNote";
@@ -30,6 +30,8 @@ interface Props {
   accent: string;
   sessionId: string;
   log: ExerciseLog | undefined;
+  /** Recorde pessoal batido nesta sessão — mostra troféu fixo no card. */
+  hasPR?: boolean;
   active: boolean;
   onActivate: () => void;
   /** Ação de registro (avança, dá undo e inicia descanso). */
@@ -46,6 +48,7 @@ export function ExerciseCard({
   accent,
   sessionId,
   log,
+  hasPR,
   active,
   onActivate,
   onRecord,
@@ -161,12 +164,22 @@ export function ExerciseCard({
       >
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p
-              className="truncate font-medium"
-              style={isSkill ? { color: accent } : undefined}
-            >
-              {exercise.name}
-            </p>
+            <div className="flex items-center gap-1">
+              {hasPR && (
+                <span
+                  aria-label="novo recorde nesta sessão"
+                  className="shrink-0 text-[var(--color-gold)]"
+                >
+                  <TrophyIcon className="h-3.5 w-3.5" />
+                </span>
+              )}
+              <p
+                className="truncate font-medium"
+                style={isSkill ? { color: accent } : undefined}
+              >
+                {exercise.name}
+              </p>
+            </div>
             <p className="tnum text-xs text-muted">
               {skipped ? "pulado" : summarize(log, parsed) ?? exercise.target}
             </p>
@@ -197,12 +210,22 @@ export function ExerciseCard({
       style={{ borderColor: accent }}
     >
       <div className="flex items-baseline justify-between gap-2">
-        <h3
-          className="font-semibold"
-          style={isSkill ? { color: accent } : undefined}
-        >
-          {exercise.name}
-        </h3>
+        <div className="flex min-w-0 items-center gap-1.5">
+          {hasPR && (
+            <span
+              aria-label="novo recorde nesta sessão"
+              className="shrink-0 text-[var(--color-gold)]"
+            >
+              <TrophyIcon className="h-4 w-4" />
+            </span>
+          )}
+          <h3
+            className="truncate font-semibold"
+            style={isSkill ? { color: accent } : undefined}
+          >
+            {exercise.name}
+          </h3>
+        </div>
         <span className="tnum shrink-0 text-sm text-muted">
           {exercise.target}
         </span>

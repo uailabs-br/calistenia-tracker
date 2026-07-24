@@ -36,10 +36,10 @@ export function ConsistencyCard({
               ? "meta da semana batida 🎉"
               : streak > 0
                 ? `${streak} ${streak === 1 ? "semana" : "semanas"} seguidas 🔥`
-                : "comece sua sequência"}
+                : "sua sequência começa aqui 💪"}
           </p>
         </div>
-        <ProgressRing value={weekStatus.done} total={goal} />
+        <ProgressRing value={weekStatus.done} total={goal} size={60} stroke={5} />
       </div>
 
       <div className="mt-3 flex justify-between">

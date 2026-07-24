@@ -36,27 +36,30 @@ export function FlagChips({
         )}
       </button>
       {open && (
-        <div className="mt-1 flex flex-wrap gap-2">
-          {flags.map((flag) => {
-            const on = selected.includes(flag);
-            return (
-              <button
-                key={flag}
-                type="button"
-                onClick={() => onToggle(flag)}
-                aria-pressed={on}
-                className="tap rounded-full border px-3 text-sm transition-colors duration-200"
-                style={
-                  on
-                    ? { background: accent, borderColor: accent, color: "var(--color-on-accent)" }
-                    : { borderColor: "var(--color-border)", color: "var(--color-muted)" }
-                }
-              >
-                {flag}
-              </button>
-            );
-          })}
-        </div>
+        <>
+          <p className="mb-1.5 text-[11px] text-muted">se foi a maioria das reps</p>
+          <div className="flex flex-wrap gap-2">
+            {flags.map((flag) => {
+              const on = selected.includes(flag);
+              return (
+                <button
+                  key={flag}
+                  type="button"
+                  onClick={() => onToggle(flag)}
+                  aria-pressed={on}
+                  className="tap rounded-full border px-3 text-sm transition-colors duration-200"
+                  style={
+                    on
+                      ? { background: accent, borderColor: accent, color: "var(--color-on-accent)" }
+                      : { borderColor: "var(--color-border)", color: "var(--color-muted)" }
+                  }
+                >
+                  {flag}
+                </button>
+              );
+            })}
+          </div>
+        </>
       )}
     </div>
   );

@@ -17,6 +17,9 @@ export function ProgressRing({
   const r = (size - stroke) / 2;
   const circ = 2 * Math.PI * r;
   const color = complete ? "var(--color-success)" : "var(--ac)";
+  // Texto/ícone escalam com o anel — mesma proporção do desenho original (56px/text-sm).
+  const valueFontSize = size * 0.32;
+  const iconSize = size * 0.36;
 
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
@@ -44,13 +47,21 @@ export function ProgressRing({
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
         {complete ? (
-          <span style={{ color }}>
-            <CheckIcon className="h-5 w-5" />
+          <span style={{ color, width: iconSize, height: iconSize }}>
+            <CheckIcon className="h-full w-full" />
           </span>
         ) : (
-          <span className="tnum text-sm font-semibold">
+          <span
+            className="tnum font-semibold"
+            style={{ fontSize: valueFontSize, lineHeight: 1 }}
+          >
             {value}
-            <span className="text-muted">/{total}</span>
+            <span
+              className="text-muted"
+              style={{ fontSize: valueFontSize * 0.6 }}
+            >
+              /{total}
+            </span>
           </span>
         )}
       </div>

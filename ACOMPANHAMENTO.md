@@ -20,11 +20,14 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
-> **Estado atual (2026-07-14):** app completo, rodando local e passando por uma
-> rodada de polimento de UX/acessibilidade (home reformulada, timer de descanso,
-> notas por exercício, toasts, install prompt, streak semanal, error boundary).
-> Typecheck limpo, 19 testes passando. Falta só o deploy no Vercel e a Etapa 7
-> (uso real na semana).
+> **Estado atual (2026-07-20, v1.4):** app **em produção no Vercel**
+> (`calistenia-tracker.vercel.app`). Sobre a base v1, quatro levas de melhorias de
+> produto: v1.1 (seletor de treino, IDs por movimento), v1.2 (reset de dados,
+> animações de página), v1.3 (feedback semanal, perfil, instalação em config,
+> polimento do loop de treino) e **v1.4** (Plano V2: confiança + hábito + skill map;
+> redesign do mapa de skills como catálogo canônico de 15 skills; ajuste manual de
+> nível; histórico semanal realocado para o Histórico). Typecheck limpo, 67 testes
+> passando. Falta a Etapa 7 (uso real na semana).
 
 ---
 
@@ -163,8 +166,13 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 
 - [x] Rodando local (`npm run dev`) e validado
 - [x] Build de produção OK (`npm run build`)
-- [ ] Deploy no Vercel funcionando ← próximo passo
+- [x] Deploy no Vercel funcionando (`calistenia-tracker.vercel.app`) — CI por push na `main`
 - [ ] Instalação testada em iOS e Android reais (Etapa 7)
+
+> **Nota de deploy:** o Vercel roda `npm ci`, que **exige `package-lock.json` em
+> sincronia** com o `package.json`. Bump de versão manual sem atualizar o lock faz
+> o build falhar. Ao mudar a versão, rodar `npm install --package-lock-only` e
+> commitar o lock junto.
 
 ---
 
@@ -185,3 +193,21 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
   - **Acessibilidade** — hook `useModalA11y` (scroll-lock, focus-trap, Esc, restauração de foco) aplicado a `RestTimer`, `RpeSheet` e `ConfirmDialog`; zoom liberado no viewport (WCAG 1.4.4). `RpeSheet` com drag-to-dismiss.
   - **Robustez** — `app/error.tsx` (error boundary de rota), skeletons de carregamento (histórico/métricas), `SwUpdater` limpa SW órfão em dev (evita `ChunkLoadError`), `Stepper` com press-and-hold.
   - **Limpeza nesta revisão** — `useModalA11y` agora estabiliza `onClose` via ref e roda o setup só na montagem (sem re-travar scroll/re-roubar foco em re-render); `mondayKey` duplicado removido de `metrics.ts` em favor de `weekStartKey` compartilhado; `RestTimer` simplificado; comentário de `longDate` corrigido. Typecheck limpo, 19 testes passando, rotas servindo 200 em dev.
+- **2026-07-16** — **v1.3: feedback semanal, perfil, instalação em config e polimento do loop de treino.** Priorização feita a partir do `IDEAS.md` (avaliação produto + técnico) antes de implementar. Etapas 1–2 do plano de melhorias:
+  - **Feedback semanal (MVP)** — novo card na home (`WeekReviewCard`) que aparece **na primeira abertura de cada semana nova**, resumindo a semana anterior: treinos feitos vs. plano, delta de volume vs. a semana retrasada, RPE médio, e blocos "o que foi bom" / "a melhorar". Frase de motivação **contextual aos dados** (9 frases em 3 baldes — semana cheia / volume subindo / parcial), determinística por semana. Query pura (`getWeekReview` + `buildWeekReviewTexts` em `lib/db/queries/weekReview.ts`) sobre dados existentes — **sem mudança de schema**; dispensa via `localStorage` até a próxima virada. 9 testes novos.
+  - **Perfil** — nome editável em Config (`lib/utils/profile.ts`, localStorage) usado na saudação da home ("Boa noite, Ruan"). Fora do backup (trivial de redigitar).
+  - **Instalação PWA em Config** — `beforeinstallprompt` movido para um **singleton** (`lib/utils/installPrompt.ts`) capturado no import do módulo (o evento só dispara uma vez por load), compartilhado entre o nudge da home e a nova seção "Instalar app" em Config. Recupera o caminho de instalação depois de dispensar o nudge (mitigação real contra limpeza de IndexedDB no iOS). `InstallPrompt` refatorado para consumir o singleton.
+  - **Loop de treino** — timer de descanso com botões **−5s/+5s** (clamp em zero) e **anel contínuo** por relógio de parede em precisão de ms (tick 100ms, sem degraus de 1s); stepper de segundos em **passo de 1s** (precisão para isometrias); RPE (`RpeSheet`) com **carinhas SVG de esforço** no estilo dos ícones do app; `TodayCard` com CTA "Começar treino" e, após concluir, estado **"✓ Treino concluído"** com "Treinar de novo" como link discreto (sessão ativa mantém "Continuar treino" como prioridade).
+  - **Config** — rodapé mostra a **versão do app** lida do `package.json` (v1.3); linha "Sessões concluídas" removida (a contagem interna segue, pois alimenta o aviso de backup pendente).
+  - **Infra** — helper `shiftDays` extraído para `date.ts`. Bump para `1.3.0` no `package.json`; **primeiro deploy falhou** por `package-lock.json` dessincronizado (`npm ci` do Vercel rejeita) — corrigido com `npm install --package-lock-only`. Deploy de produção OK, 28 testes passando, typecheck limpo.
+  - **Decisões de produto adiadas** (pedido do usuário): não substituir RPE por qualidade de execução nem agrupar notas por ora; badge de "técnica" fica bloqueado até existir captura de qualidade. Sequência de gamificação planejada: streak → força (por recorde pessoal, não semana-a-semana) → técnica.
+- **2026-07-19/20** — **v1.4: Plano V2 (confiança, hábito, skill map) + redesign do mapa de skills.** Implementação do `PLANO_IMPLEMENTACAO_V2.md` (tabela de status atualizada lá):
+  - **Fase 0 · Confiança** — check falso em "Próximos treinos" (`lib/domain/upcoming.ts`), aderência por **dia executado** (não o sugerido), tempo estimado do treino (`lib/domain/estimateDuration.ts`).
+  - **Fases 1–2 · Skill map (spike)** — regra de "execução limpa" via `neg_flags` no `plan.json` + check no validador; `getProgressionReady` ("pronto pra subir de nível"); mapa read-only da skill derivado dos logs.
+  - **∥ Hábito** — anel da meta semanal (`ProgressRing`/`ConsistencyCard`), streak por **meta** com freeze determinístico, **PR no registro** (`computePR` + toast), **melhor hold** para isometrias.
+  - **Polimento** — badges (famílias jornada/consistência), dialogs via `Portal`, scroll dos dias sem barra, pulse do timer só no número.
+  - **Redesign do mapa de skills** — o mapa deixou de ser **por-dia** (descartado pelo usuário: "é o mesmo que olhar histórico") e virou **catálogo canônico de 15 skills** derivado de `lib/plan/progressions.json` (Overcoming Gravity / BWF Wiki / Gymnastic Bodies / GMB), desacoplado do `plan.json`. Índice em `/skills`, escada por skill em `/skills/[skill]`. Cumpre 7.1/7.2 (rollout) por outra via — conteúdo *sourced* em vez de curadoria manual do `plan.json`. Rota `/skills/[weekday]` removida. Rótulo "fora do plano" removido.
+  - **Ajuste manual de nível** — toque no **número da progressão** marca "estou aqui"; posição exibida = `max(detecção por logs, ajuste manual)`, salvo em `localStorage` (`lib/utils/skillLevel.ts`). Posição por logs segue via `LEVEL_EXERCISE` (níveis mapeados a exercícios do plano).
+  - **Histórico semanal realocado** — saiu das Métricas e virou o cabeçalho de cada semana no **Histórico**; semanas fechadas viram card de resumo com os treinos do dia **recolhíveis dentro do card**; semana corrente fica expandida.
+  - **Home** — espaçamento padronizado num container `flex gap-6` (24px), sem margens soltas nos blocos — elimina a classe de bug "card colado" (gaps só existem entre blocos realmente renderizados).
+  - **Infra** — bump para `1.4.0` (`package.json` + lock sincronizado). Typecheck limpo, **67 testes** passando; deploy de produção via push na `main` (`983ebcc..6f1b6e1`).

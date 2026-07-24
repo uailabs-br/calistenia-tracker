@@ -22,10 +22,12 @@ export function RestTimer({
   const [totalMs, setTotalMs] = useState(seconds * 1000);
   const [remainingMs, setRemainingMs] = useState(seconds * 1000);
   const [finished, setFinished] = useState(false);
+  const [minimized, setMinimized] = useState(false);
   const endRef = useRef(Date.now() + seconds * 1000);
 
   // Centraliza o timer, trava o fundo, foca o card ao iniciar e fecha no Esc.
-  const modalRef = useModalA11y<HTMLDivElement>(onDone);
+  // Desliga tudo isso quando minimizado, pra liberar navegação no resto do app.
+  const modalRef = useModalA11y<HTMLDivElement>(onDone, !minimized);
 
   // Countdown por relógio de parede (robusto a throttling de aba em background).
   // Tick de 100ms + precisão de ms: o anel anda contínuo, não em degraus de 1s.
@@ -70,15 +72,41 @@ export function RestTimer({
   const circ = 2 * Math.PI * radius;
   const color = finished ? "var(--color-success)" : accent;
 
+  if (minimized) {
+    return (
+      <Portal>
+        <button
+          type="button"
+          onClick={() => setMinimized(false)}
+          aria-label="Expandir timer de descanso"
+          className="tap anim-fade-in fixed inset-x-0 top-0 z-40 mx-auto flex w-fit items-center gap-2 rounded-b-2xl border border-t-0 bg-surface2 px-4 pb-2 shadow-lg"
+          style={{ borderColor: color, paddingTop: "calc(env(safe-area-inset-top) + 0.5rem)" }}
+        >
+          <span
+            className={`tnum text-lg font-semibold tabular-nums ${ending ? "anim-pulse" : ""}`}
+            style={{ color }}
+          >
+            {finished ? "✓" : formatClock(remaining)}
+          </span>
+          <span className="font-mono text-xs uppercase tracking-wide text-muted">
+            descanso
+          </span>
+        </button>
+      </Portal>
+    );
+  }
+
   return (
     <Portal>
     <div
       className="anim-fade-in fixed inset-0 z-40 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
       role="status"
       aria-live="polite"
+      onClick={() => setMinimized(true)}
     >
       <div
         ref={modalRef}
+        onClick={(e) => e.stopPropagation()}
         className="anim-scale-in flex flex-col items-center gap-4 rounded-2xl border bg-surface2 px-7 py-6 shadow-2xl outline-none"
         style={{ borderColor: color }}
       >

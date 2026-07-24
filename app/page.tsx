@@ -4,11 +4,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/db/schema";
 import { getDayByWeekday } from "@/lib/plan/loader";
 import { getActiveSession } from "@/lib/db/repositories/sessions";
-import {
-  getOverview,
-  getWeekStatus,
-  getHeroEvolution,
-} from "@/lib/db/queries/metrics";
+import { getOverview, getWeekStatus } from "@/lib/db/queries/metrics";
 import { weekdayOf, localDateKey } from "@/lib/utils/date";
 import { HomeGreeting } from "@/components/home/HomeGreeting";
 import { ResumeBanner } from "@/components/home/ResumeBanner";
@@ -16,7 +12,6 @@ import { TodayCard } from "@/components/home/TodayCard";
 import { WeekStrip } from "@/components/home/WeekStrip";
 import { ConsistencyCard } from "@/components/home/ConsistencyCard";
 import { WeekReviewCard } from "@/components/home/WeekReviewCard";
-import { HomeMetrics } from "@/components/home/HomeMetrics";
 import { InstallPrompt } from "@/components/ui/InstallPrompt";
 
 export default function HomePage() {
@@ -27,7 +22,6 @@ export default function HomePage() {
   const active = useLiveQuery(async () => (await getActiveSession()) ?? null, []);
   const overview = useLiveQuery(() => getOverview(), []);
   const weekStatus = useLiveQuery(() => getWeekStatus(), []);
-  const hero = useLiveQuery(async () => (await getHeroEvolution()) ?? null, []);
 
   const completedToday = useLiveQuery(async () => {
     const rows = await db.sessions.where("date").equals(todayKey).toArray();
@@ -65,12 +59,6 @@ export default function HomePage() {
       />
 
       <WeekStrip today={today} />
-
-      <HomeMetrics
-        last30={overview?.last30Workouts ?? 0}
-        avgRpe={overview?.avgRpe4w ?? null}
-        hero={hero ?? null}
-      />
     </div>
   );
 }

@@ -3,8 +3,12 @@ import withSerwistInit from "@serwist/next";
 const withSerwist = withSerwistInit({
   swSrc: "app/sw.ts",
   swDest: "public/sw.js",
-  // Prompt-based update: novo SW espera até o app pedir skipWaiting.
-  reloadOnOnline: true,
+  // Prompt-based update: novo SW espera até o app pedir skipWaiting
+  // (fluxo já implementado em SwUpdater.tsx). reloadOnOnline desligado:
+  // ele recarrega a página inteira a cada evento "online" do navegador,
+  // mesmo sem SW novo — em sinal instável isso derruba sessão em
+  // andamento e passa a impressão de o app ter travado/reiniciado.
+  reloadOnOnline: false,
   disable: process.env.NODE_ENV === "development",
 });
 

@@ -10,8 +10,12 @@ import { useEffect, useRef } from "react";
  * - restaura o foco anterior ao fechar
  *
  * Uso: aplique o ref retornado ao container do modal e passe onClose.
+ * `active` desliga trap/scroll-lock sem desmontar (ex.: timer minimizado).
  */
-export function useModalA11y<T extends HTMLElement>(onClose: () => void) {
+export function useModalA11y<T extends HTMLElement>(
+  onClose: () => void,
+  active = true
+) {
   const ref = useRef<T>(null);
 
   // onClose costuma ser uma closure nova a cada render do pai. Guardamos em ref
@@ -21,6 +25,7 @@ export function useModalA11y<T extends HTMLElement>(onClose: () => void) {
   onCloseRef.current = onClose;
 
   useEffect(() => {
+    if (!active) return;
     const node = ref.current;
     const previouslyFocused = document.activeElement as HTMLElement | null;
 
@@ -67,9 +72,10 @@ export function useModalA11y<T extends HTMLElement>(onClose: () => void) {
       document.body.style.overflow = prevOverflow;
       previouslyFocused?.focus?.();
     };
-    // Setup só na montagem; onClose sempre atual via ref.
+    // Roda de novo só quando `active` muda (montagem ou toggle minimizado);
+    // onClose sempre atual via ref, não precisa entrar nas deps.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [active]);
 
   return ref;
 }

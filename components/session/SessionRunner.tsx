@@ -11,13 +11,15 @@ import {
 } from "@/lib/db/repositories/logs";
 import { completeSession, discardSession } from "@/lib/db/repositories/sessions";
 import { parseRestSeconds } from "@/lib/domain/parseTarget";
-import { computePR, formatPR } from "@/lib/db/queries/pr";
+import { totalVolume } from "@/lib/domain/volume";
+import { computePR, formatPR, type PRResult } from "@/lib/db/queries/pr";
 import { useWakeLock } from "@/lib/utils/useWakeLock";
 import { useToast } from "@/components/ui/Toast";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ExerciseCard, type RecordInput } from "./ExerciseCard";
 import { RpeSheet } from "./RpeSheet";
 import { RestTimer } from "./RestTimer";
+import { SessionSummary } from "./SessionSummary";
 import { CollapsibleTip } from "./CollapsibleTip";
 import { WarmupCard } from "./WarmupCard";
 import { ProgressionNudge } from "./ProgressionNudge";
@@ -25,11 +27,18 @@ import { ProgressionNudge } from "./ProgressionNudge";
 export function SessionRunner({
   session,
   day,
+  onCompleted,
   onFinished,
   initialExerciseId,
 }: {
   session: Session;
   day: PlanDay;
+  /** Disparado ANTES de gravar a sessão como concluída — sinaliza o pai pra
+   *  não desmontar o runner quando a query de "sessão ativa" cair pra null.
+   *  Precisa vir antes da gravação: se viesse depois, teria uma janela em que
+   *  a sessão ativa já sumiu do banco mas o pai ainda não sabe segurar o render,
+   *  e o runner remonta do zero (perdendo a tela de resumo). */
+  onCompleted?: () => void;
   onFinished: () => void;
   /** Deep-link: abre focado neste exercício (botão "play" da home). */
   initialExerciseId?: string;
@@ -80,13 +89,24 @@ export function SessionRunner({
 
   const [showRpe, setShowRpe] = useState(false);
   const [showExit, setShowExit] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
   const [rest, setRest] = useState<{ seconds: number; key: number } | null>(null);
+  // Recordes desta sessão — troféu fixo no card (toast some, o card fica) e
+  // lista na tela de fechamento do treino.
+  const [prResults, setPrResults] = useState<Map<string, PRResult>>(new Map());
   // Descanso manual entre séries, disparado pelo card ativo.
   const startRest = (seconds: number) => setRest({ seconds, key: Date.now() });
 
   const pending = flat.filter((f) => !logByExercise.has(f.exercise.id)).length;
   const doneCount = flat.length - pending;
   const progressPct = flat.length > 0 ? (doneCount / flat.length) * 100 : 0;
+  // Reps totais da sessão — só exercícios em unidade "reps" (holds/tentativas
+  // não somam no mesmo número, misturaria unidades diferentes).
+  const repsVolume = flat.reduce((sum, item) => {
+    const log = logByExercise.get(item.exercise.id);
+    if (!log || log.skipped || item.exercise.parsed?.unit !== "reps") return sum;
+    return sum + totalVolume(log, item.exercise.parsed);
+  }, 0);
 
   const advanceFrom = (exerciseId: string) => {
     const idx = flat.findIndex((f) => f.exercise.id === exerciseId);
@@ -115,6 +135,12 @@ export function SessionRunner({
         await removeLog(session.id, exerciseId);
       }
       setRest(null);
+      setPrResults((prev) => {
+        if (!prev.has(exerciseId)) return prev;
+        const next = new Map(prev);
+        next.delete(exerciseId);
+        return next;
+      });
       const idx = flat.findIndex((f) => f.exercise.id === exerciseId);
       if (idx !== -1) setManualActive(idx);
     } catch {
@@ -147,6 +173,8 @@ export function SessionRunner({
       }
     }
 
+    if (pr) setPrResults((m) => new Map(m).set(exerciseId, pr));
+
     toast({
       message: pr
         ? `🏆 Novo recorde — ${formatPR(pr)} de ${item?.exercise.name ?? ""}`
@@ -154,6 +182,8 @@ export function SessionRunner({
           ? "Exercício pulado"
           : "Registrado",
       variant: pr ? "success" : undefined,
+      // PR fica mais tempo na tela — mensagem mais longa, lida ofegante no meio do treino.
+      duration: pr ? 6500 : undefined,
       action: { label: "Desfazer", onClick: () => undoRecord(exerciseId, prev) },
     });
 
@@ -177,9 +207,13 @@ export function SessionRunner({
   };
 
   const confirmFinalize = async (rpe: number, note: string) => {
+    // Antes de gravar: evita o gap em que a sessão já sumiu do banco mas o
+    // pai ainda não sabe que precisa manter o runner montado.
+    onCompleted?.();
     try {
       await completeSession(session.id, rpe, note);
-      onFinished();
+      setShowRpe(false);
+      setShowSummary(true);
     } catch {
       toast({
         message: "Falha ao finalizar. Seus registros estão salvos.",
@@ -246,6 +280,7 @@ export function SessionRunner({
                 accent={day.accent}
                 sessionId={session.id}
                 log={logByExercise.get(item.exercise.id)}
+                hasPR={prResults.has(item.exercise.id)}
                 active={i === activeIndex}
                 onActivate={() => setManualActive(i)}
                 onRecord={(input) => handleRecord(item.exercise.id, input)}
@@ -291,6 +326,24 @@ export function SessionRunner({
           pendingCount={pending}
           onConfirm={confirmFinalize}
           onCancel={() => setShowRpe(false)}
+        />
+      )}
+
+      {showSummary && (
+        <SessionSummary
+          accent={day.accent}
+          seed={session.id}
+          exercisesDone={doneCount}
+          repsVolume={repsVolume}
+          prs={Array.from(prResults.entries()).map(([id, pr]) => ({
+            id,
+            name: flat.find((f) => f.exercise.id === id)?.exercise.name ?? id,
+            pr,
+          }))}
+          onClose={() => {
+            setShowSummary(false);
+            onFinished();
+          }}
         />
       )}
 

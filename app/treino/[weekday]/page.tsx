@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "@/lib/db/schema";
+import { db, type Session } from "@/lib/db/schema";
 import { getDayByWeekday, plan } from "@/lib/plan/loader";
 import { skillIdForDay } from "@/lib/plan/skills";
 import { getActiveSession, createSession } from "@/lib/db/repositories/sessions";
@@ -36,6 +36,14 @@ export default function TreinoPage() {
   // para o auto-start do deep-link não disparar antes da hora).
   const active = useLiveQuery(async () => (await getActiveSession()) ?? null, []);
 
+  // completeSession() tira a sessão de "in_progress" e `active` cai pra null —
+  // mas a tela de resumo ainda precisa do runner montado. `finishing` segura o
+  // render até o usuário fechar o resumo; o ref guarda a última sessão ativa
+  // pra não perder session/day nesse meio-tempo.
+  const [finishing, setFinishing] = useState(false);
+  const lastActiveRef = useRef<Session | null>(null);
+  if (active) lastActiveRef.current = active;
+
   useEffect(() => {
     if (active === null) setStarting(false);
   }, [active]);
@@ -63,19 +71,25 @@ export default function TreinoPage() {
     createSession(selected);
   }, [initialEx, active, completedForSelected, selected]);
 
-  // Sessão em andamento → runner do template da PRÓPRIA sessão.
-  if (active) {
-    const activeDay = getDayByWeekday(active.weekday) ?? day;
+  // Sessão em andamento (ou acabou de finalizar e mostra o resumo) → runner
+  // do template da PRÓPRIA sessão.
+  if (active || finishing) {
+    const session = active ?? lastActiveRef.current!;
+    const activeDay = getDayByWeekday(session.weekday) ?? day;
     return (
       <div style={{ ["--ac" as string]: activeDay.accent }}>
         <div className="px-4">
           <DayHeader day={activeDay} />
         </div>
         <SessionRunner
-          session={active}
+          session={session}
           day={activeDay}
           initialExerciseId={initialEx}
-          onFinished={() => router.push("/")}
+          onCompleted={() => setFinishing(true)}
+          onFinished={() => {
+            setFinishing(false);
+            router.push("/");
+          }}
         />
       </div>
     );

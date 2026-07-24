@@ -14,6 +14,7 @@
   --color-danger: #ff6b6b;
   --color-success: #6ecfab;
   --color-warn: #ff9066;
+  --color-gold: #f0b429;
   --color-on-accent: #0e0e0f; /* texto sobre fundo no accent do dia */
 
   --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
