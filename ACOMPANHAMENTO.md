@@ -20,16 +20,17 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
-> **Estado atual (2026-07-24, v1.5):** app **em produção no Vercel**
-> (`calistenia-tracker.vercel.app`). Sobre a base v1, cinco levas de melhorias de
+> **Estado atual (2026-07-28, v1.6):** app **em produção no Vercel**
+> (`calistenia-tracker.vercel.app`). Sobre a base v1, seis levas de melhorias de
 > produto: v1.1 (seletor de treino, IDs por movimento), v1.2 (reset de dados,
 > animações de página), v1.3 (feedback semanal, perfil, instalação em config,
 > polimento do loop de treino), v1.4 (Plano V2: confiança + hábito + skill map;
 > redesign do mapa de skills como catálogo canônico de 15 skills; ajuste manual de
-> nível; histórico semanal realocado para o Histórico) e **v1.5** (timer minimizável,
+> nível; histórico semanal realocado para o Histórico), v1.5 (timer minimizável,
 > resumo de fim de treino, polimento de home/constância, microcopy das flags, fix de
-> `reloadOnOnline`). Typecheck limpo, 67 testes passando. Falta a Etapa 7 (uso real
-> na semana).
+> `reloadOnOnline`) e **v1.6** (treino avulso: registra treino fora do programa —
+> hoje, ontem ou anteontem — sem perder streak/histórico). Typecheck limpo, 76
+> testes passando. Falta a Etapa 7 (uso real na semana).
 
 ---
 
@@ -222,3 +223,29 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
   - **Offline** — achada a causa provável do travamento relatado pelo usuário: `reloadOnOnline: true` (Serwist, `next.config.mjs`) recarrega a página inteira a cada evento `online` do navegador, mesmo sem atualização pendente — arriscado em sinal instável, já que o app tem fluxo próprio de update via prompt (`SwUpdater.tsx`). Desligado.
   - **Notificação push real (5.1)** — usuário confirmou que o lembrete nunca funcionou (feature sempre foi só UI/permissão, sem entrega). Arquitetura desenhada em modo de planejamento (Web Push/VAPID, Upstash Redis, cron via GitHub Actions dado o plano Hobby do Vercel) e aprovada, mas **implementação adiada** por decisão do usuário — ver detalhe em `IDEAS.md` §5.1.
   - **Infra** — bump para `1.5.0` (`package.json` + lock sincronizado). Typecheck limpo, **67 testes** passando; merge `dev → main` e deploy de produção (`6f1b6e1..c2a6a17`).
+- **2026-07-28** — **v1.6: treino avulso (fora do programa).** Feature pedida pelo usuário e
+  planejada via skill de produto (`PLAN-treino-avulso.md`) antes de implementar — dor real:
+  dias em que o programa não é seguido mas o treino acontece mesmo assim hoje somem do
+  histórico e da constância, sem jeito de registrar.
+  - **Modelo de dados** — `Session` ganhou `source: "plan" | "freeform"` e `plan_day_id`
+    virou opcional (Dexie v2, com migração automática marcando sessões antigas como
+    `"plan"`). Treino avulso nasce **já completo** (não passa por `in_progress`) via
+    `createFreeformSession(durationMinutes?, daysAgo?)` — duração é uma estimativa opcional
+    do usuário, nunca medida ao vivo.
+  - **Conta pra constância, mas fica diferenciada** — decisão de produto do usuário:
+    `getWeekStatus` ganhou `freeformCount` e a origem por dia (`source`); a semana bate a
+    meta contando avulsos, mas o mini-calendário (`ConsistencyCard`) marca o dia com contorno
+    tracejado e mostra "X do programa + Y avulso(s)".
+  - **CTA na home cobre esquecimento, não só o dia atual** — gap descoberto no teste real
+    do próprio usuário: o primeiro recorte só registrava "hoje". Modal ganhou chips
+    "Hoje/Ontem/Anteontem" (janela fixa de 2 dias pra trás, decisão deliberada — evita virar
+    um editor de data livre); o CTA some só quando os 3 dias já têm algum treino.
+  - **Histórico** — sessão avulsa não herda mais título/cor de um dia de plano que não tem
+    nada a ver (bug em potencial: `weekday` de hoje podia coincidir com um dia de plano real);
+    mostra "Treino avulso" com o badge "Avulso" e sem RPE/lista de exercícios.
+  - **Compat** — `lib/db/backup.ts` aceita `plan_day_id` nulo e `source` opcional
+    (backups anteriores à feature importam como `"plan"`).
+  - **Infra** — bump para `1.6.0` (`package.json` + lock sincronizado). Typecheck limpo,
+    **76 testes** passando (13 novos). Validado com Playwright headless contra o dev server:
+    fluxo completo CTA → modal → registro → home → histórico → detalhe, incluindo o caso de
+    backdating, sem erros de console.
