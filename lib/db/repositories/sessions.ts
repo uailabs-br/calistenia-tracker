@@ -1,6 +1,6 @@
 import { db, type Session, type SessionStatus } from "@/lib/db/schema";
 import { uuid, now } from "@/lib/utils/id";
-import { localDateKey } from "@/lib/utils/date";
+import { localDateKey, weekdayOf, shiftDays } from "@/lib/utils/date";
 import { planDayId, plan } from "@/lib/plan/loader";
 
 /** Toda escrita de Session passa por aqui (convenção: repositório único). */
@@ -18,6 +18,43 @@ export async function createSession(weekday: number): Promise<Session> {
     ended_at: null,
     rpe: null,
     note: null,
+    source: "plan",
+    updated_at: ts,
+    deleted_at: null,
+  };
+  await db.sessions.add(session);
+  return session;
+}
+
+/**
+ * Treino avulso: registra que treinou fora do programa, hoje ou em um dos
+ * últimos dias (`daysAgo`, 0-2 — cobre esquecer de registrar no dia). Já
+ * nasce completo (não passa por in_progress) — `durationMinutes` é uma
+ * estimativa opcional informada pelo usuário, nunca medida ao vivo.
+ */
+export async function createFreeformSession(
+  durationMinutes?: number,
+  daysAgo = 0
+): Promise<Session> {
+  const ts = now();
+  const date = daysAgo > 0 ? shiftDays(localDateKey(), -daysAgo) : localDateKey();
+  // Sessão de dia passado: âncora no meio-dia daquela data (evita "ended_at"
+  // no futuro ou timestamps sem sentido); sessão de hoje usa o instante real.
+  const anchor = daysAgo > 0 ? new Date(date + "T12:00:00").getTime() : ts;
+  const durationMs =
+    durationMinutes && durationMinutes > 0 ? durationMinutes * 60_000 : 0;
+  const session: Session = {
+    id: uuid(),
+    plan_day_id: null,
+    plan_version: plan.version,
+    weekday: weekdayOf(new Date(date + "T12:00:00")),
+    date,
+    status: "completed",
+    started_at: anchor - durationMs,
+    ended_at: anchor,
+    rpe: null,
+    note: null,
+    source: "freeform",
     updated_at: ts,
     deleted_at: null,
   };

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { db } from "@/lib/db/schema";
 import {
   createSession,
+  createFreeformSession,
   getActiveSession,
   completeSession,
   softDeleteSession,
@@ -10,6 +11,7 @@ import { upsertLog, getLogsForSession, removeLog } from "@/lib/db/repositories/l
 import { getLastPerformance } from "@/lib/db/queries/lastPerformance";
 import { exportAll, importMerge } from "@/lib/db/backup";
 import { planDayId } from "@/lib/plan/loader";
+import { localDateKey, shiftDays } from "@/lib/utils/date";
 
 beforeEach(async () => {
   await db.sessions.clear();
@@ -49,6 +51,45 @@ describe("sessions repository", () => {
     expect(row).toBeDefined();
     expect(row?.deleted_at).toBeGreaterThan(0);
     expect(await getActiveSession()).toBeUndefined();
+  });
+});
+
+describe("treino avulso (freeform)", () => {
+  it("nasce completo, sem plan_day_id, com duração aproximada", async () => {
+    const s = await createFreeformSession(30);
+    expect(s.status).toBe("completed");
+    expect(s.source).toBe("freeform");
+    expect(s.plan_day_id).toBeNull();
+    expect(s.ended_at).not.toBeNull();
+    expect((s.ended_at as number) - s.started_at).toBeCloseTo(30 * 60_000, -2);
+  });
+
+  it("duração omitida gera started_at = ended_at", async () => {
+    const s = await createFreeformSession();
+    expect(s.ended_at).toBe(s.started_at);
+  });
+
+  it("não aparece como sessão ativa (já nasce completa)", async () => {
+    await createFreeformSession(15);
+    expect(await getActiveSession()).toBeUndefined();
+  });
+
+  it("desfazer (soft delete) some da consulta ativa/histórico", async () => {
+    const s = await createFreeformSession(15);
+    await softDeleteSession(s.id);
+    const row = await db.sessions.get(s.id);
+    expect(row?.deleted_at).toBeGreaterThan(0);
+  });
+
+  it("daysAgo registra num dia passado (esqueci de registrar)", async () => {
+    const yesterday = shiftDays(localDateKey(), -1);
+    const s = await createFreeformSession(20, 1);
+    expect(s.date).toBe(yesterday);
+    expect(s.weekday).toBe(
+      new Date(yesterday + "T00:00:00").getDay()
+    );
+    expect(s.status).toBe("completed");
+    expect((s.ended_at as number) - s.started_at).toBe(20 * 60_000);
   });
 });
 
@@ -192,5 +233,48 @@ describe("backup export/import", () => {
     const r = await importMerge(dump);
     expect(r.sessionsUpdated).toBe(0);
     expect((await db.sessions.get(s.id))?.rpe).toBe(5);
+  });
+
+  it("ciclo completo com treino avulso (plan_day_id null)", async () => {
+    const s = await createFreeformSession(25);
+    const dump = await exportAll();
+    await db.sessions.clear();
+    const r = await importMerge(dump);
+    expect(r.sessionsAdded).toBe(1);
+    const restored = await db.sessions.get(s.id);
+    expect(restored?.source).toBe("freeform");
+    expect(restored?.plan_day_id).toBeNull();
+  });
+
+  it("backup antigo sem `source` importa como 'plan' (compat)", async () => {
+    const legacy = {
+      format: "calistenia-tracker-backup",
+      version: 1,
+      exported_at: new Date().toISOString(),
+      plan: { id: "calistenia-v1", version: 1 },
+      sessions: [
+        {
+          id: "11111111-1111-4111-8111-111111111111",
+          plan_day_id: "calistenia-v1:1",
+          plan_version: 1,
+          weekday: 1,
+          date: "2026-01-05",
+          status: "completed",
+          started_at: 1,
+          ended_at: 2,
+          rpe: 3,
+          note: null,
+          updated_at: 2,
+          deleted_at: null,
+        },
+      ],
+      exerciseLogs: [],
+    };
+    const r = await importMerge(legacy);
+    expect(r.sessionsAdded).toBe(1);
+    const restored = await db.sessions.get(
+      "11111111-1111-4111-8111-111111111111"
+    );
+    expect(restored?.source).toBe("plan");
   });
 });

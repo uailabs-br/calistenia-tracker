@@ -24,6 +24,7 @@ function session(date: string, rpe: number | null = 3): Session {
     ended_at: Date.now(),
     rpe,
     note: null,
+    source: "plan",
     updated_at: Date.now(),
     deleted_at: null,
   };

@@ -50,7 +50,8 @@ export default function SessionDetailPage({
   }
 
   const { session, logs } = data;
-  const day = getDayByWeekday(session.weekday);
+  const isFreeform = session.source === "freeform";
+  const day = isFreeform ? undefined : getDayByWeekday(session.weekday);
   const accent = day?.accent ?? "#a89cff";
   const duration =
     session.started_at && session.ended_at
@@ -70,17 +71,19 @@ export default function SessionDetailPage({
             className="rounded-full px-2 py-0.5 font-mono text-xs"
             style={{ background: day?.accent_bg, color: accent }}
           >
-            {day?.label ?? "Treino"}
+            {isFreeform ? "Avulso" : (day?.label ?? "Treino")}
           </span>
           {duration && (
             <span className="font-mono text-xs text-muted">{duration}</span>
           )}
-          <span className="tnum font-mono text-xs" style={{ color: accent }}>
-            RPE {session.rpe ?? "-"}
-          </span>
+          {!isFreeform && (
+            <span className="tnum font-mono text-xs" style={{ color: accent }}>
+              RPE {session.rpe ?? "-"}
+            </span>
+          )}
         </div>
         <h1 className="mt-2 text-2xl font-semibold leading-tight">
-          {day?.title ?? "Treino"}
+          {isFreeform ? "Treino avulso" : (day?.title ?? "Treino")}
         </h1>
         <p className="mt-1 text-sm text-muted">{longDate(session.date)}</p>
         {session.note && (
@@ -93,7 +96,11 @@ export default function SessionDetailPage({
         )}
       </header>
 
-      {day ? (
+      {isFreeform ? (
+        <p className="text-sm text-muted">
+          Treino fora do programa — sem exercícios do plano registrados.
+        </p>
+      ) : day ? (
         <div className="flex flex-col gap-2">
           {day.blocks.map((block) => (
             <div key={block.label}>

@@ -42,13 +42,24 @@ export function ConsistencyCard({
         <ProgressRing value={weekStatus.done} total={goal} size={60} stroke={5} />
       </div>
 
+      {weekStatus.freeformCount > 0 && (
+        <p className="mt-2 text-xs text-muted">
+          {weekStatus.done - weekStatus.freeformCount} do programa +{" "}
+          {weekStatus.freeformCount}{" "}
+          {weekStatus.freeformCount === 1 ? "avulso" : "avulsos"}
+        </p>
+      )}
+
       <div className="mt-3 flex justify-between">
         {weekStatus.days.map((d, i) => {
           const base =
             "flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-mono transition-colors";
           let cls: string;
           let style: React.CSSProperties | undefined;
-          if (d.done) {
+          if (d.source === "freeform") {
+            cls = `${base} border-2 border-dashed font-semibold`;
+            style = { borderColor: "var(--ac)", color: "var(--ac)" };
+          } else if (d.done) {
             cls = `${base} font-semibold`;
             style = { background: "var(--ac)", color: "var(--color-on-accent)" };
           } else if (d.isToday) {

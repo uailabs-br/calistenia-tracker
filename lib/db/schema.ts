@@ -4,9 +4,12 @@ import Dexie, { type EntityTable } from "dexie";
 
 export type SessionStatus = "in_progress" | "completed" | "abandoned";
 
+/** "plan" = treino do dia do programa; "freeform" = treino avulso, fora do plano. */
+export type SessionSource = "plan" | "freeform";
+
 export interface Session {
   id: string; // UUID
-  plan_day_id: string; // `${plan.id}:${weekday}` - estável entre versões
+  plan_day_id: string | null; // `${plan.id}:${weekday}` - null em sessões freeform
   plan_version: number;
   weekday: number;
   date: string; // dateKey local YYYY-MM-DD
@@ -15,6 +18,7 @@ export interface Session {
   ended_at: number | null;
   rpe: number | null; // 1-5
   note: string | null;
+  source: SessionSource;
   updated_at: number;
   deleted_at: number | null;
 }
@@ -49,6 +53,21 @@ export class TrackerDB extends Dexie {
       sessions: "id, plan_day_id, date, status, weekday, updated_at, deleted_at",
       exerciseLogs: "id, session_id, exercise_id, updated_at, deleted_at",
     });
+    // v2: treino avulso (fora do plano) — `source` novo, `plan_day_id` vira opcional.
+    this.version(2)
+      .stores({
+        sessions:
+          "id, plan_day_id, date, status, weekday, source, updated_at, deleted_at",
+        exerciseLogs: "id, session_id, exercise_id, updated_at, deleted_at",
+      })
+      .upgrade(async (tx) => {
+        await tx
+          .table("sessions")
+          .toCollection()
+          .modify((s) => {
+            if (s.source === undefined) s.source = "plan";
+          });
+      });
   }
 }
 

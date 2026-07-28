@@ -12,7 +12,7 @@ const setValueSchema = z.object({
 
 const sessionSchema = z.object({
   id: z.string(),
-  plan_day_id: z.string(),
+  plan_day_id: z.string().nullable(),
   plan_version: z.number(),
   weekday: z.number(),
   date: z.string(),
@@ -21,6 +21,8 @@ const sessionSchema = z.object({
   ended_at: z.number().nullable(),
   rpe: z.number().nullable(),
   note: z.string().nullable(),
+  // backups anteriores ao treino avulso não têm `source` — default "plan".
+  source: z.enum(["plan", "freeform"]).optional().default("plan"),
   updated_at: z.number(),
   deleted_at: z.number().nullable(),
 });

@@ -27,7 +27,8 @@ function SessionRow({
   session: Session;
   nested?: boolean;
 }) {
-  const day = getDayByWeekday(session.weekday);
+  const isFreeform = session.source === "freeform";
+  const day = isFreeform ? undefined : getDayByWeekday(session.weekday);
   const duration =
     session.started_at && session.ended_at
       ? formatDuration(session.started_at, session.ended_at)
@@ -41,19 +42,27 @@ function SessionRow({
             ? "flex items-center justify-between gap-3 rounded-lg bg-surface2 px-3 py-2.5"
             : "flex items-center justify-between gap-3 rounded-card border border-border bg-surface px-4 py-3 transition-colors duration-200"
         }
-        style={{ borderLeftColor: day?.accent, borderLeftWidth: 3 }}
+        style={{
+          borderLeftColor: isFreeform ? "var(--color-border)" : day?.accent,
+          borderLeftWidth: 3,
+          borderLeftStyle: isFreeform ? "dashed" : "solid",
+        }}
       >
         <div className="min-w-0">
-          <p className="truncate font-medium">{day?.title ?? "Treino"}</p>
+          <p className="truncate font-medium">
+            {isFreeform ? "Treino avulso" : (day?.title ?? "Treino")}
+          </p>
           <p className="tnum text-xs text-muted">
             {shortDate(session.date)}
             {duration && ` · ${duration}`}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="tnum text-sm" style={{ color: day?.accent }}>
-            RPE {session.rpe ?? "-"}
-          </span>
+          {!isFreeform && (
+            <span className="tnum text-sm" style={{ color: day?.accent }}>
+              RPE {session.rpe ?? "-"}
+            </span>
+          )}
           <ChevronRightIcon className="h-4 w-4 text-muted" />
         </div>
       </Link>

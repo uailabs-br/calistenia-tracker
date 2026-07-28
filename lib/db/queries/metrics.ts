@@ -248,13 +248,17 @@ export interface WeekDayStatus {
   isPlanDay: boolean;
   done: boolean;
   isToday: boolean;
+  /** Origem do treino que concluiu o dia; null se o dia não foi treinado. */
+  source: "plan" | "freeform" | null;
 }
 
 export interface WeekStatus {
-  /** dias distintos treinados na semana atual. */
+  /** dias distintos treinados na semana atual (programa + avulso). */
   done: number;
   /** dias de treino previstos no plano. */
   planTotal: number;
+  /** dentre os `done`, quantos foram concluídos só por treino avulso. */
+  freeformCount: number;
   /** 7 dias (Seg→Dom) com estado para o mini-calendário. */
   days: WeekDayStatus[];
 }
@@ -266,11 +270,15 @@ export async function getWeekStatus(): Promise<WeekStatus> {
   const monday = weekStartKey(today);
   const todayWeekday = weekdayOf();
 
-  // Datas (weekday real) treinadas nesta semana.
-  const doneWeekdays = new Set<number>();
+  // Datas (weekday real) treinadas nesta semana, com a origem (plano tem
+  // prioridade sobre avulso quando o mesmo dia tem os dois).
+  const doneWeekdays = new Map<number, "plan" | "freeform">();
   for (const s of sessions) {
     const diff = daysBetween(monday, s.date);
-    if (diff >= 0 && diff <= 6) doneWeekdays.add(weekdayOf(new Date(s.date + "T00:00:00")));
+    if (diff < 0 || diff > 6) continue;
+    const wd = weekdayOf(new Date(s.date + "T00:00:00"));
+    const src: "plan" | "freeform" = s.source === "freeform" ? "freeform" : "plan";
+    if (doneWeekdays.get(wd) !== "plan") doneWeekdays.set(wd, src);
   }
 
   const planWeekdays = new Set(plan.days.map((d) => d.weekday));
@@ -284,11 +292,17 @@ export async function getWeekStatus(): Promise<WeekStatus> {
     isPlanDay: planWeekdays.has(weekday),
     done: doneWeekdays.has(weekday),
     isToday: weekday === todayWeekday,
+    source: doneWeekdays.get(weekday) ?? null,
   }));
+
+  const freeformCount = [...doneWeekdays.values()].filter(
+    (s) => s === "freeform"
+  ).length;
 
   return {
     done: doneWeekdays.size,
     planTotal: plan.days.length,
+    freeformCount,
     days,
   };
 }
