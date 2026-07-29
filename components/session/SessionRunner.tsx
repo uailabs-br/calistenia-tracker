@@ -23,6 +23,7 @@ import { SessionSummary } from "./SessionSummary";
 import { CollapsibleTip } from "./CollapsibleTip";
 import { WarmupCard } from "./WarmupCard";
 import { ProgressionNudge } from "./ProgressionNudge";
+import { SkillReadyNudge } from "./SkillReadyNudge";
 
 export function SessionRunner({
   session,
@@ -130,6 +131,7 @@ export function SessionRunner({
           flags_selected: prev.flags_selected,
           note: prev.note,
           skipped: prev.skipped,
+          sets_performed: prev.sets_performed,
         });
       } else {
         await removeLog(session.id, exerciseId);
@@ -292,7 +294,12 @@ export function SessionRunner({
         })}
       </div>
 
-      {pending === 0 && <ProgressionNudge day={day} accent={day.accent} />}
+      {pending === 0 && (
+        <>
+          <SkillReadyNudge day={day} accent={day.accent} />
+          <ProgressionNudge day={day} accent={day.accent} />
+        </>
+      )}
 
       <button
         type="button"

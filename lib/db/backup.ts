@@ -10,6 +10,25 @@ const setValueSchema = z.object({
   value: z.number(),
 });
 
+const setPerformedSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("reps_rir"),
+    reps: z.array(z.number()),
+    rir: z.number(),
+    form_ok: z.boolean(),
+  }),
+  z.object({
+    type: z.literal("hold_clean"),
+    durations_seconds: z.array(z.number()),
+    form_ok: z.boolean(),
+  }),
+  z.object({
+    type: z.literal("skill_consistency"),
+    attempts_total: z.number(),
+    attempts_good: z.number(),
+  }),
+]);
+
 const sessionSchema = z.object({
   id: z.string(),
   plan_day_id: z.string().nullable(),
@@ -40,6 +59,16 @@ const logSchema = z.object({
   logged_at: z.number(),
   updated_at: z.number(),
   deleted_at: z.number().nullable(),
+  // motor de progressão v2 — ausentes em backups anteriores, default null.
+  skill_id: z.string().nullable().optional().default(null),
+  level_at_time: z.number().nullable().optional().default(null),
+  criteria_type: z
+    .enum(["reps_rir", "hold_clean", "skill_consistency"])
+    .nullable()
+    .optional()
+    .default(null),
+  sets_performed: setPerformedSchema.nullable().optional().default(null),
+  criterion_met: z.boolean().nullable().optional().default(null),
 });
 
 const backupSchema = z.object({

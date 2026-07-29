@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import type { PlanExercise } from "@/lib/plan/schema";
-import type { ExerciseLog, SetValue } from "@/lib/db/schema";
+import type { ExerciseLog, SetPerformed, SetValue } from "@/lib/db/schema";
 import { adjustSets, parseRestSeconds } from "@/lib/domain/parseTarget";
 import { effectiveSets } from "@/lib/domain/volume";
+import { exerciseSkillMapping } from "@/lib/plan/skills";
+import { isClean } from "@/lib/db/queries/progressionReady";
 import {
   getLastPerformance,
   formatLastPerf,
@@ -15,6 +17,8 @@ import { CheckIcon, TimerIcon, TrophyIcon } from "@/components/ui/icons";
 import { Stepper } from "./Stepper";
 import { FlagChips } from "./FlagChips";
 import { ExerciseNote } from "./ExerciseNote";
+import { RirSelector } from "./RirSelector";
+import { AttemptsCounter } from "./AttemptsCounter";
 
 export interface RecordInput {
   as_target: boolean;
@@ -22,6 +26,7 @@ export interface RecordInput {
   flags_selected: string[];
   note: string | null;
   skipped: boolean;
+  sets_performed?: SetPerformed | null;
 }
 
 interface Props {
@@ -57,11 +62,15 @@ export function ExerciseCard({
 }: Props) {
   const parsed = exercise.parsed;
   const restSeconds = parseRestSeconds(exercise.rest) ?? 90;
+  const mapping = exerciseSkillMapping(exercise.id);
 
   const [adjusting, setAdjusting] = useState(false);
   const [values, setValues] = useState<number[]>(() => adjustSets(parsed));
   const [flags, setFlags] = useState<string[]>([]);
   const [note, setNote] = useState("");
+  const [rir, setRir] = useState(0);
+  const [attemptsTotal, setAttemptsTotal] = useState(0);
+  const [attemptsGood, setAttemptsGood] = useState(0);
   const cardRef = useRef<HTMLDivElement>(null);
 
   // Sincroniza estado local com o log persistido (retomada / edição)
@@ -73,11 +82,30 @@ export function ExerciseCard({
       if (s.length > 0) setValues(s);
       else setValues(adjustSets(parsed));
       setAdjusting(!log.as_target && !log.skipped && (log.sets?.length ?? 0) > 0);
+      if (log.sets_performed?.type === "reps_rir") setRir(log.sets_performed.rir);
+      if (log.sets_performed?.type === "skill_consistency") {
+        setAttemptsTotal(log.sets_performed.attempts_total);
+        setAttemptsGood(log.sets_performed.attempts_good);
+      }
     } else {
       setValues(adjustSets(parsed));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [log?.id]);
+
+  /** Performance declarada pro motor de progressão — null se o exercício
+   *  não estiver mapeado a um nível de skill. */
+  const skillPerformed = (): SetPerformed | null => {
+    if (!mapping) return null;
+    const formOk = isClean({ flags_selected: flags }, exercise.neg_flags ?? []);
+    if (mapping.criteria_type === "reps_rir") {
+      return { type: "reps_rir", reps: values, rir, form_ok: formOk };
+    }
+    if (mapping.criteria_type === "hold_clean") {
+      return { type: "hold_clean", durations_seconds: values, form_ok: formOk };
+    }
+    return { type: "skill_consistency", attempts_total: attemptsTotal, attempts_good: attemptsGood };
+  };
 
   const lastPerf = useLiveQuery(
     () => getLastPerformance(exercise.id, sessionId),
@@ -102,18 +130,40 @@ export function ExerciseCard({
   });
 
   const recordAsTarget = () =>
-    onRecord({ as_target: true, sets: null, skipped: false, ...baseInput() });
+    onRecord({
+      as_target: true,
+      sets: null,
+      skipped: false,
+      sets_performed: skillPerformed(),
+      ...baseInput(),
+    });
 
   const recordAdjusted = () =>
     onRecord({
       as_target: false,
       sets: values.map((value, index) => ({ index, value })),
       skipped: false,
+      sets_performed: skillPerformed(),
+      ...baseInput(),
+    });
+
+  const recordAttempts = () =>
+    onRecord({
+      as_target: false,
+      sets: null,
+      skipped: false,
+      sets_performed: skillPerformed(),
       ...baseInput(),
     });
 
   const recordSkipped = () =>
-    onRecord({ as_target: false, sets: null, skipped: true, ...baseInput() });
+    onRecord({
+      as_target: false,
+      sets: null,
+      skipped: true,
+      sets_performed: null,
+      ...baseInput(),
+    });
 
   const startAdjust = () => {
     if (!log) setValues(seedAdjustValues(parsed, lastPerf));
@@ -127,12 +177,17 @@ export function ExerciseCard({
     setFlags(next);
     // se já registrado, persiste imediatamente preservando o tipo de registro
     if (log && !log.skipped) {
+      const formOk = isClean({ flags_selected: next }, exercise.neg_flags ?? []);
       onPersist({
         as_target: log.as_target,
         sets: log.sets,
         flags_selected: next,
         note: note.trim() ? note.trim() : null,
         skipped: false,
+        sets_performed:
+          log.sets_performed && log.sets_performed.type !== "skill_consistency"
+            ? { ...log.sets_performed, form_ok: formOk }
+            : log.sets_performed,
       });
     }
   };
@@ -146,6 +201,7 @@ export function ExerciseCard({
         flags_selected: flags,
         note: value.trim() ? value.trim() : null,
         skipped: false,
+        sets_performed: log.sets_performed,
       });
     }
   };
@@ -238,7 +294,27 @@ export function ExerciseCard({
       )}
 
       <div className="mt-3">
-        {!adjusting ? (
+        {mapping?.criteria_type === "skill_consistency" ? (
+          <div className="anim-fade-in flex flex-col gap-3">
+            <AttemptsCounter
+              total={attemptsTotal}
+              good={attemptsGood}
+              onChange={({ total, good }) => {
+                setAttemptsTotal(total);
+                setAttemptsGood(good);
+              }}
+            />
+            <button
+              type="button"
+              onClick={recordAttempts}
+              className="tap flex items-center justify-center gap-2 rounded-xl py-3 font-medium active:scale-[0.99]"
+              style={{ background: accent, color: "var(--color-on-accent)" }}
+            >
+              <CheckIcon className="h-5 w-5" />
+              Confirmar
+            </button>
+          </div>
+        ) : !adjusting ? (
           <div className="flex gap-2">
             <button
               type="button"
@@ -280,6 +356,9 @@ export function ExerciseCard({
               Confirmar
             </button>
           </div>
+        )}
+        {mapping?.criteria_type === "reps_rir" && (
+          <RirSelector value={rir} accent={accent} onChange={setRir} />
         )}
       </div>
 
@@ -342,6 +421,10 @@ function summarize(
   parsed: PlanExercise["parsed"]
 ): string | null {
   if (!log || log.skipped) return null;
+  if (log.sets_performed?.type === "skill_consistency") {
+    const { attempts_good, attempts_total } = log.sets_performed;
+    return `${attempts_good}/${attempts_total} tentativas`;
+  }
   if (log.as_target) return "como previsto";
   const s = effectiveSets(log, parsed);
   if (s.length === 0) return "feito";

@@ -44,6 +44,11 @@ async function addLog(sessionId: string, value: number) {
     logged_at: Date.now(),
     updated_at: Date.now(),
     deleted_at: null,
+    skill_id: null,
+    level_at_time: null,
+    criteria_type: null,
+    sets_performed: null,
+    criterion_met: null,
   });
 }
 

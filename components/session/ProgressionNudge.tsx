@@ -4,6 +4,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import type { PlanDay } from "@/lib/plan/schema";
 import { getExerciseById } from "@/lib/plan/loader";
 import { getProgressionReady } from "@/lib/db/queries/progressionReady";
+import { exerciseSkillMapping } from "@/lib/plan/skills";
 
 /**
  * "Pronto pra subir de nível": aparece no fim da sessão (não interrompe) para os
@@ -12,9 +13,11 @@ import { getProgressionReady } from "@/lib/db/queries/progressionReady";
  */
 export function ProgressionNudge({ day, accent }: { day: PlanDay; accent: string }) {
   const ready = useLiveQuery(async () => {
+    // exercícios com skill mapeado já têm sinal próprio no SkillReadyNudge —
+    // evita duplicar o aviso aqui.
     const ids = [
       ...new Set(day.blocks.flatMap((b) => b.exercises.map((e) => e.id))),
-    ];
+    ].filter((id) => !exerciseSkillMapping(id));
     const checks = await Promise.all(
       ids.map(async (id) => ({ id, ready: await getProgressionReady(id) }))
     );

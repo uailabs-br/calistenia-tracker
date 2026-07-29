@@ -133,6 +133,85 @@ describe("logs repository", () => {
   });
 });
 
+describe("logs repository — motor de progressão v2", () => {
+  it("exercício mapeado (reps_rir) grava skill_id/level_at_time/criterion_met", async () => {
+    const s = await createSession(1);
+    const log = await upsertLog({
+      session_id: s.id,
+      exercise_id: "pull-up-peso-morto", // pull_up L4, reps_rir {sets:3, reps:8, rir_max:2}
+      as_target: false,
+      sets: [
+        { index: 0, value: 8 },
+        { index: 1, value: 8 },
+        { index: 2, value: 8 },
+      ],
+      flags_selected: [],
+      skipped: false,
+      sets_performed: { type: "reps_rir", reps: [8, 8, 8], rir: 1, form_ok: true },
+    });
+    expect(log.skill_id).toBe("pull_up");
+    expect(log.level_at_time).toBe(4);
+    expect(log.criteria_type).toBe("reps_rir");
+    expect(log.criterion_met).toBe(true);
+  });
+
+  it("exercício mapeado sem sets_performed → criterion_met null, sem quebrar", async () => {
+    const s = await createSession(1);
+    const log = await upsertLog({
+      session_id: s.id,
+      exercise_id: "pull-up-peso-morto",
+      as_target: true,
+      sets: null,
+      flags_selected: [],
+      skipped: false,
+    });
+    expect(log.skill_id).toBe("pull_up");
+    expect(log.criterion_met).toBeNull();
+  });
+
+  it("exercício sem mapeamento → os 5 campos do motor ficam null", async () => {
+    const s = await createSession(1);
+    const log = await upsertLog({
+      session_id: s.id,
+      exercise_id: "mu-false-grip-hang", // acessório, sem skill_id
+      as_target: true,
+      sets: null,
+      flags_selected: [],
+      skipped: false,
+    });
+    expect(log.skill_id).toBeNull();
+    expect(log.level_at_time).toBeNull();
+    expect(log.criteria_type).toBeNull();
+    expect(log.sets_performed).toBeNull();
+    expect(log.criterion_met).toBeNull();
+  });
+
+  it("regravar (upsert) recalcula criterion_met com o novo sets_performed", async () => {
+    const s = await createSession(1);
+    await upsertLog({
+      session_id: s.id,
+      exercise_id: "pull-up-peso-morto",
+      as_target: false,
+      sets: [{ index: 0, value: 5 }],
+      flags_selected: [],
+      skipped: false,
+      sets_performed: { type: "reps_rir", reps: [5, 5, 5], rir: 2, form_ok: true },
+    });
+    const updated = await upsertLog({
+      session_id: s.id,
+      exercise_id: "pull-up-peso-morto",
+      as_target: false,
+      sets: [{ index: 0, value: 8 }],
+      flags_selected: [],
+      skipped: false,
+      sets_performed: { type: "reps_rir", reps: [8, 8, 8], rir: 2, form_ok: true },
+    });
+    expect(updated.criterion_met).toBe(true);
+    const logs = await getLogsForSession(s.id);
+    expect(logs).toHaveLength(1);
+  });
+});
+
 describe("última performance", () => {
   it("as_target vira 'como previsto'", async () => {
     const s = await createSession(1);
@@ -276,5 +355,37 @@ describe("backup export/import", () => {
       "11111111-1111-4111-8111-111111111111"
     );
     expect(restored?.source).toBe("plan");
+  });
+
+  it("backup antigo sem campos do motor v2 importa com null (compat)", async () => {
+    const legacy = {
+      format: "calistenia-tracker-backup",
+      version: 1,
+      exported_at: new Date().toISOString(),
+      plan: { id: "calistenia-v1", version: 1 },
+      sessions: [],
+      exerciseLogs: [
+        {
+          id: "22222222-2222-4222-8222-222222222222",
+          session_id: "33333333-3333-4333-8333-333333333333",
+          exercise_id: "pull-up-peso-morto",
+          as_target: true,
+          sets: null,
+          flags_selected: [],
+          skipped: false,
+          logged_at: 1,
+          updated_at: 1,
+          deleted_at: null,
+        },
+      ],
+    };
+    const r = await importMerge(legacy);
+    expect(r.logsAdded).toBe(1);
+    const restored = await db.exerciseLogs.get(
+      "22222222-2222-4222-8222-222222222222"
+    );
+    expect(restored?.skill_id).toBeNull();
+    expect(restored?.sets_performed).toBeNull();
+    expect(restored?.criterion_met).toBeNull();
   });
 });

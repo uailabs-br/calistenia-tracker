@@ -9,10 +9,9 @@
 ---
 
 ## Ideias
-- repensar as flags: microcopy "se foi a maioria das reps" já ativa (custo zero, v1.5).
-  Segue aberta a ideia maior de trocar o binário por um tri-estado (não rolou / rolou
-  pouco / rolou na maioria) pra não perder nuance — não implementado, avaliar com mais
-  uso real se a microcopy já resolve ou se vale investir na versão maior.
+- pensar um forma de incluir fase de deload no treino e como registrar de forma a nao impactar negativamente a analise das metricas
+- ajuste: ao exportar os dados, os exercicios que foram ˜feitos como previsto''nao mostram o numero de reps, apenas o texto.
+- 
 
 ---
 
@@ -63,10 +62,6 @@ Se confirmar, vale investir em cues (7.3) e em ligar mais níveis a exercícios 
 ## ❓ Decisões de produto em aberto
 - **[Q2] Faz sentido os treinos terem dias fixos?** — decisão de modelo; impacta a meta
   semanal e a aderência por dia.
-- **Qualidade de execução vs. RPE/notas** — *ADIADO*: decidido não mexer em RPE/notas por
-  ora, nem agrupar "como foi" + notas. O badge de "técnica" fica bloqueado até existir
-  captura de qualidade de execução. Sequência de gamificação planejada: streak → força
-  (por recorde pessoal) → técnica.
 
 ---
 

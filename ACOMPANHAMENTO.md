@@ -20,16 +20,19 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
-> **Estado atual (2026-07-28, v1.6):** app **em produção no Vercel**
-> (`calistenia-tracker.vercel.app`). Sobre a base v1, seis levas de melhorias de
+> **Estado atual (2026-07-28, v1.7):** app **em produção no Vercel**
+> (`calistenia-tracker.vercel.app`). Sobre a base v1, sete levas de melhorias de
 > produto: v1.1 (seletor de treino, IDs por movimento), v1.2 (reset de dados,
 > animações de página), v1.3 (feedback semanal, perfil, instalação em config,
 > polimento do loop de treino), v1.4 (Plano V2: confiança + hábito + skill map;
 > redesign do mapa de skills como catálogo canônico de 15 skills; ajuste manual de
 > nível; histórico semanal realocado para o Histórico), v1.5 (timer minimizável,
 > resumo de fim de treino, polimento de home/constância, microcopy das flags, fix de
-> `reloadOnOnline`) e **v1.6** (treino avulso: registra treino fora do programa —
-> hoje, ontem ou anteontem — sem perder streak/histórico). Typecheck limpo, 76
+> `reloadOnOnline`), v1.6 (treino avulso: registra treino fora do programa — hoje,
+> ontem ou anteontem — sem perder streak/histórico) e **v1.7** (motor de progressão
+> determinístico: critérios estruturados por tipo de movimento — reps×RIR, hold
+> limpo, consistência de tentativas — substituindo a regra genérica de "bateu o
+> alvo" pros exercícios mapeados a um nível de skill). Typecheck limpo, 105
 > testes passando. Falta a Etapa 7 (uso real na semana).
 
 ---
@@ -249,3 +252,43 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
     **76 testes** passando (13 novos). Validado com Playwright headless contra o dev server:
     fluxo completo CTA → modal → registro → home → histórico → detalhe, incluindo o caso de
     backdating, sem erros de console.
+- **2026-07-28 (mesmo dia) — v1.7: motor de progressão determinístico.** Destrava a
+  decisão de produto que ficava *ADIADA* desde a v1.3 (`IDEAS.md` — "qualidade de
+  execução vs. RPE/notas"): o app passa a saber **por tipo de movimento** se uma
+  sessão bateu o critério de progressão, não só "número ≥ alvo". Planejado em
+  várias rodadas de revisão de proposta (schema → conteúdo → execução) antes de
+  qualquer código, incluindo uma auditoria do catálogo de skills que achou um bug
+  real: as escadas foram renumeradas entre a v1 e a v3 do `progressions.json`
+  (níveis inseridos/removidos), e trocar o arquivo sem remapear o `LEVEL_EXERCISE`
+  teria feito o mapa de skills marcar o degrau errado como concluído em 4 dos 9
+  movimentos já mapeados — corrigido antes de virar dado de produção.
+  - **Catálogo de skills v3** — `lib/plan/progressions.json` (16 skills, 82 níveis,
+    fonte Overcoming Gravity/BWF Wiki/GMB) ganhou critério **estruturado** por
+    nível, discriminado em 3 tipos: `reps_rir` (reps + RIR percebido), `hold_clean`
+    (segundos sustentados) e `skill_consistency` (proporção de tentativas boas —
+    pros movimentos onde o alvo é consistência neural, não força, ex. kick-up de
+    handstand). `LEVEL_EXERCISE` remapeado (5 correções) e expandido (4 exercícios
+    novos ligados a nível de skill).
+  - **`ExerciseLog`** ganhou `skill_id`/`level_at_time`/`criteria_type`/
+    `sets_performed`/`criterion_met` (Dexie v3, só índice novo, sem `.upgrade()` —
+    logs antigos simplesmente não têm skill mapeado). "Forma limpa" reaproveita as
+    flags negativas já existentes (`isClean`) em vez de pedir um toggle novo.
+  - **Motor** (`lib/db/queries/skillProgression.ts`) — `evaluateCriterion` (puro,
+    por tipo) + `getSkillState` (streak de sessões seguidas batendo o critério →
+    `ready`; 3 falhas seguidas → `regress`; 8+ sessões sem decidir → `stale`).
+    Aditivo: o motor genérico antigo (`getProgressionReady`, streak de 2 sessões
+    no alvo) continua servindo de fallback pros exercícios sem skill mapeado — a
+    maioria do plano.
+  - **UI de registro** — RIR (0-4, pills) aparece só nos exercícios `reps_rir`;
+    contador de tentativas boas/totais **substitui** o fluxo normal só nos
+    `skill_consistency` (esses hoje já não tinham alvo numérico parseável, ex.
+    "10-12 tentativas" em texto livre); `hold_clean` fica visualmente idêntico a
+    antes. Novo aviso `SkillReadyNudge` ao lado do `ProgressionNudge` existente.
+  - **Limpeza** — cópias soltas de `plan.json`/`progressions.json` na raiz do
+    repo (desatualizadas, uma delas rastreada por engano) removidas; `.gitignore`
+    passou a bloquear esse caminho de erro se acontecer de novo.
+  - **Infra** — bump para `1.7.0` (`package.json` + lock sincronizado). Typecheck
+    limpo, **105 testes** passando (29 novos, incluindo um teste de regressão que
+    trava se o `LEVEL_EXERCISE` desalinhar da numeração do catálogo de novo).
+    Validado com Playwright headless contra o dev server nas 4 combinações reais
+    de tipo de critério + página do mapa de skills, sem erros de console.

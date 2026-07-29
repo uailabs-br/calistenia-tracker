@@ -28,6 +28,15 @@ export interface SetValue {
   value: number;
 }
 
+/**
+ * Performance declarada num exercício mapeado a um nível de skill (granularidade
+ * de sessão: um form_ok/RIR por exercício, não por série individual).
+ */
+export type SetPerformed =
+  | { type: "reps_rir"; reps: number[]; rir: number; form_ok: boolean }
+  | { type: "hold_clean"; durations_seconds: number[]; form_ok: boolean }
+  | { type: "skill_consistency"; attempts_total: number; attempts_good: number };
+
 export interface ExerciseLog {
   id: string; // UUID
   session_id: string;
@@ -40,6 +49,13 @@ export interface ExerciseLog {
   logged_at: number; // instrumentação: quando foi registrado
   updated_at: number;
   deleted_at: number | null;
+  // Motor de progressão v2 — presentes só quando o exercício está mapeado a
+  // um nível de skill (ver lib/plan/skills.ts, exerciseSkillMapping).
+  skill_id: string | null;
+  level_at_time: number | null;
+  criteria_type: SetPerformed["type"] | null;
+  sets_performed: SetPerformed | null;
+  criterion_met: boolean | null;
 }
 
 export class TrackerDB extends Dexie {
@@ -68,6 +84,16 @@ export class TrackerDB extends Dexie {
             if (s.source === undefined) s.source = "plan";
           });
       });
+    // v3: motor de progressão — campos novos ficam `undefined` nos logs
+    // existentes (tratados como `null` em runtime pelas queries); IndexedDB
+    // não indexa `undefined`, então não precisa de `.upgrade()` percorrendo
+    // os registros — eles simplesmente não aparecem nas buscas por `skill_id`.
+    this.version(3).stores({
+      sessions:
+        "id, plan_day_id, date, status, weekday, source, updated_at, deleted_at",
+      exerciseLogs:
+        "id, session_id, exercise_id, skill_id, updated_at, deleted_at",
+    });
   }
 }
 

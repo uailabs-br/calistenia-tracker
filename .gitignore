@@ -31,3 +31,8 @@ next-env.d.ts
 
 # testes / temporários
 /coverage
+
+# cópias soltas de dados canônicos — a fonte real vive em lib/plan/
+/plan.json
+/progressions.json
+/progressions_v3.json
