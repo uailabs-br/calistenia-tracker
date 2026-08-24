@@ -7,6 +7,7 @@ import { plan } from "@/lib/plan/loader";
 import type { Plan } from "@/lib/plan/schema";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { CollapsibleCard } from "@/components/ui/CollapsibleCard";
 import { useToast } from "@/components/ui/Toast";
 import { ReminderSettings } from "@/components/config/ReminderSettings";
 import { AI_SCHEMA_PROMPT } from "@/lib/plan/aiSchema";
@@ -205,8 +206,7 @@ export default function ConfigPage() {
     <div className="px-4">
       <PageHeader title="Config" subtitle="Perfil, backup e dados" />
 
-      <section className="mb-3 rounded-card border border-border bg-surface px-4 py-4">
-        <h2 className="font-semibold">Perfil</h2>
+      <CollapsibleCard title="Perfil" className="mb-3">
         <p className="mt-1 text-sm text-muted">
           Seu nome aparece na saudação da tela inicial.
         </p>
@@ -243,7 +243,7 @@ export default function ConfigPage() {
           }}
           className="tnum mt-2 w-20 rounded-xl border border-border bg-surface2 px-3 py-2.5 text-base outline-none focus:border-muted"
         />
-      </section>
+      </CollapsibleCard>
 
       <ReminderSettings />
 
@@ -256,12 +256,11 @@ export default function ConfigPage() {
         </div>
       )}
 
-      <section className="rounded-card border border-border bg-surface px-4 py-4">
-        <h2 className="font-semibold">Exportar</h2>
+      <CollapsibleCard title="Exportar histórico">
         <p className="mt-1 text-sm text-muted">
-          Baixa todo o histórico (sessões + registros) num arquivo JSON. Guarde
-          em local seguro. O navegador do iOS pode apagar os dados sob pressão
-          de armazenamento.
+          Baixa suas sessões e registros de treino (o que você já fez) num
+          arquivo JSON. Guarde em local seguro. O navegador do iOS pode apagar
+          os dados sob pressão de armazenamento.
         </p>
         <button
           type="button"
@@ -270,13 +269,14 @@ export default function ConfigPage() {
         >
           Exportar backup
         </button>
-      </section>
+      </CollapsibleCard>
 
-      <section className="mt-3 rounded-card border border-border bg-surface px-4 py-4">
-        <h2 className="font-semibold">Importar</h2>
+      <CollapsibleCard title="Importar histórico" className="mt-3">
         <p className="mt-1 text-sm text-muted">
-          Mescla um backup por ID (não sobrescreve o que for mais recente).
-          Arquivo inválido não toca no banco.
+          Restaura sessões e registros a partir de um backup exportado por
+          este app (mescla por ID, não sobrescreve o que for mais recente).
+          Não muda o treino que você está seguindo — pra isso, veja
+          &quot;Criar treino com IA&quot; abaixo.
         </p>
         <input
           ref={fileRef}
@@ -292,13 +292,13 @@ export default function ConfigPage() {
         >
           Escolher arquivo…
         </button>
-      </section>
+      </CollapsibleCard>
 
-      <section className="mt-3 rounded-card border border-border bg-surface px-4 py-4">
-        <h2 className="font-semibold">Criar treino com IA</h2>
+      <CollapsibleCard title="Criar treino com IA" className="mt-3">
         <p className="mt-1 text-sm text-muted">
           1. Copia o esquema e pede pra IA (Claude etc.) ajustar seu treino. 2.
-          Cola a resposta abaixo pra aplicar no app.
+          Cola a resposta abaixo pra aplicar no app. Isso troca só os
+          exercícios do plano — seu histórico de sessões não é afetado.
         </p>
         <button
           type="button"
@@ -352,7 +352,7 @@ export default function ConfigPage() {
             Restaurar plano padrão
           </button>
         )}
-      </section>
+      </CollapsibleCard>
 
       {msg && (
         <p
@@ -366,8 +366,7 @@ export default function ConfigPage() {
         </p>
       )}
 
-      <section className="mt-3 rounded-card border border-border bg-surface px-4 py-4">
-        <h2 className="font-semibold">Instalar app</h2>
+      <CollapsibleCard title="Instalar app" className="mt-3">
         {install === "standalone" ? (
           <p className="mt-1 text-sm text-muted">
             Já instalado neste dispositivo. Abrindo pela tela inicial, o app
@@ -398,15 +397,9 @@ export default function ConfigPage() {
             )}
           </>
         )}
-      </section>
+      </CollapsibleCard>
 
-      <section
-        className="mt-6 rounded-card border px-4 py-4"
-        style={{ borderColor: "color-mix(in srgb, var(--color-danger) 25%, transparent)" }}
-      >
-        <h2 className="font-semibold" style={{ color: "var(--color-danger)" }}>
-          Zona de perigo
-        </h2>
+      <CollapsibleCard title="Zona de perigo" className="mt-6" danger>
         <p className="mt-1 text-sm text-muted">
           Apaga todo o histórico (sessões e registros) deste dispositivo. Não dá
           para desfazer. Exporte um backup antes se quiser guardar.
@@ -419,7 +412,7 @@ export default function ConfigPage() {
         >
           Resetar dados
         </button>
-      </section>
+      </CollapsibleCard>
 
       <section className="mt-6 text-xs text-muted">
         <p>Calistenia Tracker v{pkg.version.split(".").slice(0, 2).join(".")}</p>

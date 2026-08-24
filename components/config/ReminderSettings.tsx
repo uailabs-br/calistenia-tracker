@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getReminder, setReminder } from "@/lib/utils/profile";
+import { CollapsibleCard } from "@/components/ui/CollapsibleCard";
 
 type Permission = "default" | "granted" | "denied" | "unsupported";
 
@@ -45,16 +46,13 @@ export function ReminderSettings() {
   };
 
   return (
-    <section className="mb-3 rounded-card border border-border bg-surface px-4 py-4">
+    <CollapsibleCard title="Lembrete de treino" className="mb-3">
       <div className="flex items-center justify-between gap-3">
-        <div>
-          <h2 className="font-semibold">Lembrete de treino</h2>
-          <p className="mt-0.5 text-sm text-muted">
-            {perm === "unsupported"
-              ? "Não suportado neste navegador."
-              : "Um empurrão no horário que você escolher."}
-          </p>
-        </div>
+        <p className="text-sm text-muted">
+          {perm === "unsupported"
+            ? "Não suportado neste navegador."
+            : "Um empurrão no horário que você escolher."}
+        </p>
 
         {perm !== "unsupported" && (
           <button
@@ -106,6 +104,6 @@ export function ReminderSettings() {
           />
         </div>
       )}
-    </section>
+    </CollapsibleCard>
   );
 }
