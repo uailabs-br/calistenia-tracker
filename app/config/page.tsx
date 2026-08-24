@@ -245,56 +245,7 @@ export default function ConfigPage() {
         />
       </CollapsibleCard>
 
-      <ReminderSettings />
-
-      {pendingBackup >= 4 && (
-        <div
-          className="mb-4 rounded-card border px-4 py-3 text-sm"
-          style={{ borderColor: "var(--color-warn)", color: "var(--color-warn)" }}
-        >
-          {pendingBackup} sessões sem backup. Exporte para não perder o histórico.
-        </div>
-      )}
-
-      <CollapsibleCard title="Exportar histórico">
-        <p className="mt-1 text-sm text-muted">
-          Baixa suas sessões e registros de treino (o que você já fez) num
-          arquivo JSON. Guarde em local seguro. O navegador do iOS pode apagar
-          os dados sob pressão de armazenamento.
-        </p>
-        <button
-          type="button"
-          onClick={handleExport}
-          className="tap mt-3 w-full rounded-xl bg-text py-3 font-medium text-bg"
-        >
-          Exportar backup
-        </button>
-      </CollapsibleCard>
-
-      <CollapsibleCard title="Importar histórico" className="mt-3">
-        <p className="mt-1 text-sm text-muted">
-          Restaura sessões e registros a partir de um backup exportado por
-          este app (mescla por ID, não sobrescreve o que for mais recente).
-          Não muda o treino que você está seguindo — pra isso, veja
-          &quot;Criar treino com IA&quot; abaixo.
-        </p>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="application/json,.json"
-          onChange={handleImportFile}
-          className="hidden"
-        />
-        <button
-          type="button"
-          onClick={() => fileRef.current?.click()}
-          className="tap mt-3 w-full rounded-xl border border-border bg-surface2 py-3 font-medium"
-        >
-          Escolher arquivo…
-        </button>
-      </CollapsibleCard>
-
-      <CollapsibleCard title="Criar treino com IA" className="mt-3">
+      <CollapsibleCard title="Criar treino com IA" className="mb-3">
         <p className="mt-1 text-sm text-muted">
           1. Copia o esquema e pede pra IA (Claude etc.) ajustar seu treino. 2.
           Cola a resposta abaixo pra aplicar no app. Isso troca só os
@@ -354,6 +305,55 @@ export default function ConfigPage() {
         )}
       </CollapsibleCard>
 
+      <ReminderSettings />
+
+      {pendingBackup >= 4 && (
+        <div
+          className="mb-4 rounded-card border px-4 py-3 text-sm"
+          style={{ borderColor: "var(--color-warn)", color: "var(--color-warn)" }}
+        >
+          {pendingBackup} sessões sem backup. Exporte para não perder o histórico.
+        </div>
+      )}
+
+      <CollapsibleCard title="Exportar histórico">
+        <p className="mt-1 text-sm text-muted">
+          Baixa suas sessões e registros de treino (o que você já fez) num
+          arquivo JSON. Guarde em local seguro. O navegador do iOS pode apagar
+          os dados sob pressão de armazenamento.
+        </p>
+        <button
+          type="button"
+          onClick={handleExport}
+          className="tap mt-3 w-full rounded-xl bg-text py-3 font-medium text-bg"
+        >
+          Exportar backup
+        </button>
+      </CollapsibleCard>
+
+      <CollapsibleCard title="Importar histórico" className="mt-3">
+        <p className="mt-1 text-sm text-muted">
+          Restaura sessões e registros a partir de um backup exportado por
+          este app (mescla por ID, não sobrescreve o que for mais recente).
+          Não muda o treino que você está seguindo — pra isso, veja
+          &quot;Criar treino com IA&quot; acima.
+        </p>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="application/json,.json"
+          onChange={handleImportFile}
+          className="hidden"
+        />
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          className="tap mt-3 w-full rounded-xl border border-border bg-surface2 py-3 font-medium"
+        >
+          Escolher arquivo…
+        </button>
+      </CollapsibleCard>
+
       {msg && (
         <p
           className="mt-3 rounded-card border px-4 py-3 text-sm"
@@ -399,7 +399,7 @@ export default function ConfigPage() {
         )}
       </CollapsibleCard>
 
-      <CollapsibleCard title="Zona de perigo" className="mt-6" danger>
+      <CollapsibleCard title="Deletar dados" className="mt-6" danger>
         <p className="mt-1 text-sm text-muted">
           Apaga todo o histórico (sessões e registros) deste dispositivo. Não dá
           para desfazer. Exporte um backup antes se quiser guardar.
@@ -410,7 +410,7 @@ export default function ConfigPage() {
           className="tap mt-3 w-full rounded-xl border py-3 font-medium"
           style={{ borderColor: "var(--color-danger)", color: "var(--color-danger)" }}
         >
-          Resetar dados
+          Deletar pra sempre
         </button>
       </CollapsibleCard>
 
@@ -424,9 +424,9 @@ export default function ConfigPage() {
 
       {showReset && (
         <ConfirmDialog
-          title="Resetar todos os dados?"
+          title="Deletar todos os dados?"
           message="Todo o histórico de sessões e registros será apagado deste dispositivo. Esta ação não pode ser desfeita."
-          confirmLabel="Apagar tudo"
+          confirmLabel="Deletar pra sempre"
           danger
           onConfirm={handleReset}
           onCancel={() => setShowReset(false)}
