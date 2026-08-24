@@ -1,80 +1,61 @@
 {
-  "id": "plan-calistenia-jul-2026",
+  "id": "plan-calistenia-ago-2026",
   "version": 1,
-  "name": "Calistenia — MU + HS",
-  "source": "treino-calistenia-jul-2026.html",
-  "imported_at": "2026-07-12",
+  "name": "Calistenia — MU + HS + FL",
+  "source": "conversa-coach-2026-08-23",
+  "imported_at": "2026-08-23",
   "days": [
     {
       "weekday": 1,
       "label": "Seg",
-      "title": "Muscle Up",
+      "title": "MU + Puxar",
       "skill": "Muscle Up",
-      "duration": "~32 min",
+      "duration": "~38 min",
       "accent": "#A89CFF",
       "accent_bg": "#1E1B35",
       "is_practice": false,
-      "warmup": "Hang passivo 30s · scapular pull 8 rep · wrist circles — 2 min",
-      "tip": "Sem MU completo na barra alta ainda. Tu passa um cotovelo de cada vez (chicken wing), e cada tentativa grava esse padrão. A negativa com banda constrói a transição simétrica no eccentric, e a puxada explosiva ataca a altura. Jumping MU na quinta cuida do movimento completo em ambiente controlado.",
+      "warmup": "Hang passivo 30s · scapular pulls ×8 · wrist circles — 2 min",
+      "tip": "MU destravado — agora o objetivo é limpar o padrão. 6×2 com sets que terminam antes do chicken wing aparecer. Se a rep 2 já veio suja, próximo set é 1 rep. Nenhuma rep com chicken wing conta como rep. A negativa com banda reforça o eccentric simétrico que o MU completo em fadiga não consegue garantir. Pull-up negativa lenta quebra o platô de 3×6 atacando por eccentric overload.",
       "blocks": [
         {
-          "label": "Skill — Componentes do MU · 16 min",
+          "label": "Skill — MU · 18 min",
           "is_skill": true,
           "exercises": [
             {
-              "id": "mu-puxada-explosiva",
-              "name": "Puxada explosiva",
-              "target": "4 × 4",
-              "parsed": { "sets": 4, "target": 4, "unit": "reps", "per_side": false },
-              "obs": "Puxa até o esterno/umbigo, explosiva — NÃO até o queixo. É a altura que mata o kip e o chicken wing",
+              "id": "mu-completo",
+              "name": "MU completo",
+              "target": "6 × 2",
+              "parsed": { "sets": 6, "target": 2, "unit": "reps", "per_side": false },
+              "obs": "Para ANTES do chicken wing. Se a rep 2 veio suja, próximo set é 1 rep. Kip leve aceito, balanço não",
               "rest": "descanso 120s",
-              "flags": ["chegou no esterno", "parou no queixo", "kip apareceu"],
-              "neg_flags": ["parou no queixo", "kip apareceu"]
-            },
-            {
-              "id": "mu-false-grip-pullup",
-              "name": "False grip pull-up",
-              "target": "3 × 4",
-              "parsed": { "sets": 3, "target": 4, "unit": "reps", "per_side": false },
-              "obs": "Pulso sobre a barra o set inteiro. Se o grip solta, a transição morre",
-              "rest": "descanso 120s",
-              "flags": ["grip soltou", "grip firme o set todo", "punho doeu"],
-              "neg_flags": ["grip soltou"]
+              "flags": ["chicken wing", "simetria ok", "kip exagerado", "parou limpo"],
+              "neg_flags": ["chicken wing", "kip exagerado"]
             },
             {
               "id": "mu-negativa-transicao",
               "name": "Negativa transição (banda 35kg)",
-              "target": "3 × 2",
-              "parsed": { "sets": 3, "target": 2, "unit": "reps", "per_side": false },
-              "obs": "Parte do topo do dip, desce lento 3-4s pela transição até o false grip pull. Sem chicken wing — se aparecer, próxima rep com menos velocidade",
-              "rest": "descanso 120s",
+              "target": "3 × 3",
+              "parsed": { "sets": 3, "target": 3, "unit": "reps", "per_side": false },
+              "obs": "Parte do topo do dip, desce lento 3-4s pela transição até o false grip pull. Foco na simetria dos cotovelos",
+              "rest": "descanso 90s",
               "flags": ["chicken wing", "transição simétrica", "descida rápida demais"],
               "neg_flags": ["chicken wing", "descida rápida demais"]
-            },
-            {
-              "id": "mu-false-grip-hang",
-              "name": "False grip hang",
-              "target": "2 × 20s",
-              "parsed": { "sets": 2, "target": 20, "unit": "seconds", "per_side": false },
-              "obs": "Base do grip — pulso sobre a barra, não no meio",
-              "rest": "descanso 60s",
-              "flags": ["pulso escorregou", "punho doeu"],
-              "neg_flags": ["pulso escorregou"]
             }
           ]
         },
         {
-          "label": "Suporte · 12 min",
+          "label": "Puxar · 14 min",
           "is_skill": false,
           "exercises": [
             {
-              "id": "mu-straight-bar-dip",
-              "name": "Straight bar dip",
-              "target": "3 × 6",
-              "parsed": { "sets": 3, "target": 6, "unit": "reps", "per_side": false },
-              "obs": "Monta 1x no início do set (do jeito que conseguir), faz as reps em cima. Força de empurrar no topo do MU",
+              "id": "pull-up-negativa-lenta",
+              "name": "Pull-up negativa lenta",
+              "target": "4 × 4",
+              "parsed": { "sets": 4, "target": 4, "unit": "reps", "per_side": false },
+              "obs": "5s de descida controlada, peso morto em cada rep. Escápula ativa desde o topo",
               "rest": "descanso 90s",
-              "flags": ["montada difícil", "ombro incomodou"]
+              "flags": ["caiu rápido", "5s mantido", "ombro incomodou"],
+              "neg_flags": ["caiu rápido"]
             },
             {
               "id": "mu-toes-to-bar",
@@ -83,97 +64,118 @@
               "parsed": { "sets": 3, "target": 8, "unit": "reps", "per_side": false },
               "obs": "Controle de escápula no hang — core inicia, não o balanço",
               "rest": "descanso 60s",
-              "flags": ["usou balanço", "grip falhou antes do core"]
+              "flags": ["usou balanço", "grip falhou antes do core", "drop-off grande"],
+              "neg_flags": ["usou balanço"]
             }
           ]
         }
       ],
       "progression": [
         {
-          "exercise_id": "mu-puxada-explosiva",
-          "criteria": "Quando puxar consistente até o esterno por 2 sessões → mira mais alto (umbigo) ou adiciona reps. É o que destrava a transição simétrica"
-        },
-        {
-          "exercise_id": "mu-false-grip-pullup",
-          "criteria": "Quando fizer 3×4 sem o grip soltar → sobe pra 3×5-6"
+          "exercise_id": "mu-completo",
+          "criteria": "Quando 6×2 saírem sem chicken wing por 2 sessões → tenta 6×3. Regra inegociável: nenhuma rep com chicken wing conta"
         },
         {
           "exercise_id": "mu-negativa-transicao",
-          "criteria": "Quando 3×2 saírem sem chicken wing por 2 sessões → sobe pra 3×3 ou reduz banda"
+          "criteria": "Quando 3×3 saírem sem assimetria por 2 sessões → reduz banda (dobra mais alto) ou sobe pra 3×4"
         },
         {
-          "exercise_id": null,
-          "label": "MU completo (barra alta)",
-          "criteria": "Tenta quando: puxada explosiva consistente no umbigo + jumping MU com impulso mínimo + negativa sem assimetria. Antes disso, tentar reforça o chicken wing"
+          "exercise_id": "pull-up-negativa-lenta",
+          "criteria": "Quando 4×4 com 5s de descida controlada por 2 sessões → adiciona rep (4×5) ou aumenta o tempo (6-7s)"
+        },
+        {
+          "exercise_id": "mu-toes-to-bar",
+          "criteria": "Quando 3×8 sem swing e drop-off mínimo por 2 sessões → sobe pra 3×10 ou testa com pausa 1s no topo"
         }
       ]
     },
     {
       "weekday": 2,
       "label": "Ter",
-      "title": "Handstand + Frog to HS",
+      "title": "HS + FL",
       "skill": "HS / Frog to HS",
-      "duration": "~28 min",
+      "duration": "~40 min",
       "accent": "#6ECFAB",
       "accent_bg": "#132820",
       "is_practice": false,
-      "warmup": "Wrist prep completo · shoulder circles · frog stand 20s — 2 min",
-      "tip": "Teu HS já segura 15-30s livre — o gargalo é a consistência da entrada, não força nem a parede. Por isso a entrada virou volume de repetição livre. A parede não treina equilíbrio porque tira justamente a correção que tu precisa aprender.",
+      "warmup": "Wrist prep completo · shoulder circles · frog stand 15s — 2 min",
+      "tip": "Dia de HS e FL. Kick-up livre constrói consistência de entrada — parede tira exatamente o que precisa aprender. Single-leg FL é o salto real de tuck: um lado estendido, um tucked. Se não segurar 6s, banda assiste. Wall HSPU negativa é mais específica pro empurrar vertical do que pike — nariz ao chão, 3-4s de descida. Rotação externa no final: low cost, protege o ombro.",
       "blocks": [
         {
-          "label": "Skill — Entrada de HS + Frog to HS · 14 min",
+          "label": "Skill — HS · 12 min",
           "is_skill": true,
           "exercises": [
             {
               "id": "hs-kickup-livre",
-              "name": "Kick-up livre (entrada)",
+              "name": "Kick-up livre",
               "target": "10-12 tentativas",
               "parsed": null,
-              "obs": "Sem parede. Foco em achar o balanço e corrigir com os dedos. Consistência da entrada é o objetivo, não tempo de hold",
+              "obs": "Sem parede. Foco em achar o balanço e corrigir com os dedos. Consistência da entrada, não tempo de hold",
               "rest": "30-45s entre tentativas",
-              "flags": ["estabilizou na maioria", "passou do ponto", "faltou impulso", "correção com dedos funcionou"]
+              "flags": ["estabilizou na maioria", "passou do ponto", "faltou impulso", "correção com dedos funcionou"],
+              "neg_flags": ["passou do ponto", "faltou impulso"]
             },
             {
-              "id": "hs-frog-to-hs-negativa",
-              "name": "Frog to HS negativa",
-              "target": "5 rep",
-              "parsed": { "sets": 1, "target": 5, "unit": "reps", "per_side": false },
-              "obs": "Sobe à parede, desce lento (4s) com controle total da inclinação e do quadril",
+              "id": "hs-wall-hspu-negativa",
+              "name": "Wall HSPU negativa",
+              "target": "3 × 3",
+              "parsed": { "sets": 3, "target": 3, "unit": "reps", "per_side": false },
+              "obs": "Kick-up pra parede, nariz desce ao chão em 3-4s. Cotovelos a 45° do tronco, não abertos. Empurra de volta ao topo antes da próxima rep",
               "rest": "descanso 90s",
-              "flags": ["descida controlada 4s", "caiu no meio", "quadril desabou"]
+              "flags": ["nariz tocou o chão", "amplitude curta", "cotovelo abriu", "ombro incomodou"],
+              "neg_flags": ["amplitude curta", "cotovelo abriu"]
             }
           ]
         },
         {
-          "label": "Suporte · 14 min",
+          "label": "FL · 14 min",
+          "is_skill": true,
+          "exercises": [
+            {
+              "id": "fl-single-leg-hold",
+              "name": "Single-leg FL hold",
+              "target": "4 × 6-8s/lado",
+              "parsed": { "sets": 4, "target": 8, "unit": "seconds", "per_side": true },
+              "obs": "Uma perna estendida, uma tucked. Depressão escapular total, quadril ao nível dos ombros. Se não segurar 6s, banda 35kg assiste. Alterna o lado a cada set",
+              "rest": "descanso 90s",
+              "flags": ["quadril caiu", "depressão escapular ok", "perna dobrou", "hold limpo"],
+              "neg_flags": ["quadril caiu", "perna dobrou"]
+            },
+            {
+              "id": "fl-tuck-raise",
+              "name": "Tuck FL raise",
+              "target": "3 × 5",
+              "parsed": { "sets": 3, "target": 5, "unit": "reps", "per_side": false },
+              "obs": "Hang → sobe ao tuck FL → volta ao hang controlado. Quadril não sobe antes das escápulas deprimirem",
+              "rest": "descanso 90s",
+              "flags": ["quadril subiu com o tronco", "subida controlada", "ombro rolou"],
+              "neg_flags": ["quadril subiu com o tronco", "ombro rolou"]
+            }
+          ]
+        },
+        {
+          "label": "Suporte · 8 min",
           "is_skill": false,
           "exercises": [
             {
-              "id": "hs-pike-pushup-elevado",
-              "name": "Pike push-up elevado",
-              "target": "4 × 8",
-              "parsed": { "sets": 4, "target": 8, "unit": "reps", "per_side": false },
-              "obs": "Pés em cadeira — força de empurrar com braço dobrado, igual à fase inicial do frog to HS",
-              "rest": "descanso 90s",
-              "flags": ["amplitude curta", "ombro incomodou"]
-            },
-            {
-              "id": "core-l-sit-chao",
-              "name": "L-sit no chão",
-              "target": "3 × 10-15s",
+              "id": "core-l-sit-paralelas",
+              "name": "L-sit nas paralelas",
+              "target": "3 × 15s",
               "parsed": { "sets": 3, "target": 15, "unit": "seconds", "per_side": false },
-              "obs": "Mãos no chão ao lado do quadril, ombro deprimido empurrando o chão, pernas retas sem tocar. Se raspar, joelhos dobram um pouco — mas mira reto",
-              "rest": "descanso 75s",
-              "flags": ["pernas retas", "joelho dobrou", "calcanhar raspou"]
+              "obs": "Ombro deprimido empurrando pra baixo, pernas retas e horizontais",
+              "rest": "descanso 60s",
+              "flags": ["pernas retas", "joelho dobrou", "ombro deprimido ok"],
+              "neg_flags": ["joelho dobrou"]
             },
             {
-              "id": "legs-single-leg-deadlift",
-              "name": "Single leg deadlift",
-              "target": "3 × 8/lado",
-              "parsed": { "sets": 3, "target": 8, "unit": "reps", "per_side": true },
-              "obs": "Posterior e glúteo — joelho levemente flexionado",
-              "rest": "descanso 60s",
-              "flags": ["perdeu equilíbrio", "lombar arredondou"]
+              "id": "hs-rotacao-externa",
+              "name": "Rotação externa de ombro",
+              "target": "2 × 10/lado",
+              "parsed": { "sets": 2, "target": 10, "unit": "reps", "per_side": true },
+              "obs": "Deitado ou em pé com banda. Cotovelo a 90°, rotaciona lento pra fora. Prevenção de impingement — low cost, alta importância",
+              "rest": "descanso 45s",
+              "flags": ["amplitude completa", "dor no ombro"],
+              "neg_flags": ["dor no ombro"]
             }
           ]
         }
@@ -181,29 +183,37 @@
       "progression": [
         {
           "exercise_id": "hs-kickup-livre",
-          "criteria": "Quando entrar e estabilizar em metade das tentativas por 2 sessões → foca em entradas mais limpas e altas, com menos correção. Quando estabilizar na maioria → o objetivo tá batido; aí sim dá pra perseguir tempo ou variações"
+          "criteria": "Quando estabilizar em 7+/10 por 2 sessões → foca em entradas mais limpas. Quando estabilizar em 9+/10 → objetivo batido, persegue tempo ou variações"
         },
         {
-          "exercise_id": "hs-frog-to-hs-negativa",
-          "criteria": "Quando 5 reps com 4s de descida controlada por 2 sessões → tenta subir do frog sem parede, mesmo que 1-2s"
+          "exercise_id": "hs-wall-hspu-negativa",
+          "criteria": "Quando 3×3 com nariz ao chão e 3-4s de descida por 2 sessões → sobe pra 3×4. Depois testa HSPU completo com banda"
         },
         {
-          "exercise_id": "core-l-sit-chao",
-          "criteria": "Quando 3×15s sair com pernas retas e sem raspar → sobe pra 3×20s, depois testa nas paralelas em dia que tiver acesso"
+          "exercise_id": "fl-single-leg-hold",
+          "criteria": "Quando 4×8s/lado sem quadril caindo por 2 sessões → aproxima a perna tucked da estendida. Progressão: tucked mais aberto → quase estendida → FL completo"
+        },
+        {
+          "exercise_id": "fl-tuck-raise",
+          "criteria": "Quando 3×5 com subida controlada por 2 sessões → sobe pra 3×6, depois testa com pausa 2s no topo"
+        },
+        {
+          "exercise_id": "core-l-sit-paralelas",
+          "criteria": "Quando 3×15s com pernas retas por 2 sessões → sobe pra 3×20s"
         }
       ]
     },
     {
       "weekday": 3,
       "label": "Qua",
-      "title": "Prática — Handstand",
+      "title": "Prática — HS",
       "skill": "Folga",
       "duration": "10-12 min",
       "accent": "#7FA896",
       "accent_bg": "#141C18",
       "is_practice": true,
       "warmup": "Wrist prep · shoulder circles — 1 min",
-      "tip": "Folga é prática, não treino. Se sair cansado, fez errado — para nas primeiras boas tentativas. Frequência de entrada livre é o que constrói consistência de HS, e é por isso que os dias de folga entram no plano.",
+      "tip": "Prática, não treino. 8-10 kick-ups livres sem parede. Para nas primeiras boas tentativas. Frequência de entrada livre é o que constrói consistência de HS.",
       "blocks": [
         {
           "label": "Prática · 10 min",
@@ -212,11 +222,12 @@
             {
               "id": "hs-kickup-livre",
               "name": "Kick-up livre",
-              "target": "8-10 entradas",
+              "target": "8-10 tentativas",
               "parsed": null,
-              "obs": "Sem parede. Acha o balanço, corrige com os dedos. Qualidade da entrada, não tempo",
+              "obs": "Sem parede. Acha o balanço, corrige com os dedos. Para quando sair cansado",
               "rest": "30-45s entre tentativas",
-              "flags": ["estabilizou na maioria", "passou do ponto", "faltou impulso"]
+              "flags": ["estabilizou na maioria", "passou do ponto", "faltou impulso"],
+              "neg_flags": ["passou do ponto", "faltou impulso"]
             }
           ]
         }
@@ -226,113 +237,110 @@
     {
       "weekday": 4,
       "label": "Qui",
-      "title": "Puxar + MU",
+      "title": "MU + Puxar + FL",
       "skill": "MU",
-      "duration": "~32 min",
+      "duration": "~40 min",
       "accent": "#FF9066",
       "accent_bg": "#2A1810",
       "is_practice": false,
       "warmup": "Hang passivo 40s · scapular depression hold · wrist prep — 2 min",
-      "tip": "Quinta agora é dia de puxada + MU controlado. Jumping MU só faz sentido enquanto o padrão é simétrico e a pausa de 1s no topo aparece — se qualquer um dos dois falhar, é sinal de que o impulso tá mascarando. Grava de lado quando puder pra confirmar simetria dos cotovelos. FL vira manutenção pra não perder depressão escapular, sem foco de progressão.",
+      "tip": "Volume de MU menor que segunda — foco em qualidade absoluta. Se segunda bateu 6×2 limpo, aqui tenta 4×3. Row com pés elevados aumenta a demanda horizontal sem equipamento extra. FL segunda exposição da semana: mantém os holds da terça. Straight bar dip subiu pra 3×8 — o push do topo do MU precisa de mais força que 3×6.",
       "blocks": [
         {
-          "label": "Skill — MU na barra baixa · 10 min",
+          "label": "Skill — MU · 8 min",
           "is_skill": true,
           "exercises": [
             {
-              "id": "mu-jumping-barra-baixa",
-              "name": "Jumping MU (barra baixa)",
-              "target": "3 × 3",
-              "parsed": { "sets": 3, "target": 3, "unit": "reps", "per_side": false },
-              "obs": "Impulso mínimo — só o necessário pra puxada completar. Pausa 1s no topo da puxada (peito na barra) antes de empurrar. Sem pausa = próxima rep com menos impulso",
-              "rest": "descanso 120s",
-              "flags": ["chicken wing", "pausa 1s no topo", "impulso demais", "peito não chegou na barra"],
-              "neg_flags": ["chicken wing", "impulso demais", "peito não chegou na barra"]
+              "id": "mu-completo",
+              "name": "MU completo",
+              "target": "4 × 1-2",
+              "parsed": { "sets": 4, "target": 2, "unit": "reps", "per_side": false },
+              "obs": "Volume menor que segunda — qualidade absoluta. Se segunda bateu 6×2 limpo, tenta 4×3. 1 rep ruim e o set acabou",
+              "rest": "descanso 90s",
+              "flags": ["chicken wing", "simetria ok", "kip exagerado", "parou limpo"],
+              "neg_flags": ["chicken wing", "kip exagerado"]
             }
           ]
         },
         {
-          "label": "Puxar + suporte · 18 min",
+          "label": "Puxar + FL · 26 min",
           "is_skill": false,
           "exercises": [
             {
-              "id": "fl-tuck-hold",
-              "name": "Tuck FL hold",
-              "target": "3 × 10s",
-              "parsed": { "sets": 3, "target": 10, "unit": "seconds", "per_side": false },
-              "obs": "Manutenção — depressão escapular total, quadril ao nível dos ombros. Sem progressão ativa esse ciclo",
-              "rest": "descanso 60s",
-              "flags": ["quadril caiu", "escápula deprimida"]
+              "id": "row-inverso-elevado",
+              "name": "Row inverso pés elevados",
+              "target": "3 × 8",
+              "parsed": { "sets": 3, "target": 8, "unit": "reps", "per_side": false },
+              "obs": "Pés em cadeira — corpo reto, peito toca a barra. Escápula retrai antes do braço puxar",
+              "rest": "descanso 75s",
+              "flags": ["corpo reto", "quadril caiu", "escápula ativa"],
+              "neg_flags": ["quadril caiu"]
             },
             {
-              "id": "pull-up-peso-morto",
-              "name": "Pull-up peso morto",
-              "target": "3 × 5-6",
-              "parsed": { "sets": 3, "target": 6, "unit": "reps", "per_side": false },
-              "obs": "Força de puxada geral, sem false grip. Escápula ativa desde o começo",
-              "rest": "descanso 120s",
-              "flags": ["usou kip", "amplitude completa"]
+              "id": "mu-straight-bar-dip",
+              "name": "Straight bar dip",
+              "target": "3 × 8",
+              "parsed": { "sets": 3, "target": 8, "unit": "reps", "per_side": false },
+              "obs": "Monta 1x no início do set, faz as reps em cima. Força de empurrar no topo do MU. Subiu de 3×6",
+              "rest": "descanso 90s",
+              "flags": ["montada difícil", "ombro incomodou", "amplitude completa"]
             },
             {
-              "id": "row-inverso-barra-baixa",
-              "name": "Row inverso (barra baixa)",
-              "target": "3 × 8-10",
-              "parsed": { "sets": 3, "target": 10, "unit": "reps", "per_side": false },
-              "obs": "Puxada horizontal — corpo reto, peito toca a barra. Escápula retrai antes do braço puxar",
-              "rest": "descanso 60s",
-              "flags": ["quadril caiu", "peito não tocou"]
+              "id": "fl-single-leg-hold",
+              "name": "Single-leg FL hold",
+              "target": "3 × 6-8s/lado",
+              "parsed": { "sets": 3, "target": 8, "unit": "seconds", "per_side": true },
+              "obs": "Segunda exposição da semana. Uma perna estendida, uma tucked. Banda assiste se necessário",
+              "rest": "descanso 90s",
+              "flags": ["quadril caiu", "depressão escapular ok", "perna dobrou", "hold limpo"],
+              "neg_flags": ["quadril caiu", "perna dobrou"]
             },
             {
-              "id": "core-hanging-knee-raise",
-              "name": "Hanging knee raise",
-              "target": "3 × 12",
-              "parsed": { "sets": 3, "target": 12, "unit": "reps", "per_side": false },
-              "obs": "Sem swing — core inicia o movimento",
+              "id": "legs-single-leg-deadlift",
+              "name": "Single leg deadlift",
+              "target": "3 × 8/lado",
+              "parsed": { "sets": 3, "target": 8, "unit": "reps", "per_side": true },
+              "obs": "Posterior e glúteo — joelho levemente flexionado, lombar neutra",
               "rest": "descanso 45s",
-              "flags": ["usou balanço", "grip falhou antes do core"]
-            },
-            {
-              "id": "mu-false-grip-hang",
-              "name": "False grip hang",
-              "target": "2 × 15-20s",
-              "parsed": { "sets": 2, "target": 20, "unit": "seconds", "per_side": false },
-              "obs": "Segunda exposição semanal — mantém adaptação de punho/antebraço entre as quintas e as próximas segundas",
-              "rest": "descanso 45s",
-              "flags": ["pulso escorregou", "punho doeu"],
-              "neg_flags": ["pulso escorregou"]
+              "flags": ["perdeu equilíbrio", "lombar arredondou"],
+              "neg_flags": ["lombar arredondou"]
             }
           ]
         }
       ],
       "progression": [
         {
-          "exercise_id": "mu-jumping-barra-baixa",
-          "criteria": "Quando 3×3 saírem com impulso mínimo e pausa 1s consistente por 2 sessões → tenta 2-3 MU completos na barra alta sem impulso na segunda"
+          "exercise_id": "mu-completo",
+          "criteria": "Quando 4×2 saírem sem chicken wing por 2 sessões de quinta → sobe pra 4×3. Sincroniza com segunda: se segunda já faz 6×3, aqui faz 4×3"
         },
         {
-          "exercise_id": "row-inverso-barra-baixa",
-          "criteria": "Quando 3×10 saírem fáceis → eleva os pés numa cadeira ou passa pra 4×10"
+          "exercise_id": "row-inverso-elevado",
+          "criteria": "Quando 3×8 sair limpo por 2 sessões → eleva mais os pés ou adiciona pausa 2s no peito na barra"
         },
         {
-          "exercise_id": "fl-tuck-hold",
-          "criteria": "Sem progressão esse ciclo — mantém 3×10s. Volta a atacar depois que MU tiver destravado"
+          "exercise_id": "mu-straight-bar-dip",
+          "criteria": "Quando 3×8 sair sem dificuldade por 2 sessões → sobe pra 4×8 ou adiciona pausa 2s no fundo"
+        },
+        {
+          "exercise_id": "fl-single-leg-hold",
+          "criteria": "Segunda exposição — mesma progressão da terça. Quando 3×8s/lado sem quadril caindo por 2 sessões → aproxima a perna tucked"
         }
       ]
     },
     {
       "weekday": 5,
       "label": "Sex",
-      "title": "Empurrar + Pernas",
+      "title": "HS + Pernas + Push + Core",
       "skill": "Frog to HS",
-      "duration": "~28 min",
+      "duration": "~42 min",
       "accent": "#6EB4FF",
       "accent_bg": "#101E2E",
       "is_practice": false,
       "warmup": "Hip circles · squat profundo · wrist prep — 2 min",
-      "tip": "É o dia mais expendável se a recuperação tiver ruim — os 3 primeiros dias de treino cobrem o essencial. Mas se vier, soma bem em empurrar e pernas.",
+      "tip": "Dia mais expendável — se a recuperação apertar, pula. Mas se vier: MU singles greaser (1 rep limpa sem fadiga, frequência pro padrão motor), push-up arqueiro cobre o peito que faltava no ciclo, pernas e core fecham a semana. Frog to HS negativa reforça a entrada de HS.",
       "blocks": [
         {
-          "label": "Skill — Frog to HS · 8 min",
+          "label": "Skill — HS · 10 min",
           "is_skill": true,
           "exercises": [
             {
@@ -340,63 +348,102 @@
               "name": "Kick-up controlado",
               "target": "6 tentativas",
               "parsed": null,
-              "obs": "Entrada devagar — sem chutar, sem pressa",
+              "obs": "Entrada devagar — sem chutar, sem pressa. Qualidade da entrada, não quantidade",
               "rest": "45s entre tentativas",
-              "flags": ["entrada limpa", "chutou com pressa", "passou do ponto"]
+              "flags": ["estabilizou", "passou do ponto", "entrada limpa"],
+              "neg_flags": ["passou do ponto"]
             },
             {
               "id": "hs-frog-to-hs-negativa",
               "name": "Frog to HS negativa",
-              "target": "3 rep",
-              "parsed": { "sets": 1, "target": 3, "unit": "reps", "per_side": false },
-              "obs": "4s de descida — controle até o fim",
-              "rest": "descanso 90s",
-              "flags": ["descida controlada 4s", "caiu no meio", "quadril desabou"]
+              "target": "5 rep",
+              "parsed": { "sets": 1, "target": 5, "unit": "reps", "per_side": false },
+              "obs": "Sobe à parede, desce lento 4s com controle total da inclinação e do quadril. Quadril desabando = rep não conta",
+              "rest": "descanso 60s",
+              "flags": ["descida controlada 4s", "caiu no meio", "quadril desabou"],
+              "neg_flags": ["caiu no meio", "quadril desabou"]
             }
           ]
         },
         {
-          "label": "Suporte · 16 min",
+          "label": "MU greaser · 5 min",
+          "is_skill": true,
+          "exercises": [
+            {
+              "id": "mu-greaser-single",
+              "name": "MU single (greaser)",
+              "target": "3 × 1",
+              "parsed": { "sets": 3, "target": 1, "unit": "reps", "per_side": false },
+              "obs": "1 rep limpa, sem esforço. Frequência pro padrão motor, não carga. Qualquer compensação = cancela o set",
+              "rest": "descanso 60s",
+              "flags": ["simetria ok", "chicken wing", "kip limpo"],
+              "neg_flags": ["chicken wing"]
+            }
+          ]
+        },
+        {
+          "label": "Suporte · 22 min",
           "is_skill": false,
           "exercises": [
             {
               "id": "legs-pistol-split-squat",
-              "name": "Pistol squat ou split squat",
-              "target": "4 × 6/lado",
-              "parsed": { "sets": 4, "target": 6, "unit": "reps", "per_side": true },
-              "obs": "Calcanhar no chão, controle total",
+              "name": "Pistol squat",
+              "target": "3 × 6/lado",
+              "parsed": { "sets": 3, "target": 6, "unit": "reps", "per_side": true },
+              "obs": "Calcanhar no chão, controle total da descida e subida. Sem apoio se conseguir",
               "rest": "descanso 75s",
-              "flags": ["calcanhar levantou", "joelho instável", "usou apoio"]
+              "flags": ["usou apoio", "calcanhar levantou", "controle total"],
+              "neg_flags": ["usou apoio", "calcanhar levantou"]
             },
             {
-              "id": "push-up-com-pausa",
-              "name": "Push-up com pausa",
-              "target": "4 × 10",
-              "parsed": { "sets": 4, "target": 10, "unit": "reps", "per_side": false },
-              "obs": "2s em baixo, explosivo em cima",
-              "rest": "descanso 60s",
-              "flags": ["pausa 2s mantida", "quadril caiu"]
+              "id": "push-up-arqueiro",
+              "name": "Push-up arqueiro",
+              "target": "3 × 6-8/lado",
+              "parsed": { "sets": 3, "target": 8, "unit": "reps", "per_side": true },
+              "obs": "Braço de trabalho dobra até o peito quase tocar o chão, braço estendido só equilibra. Se não sair 6 limpos, braço estendido ajuda mais",
+              "rest": "descanso 75s",
+              "flags": ["amplitude completa", "braço estendido travou", "quadril torceu"],
+              "neg_flags": ["quadril torceu"]
             },
             {
               "id": "core-dragon-flag-negativa",
               "name": "Dragon flag negativa",
-              "target": "3 × 4",
-              "parsed": { "sets": 3, "target": 4, "unit": "reps", "per_side": false },
-              "obs": "4s de descida — core total",
-              "rest": "descanso 90s",
-              "flags": ["quadril dobrou", "descida controlada 4s", "lombar arqueou"]
+              "target": "3 × 5",
+              "parsed": { "sets": 3, "target": 5, "unit": "reps", "per_side": false },
+              "obs": "4s de descida — core total, sem arquear lombar. Subiu de 3×4",
+              "rest": "descanso 75s",
+              "flags": ["lombar arredondou", "descida controlada", "caiu rápido"],
+              "neg_flags": ["lombar arredondou", "caiu rápido"]
+            },
+            {
+              "id": "mu-toes-to-bar",
+              "name": "Toes to bar",
+              "target": "3 × 8",
+              "parsed": { "sets": 3, "target": 8, "unit": "reps", "per_side": false },
+              "obs": "Controle de escápula no hang — core inicia, não o balanço",
+              "rest": "descanso 45s",
+              "flags": ["usou balanço", "grip falhou antes do core"],
+              "neg_flags": ["usou balanço"]
             }
           ]
         }
       ],
       "progression": [
         {
+          "exercise_id": "hs-frog-to-hs-negativa",
+          "criteria": "Quando 5 reps com 4s de descida controlada por 2 sessões → tenta subir do frog sem parede, 1-2s"
+        },
+        {
+          "exercise_id": "push-up-arqueiro",
+          "criteria": "Quando 3×8/lado sair limpo por 2 sessões → one-arm push-up negativa (4s de descida com apoio leve)"
+        },
+        {
           "exercise_id": "legs-pistol-split-squat",
-          "criteria": "Quando 4×6/lado estiver sólido por 2 sessões → adiciona pausa de 2s no fundo"
+          "criteria": "Quando 3×6/lado sólido por 2 sessões → adiciona pausa 2s no fundo"
         },
         {
           "exercise_id": "core-dragon-flag-negativa",
-          "criteria": "Quando 3×4 com 4s de descida estiver controlado → passa pra 3×5"
+          "criteria": "Quando 3×5 com 4s de descida por 2 sessões → sobe pra 3×6"
         }
       ]
     }

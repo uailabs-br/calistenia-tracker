@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useLiveQuery } from "dexie-react-hooks";
-import { getSkillById } from "@/lib/plan/skills";
+import { getSkillById, getCriteria, formatCriteria } from "@/lib/plan/skills";
 import { getFirstCleanSuccess } from "@/lib/db/queries/skillProgress";
 import { skillPosition, stepStatus } from "@/lib/domain/skillMap";
 import {
@@ -105,6 +105,7 @@ export default function SkillMapPage() {
           const status = stepStatus(i, position);
           const date = step.exercise_id ? firstSuccess?.get(step.exercise_id) : undefined;
           const last = i === skill.steps.length - 1;
+          const criteria = getCriteria(skill.id, step.level);
           return (
             <li key={`${step.label}-${i}`} className="flex gap-3">
               <div className="flex flex-col items-center">
@@ -156,6 +157,14 @@ export default function SkillMapPage() {
                 )}
                 {step.criteria && (
                   <p className="mt-1 text-xs leading-snug text-muted">{step.criteria}</p>
+                )}
+                {criteria && (
+                  <p
+                    className="mt-1 font-mono text-[11px]"
+                    style={status === "locked" ? { color: "var(--color-muted)" } : { color: accent }}
+                  >
+                    {formatCriteria(criteria)}
+                  </p>
                 )}
               </div>
             </li>

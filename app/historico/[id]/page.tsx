@@ -192,9 +192,12 @@ function ExerciseRow({
 
 function summarize(log: ExerciseLog, parsed: PlanExercise["parsed"]): string {
   if (log.skipped) return "pulado";
-  if (log.as_target) return "como previsto";
+  if (log.sets_performed?.type === "skill_consistency") {
+    const { attempts_good, attempts_total } = log.sets_performed;
+    return `${attempts_good}/${attempts_total} tentativas`;
+  }
   const s = effectiveSets(log, parsed);
-  if (s.length === 0) return "feito";
+  if (s.length === 0) return log.as_target ? "como previsto" : "feito";
   const unit = parsed?.unit === "seconds" ? "s" : "";
   return s.map((v) => `${v}${unit}`).join("/");
 }

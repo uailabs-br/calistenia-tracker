@@ -5,7 +5,7 @@ import { upsertLog } from "@/lib/db/repositories/logs";
 import { computePR } from "@/lib/db/queries/pr";
 import type { Parsed } from "@/lib/plan/schema";
 
-const HOLD = "mu-false-grip-hang"; // parsed seconds, neg_flags ["pulso escorregou"]
+const HOLD = "fl-single-leg-hold"; // parsed seconds, neg_flags ["quadril caiu","perna dobrou"]
 const secs: Parsed = { sets: 2, target: 20, unit: "seconds", per_side: false };
 
 beforeEach(async () => {
@@ -62,14 +62,14 @@ describe("computePR", () => {
     await record([20]);
     const pr = await computePR(
       HOLD,
-      { as_target: false, skipped: false, flags_selected: ["pulso escorregou"], sets: [{ index: 0, value: 30 }] },
+      { as_target: false, skipped: false, flags_selected: ["quadril caiu"], sets: [{ index: 0, value: 30 }] },
       secs
     );
     expect(pr).toBeNull();
   });
 
   it("histórico sujo não vira o recorde a bater", async () => {
-    await record([30], ["pulso escorregou"]); // sujo: ignorado
+    await record([30], ["quadril caiu"]); // sujo: ignorado
     await record([18]); // melhor limpo = 18
     const pr = await computePR(
       HOLD,

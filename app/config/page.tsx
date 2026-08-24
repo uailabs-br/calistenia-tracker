@@ -6,7 +6,9 @@ import { db } from "@/lib/db/schema";
 import { plan } from "@/lib/plan/loader";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/Toast";
 import { ReminderSettings } from "@/components/config/ReminderSettings";
+import { AI_SCHEMA_PROMPT } from "@/lib/plan/aiSchema";
 import {
   getProfileName,
   setProfileName,
@@ -37,6 +39,7 @@ type InstallState = "standalone" | "ios" | "prompt" | "manual";
 
 export default function ConfigPage() {
   const fileRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [showReset, setShowReset] = useState(false);
   const [name, setName] = useState("");
@@ -123,6 +126,26 @@ export default function ConfigPage() {
       });
     } finally {
       if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  const handleCopySchema = async () => {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(AI_SCHEMA_PROMPT);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = AI_SCHEMA_PROMPT;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
+      toast({ message: "Esquema copiado — cola na IA", variant: "success" });
+    } catch {
+      toast({ message: "Não deu pra copiar", variant: "error" });
     }
   };
 
@@ -230,6 +253,21 @@ export default function ConfigPage() {
           className="tap mt-3 w-full rounded-xl border border-border bg-surface2 py-3 font-medium"
         >
           Escolher arquivo…
+        </button>
+      </section>
+
+      <section className="mt-3 rounded-card border border-border bg-surface px-4 py-4">
+        <h2 className="font-semibold">Criar treino com IA</h2>
+        <p className="mt-1 text-sm text-muted">
+          Copia o esquema do treino pra colar numa IA (Claude etc.) e pedir um
+          treino novo ou ajustar um existente já no formato certo.
+        </p>
+        <button
+          type="button"
+          onClick={handleCopySchema}
+          className="tap mt-3 w-full rounded-xl border border-border bg-surface2 py-3 font-medium"
+        >
+          Copiar esquema para IA
         </button>
       </section>
 

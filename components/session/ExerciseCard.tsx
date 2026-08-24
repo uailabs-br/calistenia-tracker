@@ -425,9 +425,8 @@ function summarize(
     const { attempts_good, attempts_total } = log.sets_performed;
     return `${attempts_good}/${attempts_total} tentativas`;
   }
-  if (log.as_target) return "como previsto";
   const s = effectiveSets(log, parsed);
-  if (s.length === 0) return "feito";
+  if (s.length === 0) return log.as_target ? "como previsto" : "feito";
   const unit = parsed?.unit === "seconds" ? "s" : "";
   return s.map((v) => `${v}${unit}`).join("/");
 }

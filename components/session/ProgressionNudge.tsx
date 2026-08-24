@@ -4,27 +4,54 @@ import { useLiveQuery } from "dexie-react-hooks";
 import type { PlanDay } from "@/lib/plan/schema";
 import { getExerciseById } from "@/lib/plan/loader";
 import { getProgressionReady } from "@/lib/db/queries/progressionReady";
-import { exerciseSkillMapping } from "@/lib/plan/skills";
+import { exerciseSkillMapping, getLevelInfo } from "@/lib/plan/skills";
+import { getSkillState } from "@/lib/db/queries/skillProgression";
+
+interface Signal {
+  id: string;
+  name: string;
+  state: "ready" | "regress" | "generic-ready";
+}
 
 /**
- * "Pronto pra subir de nível": aparece no fim da sessão (não interrompe) para os
- * movimentos que bateram o alvo limpo nas últimas sessões. Informacional — cita
- * o critério do plano quando existir. v1 não edita o plano.
+ * "Sinal de progressão": aparece no fim da sessão (não interrompe), unificando
+ * os dois motores num único aviso — o estruturado v3 (reps×RIR, hold limpo,
+ * consistência) pros exercícios mapeados a um nível de skill (ver
+ * lib/plan/skills.ts), e o genérico v1 ("bateu o alvo" simples) de fallback
+ * pro resto do plano. Informacional — não edita o plano.
  */
 export function ProgressionNudge({ day, accent }: { day: PlanDay; accent: string }) {
-  const ready = useLiveQuery(async () => {
-    // exercícios com skill mapeado já têm sinal próprio no SkillReadyNudge —
-    // evita duplicar o aviso aqui.
-    const ids = [
-      ...new Set(day.blocks.flatMap((b) => b.exercises.map((e) => e.id))),
-    ].filter((id) => !exerciseSkillMapping(id));
-    const checks = await Promise.all(
-      ids.map(async (id) => ({ id, ready: await getProgressionReady(id) }))
+  const signals = useLiveQuery(async (): Promise<Signal[]> => {
+    const ids = [...new Set(day.blocks.flatMap((b) => b.exercises.map((e) => e.id)))];
+
+    const mapped = ids
+      .map((id) => ({ id, mapping: exerciseSkillMapping(id) }))
+      .filter(
+        (x): x is { id: string; mapping: NonNullable<ReturnType<typeof exerciseSkillMapping>> } =>
+          x.mapping !== null
+      );
+    const structured = await Promise.all(
+      mapped.map(async ({ id, mapping }): Promise<Signal | null> => {
+        const state = await getSkillState(mapping.skill_id, mapping.level);
+        if (state !== "ready" && state !== "regress") return null;
+        const info = getLevelInfo(mapping.skill_id, mapping.level);
+        return { id, name: info?.name ?? id, state };
+      })
     );
-    return checks.filter((c) => c.ready).map((c) => c.id);
+
+    const genericIds = ids.filter((id) => !exerciseSkillMapping(id));
+    const generic = await Promise.all(
+      genericIds.map(async (id): Promise<Signal | null> => {
+        const ready = await getProgressionReady(id);
+        if (!ready) return null;
+        return { id, name: getExerciseById(id)?.name ?? id, state: "generic-ready" };
+      })
+    );
+
+    return [...structured, ...generic].filter((s): s is Signal => s !== null);
   }, [day]);
 
-  if (!ready || ready.length === 0) return null;
+  if (!signals || signals.length === 0) return null;
 
   return (
     <section
@@ -32,27 +59,21 @@ export function ProgressionNudge({ day, accent }: { day: PlanDay; accent: string
       style={{ borderColor: accent }}
     >
       <p className="text-sm font-semibold" style={{ color: accent }}>
-        Pronto pra subir de nível 💪
+        Sinal de progressão
       </p>
       <ul className="mt-2 flex flex-col gap-2 text-sm">
-        {ready.map((id) => {
-          const name = getExerciseById(id)?.name ?? id;
-          const criteria = day.progression.find(
-            (p) => p.exercise_id === id
-          )?.criteria;
-          return (
-            <li key={id}>
-              <span className="font-medium">{name}</span>
-              <span className="text-muted">
-                {" "}
-                — 2 sessões no alvo, sem falha de técnica.
-              </span>
-              {criteria && (
-                <span className="mt-0.5 block text-xs text-muted">{criteria}</span>
-              )}
-            </li>
-          );
-        })}
+        {signals.map((s) => (
+          <li key={s.id}>
+            <span className="font-medium">{s.name}</span>
+            <span className="text-muted">
+              {" "}
+              —{" "}
+              {s.state === "regress"
+                ? "considere um passo atrás"
+                : "pronto pra subir de nível 💪"}
+            </span>
+          </li>
+        ))}
       </ul>
     </section>
   );

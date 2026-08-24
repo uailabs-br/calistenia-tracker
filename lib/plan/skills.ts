@@ -16,6 +16,8 @@ export type SkillCategory = "Puxar" | "Empurrar" | "Core" | "Pernas";
 
 export interface SkillStep {
   label: string;
+  /** nível na escada (1-indexed, casa com `progressions[].level` do catálogo). */
+  level: number;
   /** exercício do plano que evidencia a etapa (opcional). */
   exercise_id?: string;
   /** o que é o movimento nesta etapa. */
@@ -118,6 +120,7 @@ export const skills: Skill[] = (
   category: GROUP_TO_CATEGORY[s.group] ?? "Puxar",
   steps: s.progressions.map((p) => ({
     label: p.name,
+    level: p.level,
     criteria: p.description,
     exercise_id: LEVEL_EXERCISE[s.id]?.[p.level],
   })),
@@ -134,6 +137,28 @@ export function getCriteria(skillId: string, level: number): Criteria | undefine
   return rawSkills
     .find((s) => s.id === skillId)
     ?.progressions.find((p) => p.level === level)?.criteria;
+}
+
+/** Texto curto do alvo numérico que o motor de progressão verifica de fato (não a técnica). */
+export function formatCriteria(criteria: Criteria): string {
+  const perSession =
+    criteria.sessions_required > 1
+      ? `${criteria.sessions_required} sessões seguidas`
+      : "1 sessão";
+
+  if (criteria.type === "reps_rir") {
+    const side = criteria.unilateral ? " por lado" : "";
+    return `${criteria.sets}×${criteria.reps} reps${side}, RIR ≤${criteria.rir_max} · ${perSession}`;
+  }
+
+  if (criteria.type === "hold_clean") {
+    const side = criteria.unilateral ? " por lado" : "";
+    return `${criteria.sets}×${criteria.duration_seconds}s de hold limpo${side} · ${perSession}`;
+  }
+
+  const goodNeeded = Math.ceil(criteria.attempts * criteria.consistency_ratio);
+  const hold = criteria.min_hold_seconds ? `, hold mín. ${criteria.min_hold_seconds}s` : "";
+  return `${goodNeeded}/${criteria.attempts} tentativas boas${hold} · ${perSession}`;
 }
 
 /** Nome + descrição de um nível de skill (para exibir o critério na UI). */

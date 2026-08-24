@@ -4,7 +4,7 @@ import { createSession, completeSession } from "@/lib/db/repositories/sessions";
 import { upsertLog } from "@/lib/db/repositories/logs";
 import { getProgressionReady } from "@/lib/db/queries/progressionReady";
 
-const EX = "mu-puxada-explosiva"; // parsed 4×4 reps, neg_flags ["parou no queixo","kip apareceu"]
+const EX = "pull-up-negativa-lenta"; // parsed 4×4 reps, neg_flags ["caiu rápido"]
 
 beforeEach(async () => {
   await db.sessions.clear();
@@ -30,13 +30,13 @@ async function logSession(
 describe("getProgressionReady", () => {
   it("2 sessões no alvo e limpas → pronto", async () => {
     await logSession([]);
-    await logSession(["chegou no esterno"]); // flag positiva não conta como suja
+    await logSession(["5s mantido"]); // flag positiva não conta como suja
     expect(await getProgressionReady(EX)).toBe(true);
   });
 
   it("2 no alvo mas 1 com flag negativa → não pronto", async () => {
     await logSession([]);
-    await logSession(["kip apareceu"]);
+    await logSession(["caiu rápido"]);
     expect(await getProgressionReady(EX)).toBe(false);
   });
 

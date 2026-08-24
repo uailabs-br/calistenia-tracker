@@ -9,9 +9,7 @@
 ---
 
 ## Ideias
-- pensar um forma de incluir fase de deload no treino e como registrar de forma a nao impactar negativamente a analise das metricas
-- ajuste: ao exportar os dados, os exercicios que foram ˜feitos como previsto''nao mostram o numero de reps, apenas o texto.
-- 
+- pensar um forma de incluir fase de deload no treino e como registrar de forma a nao impactar negativamente a analise das metricas: A cada 6 semanas de treino normal, a sétima é de deload: reduz 40% das séries no trabalho de suporte, mantém a frequência semanal e mantém o skill work intacto. O gatilho pode antecipar a semana de deload se houver queda de performance consistente por 2-3 sessões seguidas no mesmo exercício, sem causa óbvia externa. O objetivo é dissipar fadiga acumulada de tecido conjuntivo e do sistema nervoso sem perder frequência de prática nas habilidades
 
 ---
 

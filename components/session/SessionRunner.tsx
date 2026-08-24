@@ -23,7 +23,6 @@ import { SessionSummary } from "./SessionSummary";
 import { CollapsibleTip } from "./CollapsibleTip";
 import { WarmupCard } from "./WarmupCard";
 import { ProgressionNudge } from "./ProgressionNudge";
-import { SkillReadyNudge } from "./SkillReadyNudge";
 
 export function SessionRunner({
   session,
@@ -294,12 +293,7 @@ export function SessionRunner({
         })}
       </div>
 
-      {pending === 0 && (
-        <>
-          <SkillReadyNudge day={day} accent={day.accent} />
-          <ProgressionNudge day={day} accent={day.accent} />
-        </>
-      )}
+      {pending === 0 && <ProgressionNudge day={day} accent={day.accent} />}
 
       <button
         type="button"
