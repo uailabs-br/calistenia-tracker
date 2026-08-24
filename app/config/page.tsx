@@ -4,11 +4,19 @@ import { useEffect, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/db/schema";
 import { plan } from "@/lib/plan/loader";
+import type { Plan } from "@/lib/plan/schema";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/Toast";
 import { ReminderSettings } from "@/components/config/ReminderSettings";
 import { AI_SCHEMA_PROMPT } from "@/lib/plan/aiSchema";
+import {
+  parsePlanInput,
+  applyPlan,
+  clearPlanOverride,
+  hasPlanOverride,
+  type PlanSummary,
+} from "@/lib/plan/importPlan";
 import {
   getProfileName,
   setProfileName,
@@ -45,11 +53,19 @@ export default function ConfigPage() {
   const [name, setName] = useState("");
   const [goal, setGoal] = useState(plan.days.length);
   const [install, setInstall] = useState<InstallState | null>(null);
+  const [planText, setPlanText] = useState("");
+  const [planErrors, setPlanErrors] = useState<string[] | null>(null);
+  const [pendingPlan, setPendingPlan] = useState<{ plan: Plan; summary: PlanSummary } | null>(
+    null
+  );
+  const [showRestorePlan, setShowRestorePlan] = useState(false);
+  const [hasOverride, setHasOverride] = useState(false);
 
   // Só no cliente: localStorage (nome, meta) e detecção de instalação.
   useEffect(() => {
     setName(getProfileName());
     setGoal(getWeekGoal() ?? plan.days.length);
+    setHasOverride(hasPlanOverride());
     if (isStandalone()) {
       setInstall("standalone");
       return;
@@ -147,6 +163,28 @@ export default function ConfigPage() {
     } catch {
       toast({ message: "Não deu pra copiar", variant: "error" });
     }
+  };
+
+  const handleValidatePlan = () => {
+    setPlanErrors(null);
+    const result = parsePlanInput(planText);
+    if (!result.ok) {
+      setPlanErrors(result.errors);
+      return;
+    }
+    setPendingPlan(result);
+  };
+
+  const handleApplyPlan = () => {
+    if (!pendingPlan) return;
+    applyPlan(pendingPlan.plan);
+    window.location.reload();
+  };
+
+  const handleRestoreDefaultPlan = () => {
+    setShowRestorePlan(false);
+    clearPlanOverride();
+    window.location.reload();
   };
 
   const handleReset = async () => {
@@ -259,8 +297,8 @@ export default function ConfigPage() {
       <section className="mt-3 rounded-card border border-border bg-surface px-4 py-4">
         <h2 className="font-semibold">Criar treino com IA</h2>
         <p className="mt-1 text-sm text-muted">
-          Copia o esquema do treino pra colar numa IA (Claude etc.) e pedir um
-          treino novo ou ajustar um existente já no formato certo.
+          1. Copia o esquema e pede pra IA (Claude etc.) ajustar seu treino. 2.
+          Cola a resposta abaixo pra aplicar no app.
         </p>
         <button
           type="button"
@@ -269,6 +307,51 @@ export default function ConfigPage() {
         >
           Copiar esquema para IA
         </button>
+
+        <textarea
+          value={planText}
+          onChange={(e) => {
+            setPlanText(e.target.value);
+            setPlanErrors(null);
+          }}
+          placeholder="Cola aqui o JSON do treino que a IA devolveu…"
+          rows={4}
+          aria-label="JSON do treino"
+          className="mt-4 w-full rounded-xl border border-border bg-surface2 px-3 py-2.5 text-sm outline-none placeholder:text-muted focus:border-muted"
+        />
+
+        {planErrors && (
+          <div
+            className="mt-2 rounded-card border px-3 py-2 text-xs"
+            style={{ borderColor: "var(--color-danger)", color: "var(--color-danger)" }}
+          >
+            <p className="font-medium">Não deu pra importar:</p>
+            <ul className="mt-1 list-disc pl-4">
+              {planErrors.map((err, i) => (
+                <li key={i}>{err}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={handleValidatePlan}
+          disabled={!planText.trim()}
+          className="tap mt-2 w-full rounded-xl border border-border bg-surface2 py-3 font-medium disabled:opacity-40"
+        >
+          Importar treino
+        </button>
+
+        {hasOverride && (
+          <button
+            type="button"
+            onClick={() => setShowRestorePlan(true)}
+            className="tap mt-2 w-full text-center text-xs text-muted underline"
+          >
+            Restaurar plano padrão
+          </button>
+        )}
       </section>
 
       {msg && (
@@ -354,6 +437,26 @@ export default function ConfigPage() {
           danger
           onConfirm={handleReset}
           onCancel={() => setShowReset(false)}
+        />
+      )}
+
+      {pendingPlan && (
+        <ConfirmDialog
+          title="Importar treino novo?"
+          message={`Substitui o plano atual por "${pendingPlan.summary.name}" — ${pendingPlan.summary.days} dias, ${pendingPlan.summary.exercises} exercícios (v${pendingPlan.summary.version}). O app recarrega pra aplicar.`}
+          confirmLabel="Importar"
+          onConfirm={handleApplyPlan}
+          onCancel={() => setPendingPlan(null)}
+        />
+      )}
+
+      {showRestorePlan && (
+        <ConfirmDialog
+          title="Restaurar plano padrão?"
+          message="Volta pro treino embutido no app, descartando o treino importado neste dispositivo. Seu histórico de sessões não é afetado."
+          confirmLabel="Restaurar"
+          onConfirm={handleRestoreDefaultPlan}
+          onCancel={() => setShowRestorePlan(false)}
         />
       )}
     </div>

@@ -1,11 +1,31 @@
 import planData from "./plan.json";
-import type { Plan, PlanDay, PlanExercise } from "./schema";
+import { planSchema, type Plan, type PlanDay, type PlanExercise } from "./schema";
+
+/** Chave do override de plano importado via app (ver lib/plan/importPlan.ts). */
+export const PLAN_OVERRIDE_KEY = "calistenia:plan-override";
 
 /**
- * O plano é bundlado (não vai pro banco). A validação Zod roda em build
- * (scripts/validate-plan.mjs), então aqui confiamos no tipo.
+ * Por padrão o plano é bundlado (não vai pro banco) e validado em build
+ * (scripts/validate-plan.mjs). Se houver um treino importado pelo app no
+ * localStorage deste aparelho, ele tem prioridade — revalidado aqui porque
+ * veio de fora do build.
  */
-export const plan = planData as unknown as Plan;
+function loadPlan(): Plan {
+  if (typeof window !== "undefined") {
+    try {
+      const raw = localStorage.getItem(PLAN_OVERRIDE_KEY);
+      if (raw) {
+        const result = planSchema.safeParse(JSON.parse(raw));
+        if (result.success) return result.data;
+      }
+    } catch {
+      /* override corrompido — cai pro plano padrão */
+    }
+  }
+  return planData as unknown as Plan;
+}
+
+export const plan = loadPlan();
 
 export function getDayByWeekday(weekday: number): PlanDay | undefined {
   return plan.days.find((d) => d.weekday === weekday);
