@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/db/schema";
 import { plan } from "@/lib/plan/loader";
@@ -11,6 +12,10 @@ import { CollapsibleCard } from "@/components/ui/CollapsibleCard";
 import { useToast } from "@/components/ui/Toast";
 import { ReminderSettings } from "@/components/config/ReminderSettings";
 import { AI_SCHEMA_PROMPT } from "@/lib/plan/aiSchema";
+import { exportForAI } from "@/lib/plan/exportForAI";
+import { getSkillById } from "@/lib/plan/skills";
+import { getAiGoals, getAiNotes, buildPersonaText } from "@/lib/utils/aiPersona";
+import { ChevronRightIcon } from "@/components/ui/icons";
 import {
   parsePlanInput,
   applyPlan,
@@ -61,12 +66,14 @@ export default function ConfigPage() {
   );
   const [showRestorePlan, setShowRestorePlan] = useState(false);
   const [hasOverride, setHasOverride] = useState(false);
+  const [aiGoalsCount, setAiGoalsCount] = useState(0);
 
   // Só no cliente: localStorage (nome, meta) e detecção de instalação.
   useEffect(() => {
     setName(getProfileName());
     setGoal(getWeekGoal() ?? plan.days.length);
     setHasOverride(hasPlanOverride());
+    setAiGoalsCount(getAiGoals().length);
     if (isStandalone()) {
       setInstall("standalone");
       return;
@@ -146,21 +153,31 @@ export default function ConfigPage() {
     }
   };
 
-  const handleCopySchema = async () => {
+  const copyText = async (text: string) => {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand("copy");
+    document.body.removeChild(textarea);
+  };
+
+  const handleCopyAll = async () => {
     try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(AI_SCHEMA_PROMPT);
-      } else {
-        const textarea = document.createElement("textarea");
-        textarea.value = AI_SCHEMA_PROMPT;
-        textarea.style.position = "fixed";
-        textarea.style.opacity = "0";
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textarea);
-      }
-      toast({ message: "Esquema copiado — cola na IA", variant: "success" });
+      const goalNames = getAiGoals()
+        .map((id) => getSkillById(id)?.name)
+        .filter((n): n is string => Boolean(n));
+      const persona = buildPersonaText(goalNames, getAiNotes());
+      const historico = await exportForAI();
+      const full = `${persona}\n\n${AI_SCHEMA_PROMPT}${JSON.stringify(historico, null, 2)}\n`;
+      await copyText(full);
+      toast({ message: "Prompt completo copiado — cola na IA", variant: "success" });
     } catch {
       toast({ message: "Não deu pra copiar", variant: "error" });
     }
@@ -247,16 +264,31 @@ export default function ConfigPage() {
 
       <CollapsibleCard title="Criar treino com IA" className="mb-3">
         <p className="mt-1 text-sm text-muted">
-          1. Copia o esquema e pede pra IA (Claude etc.) ajustar seu treino. 2.
-          Cola a resposta abaixo pra aplicar no app. Isso troca só os
-          exercícios do plano — seu histórico de sessões não é afetado.
+          1. Copia o prompt (junta objetivos, esquema, seu plano atual,
+          histórico e sinal de progressão) e pede pra IA (Claude etc.) ajustar
+          seu treino. 2. Cola a resposta abaixo pra aplicar no app. Isso troca
+          só os exercícios do plano — seu histórico de sessões não é afetado.
         </p>
+
+        <Link
+          href="/config/persona"
+          className="tap mt-3 flex items-center justify-between gap-2 rounded-xl border border-border bg-surface2 px-3 py-2.5 text-sm"
+        >
+          <span>
+            Meus objetivos
+            <span className="ml-1.5 text-muted">
+              {aiGoalsCount > 0 ? `· ${aiGoalsCount} selecionados` : "· nenhum ainda"}
+            </span>
+          </span>
+          <ChevronRightIcon className="h-4 w-4 shrink-0 text-muted" />
+        </Link>
+
         <button
           type="button"
-          onClick={handleCopySchema}
-          className="tap mt-3 w-full rounded-xl border border-border bg-surface2 py-3 font-medium"
+          onClick={handleCopyAll}
+          className="tap mt-2 w-full rounded-xl border border-border bg-surface2 py-3 font-medium"
         >
-          Copiar esquema para IA
+          Copiar prompt completo para IA
         </button>
 
         <textarea
