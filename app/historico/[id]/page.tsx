@@ -157,7 +157,7 @@ function ExerciseRow({
         </span>
         <span className="flex shrink-0 items-center gap-2">
           <span className="tnum text-sm text-muted">
-            {log ? summarize(log, exercise.parsed) : "sem registro"}
+            {log ? summarize(log, exercise.parsed, exercise.target) : "sem registro"}
           </span>
           {done && (
             <span
@@ -190,13 +190,17 @@ function ExerciseRow({
   );
 }
 
-function summarize(log: ExerciseLog, parsed: PlanExercise["parsed"]): string {
+function summarize(
+  log: ExerciseLog,
+  parsed: PlanExercise["parsed"],
+  target: string
+): string {
   if (log.skipped) return "pulado";
   if (log.sets_performed?.type === "skill_consistency") {
     const { attempts_good, attempts_total } = log.sets_performed;
     return `${attempts_good}/${attempts_total} tentativas`;
   }
-  const s = effectiveSets(log, parsed);
+  const s = effectiveSets(log, parsed, target);
   if (s.length === 0) return log.as_target ? "como previsto" : "feito";
   const unit = parsed?.unit === "seconds" ? "s" : "";
   return s.map((v) => `${v}${unit}`).join("/");

@@ -65,7 +65,9 @@ export function ExerciseCard({
   const mapping = exerciseSkillMapping(exercise.id);
 
   const [adjusting, setAdjusting] = useState(false);
-  const [values, setValues] = useState<number[]>(() => adjustSets(parsed));
+  const [values, setValues] = useState<number[]>(() =>
+    adjustSets(parsed, exercise.target)
+  );
   const [flags, setFlags] = useState<string[]>([]);
   const [note, setNote] = useState("");
   const [rir, setRir] = useState(0);
@@ -78,9 +80,9 @@ export function ExerciseCard({
     if (log) {
       setFlags(log.flags_selected);
       setNote(log.note ?? "");
-      const s = effectiveSets(log, parsed);
+      const s = effectiveSets(log, parsed, exercise.target);
       if (s.length > 0) setValues(s);
-      else setValues(adjustSets(parsed));
+      else setValues(adjustSets(parsed, exercise.target));
       setAdjusting(!log.as_target && !log.skipped && (log.sets?.length ?? 0) > 0);
       if (log.sets_performed?.type === "reps_rir") setRir(log.sets_performed.rir);
       if (log.sets_performed?.type === "skill_consistency") {
@@ -88,7 +90,7 @@ export function ExerciseCard({
         setAttemptsGood(log.sets_performed.attempts_good);
       }
     } else {
-      setValues(adjustSets(parsed));
+      setValues(adjustSets(parsed, exercise.target));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [log?.id]);
@@ -166,7 +168,7 @@ export function ExerciseCard({
     });
 
   const startAdjust = () => {
-    if (!log) setValues(seedAdjustValues(parsed, lastPerf));
+    if (!log) setValues(seedAdjustValues(parsed, exercise.target, lastPerf));
     setAdjusting(true);
   };
 
@@ -237,7 +239,9 @@ export function ExerciseCard({
               </p>
             </div>
             <p className="tnum text-xs text-muted">
-              {skipped ? "pulado" : summarize(log, parsed) ?? exercise.target}
+              {skipped
+                ? "pulado"
+                : summarize(log, parsed, exercise.target) ?? exercise.target}
             </p>
           </div>
           {done ? (
@@ -402,30 +406,32 @@ export function ExerciseCard({
  *  abaixo do alvo (torna a progressão visível), senão o alvo. */
 function seedAdjustValues(
   parsed: PlanExercise["parsed"],
+  targetText: string,
   lastPerf: LastPerf | undefined
 ): number[] {
-  const target = adjustSets(parsed);
-  if (!parsed || !lastPerf || lastPerf.kind !== "sets") return target;
+  const target = adjustSets(parsed, targetText);
+  if (!lastPerf || lastPerf.kind !== "sets") return target;
   const lastSum = lastPerf.values.reduce((a, b) => a + b, 0);
   const targetSum = target.reduce((a, b) => a + b, 0);
   if (lastSum >= targetSum) return target;
   const last = lastPerf.values;
   return Array.from(
-    { length: parsed.sets },
+    { length: target.length },
     (_, i) => last[i] ?? last[last.length - 1] ?? target[i]
   );
 }
 
 function summarize(
   log: ExerciseLog | undefined,
-  parsed: PlanExercise["parsed"]
+  parsed: PlanExercise["parsed"],
+  targetText: string
 ): string | null {
   if (!log || log.skipped) return null;
   if (log.sets_performed?.type === "skill_consistency") {
     const { attempts_good, attempts_total } = log.sets_performed;
     return `${attempts_good}/${attempts_total} tentativas`;
   }
-  const s = effectiveSets(log, parsed);
+  const s = effectiveSets(log, parsed, targetText);
   if (s.length === 0) return log.as_target ? "como previsto" : "feito";
   const unit = parsed?.unit === "seconds" ? "s" : "";
   return s.map((v) => `${v}${unit}`).join("/");

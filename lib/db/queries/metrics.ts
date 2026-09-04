@@ -196,10 +196,13 @@ export async function getExerciseVolume(
       (l) => l.session_id === session.id && l.exercise_id === exerciseId
     );
     if (!log || log.skipped) continue;
-    // parsed do dia da sessão: o alvo pode variar entre dias para o mesmo ID
-    const parsed =
-      getExerciseInDay(session.weekday, exerciseId)?.parsed ?? null;
-    points.push({ date: session.date, volume: totalVolume(log, parsed) });
+    // parsed/target do dia da sessão: o alvo pode variar entre dias para o mesmo ID
+    const exInDay = getExerciseInDay(session.weekday, exerciseId);
+    const parsed = exInDay?.parsed ?? null;
+    points.push({
+      date: session.date,
+      volume: totalVolume(log, parsed, exInDay?.target),
+    });
   }
   return points;
 }
@@ -218,8 +221,9 @@ export async function getBestHold(exerciseId: string): Promise<VolumePoint[]> {
       (l) => l.session_id === session.id && l.exercise_id === exerciseId
     );
     if (!log || log.skipped) continue;
-    const parsed = getExerciseInDay(session.weekday, exerciseId)?.parsed ?? null;
-    const values = effectiveSets(log, parsed);
+    const exInDay = getExerciseInDay(session.weekday, exerciseId);
+    const parsed = exInDay?.parsed ?? null;
+    const values = effectiveSets(log, parsed, exInDay?.target);
     if (values.length === 0) continue;
     points.push({ date: session.date, volume: Math.max(...values) });
   }

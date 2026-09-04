@@ -1,22 +1,45 @@
 import type { Parsed } from "@/lib/plan/schema";
 
 /**
- * Reconstitui os valores-alvo por série a partir de `parsed`.
- * Ex: { sets: 4, target: 4 } → [4, 4, 4, 4]
- * Retorna [] quando parsed é null (exercício sem stepper).
+ * Extrai { sets, low } direto do texto livre `target`. Serve de fallback
+ * quando `parsed` é null (alvo é um intervalo, ex: "6-8", que a IA não
+ * consegue reduzir a um número único) e também como fonte de verdade pro
+ * valor baixo do alvo — mesmo quando `parsed` existe, `parsed.target` pode
+ * ter capturado o teto do intervalo em vez do piso.
+ * Ex: "3 × 6-8/lado" → { sets: 3, low: 6 } · "4 rep" → { sets: 1, low: 4 }
+ * Retorna null quando não há nenhum número reconhecível no texto.
  */
-export function targetSets(parsed: Parsed | null): number[] {
-  if (!parsed) return [];
-  return Array.from({ length: parsed.sets }, () => parsed.target);
+function parseTargetText(target: string): { sets: number; low: number } | null {
+  const withSets = target.match(/^\s*(\d+)\s*[×xX]\s*(\d+)/);
+  if (withSets) return { sets: Number(withSets[1]), low: Number(withSets[2]) };
+  const single = target.match(/(\d+)/);
+  if (single) return { sets: 1, low: Number(single[1]) };
+  return null;
+}
+
+/**
+ * Reconstitui os valores-alvo por série. Sempre usa o piso do intervalo
+ * (nunca o teto) como valor de cada série — ver `parseTargetText`.
+ * `target` é opcional só pra não quebrar chamadas que já sabem que não
+ * vão cair no ramo `as_target` (nesse caso o resultado não é usado).
+ * Ex: "3 × 6-8/lado" → [6, 6, 6] · "4 × 2" → [2, 2, 2, 2]
+ * Retorna [] quando não há sets/low reconhecíveis nem em `target` nem em `parsed`.
+ */
+export function targetSets(parsed: Parsed | null, target = ""): number[] {
+  const spec = parseTargetText(target);
+  const sets = spec?.sets ?? parsed?.sets;
+  const low = spec?.low ?? parsed?.target;
+  if (!sets || low === undefined) return [];
+  return Array.from({ length: sets }, () => low);
 }
 
 /**
  * Valores iniciais dos steppers ao ajustar. Diferente de `targetSets`,
- * sempre devolve ao menos uma série - mesmo sem `parsed` - para que
- * qualquer exercício possa ter as reps realizadas ajustadas.
+ * sempre devolve ao menos uma série - mesmo sem número reconhecível - para
+ * que qualquer exercício possa ter as reps realizadas ajustadas.
  */
-export function adjustSets(parsed: Parsed | null): number[] {
-  const t = targetSets(parsed);
+export function adjustSets(parsed: Parsed | null, target = ""): number[] {
+  const t = targetSets(parsed, target);
   return t.length > 0 ? t : [1];
 }
 

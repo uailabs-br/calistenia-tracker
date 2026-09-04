@@ -68,6 +68,9 @@ REGRAS IMPORTANTES:
 - Se \`neg_flags\` existir, cada item dele TEM que estar também em \`flags\`.
 - \`parsed\` só é preenchido quando dá pra extrair sets/target/unit numéricos limpos do \`target\`;
   senão usa null (ex.: "8-10 entradas" vira parsed: null).
+- Se o alvo de reps/segundos for um INTERVALO (ex.: "6-8", "8-10s"), \`parsed\` é SEMPRE null —
+  mesmo que dê pra estimar um teto (ex.: "3 × 6-8/lado" NÃO vira {sets:3, target:8, ...}).
+  O app extrai sets e o piso do intervalo direto do texto de \`target\` em runtime.
 - Cores accent/accent_bg sempre hex de 6 dígitos, minúsculo ou maiúsculo, com #.
 
 Meu treino:

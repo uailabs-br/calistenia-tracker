@@ -10,10 +10,11 @@ import { targetSets } from "./parseTarget";
  */
 export function effectiveSets(
   log: Pick<ExerciseLog, "as_target" | "sets" | "skipped">,
-  parsed: Parsed | null
+  parsed: Parsed | null,
+  target = ""
 ): number[] {
   if (log.skipped) return [];
-  if (log.as_target) return targetSets(parsed);
+  if (log.as_target) return targetSets(parsed, target);
   if (log.sets && log.sets.length > 0) {
     return log.sets
       .slice()
@@ -26,9 +27,10 @@ export function effectiveSets(
 /** Volume total (soma das reps/segundos) de um log. per_side dobra o total. */
 export function totalVolume(
   log: Pick<ExerciseLog, "as_target" | "sets" | "skipped">,
-  parsed: Parsed | null
+  parsed: Parsed | null,
+  target = ""
 ): number {
-  const sets = effectiveSets(log, parsed);
+  const sets = effectiveSets(log, parsed, target);
   const sum = sets.reduce((a, b) => a + b, 0);
   return parsed?.per_side ? sum * 2 : sum;
 }
