@@ -20,7 +20,14 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
-> **Estado atual (2026-07-28, v1.7):** app **em produção no Vercel**
+> **Atualização (v1.8):** treino dinâmico e sinal de progressão confiável. Série
+> extra (conta em volume/recorde, não na progressão), exercício adicionado no meio
+> do treino (catálogo de 120 exercícios + criação própria), snapshot do exercício
+> em cada log (o passado deixa de mudar quando o plano muda), `skill_ref` no plano,
+> regressão só por falha real, "dispensar" no aviso de progressão e RIR removido da
+> UI. Dexie v4. 249 testes. Detalhes em [`PLAN-treino-dinamico.md`](PLAN-treino-dinamico.md).
+
+> **Estado anterior (2026-07-28, v1.7):** app **em produção no Vercel**
 > (`calistenia-tracker.vercel.app`). Sobre a base v1, sete levas de melhorias de
 > produto: v1.1 (seletor de treino, IDs por movimento), v1.2 (reset de dados,
 > animações de página), v1.3 (feedback semanal, perfil, instalação em config,

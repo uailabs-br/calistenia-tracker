@@ -38,6 +38,16 @@ Finalizar → RPE (1–5) → nota opcional → salvo
 Métricas: sequência semanal, aderência, volume, incidência de flags
 ```
 
+## Adaptar o treino durante a sessão
+
+O plano é o ponto de partida, não uma camisa de força:
+
+- **Série extra.** Fez as séries e quer mais uma? No cartão, "+ extra" (ou "Série extra" dentro do **Ajustar**, onde também dá pra remover séries). Fica registrada como extra e conta em volume, recorde e histórico, mas **não** na progressão, pra uma série cansada não reprovar um treino que cumpriu o plano.
+- **Adicionar exercício.** "Adicionar exercício" no fim do treino abre um catálogo de 120 exercícios (calistenia e básicos) com busca sem acento, filtro por grupo e por skill, variações mais fácil/difícil e recentes. Um toque adiciona. Não achou? Cria o seu na hora. Entra nas métricas como qualquer outro.
+- **Sinal de progressão.** Aparece no fim da sessão, com o nome do exercício **do seu plano**. "Dispensar" reinicia a contagem. Só considera sessões válidas e exercícios que o plano ainda vincula àquela skill.
+
+Decisões e motivos em [`PLAN-treino-dinamico.md`](PLAN-treino-dinamico.md).
+
 ## Arquitetura
 
 Decisão central: **o banco é a única fonte de verdade do estado da sessão** — nada de estado de treino em memória do React. Isso é o que faz a *retomada* funcionar (fechar e reabrir volta ao ponto exato) e o que prepara um eventual sync no v2.
@@ -74,7 +84,9 @@ Decisão central: **o banco é a única fonte de verdade do estado da sessão** 
 - **`updated_at`** em toda escrita; **soft-delete** (`deleted_at`) — nunca delete físico.
 - **Camada de repositório**: componente nunca fala com o Dexie direto. Leitura reativa via `useLiveQuery`; escrita só pelos repositórios.
 - **IDs de exercício = slug estável** (`mu-puxada-explosiva`), compartilhado entre dias. É o que preserva o histórico de um movimento entre ciclos e permite fazer qualquer treino em qualquer dia.
-- **Plano validado em build**: `plan.json` é checado contra um schema Zod; o build falha se estiver inválido.
+- **Plano validado em build**: `plan.json` é checado contra um schema Zod; o build falha se estiver inválido. O mesmo vale para `catalog.json` (ids únicos, alternativas e skills existentes).
+- **O log guarda o contexto**: cada `ExerciseLog` grava um `snapshot` (nome, alvo, `parsed`) do momento do registro. Toda leitura passa por `resolveLogExercise` (`lib/plan/resolve.ts`): mudar ou trocar o plano não reescreve o passado.
+- **Ids do catálogo são estáveis para sempre**: nunca renomear, só adicionar. Onde o movimento já existe no plano ou na escada, o id é o mesmo.
 
 **PWA:** Serwist para app shell offline + install; atualização de service worker via prompt (skip-waiting controlado, sem servir versão velha silenciosamente). Wake lock durante a sessão com re-aquisição em `visibilitychange` (necessário no iOS). `navigator.storage.persist()` como best-effort contra eviction de IndexedDB.
 
@@ -120,12 +132,14 @@ npm run validate:plan  # valida o plano contra o schema Zod
 
 ```
 app/                  # rotas: / (treino), historico, metricas, config
-components/session/    # ExerciseCard, Stepper, FlagChips, RpeSheet, DayPills, SessionRunner
+components/session/    # ExerciseCard, Stepper, FlagChips, RpeSheet, DayPills, SessionRunner, AddExerciseSheet
+components/config/     # ReminderSettings, CustomExercisesCard
 components/metrics/     # StatTile, Sparkline, FlagIncidenceRow
 components/ui/         # BottomNav, PageHeader, SwUpdater, icons
 lib/db/               # schema Dexie, repositories/, queries/, backup
 lib/domain/           # parseTarget, volume
-lib/plan/             # plan.json (fonte de verdade), schema Zod, loader
+lib/plan/             # plan.json (fonte de verdade), schema Zod, loader, resolve,
+                      # catalog.json (catálogo de exercícios), skills/progressions
 scripts/              # validate-plan, generate-icons
 ```
 
