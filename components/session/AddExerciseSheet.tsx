@@ -185,8 +185,8 @@ export function AddExerciseSheet({
     );
 
   return (
-    <Sheet sheetRef={ref} titleId={titleId} onClose={onClose}>
-      <div className="flex items-center justify-between gap-2">
+    <Sheet sheetRef={ref} titleId={titleId} onClose={onClose} tall>
+      <div className="flex shrink-0 items-center justify-between gap-2">
         <h2 id={titleId} className="text-lg font-semibold">
           Adicionar exercício
         </h2>
@@ -217,43 +217,56 @@ export function AddExerciseSheet({
         aria-label="Buscar exercício"
         enterKeyHint="search"
         autoComplete="off"
-        className="mt-3 w-full rounded-xl border border-border bg-surface2 px-3 py-2.5 text-base outline-none placeholder:text-muted focus:border-muted"
+        className="mt-3 w-full shrink-0 rounded-xl border border-border bg-surface2 px-3 py-2.5 text-base outline-none placeholder:text-muted focus:border-muted"
       />
 
-      <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Grupo">
+      <p className="mt-3 font-mono text-[11px] uppercase tracking-wide text-muted">Grupo</p>
+      <div className="mt-1 grid shrink-0 grid-cols-4 gap-2" role="group" aria-label="Grupo">
         {CATEGORIES.map((c) => (
           <button
             key={c}
             type="button"
             aria-pressed={category === c}
             onClick={() => setCategory(category === c ? null : c)}
-            className="tap rounded-full border px-3 text-sm transition-colors duration-200"
+            className="tap rounded-xl border px-1 py-2 text-sm font-medium transition-colors duration-200"
             style={chipStyle(category === c, accent)}
           >
             {c}
           </button>
         ))}
       </div>
-      <div
-        className="-mx-5 mt-2 flex gap-2 overflow-x-auto px-5 pb-1"
-        role="group"
-        aria-label="Skill"
-      >
-        {SKILL_CHIPS.map((s) => (
-          <button
-            key={s.id}
-            type="button"
-            aria-pressed={skill === s.id}
-            onClick={() => setSkill(skill === s.id ? null : s.id)}
-            className="tap shrink-0 whitespace-nowrap rounded-full border px-3 text-sm transition-colors duration-200"
-            style={chipStyle(skill === s.id, accent)}
-          >
-            {s.name}
-          </button>
-        ))}
+
+      <p className="mt-3 font-mono text-[11px] uppercase tracking-wide text-muted">Skill</p>
+      <div className="relative -mx-5 mt-1 shrink-0">
+        <div
+          className="no-scrollbar flex gap-2 overflow-x-auto overscroll-x-contain px-5 pb-1"
+          role="group"
+          aria-label="Skill"
+        >
+          {SKILL_CHIPS.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              aria-pressed={skill === s.id}
+              onClick={() => setSkill(skill === s.id ? null : s.id)}
+              className="tap shrink-0 whitespace-nowrap rounded-full border px-4 text-sm font-medium transition-colors duration-200"
+              style={chipStyle(skill === s.id, accent)}
+            >
+              {s.name}
+            </button>
+          ))}
+          {/* espaço final: o último chip não fica colado sob o degradê */}
+          <span className="w-6 shrink-0" aria-hidden="true" />
+        </div>
+        {/* degradê na borda direita: sinaliza que a faixa rola */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 right-0 w-10"
+          style={{ background: "linear-gradient(to left, var(--color-surface), transparent)" }}
+        />
       </div>
 
-      <div className="-mx-5 mt-3 min-h-0 flex-1 overflow-y-auto overscroll-contain px-5">
+      <div className="-mx-5 mt-3 min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-5 pb-2">
         {results.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted">
             Nenhum exercício encontrado.
@@ -299,11 +312,14 @@ function Sheet({
   sheetRef,
   titleId,
   onClose,
+  tall = false,
   children,
 }: {
   sheetRef: React.RefObject<HTMLDivElement | null>;
   titleId: string;
   onClose: () => void;
+  /** Altura fixa (a lista precisa de espaço garantido pra rolar); senão só limita. */
+  tall?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -318,7 +334,9 @@ function Sheet({
           aria-modal="true"
           aria-labelledby={titleId}
           tabIndex={-1}
-          className="anim-slide-up flex max-h-[88vh] w-full max-w-md flex-col rounded-t-2xl border-t border-border bg-surface px-5 pb-6 pt-3 outline-none"
+          className={`anim-slide-up flex w-full max-w-md flex-col rounded-t-2xl border-t border-border bg-surface px-5 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))] outline-none ${
+            tall ? "h-[92dvh]" : "max-h-[92dvh]"
+          }`}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="mb-2 flex justify-center" aria-hidden="true">
@@ -367,7 +385,7 @@ function CreateForm({
   };
 
   return (
-    <>
+    <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
       <div className="flex items-center justify-between gap-2">
         <h2 id={titleId} className="text-lg font-semibold">
           Novo exercício
@@ -456,6 +474,6 @@ function CreateForm({
       >
         Criar e adicionar ao treino
       </button>
-    </>
+    </div>
   );
 }

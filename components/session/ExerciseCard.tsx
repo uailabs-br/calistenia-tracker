@@ -13,7 +13,7 @@ import {
   formatLastPerf,
   type LastPerf,
 } from "@/lib/db/queries/lastPerformance";
-import { CheckIcon, PlusIcon, TimerIcon, TrophyIcon } from "@/components/ui/icons";
+import { CheckIcon, PlusIcon, TimerIcon, TrashIcon, TrophyIcon } from "@/components/ui/icons";
 import { Stepper } from "./Stepper";
 import { FlagChips } from "./FlagChips";
 import { ExerciseNote } from "./ExerciseNote";
@@ -435,32 +435,29 @@ export function ExerciseCard({
         ) : (
           <div className="anim-fade-in flex flex-col gap-2">
             {values.map((v, i) => (
-              <div key={i} className="flex items-center justify-between gap-2">
-                <Stepper
-                  index={i}
-                  value={v}
-                  unit={parsed?.unit === "seconds" ? "s" : ""}
-                  onChange={(next) =>
-                    setValues((prev) => prev.map((x, j) => (j === i ? next : x)))
-                  }
-                />
-                <div className="flex shrink-0 items-center gap-1">
-                  {i >= plannedCount && (
-                    <span
-                      className="rounded-full border px-2 font-mono text-[10px]"
-                      style={{ borderColor: accent, color: accent }}
-                    >
-                      extra
-                    </span>
-                  )}
+              <div key={i}>
+                {i === plannedCount && (
+                  <p className="mb-1 mt-1 font-mono text-[11px] uppercase tracking-wide text-muted">
+                    Séries extras
+                  </p>
+                )}
+                <div className="flex items-center gap-2">
+                  <Stepper
+                    index={i}
+                    value={v}
+                    unit={parsed?.unit === "seconds" ? "s" : ""}
+                    onChange={(next) =>
+                      setValues((prev) => prev.map((x, j) => (j === i ? next : x)))
+                    }
+                  />
                   {values.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeRow(i)}
                       aria-label={`Remover série ${i + 1}`}
-                      className="tap rounded-lg px-2 py-1 font-mono text-[11px] text-muted"
+                      className="tap ml-auto flex shrink-0 items-center justify-center rounded-lg text-muted active:scale-95 active:text-danger"
                     >
-                      remover
+                      <TrashIcon className="h-5 w-5" />
                     </button>
                   )}
                 </div>
@@ -499,7 +496,7 @@ export function ExerciseCard({
               </p>
               <div className="flex flex-col gap-2">
                 {extraVals.map((v, i) => (
-                  <div key={i} className="flex items-center justify-between gap-2">
+                  <div key={i} className="flex items-center gap-2">
                     <Stepper
                       index={loggedPlannedCount + i}
                       value={v}
@@ -513,9 +510,10 @@ export function ExerciseCard({
                     <button
                       type="button"
                       onClick={() => editExtras(extraVals.filter((_, j) => j !== i))}
-                      className="tap rounded-lg px-2 py-1 font-mono text-[11px] text-muted"
+                      aria-label={`Remover série extra ${i + 1}`}
+                      className="tap ml-auto flex shrink-0 items-center justify-center rounded-lg text-muted active:scale-95 active:text-danger"
                     >
-                      remover
+                      <TrashIcon className="h-5 w-5" />
                     </button>
                   </div>
                 ))}
