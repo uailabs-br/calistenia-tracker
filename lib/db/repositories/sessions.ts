@@ -109,6 +109,51 @@ export async function softDeleteSession(id: string): Promise<void> {
 }
 
 /**
+ * Acrescenta um exercício (catálogo ou criado pelo usuário) ao treino em
+ * andamento. Idempotente; só sessão `in_progress`. Devolve a sessão atualizada
+ * ou null se não der pra acrescentar.
+ */
+export async function addExerciseToSession(
+  session_id: string,
+  exercise_id: string
+): Promise<Session | null> {
+  const s = await db.sessions.get(session_id);
+  if (!s || s.deleted_at || s.status !== "in_progress") return null;
+  const list = s.added_exercises ?? [];
+  if (list.includes(exercise_id)) return s;
+  const updated: Session = {
+    ...s,
+    added_exercises: [...list, exercise_id],
+    updated_at: now(),
+  };
+  await db.sessions.put(updated);
+  return updated;
+}
+
+/**
+ * Tira do treino um exercício acrescentado que ainda não foi registrado.
+ * Se já tem registro, recusa (false): o registro é histórico e não some sozinho.
+ */
+export async function removeAddedExercise(
+  session_id: string,
+  exercise_id: string
+): Promise<boolean> {
+  const s = await db.sessions.get(session_id);
+  if (!s || s.deleted_at || !(s.added_exercises ?? []).includes(exercise_id)) return false;
+  const hasLog = (
+    await db.exerciseLogs.where("session_id").equals(session_id).toArray()
+  ).some((l) => l.exercise_id === exercise_id && !l.deleted_at);
+  if (hasLog) return false;
+  const rest = (s.added_exercises ?? []).filter((id) => id !== exercise_id);
+  await db.sessions.put({
+    ...s,
+    added_exercises: rest.length > 0 ? rest : null,
+    updated_at: now(),
+  });
+  return true;
+}
+
+/**
  * Descarta uma sessão em andamento sem salvar o progresso: soft-delete da
  * sessão e de todos os seus registros de exercício. Some do "ativo",
  * do histórico e das métricas.

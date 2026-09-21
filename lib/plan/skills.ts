@@ -11,6 +11,7 @@
  */
 
 import progressionsData from "./progressions.json";
+import { plan } from "./loader";
 
 export type SkillCategory = "Puxar" | "Empurrar" | "Core" | "Pernas";
 
@@ -148,7 +149,7 @@ export function formatCriteria(criteria: Criteria): string {
 
   if (criteria.type === "reps_rir") {
     const side = criteria.unilateral ? " por lado" : "";
-    return `${criteria.sets}×${criteria.reps} reps${side}, RIR ≤${criteria.rir_max} · ${perSession}`;
+    return `${criteria.sets}×${criteria.reps} reps${side} · ${perSession}`;
   }
 
   if (criteria.type === "hold_clean") {
@@ -176,7 +177,7 @@ export interface ExerciseSkillMapping {
   criteria_type: Criteria["type"];
 }
 
-/** Lookup reverso: exercise_id do plano → skill/nível/tipo de critério. */
+/** Lookup reverso LEGADO: exercise_id → skill/nível/tipo de critério. */
 const EXERCISE_TO_SKILL: Record<string, ExerciseSkillMapping> = Object.fromEntries(
   Object.entries(LEVEL_EXERCISE).flatMap(([skillId, levels]) =>
     Object.entries(levels).map(([level, exerciseId]) => {
@@ -189,7 +190,37 @@ const EXERCISE_TO_SKILL: Record<string, ExerciseSkillMapping> = Object.fromEntri
   )
 );
 
+/**
+ * `skill_ref` declarado no plano vigente, por exercise_id (1ª ocorrência).
+ * Só entra quem declarou explicitamente: `null` = "este exercício NÃO é o nível
+ * da escada" (evita atrelar, p.ex., um pistol squat ao nível Bulgarian).
+ */
+const PLAN_SKILL_REFS: Map<string, { skill_id: string; level: number } | null> = (() => {
+  const map = new Map<string, { skill_id: string; level: number } | null>();
+  for (const day of plan.days) {
+    for (const block of day.blocks) {
+      for (const ex of block.exercises) {
+        if (ex.skill_ref === undefined || map.has(ex.id)) continue;
+        map.set(ex.id, ex.skill_ref);
+      }
+    }
+  }
+  return map;
+})();
+
+/**
+ * Exercício → nível de skill. O plano manda (`skill_ref`, inclusive `null`);
+ * sem declaração, cai no mapeamento legado por id (`LEVEL_EXERCISE`).
+ */
 export function exerciseSkillMapping(exerciseId: string): ExerciseSkillMapping | null {
+  if (PLAN_SKILL_REFS.has(exerciseId)) {
+    const ref = PLAN_SKILL_REFS.get(exerciseId);
+    if (!ref) return null;
+    const criteria = getCriteria(ref.skill_id, ref.level);
+    return criteria
+      ? { skill_id: ref.skill_id, level: ref.level, criteria_type: criteria.type }
+      : null;
+  }
   return EXERCISE_TO_SKILL[exerciseId] ?? null;
 }
 

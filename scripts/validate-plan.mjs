@@ -35,6 +35,13 @@ try {
 // diretamente reconstruindo o schema a partir do fonte TS transpilado em runtime.
 const { z } = await import("zod");
 
+const progressions = JSON.parse(
+  readFileSync(resolve(__dirname, "../lib/plan/progressions.json"), "utf8")
+);
+const SKILL_LEVELS = new Map(
+  progressions.skills.map((s) => [s.id, new Set(s.progressions.map((p) => p.level))])
+);
+
 const parsed = z
   .object({
     sets: z.number().int().positive(),
@@ -54,6 +61,11 @@ const exercise = z
     rest: z.string(),
     flags: z.array(z.string()),
     neg_flags: z.array(z.string()).optional(),
+    skill_ref: z
+      .object({ skill_id: z.string().min(1), level: z.number().int().positive() })
+      .strict()
+      .nullable()
+      .optional(),
   })
   .strict();
 
@@ -121,6 +133,15 @@ const planSchema = z
               });
             }
           }
+          if (ex.skill_ref) {
+            const levels = SKILL_LEVELS.get(ex.skill_ref.skill_id);
+            if (!levels || !levels.has(ex.skill_ref.level)) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `skill_ref inexistente (${d.label} / ${ex.id}): ${ex.skill_ref.skill_id} nível ${ex.skill_ref.level}`,
+              });
+            }
+          }
         }
       }
     }
@@ -142,3 +163,37 @@ const exCount = plan.days.reduce(
 console.log(
   `✓ plan.json válido — ${plan.days.length} dias, ${exCount} exercícios (v${plan.version})`
 );
+
+// ── Catálogo de exercícios (lib/plan/catalog.json) ─────────────────────────
+// Falha o build se houver id duplicado, alternativa inexistente, skill fora de
+// progressions.json ou músculo/categoria fora do vocabulário. (O schema Zod
+// completo roda nos testes: test/catalog.test.ts.)
+const catalogPath = resolve(__dirname, "../lib/plan/catalog.json");
+let catalog;
+try {
+  catalog = JSON.parse(readFileSync(catalogPath, "utf8"));
+} catch (e) {
+  console.error(`✗ catalog.json ilegível: ${e.message}`);
+  process.exit(1);
+}
+const catalogErrors = [];
+const catalogIds = new Set();
+for (const e of catalog) {
+  if (catalogIds.has(e.id)) catalogErrors.push(`id duplicado: ${e.id}`);
+  catalogIds.add(e.id);
+}
+for (const e of catalog) {
+  if (e.skill !== null && !SKILL_LEVELS.has(e.skill)) {
+    catalogErrors.push(`${e.id}: skill inexistente (${e.skill})`);
+  }
+  for (const ref of [...e.easier, ...e.harder]) {
+    if (!catalogIds.has(ref)) catalogErrors.push(`${e.id}: alternativa inexistente (${ref})`);
+    if (ref === e.id) catalogErrors.push(`${e.id}: alternativa aponta pra si mesma`);
+  }
+}
+if (catalogErrors.length > 0) {
+  console.error("✗ catalog.json inválido:\n");
+  for (const m of catalogErrors) console.error(`  • ${m}`);
+  process.exit(1);
+}
+console.log(`✓ catalog.json válido — ${catalog.length} exercícios`);

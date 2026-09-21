@@ -39,6 +39,7 @@ export function SessionSummary({
   prs,
   exercisesDone,
   repsVolume,
+  extraSets = 0,
   seed,
   onClose,
 }: {
@@ -48,6 +49,8 @@ export function SessionSummary({
   exercisesDone: number;
   /** Soma das reps efetivas dos exercícios em unidade "reps" (ignora holds/tentativas). */
   repsVolume: number;
+  /** Séries feitas além do plano nesta sessão. */
+  extraSets?: number;
   seed: string;
   onClose: () => void;
 }) {
@@ -83,6 +86,12 @@ export function SessionSummary({
             <StatTile value={exercisesDone} label="exercícios" accent={accent} />
             <StatTile value={repsVolume} label="reps totais" accent={accent} />
           </div>
+
+          {extraSets > 0 && (
+            <p className="tnum mt-3 text-sm font-medium" style={{ color: accent }}>
+              +{extraSets} {extraSets === 1 ? "série extra" : "séries extras"} além do plano
+            </p>
+          )}
 
           <p className="mt-4 text-sm text-muted">{phrase}</p>
 

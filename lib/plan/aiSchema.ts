@@ -1,3 +1,12 @@
+import progressionsData from "./progressions.json";
+
+/** Escadas canônicas (id: nível=nome | ...) geradas do catálogo, pra IA não inventar ids/níveis. */
+const SKILL_LADDERS = (
+  progressionsData.skills as { id: string; progressions: { level: number; name: string }[] }[]
+)
+  .map((s) => `- ${s.id}: ${s.progressions.map((p) => `${p.level}=${p.name}`).join(" | ")}`)
+  .join("\n");
+
 /**
  * Prompt pronto pra colar numa LLM (Claude etc.) pra gerar/ajustar um dia de
  * treino no formato que o app espera. Espelha `schema.ts` — se os campos do
@@ -50,9 +59,14 @@ Estrutura: plan > days[] > blocks[] > exercises[]
   "rest": "descanso 120s",       // texto livre
   "flags": ["chegou no esterno", "parou no queixo", "kip apareceu"],
   // ↑ tags de observação pós-set que o usuário marca durante o treino (2-4 flags típico)
-  "neg_flags": ["parou no queixo", "kip apareceu"]
+  "neg_flags": ["parou no queixo", "kip apareceu"],
   // ↑ OPCIONAL — subconjunto de \`flags\` que conta como execução "suja"/falha
   //   (usado pro motor de progressão saber se a tentativa foi limpa)
+  "skill_ref": { "skill_id": "muscle_up", "level": 3 }
+  // ↑ OPCIONAL — só se este exercício FOR o degrau da escada de uma skill (lista abaixo).
+  //   O app avalia o critério daquele degrau (reps × RIR, hold limpo, tentativas) pra sugerir
+  //   subir/descer. Use null quando NÃO for nenhum degrau (evita atrelar o exercício ao degrau errado).
+  //   Omita se não tiver certeza. Só vale skill_id/level que existam na lista.
 }
 
 ## Progression (fim do dia — o que evolui e quando)
@@ -61,6 +75,9 @@ Estrutura: plan > days[] > blocks[] > exercises[]
   "label": "MU completo (barra alta)",   // OBRIGATÓRIO se exercise_id for null (marco sem exercício associado)
   "criteria": "texto livre — quando e como progredir esse exercício/marco"
 }
+
+## Skills e degraus válidos pra skill_ref (id: nível=nome)
+${SKILL_LADDERS}
 
 REGRAS IMPORTANTES:
 - Todo objeto é "strict": não pode ter campos extras além dos listados.
@@ -71,6 +88,8 @@ REGRAS IMPORTANTES:
 - Se o alvo de reps/segundos for um INTERVALO (ex.: "6-8", "8-10s"), \`parsed\` é SEMPRE null —
   mesmo que dê pra estimar um teto (ex.: "3 × 6-8/lado" NÃO vira {sets:3, target:8, ...}).
   O app extrai sets e o piso do intervalo direto do texto de \`target\` em runtime.
+- Se \`skill_ref\` existir e não for null, skill_id e level TÊM que existir na lista de degraus acima.
+- Ao editar um plano existente, PRESERVE o \`skill_ref\` dos exercícios que você não mudou.
 - Cores accent/accent_bg sempre hex de 6 dígitos, minúsculo ou maiúsculo, com #.
 
 Meu treino:

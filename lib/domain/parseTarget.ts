@@ -62,6 +62,12 @@ export function formatValue(value: number, parsed: Parsed | null): string {
   return parsed.unit === "seconds" ? `${value}s` : String(value);
 }
 
+/** " + extra 6/5" a partir das séries extras (vazio sem extras). */
+export function formatExtras(extra: number[], parsed: Parsed | null): string {
+  if (extra.length === 0) return "";
+  return ` + extra ${extra.map((v) => formatValue(v, parsed)).join("/")}`;
+}
+
 /**
  * Extrai os segundos de descanso do texto livre do plano.
  * Ex: "descanso 120s" → 120 · "30-45s entre tentativas" → 45 (limite superior).

@@ -1,12 +1,13 @@
 import { db } from "@/lib/db/schema";
 import type { Parsed } from "@/lib/plan/schema";
-import { effectiveSets } from "@/lib/domain/volume";
+import { extraSets, plannedSets } from "@/lib/domain/volume";
+import { formatExtras } from "@/lib/domain/parseTarget";
 import { shortDate } from "@/lib/utils/date";
 
 export type LastPerf =
   | { kind: "none" }
-  | { kind: "as_target"; date: string }
-  | { kind: "sets"; values: number[]; date: string }
+  | { kind: "as_target"; date: string; extra: number[] }
+  | { kind: "sets"; values: number[]; date: string; extra: number[] }
   | { kind: "skipped"; date: string };
 
 /**
@@ -35,11 +36,12 @@ export async function getLastPerformance(
     if (!log) continue; // exercício não estava nessa sessão; tenta a anterior
 
     if (log.skipped) return { kind: "skipped", date: session.date };
-    if (log.as_target) return { kind: "as_target", date: session.date };
-    const values = effectiveSets(log, null);
-    if (values.length > 0)
-      return { kind: "sets", values, date: session.date };
-    return { kind: "as_target", date: session.date };
+    // `values` = só as planejadas (semeiam os steppers); extras vão à parte
+    const extra = extraSets(log);
+    if (log.as_target) return { kind: "as_target", date: session.date, extra };
+    const values = plannedSets(log, null);
+    if (values.length > 0) return { kind: "sets", values, date: session.date, extra };
+    return { kind: "as_target", date: session.date, extra };
   }
   return { kind: "none" };
 }
@@ -50,14 +52,15 @@ export function formatLastPerf(perf: LastPerf, parsed: Parsed | null): string {
     case "none":
       return "primeira vez";
     case "as_target":
-      return `como previsto · ${shortDate(perf.date)}`;
+      return `como previsto${formatExtras(perf.extra, parsed)} · ${shortDate(perf.date)}`;
     case "skipped":
       return `pulado · ${shortDate(perf.date)}`;
     case "sets": {
       const unit = parsed?.unit === "seconds" ? "s" : "";
-      return `${perf.values.map((v) => `${v}${unit}`).join("/")} · ${shortDate(
-        perf.date
-      )}`;
+      return `${perf.values.map((v) => `${v}${unit}`).join("/")}${formatExtras(
+        perf.extra,
+        parsed
+      )} · ${shortDate(perf.date)}`;
     }
   }
 }

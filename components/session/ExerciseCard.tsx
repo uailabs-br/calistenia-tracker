@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import type { PlanExercise } from "@/lib/plan/schema";
 import type { ExerciseLog, SetPerformed, SetValue } from "@/lib/db/schema";
-import { adjustSets, parseRestSeconds } from "@/lib/domain/parseTarget";
-import { effectiveSets } from "@/lib/domain/volume";
+import { adjustSets, formatExtras, parseRestSeconds } from "@/lib/domain/parseTarget";
+import { extraSets, plannedSets } from "@/lib/domain/volume";
 import { exerciseSkillMapping } from "@/lib/plan/skills";
 import { isClean } from "@/lib/db/queries/progressionReady";
 import {
@@ -13,11 +13,10 @@ import {
   formatLastPerf,
   type LastPerf,
 } from "@/lib/db/queries/lastPerformance";
-import { CheckIcon, TimerIcon, TrophyIcon } from "@/components/ui/icons";
+import { CheckIcon, PlusIcon, TimerIcon, TrophyIcon } from "@/components/ui/icons";
 import { Stepper } from "./Stepper";
 import { FlagChips } from "./FlagChips";
 import { ExerciseNote } from "./ExerciseNote";
-import { RirSelector } from "./RirSelector";
 import { AttemptsCounter } from "./AttemptsCounter";
 
 export interface RecordInput {
@@ -27,6 +26,8 @@ export interface RecordInput {
   note: string | null;
   skipped: boolean;
   sets_performed?: SetPerformed | null;
+  /** Séries além do planejado, feitas neste registro. `undefined` mantém as já gravadas. */
+  extra_sets?: number[] | null;
 }
 
 interface Props {
@@ -45,6 +46,14 @@ interface Props {
   onPersist: (input: RecordInput) => void;
   /** Inicia um descanso manual (entre séries) com a duração em segundos. */
   onRest?: (seconds: number) => void;
+  /** Soma uma série extra (valor sugerido = última série feita). */
+  onAddExtra: () => void;
+  /** Grava as séries extras editadas (silencioso). */
+  onSetExtras: (values: number[]) => Promise<void> | void;
+  /** Exercício acrescentado durante o treino (sem alvo do plano): abre já em "Ajustar". */
+  added?: boolean;
+  /** Tira do treino um exercício adicionado ainda sem registro. */
+  onRemove?: () => void;
 }
 
 export function ExerciseCard({
@@ -59,32 +68,67 @@ export function ExerciseCard({
   onRecord,
   onPersist,
   onRest,
+  onAddExtra,
+  onSetExtras,
+  added = false,
+  onRemove,
 }: Props) {
   const parsed = exercise.parsed;
   const restSeconds = parseRestSeconds(exercise.rest) ?? 90;
   const mapping = exerciseSkillMapping(exercise.id);
 
-  const [adjusting, setAdjusting] = useState(false);
+  const [adjusting, setAdjusting] = useState(added);
   const [values, setValues] = useState<number[]>(() =>
     adjustSets(parsed, exercise.target)
   );
   const [flags, setFlags] = useState<string[]>([]);
   const [note, setNote] = useState("");
-  const [rir, setRir] = useState(0);
   const [attemptsTotal, setAttemptsTotal] = useState(0);
   const [attemptsGood, setAttemptsGood] = useState(0);
   const cardRef = useRef<HTMLDivElement>(null);
+
+  // Séries extras: estado local (edição fluida com press-and-hold), gravado com
+  // debounce. `extrasSeen` guarda o último valor já em sincronia com o banco —
+  // o eco da nossa própria gravação é ignorado; mudança externa (botão "+ extra"
+  // do card fechado) é adotada.
+  const [extraVals, setExtraVals] = useState<number[]>([]);
+  const extrasSeen = useRef("[]");
+  const extrasTimer = useRef<number | null>(null);
+  useEffect(() => {
+    const incoming = JSON.stringify(log?.extra_sets ?? []);
+    if (incoming === extrasSeen.current) return;
+    extrasSeen.current = incoming;
+    setExtraVals(log?.extra_sets ?? []);
+  }, [log?.extra_sets]);
+
+  const flushExtras = async (next: number[]) => {
+    extrasTimer.current = null;
+    extrasSeen.current = JSON.stringify(next);
+    await onSetExtras(next);
+  };
+  const editExtras = (next: number[]) => {
+    setExtraVals(next);
+    if (extrasTimer.current) window.clearTimeout(extrasTimer.current);
+    extrasTimer.current = window.setTimeout(() => void flushExtras(next), 350);
+  };
+  // Grava edição pendente ANTES de somar outra: senão o debounce sobrescreveria a nova.
+  const addExtra = async () => {
+    if (extrasTimer.current) {
+      window.clearTimeout(extrasTimer.current);
+      await flushExtras(extraVals);
+    }
+    onAddExtra();
+  };
 
   // Sincroniza estado local com o log persistido (retomada / edição)
   useEffect(() => {
     if (log) {
       setFlags(log.flags_selected);
       setNote(log.note ?? "");
-      const s = effectiveSets(log, parsed, exercise.target);
+      const s = plannedSets(log, parsed, exercise.target);
       if (s.length > 0) setValues(s);
       else setValues(adjustSets(parsed, exercise.target));
       setAdjusting(!log.as_target && !log.skipped && (log.sets?.length ?? 0) > 0);
-      if (log.sets_performed?.type === "reps_rir") setRir(log.sets_performed.rir);
       if (log.sets_performed?.type === "skill_consistency") {
         setAttemptsTotal(log.sets_performed.attempts_total);
         setAttemptsGood(log.sets_performed.attempts_good);
@@ -95,16 +139,22 @@ export function ExerciseCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [log?.id]);
 
+  // Quantas séries o plano pede. Séries além disso, criadas no "Ajustar", viram
+  // séries EXTRAS. Exercício adicionado não tem plano: toda série é "planejada".
+  const plannedCount = added ? Infinity : adjustSets(parsed, exercise.target).length;
+  const plannedValues = values.slice(0, plannedCount);
+
   /** Performance declarada pro motor de progressão — null se o exercício
    *  não estiver mapeado a um nível de skill. */
   const skillPerformed = (): SetPerformed | null => {
     if (!mapping) return null;
     const formOk = isClean({ flags_selected: flags }, exercise.neg_flags ?? []);
     if (mapping.criteria_type === "reps_rir") {
-      return { type: "reps_rir", reps: values, rir, form_ok: formOk };
+      // RIR não é mais coletado: o critério de reps avalia só reps e execução limpa
+      return { type: "reps_rir", reps: plannedValues, rir: null, form_ok: formOk };
     }
     if (mapping.criteria_type === "hold_clean") {
-      return { type: "hold_clean", durations_seconds: values, form_ok: formOk };
+      return { type: "hold_clean", durations_seconds: plannedValues, form_ok: formOk };
     }
     return { type: "skill_consistency", attempts_total: attemptsTotal, attempts_good: attemptsGood };
   };
@@ -113,6 +163,18 @@ export function ExerciseCard({
     () => getLastPerformance(exercise.id, sessionId),
     [exercise.id, sessionId]
   );
+
+  // Exercício adicionado já abre em "Ajustar": semeia os steppers com a última
+  // performance (uma vez, e só se a pessoa ainda não mexeu neles).
+  const seededFromLast = useRef(false);
+  useEffect(() => {
+    if (!added || log || !lastPerf || seededFromLast.current) return;
+    seededFromLast.current = true;
+    const untouched =
+      values.join() === adjustSets(parsed, exercise.target).join();
+    if (untouched) setValues(seedAdjustValues(parsed, exercise.target, lastPerf));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastPerf]);
 
   // Auto-scroll: ao virar o card ativo, traz para o centro da viewport.
   useEffect(() => {
@@ -140,14 +202,20 @@ export function ExerciseCard({
       ...baseInput(),
     });
 
-  const recordAdjusted = () =>
+  const recordAdjusted = () => {
+    // séries novas além do plano viram extras (somadas às que já existiam)
+    const newExtras = values.slice(plannedCount);
     onRecord({
       as_target: false,
-      sets: values.map((value, index) => ({ index, value })),
+      sets: plannedValues.map((value, index) => ({ index, value })),
+      ...(newExtras.length > 0
+        ? { extra_sets: [...(log?.extra_sets ?? []), ...newExtras] }
+        : {}),
       skipped: false,
       sets_performed: skillPerformed(),
       ...baseInput(),
     });
+  };
 
   const recordAttempts = () =>
     onRecord({
@@ -166,6 +234,11 @@ export function ExerciseCard({
       sets_performed: null,
       ...baseInput(),
     });
+
+  // Somar/remover séries no "Ajustar": nova série repete a última.
+  const addRow = () =>
+    setValues((prev) => [...prev, prev[prev.length - 1] ?? adjustSets(parsed, exercise.target)[0]]);
+  const removeRow = (i: number) => setValues((prev) => prev.filter((_, j) => j !== i));
 
   const startAdjust = () => {
     if (!log) setValues(seedAdjustValues(parsed, exercise.target, lastPerf));
@@ -210,55 +283,77 @@ export function ExerciseCard({
 
   const done = !!log && !log.skipped;
   const skipped = !!log?.skipped;
+  // Tentativas (kick-up etc.) não têm "série": o contador já é livre.
+  const supportsExtra =
+    parsed?.unit !== "attempts" &&
+    mapping?.criteria_type !== "skill_consistency" &&
+    !/tentativa/i.test(exercise.target);
+  const loggedPlannedCount = log ? plannedSets(log, parsed, exercise.target).length : 0;
 
   // ── Card colapsado ─────────────────────────────────────────────────
   if (!active) {
     return (
-      <button
-        type="button"
-        onClick={onActivate}
-        className="w-full rounded-card border border-border bg-surface px-4 py-3 text-left transition-colors duration-200"
+      <div
+        className="flex items-stretch rounded-card border border-border bg-surface transition-colors duration-200"
         style={done ? { borderColor: accent } : undefined}
       >
-        <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0">
-            <div className="flex items-center gap-1">
-              {hasPR && (
-                <span
-                  aria-label="novo recorde nesta sessão"
-                  className="shrink-0 text-[var(--color-gold)]"
+        <button
+          type="button"
+          onClick={onActivate}
+          className="min-w-0 flex-1 px-4 py-3 text-left"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1">
+                {hasPR && (
+                  <span
+                    aria-label="novo recorde nesta sessão"
+                    className="shrink-0 text-[var(--color-gold)]"
+                  >
+                    <TrophyIcon className="h-3.5 w-3.5" />
+                  </span>
+                )}
+                <p
+                  className="truncate font-medium"
+                  style={isSkill ? { color: accent } : undefined}
                 >
-                  <TrophyIcon className="h-3.5 w-3.5" />
-                </span>
-              )}
-              <p
-                className="truncate font-medium"
-                style={isSkill ? { color: accent } : undefined}
-              >
-                {exercise.name}
+                  {exercise.name}
+                </p>
+              </div>
+              <p className="tnum text-xs text-muted">
+                {skipped
+                  ? "pulado"
+                  : summarize(log, parsed, exercise.target) ?? exercise.target}
               </p>
             </div>
-            <p className="tnum text-xs text-muted">
-              {skipped
-                ? "pulado"
-                : summarize(log, parsed, exercise.target) ?? exercise.target}
-            </p>
+            {done ? (
+              <span
+                className="anim-pop flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
+                style={{ background: accent, color: "var(--color-on-accent)" }}
+                aria-label="concluído"
+              >
+                <CheckIcon className="h-4 w-4" />
+              </span>
+            ) : (
+              <span className="tnum shrink-0 text-xs text-muted">
+                {exercise.target}
+              </span>
+            )}
           </div>
-          {done ? (
-            <span
-              className="anim-pop flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
-              style={{ background: accent, color: "var(--color-on-accent)" }}
-              aria-label="concluído"
-            >
-              <CheckIcon className="h-4 w-4" />
-            </span>
-          ) : (
-            <span className="tnum shrink-0 text-xs text-muted">
-              {exercise.target}
-            </span>
-          )}
-        </div>
-      </button>
+        </button>
+        {done && supportsExtra && (
+          <button
+            type="button"
+            onClick={onAddExtra}
+            aria-label={`Adicionar série extra de ${exercise.name}`}
+            className="tap flex shrink-0 items-center gap-1 border-l border-border px-3 font-mono text-[11px] active:scale-[0.98]"
+            style={{ color: accent }}
+          >
+            <PlusIcon className="h-3.5 w-3.5" />
+            extra
+          </button>
+        )}
+      </div>
     );
   }
 
@@ -340,16 +435,48 @@ export function ExerciseCard({
         ) : (
           <div className="anim-fade-in flex flex-col gap-2">
             {values.map((v, i) => (
-              <Stepper
-                key={i}
-                index={i}
-                value={v}
-                unit={parsed?.unit === "seconds" ? "s" : ""}
-                onChange={(next) =>
-                  setValues((prev) => prev.map((x, j) => (j === i ? next : x)))
-                }
-              />
+              <div key={i} className="flex items-center justify-between gap-2">
+                <Stepper
+                  index={i}
+                  value={v}
+                  unit={parsed?.unit === "seconds" ? "s" : ""}
+                  onChange={(next) =>
+                    setValues((prev) => prev.map((x, j) => (j === i ? next : x)))
+                  }
+                />
+                <div className="flex shrink-0 items-center gap-1">
+                  {i >= plannedCount && (
+                    <span
+                      className="rounded-full border px-2 font-mono text-[10px]"
+                      style={{ borderColor: accent, color: accent }}
+                    >
+                      extra
+                    </span>
+                  )}
+                  {values.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeRow(i)}
+                      aria-label={`Remover série ${i + 1}`}
+                      className="tap rounded-lg px-2 py-1 font-mono text-[11px] text-muted"
+                    >
+                      remover
+                    </button>
+                  )}
+                </div>
+              </div>
             ))}
+            {supportsExtra && (
+              <button
+                type="button"
+                onClick={addRow}
+                className="tap flex items-center justify-center gap-2 rounded-xl border border-dashed border-border py-2.5 text-sm font-medium active:scale-[0.99]"
+                style={{ color: accent }}
+              >
+                <PlusIcon className="h-4 w-4" />
+                {added || values.length < plannedCount ? "Série" : "Série extra"}
+              </button>
+            )}
             <button
               type="button"
               onClick={recordAdjusted}
@@ -361,10 +488,51 @@ export function ExerciseCard({
             </button>
           </div>
         )}
-        {mapping?.criteria_type === "reps_rir" && (
-          <RirSelector value={rir} accent={accent} onChange={setRir} />
-        )}
       </div>
+
+      {done && supportsExtra && (
+        <div className="anim-fade-in mt-3 border-t border-border pt-3">
+          {extraVals.length > 0 && (
+            <>
+              <p className="mb-2 font-mono text-[11px] uppercase tracking-wide text-muted">
+                Séries extras
+              </p>
+              <div className="flex flex-col gap-2">
+                {extraVals.map((v, i) => (
+                  <div key={i} className="flex items-center justify-between gap-2">
+                    <Stepper
+                      index={loggedPlannedCount + i}
+                      value={v}
+                      unit={parsed?.unit === "seconds" ? "s" : ""}
+                      onChange={(next) =>
+                        editExtras(
+                          extraVals.map((x, j) => (j === i ? Math.max(1, next) : x))
+                        )
+                      }
+                    />
+                    <button
+                      type="button"
+                      onClick={() => editExtras(extraVals.filter((_, j) => j !== i))}
+                      className="tap rounded-lg px-2 py-1 font-mono text-[11px] text-muted"
+                    >
+                      remover
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+          <button
+            type="button"
+            onClick={() => void addExtra()}
+            className="tap mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border py-2.5 text-sm font-medium active:scale-[0.99]"
+            style={{ color: accent }}
+          >
+            <PlusIcon className="h-4 w-4" />
+            Série extra
+          </button>
+        </div>
+      )}
 
       <FlagChips
         flags={exercise.flags}
@@ -390,13 +558,23 @@ export function ExerciseCard({
         ) : (
           <p className="font-mono text-[11px] text-muted">{exercise.rest}</p>
         )}
-        <button
-          type="button"
-          onClick={recordSkipped}
-          className="tap -mr-1 rounded-lg px-2 py-1 font-mono text-[11px] text-muted"
-        >
-          pular exercício
-        </button>
+        {added && !log ? (
+          <button
+            type="button"
+            onClick={onRemove}
+            className="tap -mr-1 rounded-lg px-2 py-1 font-mono text-[11px] text-muted"
+          >
+            remover do treino
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={recordSkipped}
+            className="tap -mr-1 rounded-lg px-2 py-1 font-mono text-[11px] text-muted"
+          >
+            pular exercício
+          </button>
+        )}
       </div>
     </div>
   );
@@ -431,8 +609,9 @@ function summarize(
     const { attempts_good, attempts_total } = log.sets_performed;
     return `${attempts_good}/${attempts_total} tentativas`;
   }
-  const s = effectiveSets(log, parsed, targetText);
-  if (s.length === 0) return log.as_target ? "como previsto" : "feito";
+  const extra = formatExtras(extraSets(log), parsed);
+  const s = plannedSets(log, parsed, targetText);
+  if (s.length === 0) return `${log.as_target ? "como previsto" : "feito"}${extra}`;
   const unit = parsed?.unit === "seconds" ? "s" : "";
-  return s.map((v) => `${v}${unit}`).join("/");
+  return `${s.map((v) => `${v}${unit}`).join("/")}${extra}`;
 }

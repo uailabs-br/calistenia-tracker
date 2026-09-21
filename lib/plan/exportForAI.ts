@@ -1,14 +1,24 @@
 import { db } from "@/lib/db/schema";
-import { getDayByWeekday, getExerciseInDay, plan } from "@/lib/plan/loader";
+import { getDayByWeekday, plan } from "@/lib/plan/loader";
+import { resolveLogExercise } from "@/lib/plan/resolve";
 import type { Plan } from "@/lib/plan/schema";
-import { effectiveSets } from "@/lib/domain/volume";
+import { extraSets, plannedSets } from "@/lib/domain/volume";
 import { skills, getLevelInfo } from "@/lib/plan/skills";
-import { getSkillState, type SkillState } from "@/lib/db/queries/skillProgression";
+import {
+  getSkillLogs,
+  getSkillState,
+  type SkillState,
+} from "@/lib/db/queries/skillProgression";
 
 export interface AiHistoryExercise {
   name: string;
   target: string;
+  /** O que foi feito DENTRO do plano (sem as séries extras). */
   performed: "pulado" | "como previsto" | "feito" | number[];
+  /** Séries feitas ALÉM do plano, por vontade do dia. Ausente se não houve. Sinal de que o plano está leve. */
+  extra_sets?: number[];
+  /** Exercício acrescentado pelo usuário no meio do treino (não fazia parte do plano do dia). */
+  added?: true;
   flags: string[];
   note: string | null;
 }
@@ -51,20 +61,24 @@ async function buildSessions(): Promise<AiHistorySession[]> {
     if (logs.length === 0) continue;
 
     const day = getDayByWeekday(session.weekday);
+    const addedIds = new Set(session.added_exercises ?? []);
     const exercises: AiHistoryExercise[] = logs.map((log) => {
-      const ex = getExerciseInDay(session.weekday, log.exercise_id);
-      const parsed = ex?.parsed ?? null;
+      const ex = resolveLogExercise(log, session.weekday);
+      const parsed = ex.parsed;
       let performed: AiHistoryExercise["performed"];
       if (log.skipped) performed = "pulado";
       else if (log.as_target) performed = "como previsto";
       else {
-        const values = effectiveSets(log, parsed, ex?.target);
+        const values = plannedSets(log, parsed, ex.target);
         performed = values.length > 0 ? values : "feito";
       }
+      const extras = extraSets(log);
       return {
-        name: ex?.name ?? log.exercise_id,
-        target: ex?.target ?? "",
+        name: ex.name ?? log.exercise_id,
+        target: ex.target,
         performed,
+        ...(extras.length > 0 ? { extra_sets: extras } : {}),
+        ...(addedIds.has(log.exercise_id) ? { added: true as const } : {}),
         flags: log.flags_selected,
         note: log.note,
       };
@@ -79,21 +93,18 @@ async function buildSessions(): Promise<AiHistorySession[]> {
   return out;
 }
 
-/** Nível mais recentemente treinado de uma skill (log mais recente por data da sessão). */
-async function latestLevel(
-  skillId: string,
-  sessionStartedAt: Map<string, number>
-): Promise<number | null> {
-  const logs = (
-    await db.exerciseLogs.where("skill_id").equals(skillId).toArray()
-  ).filter((l) => !l.deleted_at && !l.skipped);
-  if (logs.length === 0) return null;
+/** Skill sem treino nessa janela sai do resumo: a IA não deve recomendar sobre o que ficou pra trás. */
+const SKILL_WINDOW_DAYS = 60;
 
-  logs.sort(
-    (a, b) =>
-      (sessionStartedAt.get(b.session_id) ?? 0) - (sessionStartedAt.get(a.session_id) ?? 0)
-  );
-  return logs[0].level_at_time;
+/**
+ * Nível mais recentemente treinado de uma skill. Só considera logs "vivos"
+ * (sessão válida, exercício ainda vinculado à skill no plano vigente, dentro da
+ * janela) — ver `getSkillLogs`.
+ */
+async function latestLevel(skillId: string): Promise<number | null> {
+  const since = Date.now() - SKILL_WINDOW_DAYS * 86_400_000;
+  const entries = await getSkillLogs(skillId, { since });
+  return entries[0]?.log.level_at_time ?? null;
 }
 
 /**
@@ -112,12 +123,9 @@ async function latestLevel(
  * em vez do framework específico deste app.
  */
 async function buildProgressao(): Promise<AiProgressSignal[]> {
-  const sessions = await db.sessions.toArray();
-  const startedAt = new Map(sessions.map((s) => [s.id, s.started_at ?? 0]));
-
   const out: AiProgressSignal[] = [];
   for (const skill of skills) {
-    const level = await latestLevel(skill.id, startedAt);
+    const level = await latestLevel(skill.id);
     if (level === null) continue;
 
     const info = getLevelInfo(skill.id, level);

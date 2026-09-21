@@ -1,18 +1,18 @@
 import type { Parsed } from "@/lib/plan/schema";
 import type { ExerciseLog } from "@/lib/db/schema";
-import { targetSets } from "./parseTarget";
+import { adjustSets, targetSets } from "./parseTarget";
+
+type SetsLog = Pick<ExerciseLog, "as_target" | "sets" | "skipped" | "extra_sets">;
 
 /**
- * Valores por série efetivamente realizados num log.
+ * Séries PLANEJADAS realizadas (sem as extras) — é o que a progressão compara
+ * com o alvo. Uma série extra a mais (ou a menos, cansada) não pode mudar o
+ * veredito de "bateu o alvo".
  * - as_target: reconstitui a partir de `parsed` (todas no alvo)
  * - com sets: usa os valores ajustados
  * - skipped ou sem parsed sem sets: []
  */
-export function effectiveSets(
-  log: Pick<ExerciseLog, "as_target" | "sets" | "skipped">,
-  parsed: Parsed | null,
-  target = ""
-): number[] {
+export function plannedSets(log: SetsLog, parsed: Parsed | null, target = ""): number[] {
   if (log.skipped) return [];
   if (log.as_target) return targetSets(parsed, target);
   if (log.sets && log.sets.length > 0) {
@@ -24,9 +24,29 @@ export function effectiveSets(
   return [];
 }
 
+/** Séries extras (feitas além do planejado, durante o treino). Vazio se pulado. */
+export function extraSets(log: Pick<ExerciseLog, "skipped" | "extra_sets">): number[] {
+  if (log.skipped) return [];
+  return (log.extra_sets ?? []).filter((v) => v > 0);
+}
+
+/**
+ * Todas as séries realizadas: planejadas + extras. É o que conta pra volume,
+ * recorde e histórico.
+ */
+export function effectiveSets(log: SetsLog, parsed: Parsed | null, target = ""): number[] {
+  return [...plannedSets(log, parsed, target), ...extraSets(log)];
+}
+
+/** Valor sugerido pra próxima série extra: repete a última série feita. */
+export function extraSeed(log: SetsLog, parsed: Parsed | null, target = ""): number {
+  const all = effectiveSets(log, parsed, target);
+  return all.length > 0 ? all[all.length - 1] : adjustSets(parsed, target)[0];
+}
+
 /** Volume total (soma das reps/segundos) de um log. per_side dobra o total. */
 export function totalVolume(
-  log: Pick<ExerciseLog, "as_target" | "sets" | "skipped">,
+  log: SetsLog,
   parsed: Parsed | null,
   target = ""
 ): number {

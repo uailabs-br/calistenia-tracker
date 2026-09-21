@@ -1,10 +1,6 @@
 import { db, type Session, type ExerciseLog } from "@/lib/db/schema";
-import {
-  getExerciseById,
-  getExerciseInDay,
-  uniqueExercises,
-  plan,
-} from "@/lib/plan/loader";
+import { getExerciseById, uniqueExercises, plan } from "@/lib/plan/loader";
+import { resolveLogExercise } from "@/lib/plan/resolve";
 import { totalVolume, effectiveSets } from "@/lib/domain/volume";
 import { streakWithFreeze } from "@/lib/domain/streak";
 import { getWeekGoal } from "@/lib/utils/profile";
@@ -196,12 +192,11 @@ export async function getExerciseVolume(
       (l) => l.session_id === session.id && l.exercise_id === exerciseId
     );
     if (!log || log.skipped) continue;
-    // parsed/target do dia da sessão: o alvo pode variar entre dias para o mesmo ID
-    const exInDay = getExerciseInDay(session.weekday, exerciseId);
-    const parsed = exInDay?.parsed ?? null;
+    // alvo do momento do registro (snapshot), não o do plano de hoje
+    const ex = resolveLogExercise(log, session.weekday);
     points.push({
       date: session.date,
-      volume: totalVolume(log, parsed, exInDay?.target),
+      volume: totalVolume(log, ex.parsed, ex.target),
     });
   }
   return points;
@@ -221,27 +216,43 @@ export async function getBestHold(exerciseId: string): Promise<VolumePoint[]> {
       (l) => l.session_id === session.id && l.exercise_id === exerciseId
     );
     if (!log || log.skipped) continue;
-    const exInDay = getExerciseInDay(session.weekday, exerciseId);
-    const parsed = exInDay?.parsed ?? null;
-    const values = effectiveSets(log, parsed, exInDay?.target);
+    const ex = resolveLogExercise(log, session.weekday);
+    const values = effectiveSets(log, ex.parsed, ex.target);
     if (values.length === 0) continue;
     points.push({ date: session.date, volume: Math.max(...values) });
   }
   return points;
 }
 
-/** Exercícios que já apareceram em alguma sessão (para seletor de volume). */
-export async function getLoggedExercises(): Promise<
-  { id: string; name: string }[]
-> {
-  const logs = await activeLogs();
-  const ids = [...new Set(logs.filter((l) => !l.skipped).map((l) => l.exercise_id))];
-  return ids
-    .map((id) => {
-      const ex = getExerciseById(id);
-      return ex ? { id, name: ex.name } : null;
-    })
-    .filter((x): x is { id: string; name: string } => x !== null);
+export interface LoggedExercise {
+  id: string;
+  name: string;
+  /** Unidade do alvo (define se o gráfico é volume ou melhor hold). */
+  unit: "reps" | "seconds" | "attempts" | null;
+}
+
+/**
+ * Exercícios que já apareceram em alguma sessão (para seletor de volume).
+ * Nome e unidade vêm do registro mais recente: exercício que saiu do plano (ou
+ * foi adicionado fora dele) continua aparecendo, com o nome de quando foi feito.
+ */
+export async function getLoggedExercises(): Promise<LoggedExercise[]> {
+  const logs = (await activeLogs())
+    .filter((l) => !l.skipped)
+    .sort((a, b) => b.logged_at - a.logged_at);
+  const out = new Map<string, LoggedExercise>();
+  for (const l of logs) {
+    if (out.has(l.exercise_id)) continue;
+    const planEx = getExerciseById(l.exercise_id);
+    const name = planEx?.name ?? l.snapshot?.name;
+    if (!name) continue;
+    out.set(l.exercise_id, {
+      id: l.exercise_id,
+      name,
+      unit: (l.snapshot?.parsed ?? planEx?.parsed)?.unit ?? null,
+    });
+  }
+  return [...out.values()];
 }
 
 const WEEKDAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];

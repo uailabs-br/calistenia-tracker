@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { db, type Session, type ExerciseLog } from "@/lib/db/schema";
+import { db, type Session, type ExerciseLog, type CustomExercise } from "@/lib/db/schema";
 import { plan } from "@/lib/plan/loader";
 
 const BACKUP_FORMAT = "calistenia-tracker-backup";
@@ -14,7 +14,7 @@ const setPerformedSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("reps_rir"),
     reps: z.array(z.number()),
-    rir: z.number(),
+    rir: z.number().nullable(),
     form_ok: z.boolean(),
   }),
   z.object({
@@ -29,6 +29,19 @@ const setPerformedSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
+const snapshotSchema = z.object({
+  name: z.string(),
+  target: z.string(),
+  parsed: z
+    .object({
+      sets: z.number(),
+      target: z.number(),
+      unit: z.enum(["reps", "seconds", "attempts"]),
+      per_side: z.boolean(),
+    })
+    .nullable(),
+});
+
 const sessionSchema = z.object({
   id: z.string(),
   plan_day_id: z.string().nullable(),
@@ -42,6 +55,8 @@ const sessionSchema = z.object({
   note: z.string().nullable(),
   // backups anteriores ao treino avulso não têm `source` — default "plan".
   source: z.enum(["plan", "freeform"]).optional().default("plan"),
+  // backups anteriores aos exercícios adicionados no treino não têm — default null.
+  added_exercises: z.array(z.string()).nullable().optional().default(null),
   updated_at: z.number(),
   deleted_at: z.number().nullable(),
 });
@@ -50,8 +65,12 @@ const logSchema = z.object({
   id: z.string(),
   session_id: z.string(),
   exercise_id: z.string(),
+  // backups anteriores ao snapshot não têm — o resolver cai pro plano vigente.
+  snapshot: snapshotSchema.nullable().optional().default(null),
   as_target: z.boolean(),
   sets: z.array(setValueSchema).nullable(),
+  // backups anteriores às séries extras não têm — default null.
+  extra_sets: z.array(z.number()).nullable().optional().default(null),
   flags_selected: z.array(z.string()),
   // backups antigos não têm `note` — default null p/ compatibilidade.
   note: z.string().nullable().optional().default(null),
@@ -71,6 +90,20 @@ const logSchema = z.object({
   criterion_met: z.boolean().nullable().optional().default(null),
 });
 
+const customExerciseSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  category: z.enum(["Puxar", "Empurrar", "Core", "Pernas"]),
+  unit: z.enum(["reps", "seconds"]),
+  per_side: z.boolean(),
+  sets: z.number(),
+  target: z.number(),
+  rest: z.number(),
+  created_at: z.number(),
+  updated_at: z.number(),
+  deleted_at: z.number().nullable(),
+});
+
 const backupSchema = z.object({
   format: z.literal(BACKUP_FORMAT),
   version: z.number(),
@@ -78,6 +111,8 @@ const backupSchema = z.object({
   plan: z.object({ id: z.string(), version: z.number() }),
   sessions: z.array(sessionSchema),
   exerciseLogs: z.array(logSchema),
+  // backups anteriores aos exercícios criados pelo usuário não têm.
+  customExercises: z.array(customExerciseSchema).optional().default([]),
 });
 
 export type Backup = z.infer<typeof backupSchema>;
@@ -86,13 +121,20 @@ export type Backup = z.infer<typeof backupSchema>;
 export async function exportAll(): Promise<Backup> {
   const sessions = await db.sessions.toArray();
   const exerciseLogs = await db.exerciseLogs.toArray();
+  const customExercises = await db.customExercises.toArray();
   return {
     format: BACKUP_FORMAT,
     version: BACKUP_VERSION,
     exported_at: new Date().toISOString(),
     plan: { id: plan.id, version: plan.version },
-    sessions,
-    exerciseLogs,
+    sessions: sessions.map((s) => ({ ...s, added_exercises: s.added_exercises ?? null })),
+    // logs anteriores ao snapshot/extras vêm sem os campos — normaliza pra null
+    exerciseLogs: exerciseLogs.map((l) => ({
+      ...l,
+      snapshot: l.snapshot ?? null,
+      extra_sets: l.extra_sets ?? null,
+    })),
+    customExercises,
   };
 }
 
@@ -134,7 +176,13 @@ export async function importMerge(raw: unknown): Promise<ImportResult> {
     logsUpdated: 0,
   };
 
-  await db.transaction("rw", db.sessions, db.exerciseLogs, async () => {
+  await db.transaction("rw", db.sessions, db.exerciseLogs, db.customExercises, async () => {
+    for (const c of data.customExercises) {
+      const existing = await db.customExercises.get(c.id);
+      if (!existing || c.updated_at > existing.updated_at) {
+        await db.customExercises.put(c as CustomExercise);
+      }
+    }
     for (const s of data.sessions) {
       const existing = await db.sessions.get(s.id);
       if (!existing) {
@@ -171,11 +219,12 @@ export function markExported(sessionCount: number): void {
   );
 }
 
-/** Apaga TODOS os dados locais (sessões + registros). Irreversível. */
+/** Apaga TODOS os dados locais (sessões, registros, exercícios criados). Irreversível. */
 export async function resetAll(): Promise<void> {
-  await db.transaction("rw", db.sessions, db.exerciseLogs, async () => {
+  await db.transaction("rw", db.sessions, db.exerciseLogs, db.customExercises, async () => {
     await db.exerciseLogs.clear();
     await db.sessions.clear();
+    await db.customExercises.clear();
   });
   if (typeof localStorage !== "undefined") {
     localStorage.removeItem(LAST_EXPORT_KEY);

@@ -1,5 +1,6 @@
 import { db, type Session, type ExerciseLog } from "@/lib/db/schema";
-import { getExerciseInDay, plan } from "@/lib/plan/loader";
+import { plan } from "@/lib/plan/loader";
+import { resolveLogExercise } from "@/lib/plan/resolve";
 import { totalVolume } from "@/lib/domain/volume";
 import {
   daysBetween,
@@ -64,9 +65,8 @@ export async function getWeekReview(monday?: string): Promise<WeekReview | null>
     for (const s of weekSessions) {
       for (const log of logsBySession.get(s.id) ?? []) {
         if (log.skipped) continue;
-        const parsed =
-          getExerciseInDay(s.weekday, log.exercise_id)?.parsed ?? null;
-        sum += totalVolume(log, parsed);
+        const ex = resolveLogExercise(log, s.weekday);
+        sum += totalVolume(log, ex.parsed, ex.target);
       }
     }
     return sum;

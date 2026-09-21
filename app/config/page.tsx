@@ -11,6 +11,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { CollapsibleCard } from "@/components/ui/CollapsibleCard";
 import { useToast } from "@/components/ui/Toast";
 import { ReminderSettings } from "@/components/config/ReminderSettings";
+import { CustomExercisesCard } from "@/components/config/CustomExercisesCard";
 import { AI_SCHEMA_PROMPT } from "@/lib/plan/aiSchema";
 import { exportForAI } from "@/lib/plan/exportForAI";
 import { getSkillById } from "@/lib/plan/skills";
@@ -337,6 +338,8 @@ export default function ConfigPage() {
         )}
       </CollapsibleCard>
 
+      <CustomExercisesCard className="mb-3" />
+
       <ReminderSettings />
 
       {pendingBackup >= 4 && (
@@ -433,8 +436,9 @@ export default function ConfigPage() {
 
       <CollapsibleCard title="Deletar dados" className="mt-6" danger>
         <p className="mt-1 text-sm text-muted">
-          Apaga todo o histórico (sessões e registros) deste dispositivo. Não dá
-          para desfazer. Exporte um backup antes se quiser guardar.
+          Apaga todo o histórico (sessões e registros) e os exercícios que você
+          criou, deste dispositivo. Não dá para desfazer. Exporte um backup antes
+          se quiser guardar.
         </p>
         <button
           type="button"
@@ -457,7 +461,7 @@ export default function ConfigPage() {
       {showReset && (
         <ConfirmDialog
           title="Deletar todos os dados?"
-          message="Todo o histórico de sessões e registros será apagado deste dispositivo. Esta ação não pode ser desfeita."
+          message="Todo o histórico de sessões e registros, e os exercícios que você criou, serão apagados deste dispositivo. Esta ação não pode ser desfeita."
           confirmLabel="Deletar pra sempre"
           danger
           onConfirm={handleReset}

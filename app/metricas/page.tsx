@@ -17,7 +17,6 @@ import {
   getExerciseVolume,
   getBestHold,
 } from "@/lib/db/queries/metrics";
-import { getExerciseById } from "@/lib/plan/loader";
 
 const AC = "#a89cff"; // accent neutro das métricas (roxo MU)
 
@@ -30,7 +29,7 @@ export default function MetricasPage() {
     () => (exId ? getExerciseVolume(exId) : Promise.resolve([])),
     [exId]
   );
-  const isHold = exId ? getExerciseById(exId)?.parsed?.unit === "seconds" : false;
+  const isHold = exercises?.find((e) => e.id === exId)?.unit === "seconds";
   const bestHold = useLiveQuery(
     () => (exId && isHold ? getBestHold(exId) : Promise.resolve([])),
     [exId, isHold]

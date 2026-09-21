@@ -345,6 +345,7 @@
           "exercises": [
             {
               "id": "hs-kickup-controlado",
+              "skill_ref": null,
               "name": "Kick-up controlado",
               "target": "6 tentativas",
               "parsed": null,
@@ -355,6 +356,7 @@
             },
             {
               "id": "hs-frog-to-hs-negativa",
+              "skill_ref": null,
               "name": "Frog to HS negativa",
               "target": "5 rep",
               "parsed": { "sets": 1, "target": 5, "unit": "reps", "per_side": false },
@@ -387,6 +389,7 @@
           "exercises": [
             {
               "id": "legs-pistol-split-squat",
+              "skill_ref": null,
               "name": "Pistol squat",
               "target": "3 × 6/lado",
               "parsed": { "sets": 3, "target": 6, "unit": "reps", "per_side": true },

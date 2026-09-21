@@ -5,8 +5,11 @@ import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, type ExerciseLog } from "@/lib/db/schema";
 import { getDayByWeekday } from "@/lib/plan/loader";
+import { getCatalogExercise } from "@/lib/plan/catalog";
+import { resolveLogExercise } from "@/lib/plan/resolve";
 import type { PlanExercise } from "@/lib/plan/schema";
-import { effectiveSets } from "@/lib/domain/volume";
+import { extraSets, plannedSets } from "@/lib/domain/volume";
+import { formatExtras } from "@/lib/domain/parseTarget";
 import { longDate, formatDuration } from "@/lib/utils/date";
 import { ChevronLeftIcon, CheckIcon } from "@/components/ui/icons";
 
@@ -61,6 +64,31 @@ export default function SessionDetailPage({
   const logByExercise = new Map<string, ExerciseLog>();
   logs.forEach((l) => logByExercise.set(l.exercise_id, l));
 
+  // Registros que não estão no treino do dia do plano vigente: os acrescentados
+  // no meio do treino e os de um plano anterior. Nome e alvo vêm do snapshot.
+  const planIds = new Set(
+    day ? day.blocks.flatMap((b) => b.exercises.map((e) => e.id)) : []
+  );
+  const addedIds = new Set(session.added_exercises ?? []);
+  const outsideRows = logs
+    .filter((l) => !planIds.has(l.exercise_id))
+    .sort((a, b) => a.logged_at - b.logged_at)
+    .map((log) => {
+      const r = resolveLogExercise(log, session.weekday);
+      const exercise: PlanExercise = {
+        id: log.exercise_id,
+        name: r.name ?? getCatalogExercise(log.exercise_id)?.name ?? log.exercise_id,
+        target: r.target,
+        parsed: r.parsed,
+        obs: "",
+        rest: "",
+        flags: [],
+      };
+      return { log, exercise, added: addedIds.has(log.exercise_id) };
+    });
+  const addedRows = outsideRows.filter((r) => r.added);
+  const otherRows = outsideRows.filter((r) => !r.added);
+
   return (
     <div className="px-4 pb-8">
       {backLink}
@@ -100,36 +128,86 @@ export default function SessionDetailPage({
         <p className="text-sm text-muted">
           Treino fora do programa — sem exercícios do plano registrados.
         </p>
-      ) : day ? (
-        <div className="flex flex-col gap-2">
-          {day.blocks.map((block) => (
-            <div key={block.label}>
-              <p className="mb-1 mt-3 font-mono text-[11px] uppercase tracking-wide text-muted">
-                {block.label}
-              </p>
-              <ul className="flex flex-col gap-2">
-                {block.exercises.map((ex) => (
-                  <li
-                    key={ex.id}
-                    className="rounded-card border border-border bg-surface px-4 py-3"
-                  >
-                    <ExerciseRow
-                      exercise={ex}
-                      isSkill={block.is_skill}
-                      accent={accent}
-                      log={logByExercise.get(ex.id)}
-                    />
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
       ) : (
-        <p className="text-sm text-muted">
-          Plano deste treino não está mais disponível nesta versão.
-        </p>
+        <>
+          {day ? (
+            <div className="flex flex-col gap-2">
+              {day.blocks.map((block) => (
+                <div key={block.label}>
+                  <p className="mb-1 mt-3 font-mono text-[11px] uppercase tracking-wide text-muted">
+                    {block.label}
+                  </p>
+                  <ul className="flex flex-col gap-2">
+                    {block.exercises.map((ex) => (
+                      <li
+                        key={ex.id}
+                        className="rounded-card border border-border bg-surface px-4 py-3"
+                      >
+                        <ExerciseRow
+                          exercise={withSnapshotTarget(ex, logByExercise.get(ex.id))}
+                          isSkill={block.is_skill}
+                          accent={accent}
+                          log={logByExercise.get(ex.id)}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          ) : (
+            outsideRows.length === 0 && (
+              <p className="text-sm text-muted">
+                Plano deste treino não está mais disponível nesta versão.
+              </p>
+            )
+          )}
+
+          <OutsideSection title="Adicionados ao treino" rows={addedRows} accent={accent} />
+          <OutsideSection
+            title={day ? "Fora do plano atual" : "Exercícios registrados"}
+            rows={otherRows}
+            accent={accent}
+          />
+        </>
       )}
+    </div>
+  );
+}
+
+/** O alvo do dia em que foi feito (snapshot) vale mais que o do plano de hoje. */
+function withSnapshotTarget(ex: PlanExercise, log: ExerciseLog | undefined): PlanExercise {
+  return log?.snapshot
+    ? { ...ex, target: log.snapshot.target, parsed: log.snapshot.parsed }
+    : ex;
+}
+
+/** Registros fora do treino do dia (acrescentados ou de um plano anterior). */
+function OutsideSection({
+  title,
+  rows,
+  accent,
+}: {
+  title: string;
+  rows: { log: ExerciseLog; exercise: PlanExercise }[];
+  accent: string;
+}) {
+  if (rows.length === 0) return null;
+  return (
+    <div>
+      <p className="mb-1 mt-4 font-mono text-[11px] uppercase tracking-wide text-muted">
+        {title}
+      </p>
+      <ul className="flex flex-col gap-2">
+        {rows.map(({ log, exercise }) => (
+          <li
+            key={log.id}
+            className="rounded-card border border-border bg-surface px-4 py-3"
+          >
+            <ExerciseRow exercise={exercise} isSkill={false} accent={accent} log={log} />
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -200,8 +278,9 @@ function summarize(
     const { attempts_good, attempts_total } = log.sets_performed;
     return `${attempts_good}/${attempts_total} tentativas`;
   }
-  const s = effectiveSets(log, parsed, target);
-  if (s.length === 0) return log.as_target ? "como previsto" : "feito";
+  const extra = formatExtras(extraSets(log), parsed);
+  const s = plannedSets(log, parsed, target);
+  if (s.length === 0) return `${log.as_target ? "como previsto" : "feito"}${extra}`;
   const unit = parsed?.unit === "seconds" ? "s" : "";
-  return s.map((v) => `${v}${unit}`).join("/");
+  return `${s.map((v) => `${v}${unit}`).join("/")}${extra}`;
 }

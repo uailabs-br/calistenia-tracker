@@ -1,4 +1,10 @@
-import { db, type ExerciseLog, type SetPerformed, type SetValue } from "@/lib/db/schema";
+import {
+  db,
+  type ExerciseLog,
+  type ExerciseSnapshot,
+  type SetPerformed,
+  type SetValue,
+} from "@/lib/db/schema";
 import { exerciseSkillMapping, getCriteria } from "@/lib/plan/skills";
 import { evaluateCriterion } from "@/lib/db/queries/skillProgression";
 import { uuid, now } from "@/lib/utils/id";
@@ -14,6 +20,10 @@ interface LogInput {
   note?: string | null;
   skipped: boolean;
   sets_performed?: SetPerformed | null;
+  /** Definição do exercício agora (nome/alvo/parsed). Só o 1º registro grava. */
+  snapshot?: ExerciseSnapshot | null;
+  /** Séries extras. `undefined` mantém as já gravadas; array substitui. */
+  extra_sets?: number[] | null;
 }
 
 /**
@@ -72,6 +82,10 @@ export async function upsertLog(input: LogInput): Promise<ExerciseLog> {
       skipped: input.skipped,
       logged_at: ts,
       updated_at: ts,
+      // o snapshot original vale: é o alvo do momento em que o exercício foi
+      // feito. Só preenche se o log ainda não tinha (logs anteriores ao campo).
+      snapshot: existing.snapshot ?? input.snapshot ?? null,
+      extra_sets: input.extra_sets !== undefined ? input.extra_sets : existing.extra_sets,
       ...skillFields,
     };
     await db.exerciseLogs.put(updated);
@@ -82,8 +96,10 @@ export async function upsertLog(input: LogInput): Promise<ExerciseLog> {
     id: uuid(),
     session_id: input.session_id,
     exercise_id: input.exercise_id,
+    snapshot: input.snapshot ?? null,
     as_target: input.as_target,
     sets: input.sets,
+    extra_sets: input.extra_sets ?? null,
     flags_selected: input.flags_selected,
     note: input.note ?? null,
     skipped: input.skipped,
@@ -94,6 +110,52 @@ export async function upsertLog(input: LogInput): Promise<ExerciseLog> {
   };
   await db.exerciseLogs.add(log);
   return log;
+}
+
+/**
+ * Substitui as séries extras do log já registrado do exercício. Só faz sentido
+ * com o exercício feito: sem log (ou pulado) devolve null e não escreve nada.
+ * Valores inválidos (< 1 ou não numéricos) são descartados; vazio grava null.
+ * Não mexe em `logged_at` nem em `sets_performed`: extra não entra na progressão.
+ */
+export async function setExtraSets(
+  session_id: string,
+  exercise_id: string,
+  values: number[]
+): Promise<ExerciseLog | null> {
+  const existing = await db.exerciseLogs
+    .where("session_id")
+    .equals(session_id)
+    .filter((l) => l.exercise_id === exercise_id && !l.deleted_at)
+    .first();
+  if (!existing || existing.skipped) return null;
+
+  const clean = values
+    .filter((v) => Number.isFinite(v))
+    .map((v) => Math.round(v))
+    .filter((v) => v >= 1);
+  const updated: ExerciseLog = {
+    ...existing,
+    extra_sets: clean.length > 0 ? clean : null,
+    updated_at: now(),
+  };
+  await db.exerciseLogs.put(updated);
+  return updated;
+}
+
+/** Acrescenta uma série extra ao fim das já registradas. */
+export async function addExtraSet(
+  session_id: string,
+  exercise_id: string,
+  value: number
+): Promise<ExerciseLog | null> {
+  const existing = await db.exerciseLogs
+    .where("session_id")
+    .equals(session_id)
+    .filter((l) => l.exercise_id === exercise_id && !l.deleted_at)
+    .first();
+  if (!existing) return null;
+  return setExtraSets(session_id, exercise_id, [...(existing.extra_sets ?? []), value]);
 }
 
 /** Remove (soft) o log de um exercício - usado ao desmarcar. */

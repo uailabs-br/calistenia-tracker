@@ -49,6 +49,18 @@ describe("evaluateCriterion", () => {
     expect(evaluateCriterion(performed, repsRir)).toBe(false);
   });
 
+  it("reps_rir: RIR não declarado (null) avalia só reps e forma", () => {
+    expect(
+      evaluateCriterion({ type: "reps_rir", reps: [8, 8, 8], rir: null, form_ok: true }, repsRir)
+    ).toBe(true);
+    expect(
+      evaluateCriterion({ type: "reps_rir", reps: [8, 8, 7], rir: null, form_ok: true }, repsRir)
+    ).toBe(false);
+    expect(
+      evaluateCriterion({ type: "reps_rir", reps: [8, 8, 8], rir: null, form_ok: false }, repsRir)
+    ).toBe(false);
+  });
+
   it("reps_rir: forma suja → false mesmo com reps/rir ok", () => {
     const performed: SetPerformed = {
       type: "reps_rir",

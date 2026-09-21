@@ -1,6 +1,7 @@
 import { db, type ExerciseLog } from "@/lib/db/schema";
 import type { Parsed } from "@/lib/plan/schema";
-import { getExerciseInDay, negFlagsOf } from "@/lib/plan/loader";
+import { negFlagsOf } from "@/lib/plan/loader";
+import { resolveLogExercise } from "@/lib/plan/resolve";
 import { effectiveSets } from "@/lib/domain/volume";
 import { isClean } from "./progressionReady";
 
@@ -10,7 +11,8 @@ export interface PRResult {
   unit: "reps" | "seconds";
 }
 
-type LogLike = Pick<ExerciseLog, "as_target" | "sets" | "skipped" | "flags_selected">;
+type LogLike = Pick<ExerciseLog, "as_target" | "sets" | "skipped" | "flags_selected"> &
+  Partial<Pick<ExerciseLog, "extra_sets">>;
 
 function maxSet(values: number[]): number | null {
   return values.length > 0 ? Math.max(...values) : null;
@@ -50,8 +52,9 @@ export async function computePR(
       await db.exerciseLogs.where("session_id").equals(session.id).toArray()
     ).find((l) => l.exercise_id === exerciseId && !l.deleted_at);
     if (!log || log.skipped || !isClean(log, negFlags)) continue;
-    const p = getExerciseInDay(session.weekday, exerciseId)?.parsed ?? parsed;
-    const v = maxSet(effectiveSets(log, p));
+    // alvo do dia em que foi feito (snapshot): mudar o plano não reescreve recorde
+    const ex = resolveLogExercise(log, session.weekday);
+    const v = maxSet(effectiveSets(log, ex.parsed ?? parsed, ex.target));
     if (v !== null && (prevBest === null || v > prevBest)) prevBest = v;
   }
 
