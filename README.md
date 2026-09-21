@@ -143,9 +143,11 @@ lib/plan/             # plan.json (fonte de verdade), schema Zod, loader, resolv
 scripts/              # validate-plan, generate-icons
 ```
 
-## Roadmap (v2)
+## Roadmap
 
-Fora do escopo do v1, por decisão consciente: geração de treino/IA, edição do plano no app, timer de descanso, multi-usuário, sync real. As convenções acima (UUID, tombstones, `updated_at`) já deixam o caminho aberto para sync local-first.
+**Entregue depois do v1** (estava fora do escopo original): timer de descanso, treino avulso (fora do programa), importar treino pelo app (JSON gerado por uma IA externa), export do histórico + plano + sinal de progressão num prompt pronto pra IA, e adaptar o treino durante a sessão (série extra e exercício adicionado).
+
+**Continua fora do escopo, por decisão consciente:** gerar treino dentro do app (a IA é externa: o app exporta o contexto e importa o resultado), editor visual do plano, multi-usuário e sync real. As convenções acima (UUID, tombstones, `updated_at`) já deixam o caminho aberto para sync local-first.
 
 ---
 
