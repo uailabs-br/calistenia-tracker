@@ -20,6 +20,16 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, em `main`):** treinos por letra. O plano deixou de ser uma
+> agenda por dia da semana: cada treino tem `id` (A, B, C…) e a ordem do plano é a
+> sequência — o próximo é o seguinte ao último concluído, em ciclo, sem limite de
+> treinos. Histórico migrado (Dexie v5, `weekday` → `workout_id`) e plano importado no
+> formato antigo é convertido ao carregar. Home: próximo treino + "Depois"; avulso não
+> anda a fila. Meta semanal conta sessões (teto 14). Métricas: equilíbrio entre treinos
+> (frequência por treino) e calendário de constância das últimas 12 semanas (binário:
+> treinou / não treinou). Rota `/treino/[id]`. 277 testes. Backup v2. Detalhes em
+> [`PLAN-treinos-por-letra.md`](PLAN-treinos-por-letra.md).
+
 > **Atualização (v1.8):** treino dinâmico e sinal de progressão confiável. Série
 > extra (conta em volume/recorde, não na progressão), exercício adicionado no meio
 > do treino (catálogo de 120 exercícios + criação própria), snapshot do exercício

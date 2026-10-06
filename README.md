@@ -20,12 +20,12 @@ Um tracker pessoal com três decisões de produto:
 2. **Flags qualitativas por exercício.** Chips de toque, sem escrita (ex.: `chicken wing`, `grip soltou`, `pausa 1s no topo`). A métrica principal do app é a **incidência de flags ao longo das sessões** — dá pra ver *"chicken wing na negativa: 3/3 → 1/3 → 0/3"* e saber que o padrão está corrigindo.
 3. **Offline-first e durável.** Tudo grava local (IndexedDB) e sobrevive a fechar o app no meio. Export/import de backup porque o valor do app é o histórico acumulado.
 
-Cada dia é um **template selecionável**: dá pra fazer o treino de terça numa segunda se for mais conveniente, e o histórico segue o *movimento* (ID de exercício estável entre dias), não o calendário.
+Os treinos são **identificados por letra** (A, B, C…) e formam uma **sequência**: o próximo é o seguinte ao último concluído, em ciclo. Não há dia da semana no plano, nem limite de treinos. Dá pra fazer qualquer treino a qualquer momento, e o histórico segue o *movimento* (ID de exercício estável entre treinos), não o calendário.
 
 ## Como funciona (fluxo)
 
 ```
-Abrir → painel (treino de hoje, constância, próximos) → Começar
+Abrir → painel (próximo treino da sequência, constância, depois) → Começar
    ↓
 Card ativo expandido, resto colapsado
    ↓
@@ -35,7 +35,7 @@ opcional: chips "como foi?" · nota curta · pular exercício
    ↓  (timer de descanso automático entre séries)
 Finalizar → RPE (1–5) → nota opcional → salvo
    ↓
-Métricas: sequência semanal, aderência, volume, incidência de flags
+Métricas: sequência semanal, equilíbrio entre treinos, calendário de constância, volume, incidência de flags
 ```
 
 ## Adaptar o treino durante a sessão
@@ -109,8 +109,9 @@ Sem estado global (Zustand/Redux): estado efêmero de UI em `useState`, estado d
 
 Nenhum índice inventado; tudo rastreável a um registro:
 
-- Treinos realizados (total e 30 dias) · sequência de dias atual e maior
-- Aderência por treino da semana
+- Treinos realizados (total e 30 dias) · sequência semanal atual e maior
+- Equilíbrio entre treinos: frequência de cada treino (em quantas semanas desde a 1ª sessão)
+- Calendário de constância das últimas 12 semanas (treinou / não treinou por dia)
 - Volume por exercício ao longo do tempo (reconstituído de `as_target` via `parsed`)
 - **Incidência de flags por exercício por sessão** — a métrica que fecha o loop de correção técnica
 - RPE médio (4 semanas)
@@ -131,21 +132,21 @@ npm run validate:plan  # valida o plano contra o schema Zod
 ## Estrutura
 
 ```
-app/                  # rotas: / (treino), historico, metricas, config
-components/session/    # ExerciseCard, Stepper, FlagChips, RpeSheet, DayPills, SessionRunner, AddExerciseSheet
+app/                  # rotas: / (início), treino/[id], historico, metricas, config
+components/session/    # ExerciseCard, Stepper, FlagChips, RpeSheet, WorkoutPills, SessionRunner, AddExerciseSheet
 components/config/     # ReminderSettings, CustomExercisesCard
 components/metrics/     # StatTile, Sparkline, FlagIncidenceRow
 components/ui/         # BottomNav, PageHeader, SwUpdater, icons
 lib/db/               # schema Dexie, repositories/, queries/, backup
-lib/domain/           # parseTarget, volume
-lib/plan/             # plan.json (fonte de verdade), schema Zod, loader, resolve,
+lib/domain/           # parseTarget, volume, nextWorkout (sequência de treinos)
+lib/plan/             # plan.json (fonte de verdade), schema Zod, loader, resolve, legacyPlan (formato antigo),
                       # catalog.json (catálogo de exercícios), skills/progressions
 scripts/              # validate-plan, generate-icons
 ```
 
 ## Roadmap
 
-**Entregue depois do v1** (estava fora do escopo original): timer de descanso, treino avulso (fora do programa), importar treino pelo app (JSON gerado por uma IA externa), export do histórico + plano + sinal de progressão num prompt pronto pra IA, e adaptar o treino durante a sessão (série extra e exercício adicionado).
+**Entregue depois do v1** (estava fora do escopo original): timer de descanso, treino avulso (fora do programa), importar treino pelo app (JSON gerado por uma IA externa), export do histórico + plano + sinal de progressão num prompt pronto pra IA, adaptar o treino durante a sessão (série extra e exercício adicionado), e treinos identificados por letra em sequência, sem dia da semana fixo (com migração do histórico), equilíbrio entre treinos e calendário de constância nas métricas.
 
 **Continua fora do escopo, por decisão consciente:** gerar treino dentro do app (a IA é externa: o app exporta o contexto e importa o resultado), editor visual do plano, multi-usuário e sync real. As convenções acima (UUID, tombstones, `updated_at`) já deixam o caminho aberto para sync local-first.
 

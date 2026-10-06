@@ -1,6 +1,6 @@
 # PLAN — Treinos A/B/C/D/E em vez de dias da semana
 
-Status: **implementado** (não commitado). Este documento registra as decisões e o que mudou em relação ao proposto.
+Status: **implementado e publicado** (`main`, commit `7776ac4`). Este documento registra as decisões e o que mudou em relação ao proposto. Depois dele vieram: frequência por treino, calendário de constância e a remoção das datas do gráfico.
 
 ## Contexto
 
