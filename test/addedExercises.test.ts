@@ -94,7 +94,7 @@ describe("exercícios criados pelo usuário", () => {
 
 describe("acrescentar exercício ao treino", () => {
   it("guarda na ordem e é idempotente", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await addExerciseToSession(s.id, CAT);
     await addExerciseToSession(s.id, "plank");
     await addExerciseToSession(s.id, CAT);
@@ -102,7 +102,7 @@ describe("acrescentar exercício ao treino", () => {
   });
 
   it("só sessão em andamento aceita", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await completeSession(s.id, 3, null);
     expect(await addExerciseToSession(s.id, CAT)).toBeNull();
     expect((await getSession(s.id))?.added_exercises ?? null).toBeNull();
@@ -110,7 +110,7 @@ describe("acrescentar exercício ao treino", () => {
   });
 
   it("remover: ok se ainda não registrado, recusa se já tem registro", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await addExerciseToSession(s.id, CAT);
     await addExerciseToSession(s.id, "plank");
     expect(await removeAddedExercise(s.id, CAT)).toBe(true);
@@ -129,14 +129,14 @@ describe("acrescentar exercício ao treino", () => {
   });
 
   it("remover o último zera a lista", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await addExerciseToSession(s.id, CAT);
     await removeAddedExercise(s.id, CAT);
     expect((await getSession(s.id))?.added_exercises ?? null).toBeNull();
   });
 
   it("remover o que não foi adicionado devolve false", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     expect(await removeAddedExercise(s.id, CAT)).toBe(false);
   });
 });
@@ -171,7 +171,7 @@ describe("resolveAddedExercise", () => {
 describe("exercício adicionado entra nas métricas", () => {
   async function doAdded(id: string, sets: number[], extras: number[] = []) {
     const template = catalog.find((c) => c.id === id)!;
-    const s = await createSession(1);
+    const s = await createSession("A");
     await addExerciseToSession(s.id, id);
     await upsertLog({
       session_id: s.id,
@@ -225,7 +225,7 @@ describe("exercício adicionado entra nas métricas", () => {
   });
 
   it("exercício do plano não vem marcado como adicionado", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await upsertLog({
       session_id: s.id,
       exercise_id: "pull-up-negativa-lenta",
@@ -243,7 +243,7 @@ describe("exercício adicionado entra nas métricas", () => {
 describe("backup e reset com exercícios criados", () => {
   it("export → limpar → import preserva criados e a lista de adicionados", async () => {
     const c = await createCustomExercise({ name: "Meu", category: "Core", unit: "reps" });
-    const s = await createSession(1);
+    const s = await createSession("A");
     await addExerciseToSession(s.id, c.id);
     await addExerciseToSession(s.id, CAT);
     const dump = await exportAll();
@@ -257,7 +257,7 @@ describe("backup e reset com exercícios criados", () => {
   });
 
   it("backup antigo (sem customExercises/added_exercises) importa normalmente", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     const legacy = JSON.parse(JSON.stringify(await exportAll()));
     delete legacy.customExercises;
     delete legacy.sessions[0].added_exercises;

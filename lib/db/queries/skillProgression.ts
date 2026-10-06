@@ -95,7 +95,7 @@ export async function getSkillLogs(
  * "ainda não é hora de subir" — não conta como sinal de regressão.
  */
 function isRealFailure({ log, session }: SkillLogEntry): boolean {
-  const target = resolveLogExercise(log, session.weekday).parsed?.target ?? null;
+  const target = resolveLogExercise(log, session.workout_id).parsed?.target ?? null;
   return !(hitTarget(log, target) && isClean(log, negFlagsOf(log.exercise_id)));
 }
 

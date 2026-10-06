@@ -1,17 +1,17 @@
 import { db, type Session, type SessionStatus } from "@/lib/db/schema";
 import { uuid, now } from "@/lib/utils/id";
-import { localDateKey, weekdayOf, shiftDays } from "@/lib/utils/date";
+import { localDateKey, shiftDays } from "@/lib/utils/date";
 import { planDayId, plan } from "@/lib/plan/loader";
 
 /** Toda escrita de Session passa por aqui (convenção: repositório único). */
 
-export async function createSession(weekday: number): Promise<Session> {
+export async function createSession(workoutId: string): Promise<Session> {
   const ts = now();
   const session: Session = {
     id: uuid(),
-    plan_day_id: planDayId(weekday),
+    plan_day_id: planDayId(workoutId),
     plan_version: plan.version,
-    weekday,
+    workout_id: workoutId,
     date: localDateKey(),
     status: "in_progress",
     started_at: ts,
@@ -47,7 +47,7 @@ export async function createFreeformSession(
     id: uuid(),
     plan_day_id: null,
     plan_version: plan.version,
-    weekday: weekdayOf(new Date(date + "T12:00:00")),
+    workout_id: null,
     date,
     status: "completed",
     started_at: anchor - durationMs,
@@ -76,6 +76,18 @@ export async function getActiveSession(): Promise<Session | undefined> {
   return rows
     .filter((s) => !s.deleted_at)
     .sort((a, b) => b.started_at - a.started_at)[0];
+}
+
+/**
+ * `workout_id` do último treino do PLANO concluído: é ele que define o próximo
+ * da sequência. Avulso não entra; sessão em andamento também não. null = nunca treinou.
+ */
+export async function getLastPlanWorkoutId(): Promise<string | null> {
+  const rows = await db.sessions.where("status").equals("completed").toArray();
+  const last = rows
+    .filter((s) => !s.deleted_at && s.source === "plan" && s.workout_id)
+    .sort((a, b) => b.started_at - a.started_at)[0];
+  return last?.workout_id ?? null;
 }
 
 export async function completeSession(

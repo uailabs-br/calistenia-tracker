@@ -1,13 +1,13 @@
 {
   "id": "plan-calistenia-ago-2026",
-  "version": 1,
+  "version": 2,
   "name": "Calistenia — MU + HS + FL",
   "source": "conversa-coach-2026-08-23",
   "imported_at": "2026-08-23",
-  "days": [
+  "workouts": [
     {
-      "weekday": 1,
-      "label": "Seg",
+      "id": "A",
+      "label": "A",
       "title": "MU + Puxar",
       "skill": "Muscle Up",
       "duration": "~38 min",
@@ -90,8 +90,8 @@
       ]
     },
     {
-      "weekday": 2,
-      "label": "Ter",
+      "id": "B",
+      "label": "B",
       "title": "HS + FL",
       "skill": "HS / Frog to HS",
       "duration": "~40 min",
@@ -204,8 +204,8 @@
       ]
     },
     {
-      "weekday": 3,
-      "label": "Qua",
+      "id": "C",
+      "label": "C",
       "title": "Prática — HS",
       "skill": "Folga",
       "duration": "10-12 min",
@@ -235,8 +235,8 @@
       "progression": []
     },
     {
-      "weekday": 4,
-      "label": "Qui",
+      "id": "D",
+      "label": "D",
       "title": "MU + Puxar + FL",
       "skill": "MU",
       "duration": "~40 min",
@@ -328,8 +328,8 @@
       ]
     },
     {
-      "weekday": 5,
-      "label": "Sex",
+      "id": "E",
+      "label": "E",
       "title": "HS + Pernas + Push + Core",
       "skill": "Frog to HS",
       "duration": "~42 min",

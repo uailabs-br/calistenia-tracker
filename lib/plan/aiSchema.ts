@@ -8,7 +8,7 @@ const SKILL_LADDERS = (
   .join("\n");
 
 /**
- * Prompt pronto pra colar numa LLM (Claude etc.) pra gerar/ajustar um dia de
+ * Prompt pronto pra colar numa LLM (Claude etc.) pra gerar/ajustar os treinos de
  * treino no formato que o app espera. Espelha `schema.ts` — se os campos do
  * plan.json mudarem, atualiza aqui também.
  */
@@ -16,27 +16,27 @@ export const AI_SCHEMA_PROMPT = `Vou te descrever um treino de calistenia. Forma
 
 ESQUEMA DE TREINO — plan.json (calistenia app)
 
-Estrutura: plan > days[] > blocks[] > exercises[]
+Estrutura: plan > workouts[] > blocks[] > exercises[]
 
-## Day (um dia de treino)
+## Workout (um treino do plano)
 {
-  "weekday": 1-6,          // 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sáb (0=Dom, não usado hoje)
-  "label": "Seg",          // abreviação do dia
-  "title": "Muscle Up",    // título curto do dia
+  "id": "A",               // identidade estável do treino: letra ou código curto, ÚNICO no plano
+  "label": "A",            // rótulo exibido (normalmente igual ao id)
+  "title": "Muscle Up",    // título curto do treino
   "skill": "Muscle Up",    // nome livre, mas se mapear pra uma skill canônica use:
                            //   "Muscle Up" | "MU" | "HS / Frog to HS" | "Frog to HS"
-                           //   (ou "Folga" para dias de prática/descanso)
+                           //   (ou "Folga" para treinos de prática/descanso)
   "duration": "~32 min",   // texto livre
-  "accent": "#A89CFF",     // hex 6 dígitos — cor de destaque do dia
+  "accent": "#A89CFF",     // hex 6 dígitos — cor de destaque do treino
   "accent_bg": "#1E1B35",  // hex 6 dígitos — fundo combinando (mais escuro)
-  "is_practice": false,    // true = dia de prática/folga, não treino de força
+  "is_practice": false,    // true = treino de prática (técnica), não de força
   "warmup": "texto livre do aquecimento",
-  "tip": "texto livre — dica/contexto do dia",
+  "tip": "texto livre — dica/contexto do treino",
   "blocks": [ ...ver Block... ],
   "progression": [ ...ver Progression... ]
 }
 
-## Block (grupo de exercícios dentro do dia)
+## Block (grupo de exercícios dentro do treino)
 {
   "label": "Skill — Componentes do MU · 16 min",
   "is_skill": true,        // true = bloco de skill/técnica, false = bloco de suporte/acessório
@@ -46,7 +46,7 @@ Estrutura: plan > days[] > blocks[] > exercises[]
 ## Exercise
 {
   "id": "mu-puxada-explosiva",  // kebab-case, prefixo = skill (mu-, hs-, core-, legs-, row-, pull-up-, push-up-)
-                                  // ÚNICO dentro do dia; pode repetir entre dias (histórico agrega por id)
+                                  // ÚNICO dentro do treino; pode repetir entre treinos (histórico agrega por id)
   "name": "Puxada explosiva",
   "target": "4 × 4",             // texto livre exibido (ex: "4 × 4", "2 × 20s", "8-10 entradas")
   "parsed": {                    // null se o target não for sets×alvo parseável (ex: ranges tipo "8-10 entradas")
@@ -69,9 +69,9 @@ Estrutura: plan > days[] > blocks[] > exercises[]
   //   Omita se não tiver certeza. Só vale skill_id/level que existam na lista.
 }
 
-## Progression (fim do dia — o que evolui e quando)
+## Progression (fim do treino — o que evolui e quando)
 {
-  "exercise_id": "mu-puxada-explosiva",  // aponta pro id de um exercício do dia, OU null
+  "exercise_id": "mu-puxada-explosiva",  // aponta pro id de um exercício do treino, OU null
   "label": "MU completo (barra alta)",   // OBRIGATÓRIO se exercise_id for null (marco sem exercício associado)
   "criteria": "texto livre — quando e como progredir esse exercício/marco"
 }
@@ -81,7 +81,13 @@ ${SKILL_LADDERS}
 
 REGRAS IMPORTANTES:
 - Todo objeto é "strict": não pode ter campos extras além dos listados.
-- exercise_id duplicado dentro do MESMO dia é erro de validação.
+- NÃO existe dia da semana. Não use weekday, nem "Seg/Ter/…", nem "dia" como estrutura.
+- A ORDEM do array workouts[] é a sequência de treino: o app mostra o próximo como o
+  seguinte ao último concluído, em volta do ciclo (A → B → C → A…).
+- Não há limite de treinos: 2, 3, 5 ou 8, o que fizer sentido pro objetivo.
+- id de treino ÚNICO no plano. Ao ajustar um plano existente, PRESERVE o id de cada treino
+  que continua existindo: o histórico aponta pra ele. Crie id novo só pra treino novo.
+- exercise_id duplicado dentro do MESMO treino é erro de validação.
 - Se \`neg_flags\` existir, cada item dele TEM que estar também em \`flags\`.
 - \`parsed\` só é preenchido quando dá pra extrair sets/target/unit numéricos limpos do \`target\`;
   senão usa null (ex.: "8-10 entradas" vira parsed: null).

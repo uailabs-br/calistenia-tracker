@@ -13,17 +13,19 @@ export function setProfileName(name: string): void {
   else localStorage.removeItem(KEY);
 }
 
-/** Meta semanal (dias de treino). Override opcional do padrão (plan.days.length). */
+/** Meta semanal (treinos concluídos por semana). Override opcional do padrão (nº de treinos do plano). */
 const GOAL_KEY = "calistenia:week-goal";
+/** Teto da meta: 2 treinos por dia, sete dias. */
+export const WEEK_GOAL_MAX = 14;
 
 export function getWeekGoal(): number | null {
   if (typeof window === "undefined") return null;
   const raw = Number(localStorage.getItem(GOAL_KEY));
-  return Number.isInteger(raw) && raw >= 1 && raw <= 7 ? raw : null;
+  return Number.isInteger(raw) && raw >= 1 && raw <= WEEK_GOAL_MAX ? raw : null;
 }
 
 export function setWeekGoal(goal: number | null): void {
-  if (goal && goal >= 1 && goal <= 7) localStorage.setItem(GOAL_KEY, String(goal));
+  if (goal && goal >= 1 && goal <= WEEK_GOAL_MAX) localStorage.setItem(GOAL_KEY, String(goal));
   else localStorage.removeItem(GOAL_KEY);
 }
 

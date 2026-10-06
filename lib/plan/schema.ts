@@ -58,9 +58,13 @@ export const progressionSchema = z
   })
   .strict();
 
-export const daySchema = z
+/**
+ * Um treino do plano. `id` é a identidade estável (histórico aponta pra ele);
+ * a ordem dentro de `workouts[]` é a sequência de treino. `label` é só exibição.
+ */
+export const workoutSchema = z
   .object({
-    weekday: z.number().int().min(0).max(6),
+    id: z.string().min(1),
     label: z.string().min(1),
     title: z.string().min(1),
     skill: z.string(),
@@ -89,21 +93,32 @@ export const planSchema = z
     name: z.string().min(1),
     source: z.string(),
     imported_at: z.string(),
-    days: z.array(daySchema).min(1),
+    workouts: z.array(workoutSchema).min(1),
   })
   .strict()
   .superRefine((plan, ctx) => {
-    // IDs de exercício: o mesmo movimento compartilha ID entre dias (histórico
-    // e flags agregam por movimento). Único DENTRO de um dia, repetível ENTRE dias.
-    for (const day of plan.days) {
+    const ids = new Set<string>();
+    for (const w of plan.workouts) {
+      if (ids.has(w.id)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `ID de treino duplicado no plano: ${w.id}`,
+          path: ["workouts"],
+        });
+      }
+      ids.add(w.id);
+    }
+    // IDs de exercício: o mesmo movimento compartilha ID entre treinos (histórico
+    // e flags agregam por movimento). Único DENTRO de um treino, repetível ENTRE treinos.
+    for (const workout of plan.workouts) {
       const seen = new Set<string>();
-      for (const block of day.blocks) {
+      for (const block of workout.blocks) {
         for (const ex of block.exercises) {
           if (seen.has(ex.id)) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
-              message: `ID de exercício duplicado no mesmo dia (${day.label}): ${ex.id}`,
-              path: ["days"],
+              message: `ID de exercício duplicado no mesmo treino (${workout.id}): ${ex.id}`,
+              path: ["workouts"],
             });
           }
           seen.add(ex.id);
@@ -111,8 +126,8 @@ export const planSchema = z
             if (!ex.flags.includes(neg)) {
               ctx.addIssue({
                 code: z.ZodIssueCode.custom,
-                message: `neg_flag inexistente em flags (${day.label} / ${ex.id}): ${neg}`,
-                path: ["days"],
+                message: `neg_flag inexistente em flags (${workout.id} / ${ex.id}): ${neg}`,
+                path: ["workouts"],
               });
             }
           }
@@ -121,8 +136,8 @@ export const planSchema = z
             if (!levels || !levels.has(ex.skill_ref.level)) {
               ctx.addIssue({
                 code: z.ZodIssueCode.custom,
-                message: `skill_ref inexistente (${day.label} / ${ex.id}): ${ex.skill_ref.skill_id} nível ${ex.skill_ref.level}`,
-                path: ["days"],
+                message: `skill_ref inexistente (${workout.id} / ${ex.id}): ${ex.skill_ref.skill_id} nível ${ex.skill_ref.level}`,
+                path: ["workouts"],
               });
             }
           }
@@ -132,7 +147,7 @@ export const planSchema = z
   });
 
 export type Plan = z.infer<typeof planSchema>;
-export type PlanDay = z.infer<typeof daySchema>;
+export type Workout = z.infer<typeof workoutSchema>;
 export type PlanBlock = z.infer<typeof blockSchema>;
 export type PlanExercise = z.infer<typeof exerciseSchema>;
 export type Parsed = z.infer<typeof parsedSchema>;

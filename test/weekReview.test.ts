@@ -15,9 +15,9 @@ const prevMonday = shiftDays(lastMonday, -7);
 function session(date: string, rpe: number | null = 3): Session {
   return {
     id: crypto.randomUUID(),
-    plan_day_id: "p:1",
+    plan_day_id: "p:A",
     plan_version: 1,
-    weekday: new Date(date + "T00:00:00").getDay(),
+    workout_id: "A",
     date,
     status: "completed",
     started_at: Date.now(),
@@ -34,7 +34,7 @@ async function addLog(sessionId: string, value: number) {
   await db.exerciseLogs.add({
     id: crypto.randomUUID(),
     session_id: sessionId,
-    // exercício da segunda-feira do plano (weekday 1)
+    // exercício do treino A do plano
     exercise_id: "mu-puxada-explosiva",
     as_target: false,
     sets: [{ index: 0, value }],
@@ -76,7 +76,7 @@ describe("getWeekReview", () => {
     expect(r).not.toBeNull();
     expect(r!.weekStart).toBe(lastMonday);
     expect(r!.weekEnd).toBe(shiftDays(lastMonday, 6));
-    expect(r!.daysDone).toBe(2);
+    expect(r!.sessionsDone).toBe(2);
     expect(r!.avgRpe).toBe(3.5);
     // 12 vs 10 → +20% (per_side multiplica os dois lados igualmente)
     expect(r!.volumeDeltaPct).toBe(20);
@@ -102,7 +102,7 @@ describe("getWeekReview", () => {
     await db.sessions.bulkAdd([valid, deleted, inProgress, thisWeek]);
 
     const r = await getWeekReview();
-    expect(r!.daysDone).toBe(1);
+    expect(r!.sessionsDone).toBe(1);
   });
 
   it("sessões sem rpe → avgRpe null", async () => {
@@ -117,7 +117,7 @@ describe("getWeekReview", () => {
     await addLog(s.id, 10);
     const r = await getWeekReview(prevMonday);
     expect(r!.weekStart).toBe(prevMonday);
-    expect(r!.daysDone).toBe(1);
+    expect(r!.sessionsDone).toBe(1);
   });
 });
 
@@ -140,7 +140,7 @@ describe("buildWeekReviewTexts", () => {
   const base: WeekReview = {
     weekStart: "2026-07-06",
     weekEnd: "2026-07-12",
-    daysDone: 5,
+    sessionsDone: 5,
     planTotal: 5,
     volume: 100,
     volumeDeltaPct: 10,
@@ -155,7 +155,7 @@ describe("buildWeekReviewTexts", () => {
   });
 
   it("semana parcial com volume subindo → good de volume, improve de treinos", () => {
-    const t = buildWeekReviewTexts({ ...base, daysDone: 3, volumeDeltaPct: 15 });
+    const t = buildWeekReviewTexts({ ...base, sessionsDone: 3, volumeDeltaPct: 15 });
     expect(t.good).toContain("15%");
     expect(t.improve).toContain("2 treinos");
   });

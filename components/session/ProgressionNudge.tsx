@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import type { PlanDay } from "@/lib/plan/schema";
+import type { Workout } from "@/lib/plan/schema";
 import { getExerciseById } from "@/lib/plan/loader";
 import { getProgressionReady } from "@/lib/db/queries/progressionReady";
 import { exerciseSkillMapping, getLevelInfo } from "@/lib/plan/skills";
@@ -38,12 +38,12 @@ const TEXT: Record<Signal["state"], string> = {
  * pro resto do plano. Informacional — não edita o plano. "Dispensar" reinicia a
  * contagem: o aviso só volta se o critério for batido de novo.
  */
-export function ProgressionNudge({ day, accent }: { day: PlanDay; accent: string }) {
+export function ProgressionNudge({ workout, accent }: { workout: Workout; accent: string }) {
   // dispensar mexe no localStorage (fora do Dexie): força a reavaliação
   const [ackVersion, setAckVersion] = useState(0);
 
   const signals = useLiveQuery(async (): Promise<Signal[]> => {
-    const ids = [...new Set(day.blocks.flatMap((b) => b.exercises.map((e) => e.id)))];
+    const ids = [...new Set(workout.blocks.flatMap((b) => b.exercises.map((e) => e.id)))];
     const nameOf = (id: string) => getExerciseById(id)?.name ?? id;
     const seen = new Set<string>();
     const out: Signal[] = [];
@@ -74,7 +74,7 @@ export function ProgressionNudge({ day, accent }: { day: PlanDay; accent: string
       }
     }
     return out;
-  }, [day, ackVersion]);
+  }, [workout, ackVersion]);
 
   if (!signals || signals.length === 0) return null;
 

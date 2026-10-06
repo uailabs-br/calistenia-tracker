@@ -1,9 +1,10 @@
 import { z } from "zod";
 import { db, type Session, type ExerciseLog, type CustomExercise } from "@/lib/db/schema";
-import { plan } from "@/lib/plan/loader";
+import { plan, PLAN_OVERRIDE_KEY } from "@/lib/plan/loader";
+import { legacyWeekdayMapFromStorage } from "@/lib/plan/legacyPlan";
 
 const BACKUP_FORMAT = "calistenia-tracker-backup";
-const BACKUP_VERSION = 1;
+const BACKUP_VERSION = 2;
 
 const setValueSchema = z.object({
   index: z.number(),
@@ -46,7 +47,9 @@ const sessionSchema = z.object({
   id: z.string(),
   plan_day_id: z.string().nullable(),
   plan_version: z.number(),
-  weekday: z.number(),
+  // backups v1 (agenda por dia da semana) não têm `workout_id`: vem de `weekday`.
+  workout_id: z.string().nullable().optional(),
+  weekday: z.number().optional(),
   date: z.string(),
   status: z.enum(["in_progress", "completed", "abandoned"]),
   started_at: z.number(),
@@ -157,6 +160,28 @@ export interface ImportResult {
   logsUpdated: number;
 }
 
+/** Sessão de backup antigo ganha `workout_id` pela mesma regra da migração do banco. */
+function normalizeSession(
+  s: z.infer<typeof sessionSchema>
+): Session {
+  const { weekday, workout_id, ...rest } = s;
+  let workoutId: string | null = workout_id ?? null;
+  if (workout_id === undefined && s.source !== "freeform" && weekday !== undefined) {
+    const map = legacyWeekdayMapFromStorage(readPlanOverrideRaw());
+    workoutId = map.get(weekday) ?? `legacy-${weekday}`;
+  }
+  return { ...rest, workout_id: workoutId } as Session;
+}
+
+function readPlanOverrideRaw(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem(PLAN_OVERRIDE_KEY);
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Merge por UUID com last-write-wins (updated_at). Nunca sobrescreve cegamente:
  * registro local mais novo prevalece. Valida antes de tocar no banco.
@@ -168,7 +193,10 @@ export async function importMerge(raw: unknown): Promise<ImportResult> {
       "Arquivo de backup inválido ou corrompido. Nada foi importado."
     );
   }
-  const data = parsed.data;
+  const data = {
+    ...parsed.data,
+    sessions: parsed.data.sessions.map((s) => normalizeSession(s)),
+  };
   const result: ImportResult = {
     sessionsAdded: 0,
     sessionsUpdated: 0,

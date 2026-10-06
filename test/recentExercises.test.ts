@@ -30,37 +30,37 @@ async function log(sessionId: string, exerciseId: string, skipped = false) {
 
 describe("getRecentExerciseIds", () => {
   it("mais recente primeiro, sem repetir", async () => {
-    const a = await createSession(1);
+    const a = await createSession("A");
     await log(a.id, "plank");
     await log(a.id, "chin-up");
     await completeSession(a.id, 3, null);
-    const b = await createSession(2);
+    const b = await createSession("B");
     await log(b.id, "plank"); // repete: sobe pro topo
     await completeSession(b.id, 3, null);
     expect(await getRecentExerciseIds()).toEqual(["plank", "chin-up"]);
   });
 
   it("ignora pulados", async () => {
-    const a = await createSession(1);
+    const a = await createSession("A");
     await log(a.id, "plank", true);
     await log(a.id, "chin-up");
     expect(await getRecentExerciseIds()).toEqual(["chin-up"]);
   });
 
   it("ignora sessão descartada e abandonada", async () => {
-    const a = await createSession(1);
+    const a = await createSession("A");
     await log(a.id, "plank");
     await discardSession(a.id);
-    const b = await createSession(1);
+    const b = await createSession("A");
     await log(b.id, "chin-up");
     await abandonSession(b.id);
-    const c = await createSession(1);
+    const c = await createSession("A");
     await log(c.id, "dip-paralelas");
     expect(await getRecentExerciseIds()).toEqual(["dip-paralelas"]);
   });
 
   it("respeita o limite", async () => {
-    const a = await createSession(1);
+    const a = await createSession("A");
     for (const id of ["a", "b", "c", "d"]) await log(a.id, id);
     expect(await getRecentExerciseIds(2)).toEqual(["d", "c"]);
   });

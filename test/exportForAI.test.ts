@@ -15,15 +15,15 @@ describe("exportForAI — plano_atual", () => {
   it("inclui o plano em vigor, não só o resumo do histórico", async () => {
     const { plano_atual } = await exportForAI();
     expect(plano_atual.id).toBe(plan.id);
-    expect(plano_atual.days.length).toBe(plan.days.length);
+    expect(plano_atual.workouts.length).toBe(plan.workouts.length);
     // dados que só existem no plano, não no resumo de sessions (obs, aquecimento etc.)
-    expect(plano_atual.days[0].warmup).toBe(plan.days[0].warmup);
+    expect(plano_atual.workouts[0].warmup).toBe(plan.workouts[0].warmup);
   });
 });
 
 describe("exportForAI — sessions", () => {
   it("resume um exercício 'como previsto', um pulado e um ajustado", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await upsertLog({
       session_id: s.id,
       exercise_id: "pull-up-negativa-lenta",
@@ -55,7 +55,7 @@ describe("exportForAI — sessions", () => {
     expect(sessions).toHaveLength(1);
     const byId = Object.fromEntries(sessions[0].exercises.map((e) => [e.name, e]));
 
-    expect(sessions[0].day).toContain("Seg");
+    expect(sessions[0].workout).toContain("A");
     expect(byId["Pull-up negativa lenta"].performed).toBe("como previsto");
     expect(byId["Toes to bar"].performed).toEqual([6, 6, 6]);
     expect(byId["Toes to bar"].flags).toEqual(["usou balanço"]);
@@ -64,7 +64,7 @@ describe("exportForAI — sessions", () => {
   });
 
   it("ignora sessão abandonada e log deletado", async () => {
-    const inProgress = await createSession(1);
+    const inProgress = await createSession("A");
     await upsertLog({
       session_id: inProgress.id,
       exercise_id: "mu-toes-to-bar",
@@ -82,7 +82,7 @@ describe("exportForAI — sessions", () => {
 
 describe("exportForAI — progressao", () => {
   async function logMuNegativa(reps: number[], rir: number, formOk: boolean) {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await upsertLog({
       session_id: s.id,
       exercise_id: "mu-negativa-transicao", // muscle_up nível 3, reps_rir

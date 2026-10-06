@@ -31,7 +31,19 @@ export interface Overview {
   currentStreak: number;
   longestStreak: number;
   avgRpe4w: number | null;
-  adherenceByWeekday: { weekday: number; label: string; pct: number }[];
+  balanceByWorkout: WorkoutBalance[];
+}
+
+/** Quantas vezes cada treino do plano foi concluído. */
+export interface WorkoutBalance {
+  id: string;
+  label: string;
+  title: string;
+  count: number;
+  /** frequência: em quantas semanas desde a 1ª sessão este treino foi feito (0–100) */
+  pct: number;
+  /** último dia em que foi feito (dateKey), ou null se nunca */
+  lastDate: string | null;
 }
 
 export async function getOverview(): Promise<Overview> {
@@ -47,17 +59,15 @@ export async function getOverview(): Promise<Overview> {
   ).length;
 
   // Streak SEMANAL por META (2.2): unidade = semana em que a meta foi batida.
-  // Dias executados distintos por semana → meta batida quando ≥ goal.
-  const goal = getWeekGoal() ?? plan.days.length;
-  const weekDays = new Map<string, Set<number>>();
+  // Meta = nº de treinos concluídos na semana (plano ou avulso).
+  const goal = getWeekGoal() ?? plan.workouts.length;
+  const weekCount = new Map<string, number>();
   for (const s of sessions) {
     const wk = weekStartKey(s.date);
-    const set = weekDays.get(wk) ?? new Set<number>();
-    set.add(weekdayOf(new Date(s.date + "T00:00:00")));
-    weekDays.set(wk, set);
+    weekCount.set(wk, (weekCount.get(wk) ?? 0) + 1);
   }
   const currentWeek = weekStartKey(today);
-  const metOf = (wk: string) => (weekDays.get(wk)?.size ?? 0) >= goal;
+  const metOf = (wk: string) => (weekCount.get(wk) ?? 0) >= goal;
 
   let currentStreak = 0;
   let longestStreak = 0;
@@ -92,26 +102,30 @@ export async function getOverview(): Promise<Overview> {
         ) / 10
       : null;
 
-  // Aderência por dia da semana: sessões / semanas decorridas desde a 1ª
+  // Equilíbrio entre treinos do plano: quantas vezes cada um foi concluído.
+  // Avulso fica de fora — não pertence a nenhum treino.
+  const planSessions = sessions.filter((s) => s.source === "plan" && s.workout_id);
+  const balance: WorkoutBalance[] = plan.workouts.map((w) => {
+    const mine = planSessions.filter((s) => s.workout_id === w.id);
+    return {
+      id: w.id,
+      label: w.label,
+      title: w.title,
+      count: mine.length,
+      pct: 0,
+      // sessões já vêm em ordem cronológica: a última é a mais recente
+      lastDate: mine.length > 0 ? mine[mine.length - 1].date : null,
+    };
+  });
+  // Frequência por semana decorrida desde a 1ª sessão (como antes: a semana
+  // conta mesmo sem o treino, então mede o quanto cada um aparece no ritmo).
   const weeksElapsed =
     dates.length > 0
       ? Math.max(1, Math.ceil((daysBetween(dates[0], today) + 1) / 7))
       : 1;
-  // Crédito por dia EXECUTADO (não o sugerido pelo plano): um treino adiantado
-  // conta no dia em que foi feito. Mesmo cálculo de weekday que getWeekStatus.
-  const executedCounts = new Map<number, number>();
-  for (const s of sessions) {
-    const wd = weekdayOf(new Date(s.date + "T00:00:00"));
-    executedCounts.set(wd, (executedCounts.get(wd) ?? 0) + 1);
+  for (const b of balance) {
+    b.pct = Math.min(100, Math.round((b.count / weeksElapsed) * 100));
   }
-  const byWeekday = plan.days.map((d) => {
-    const count = executedCounts.get(d.weekday) ?? 0;
-    return {
-      weekday: d.weekday,
-      label: d.label,
-      pct: Math.min(100, Math.round((count / weeksElapsed) * 100)),
-    };
-  });
 
   return {
     totalWorkouts,
@@ -119,7 +133,7 @@ export async function getOverview(): Promise<Overview> {
     currentStreak,
     longestStreak,
     avgRpe4w,
-    adherenceByWeekday: byWeekday,
+    balanceByWorkout: balance,
   };
 }
 
@@ -193,7 +207,7 @@ export async function getExerciseVolume(
     );
     if (!log || log.skipped) continue;
     // alvo do momento do registro (snapshot), não o do plano de hoje
-    const ex = resolveLogExercise(log, session.weekday);
+    const ex = resolveLogExercise(log, session.workout_id);
     points.push({
       date: session.date,
       volume: totalVolume(log, ex.parsed, ex.target),
@@ -216,7 +230,7 @@ export async function getBestHold(exerciseId: string): Promise<VolumePoint[]> {
       (l) => l.session_id === session.id && l.exercise_id === exerciseId
     );
     if (!log || log.skipped) continue;
-    const ex = resolveLogExercise(log, session.weekday);
+    const ex = resolveLogExercise(log, session.workout_id);
     const values = effectiveSets(log, ex.parsed, ex.target);
     if (values.length === 0) continue;
     points.push({ date: session.date, volume: Math.max(...values) });
@@ -258,9 +272,9 @@ export async function getLoggedExercises(): Promise<LoggedExercise[]> {
 const WEEKDAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 export interface WeekDayStatus {
+  /** 0 = domingo … 6 = sábado */
   weekday: number;
   label: string;
-  isPlanDay: boolean;
   done: boolean;
   isToday: boolean;
   /** Origem do treino que concluiu o dia; null se o dia não foi treinado. */
@@ -268,56 +282,86 @@ export interface WeekDayStatus {
 }
 
 export interface WeekStatus {
-  /** dias distintos treinados na semana atual (programa + avulso). */
+  /** treinos concluídos na semana atual (programa + avulso). Conta contra a meta. */
   done: number;
-  /** dias de treino previstos no plano. */
+  /** nº de treinos do plano: meta padrão quando o usuário não define outra. */
   planTotal: number;
-  /** dentre os `done`, quantos foram concluídos só por treino avulso. */
+  /** dentre os `done`, quantos foram avulsos. */
   freeformCount: number;
-  /** 7 dias (Seg→Dom) com estado para o mini-calendário. */
+  /** 7 dias (Seg→Dom) com o que foi feito, para o mini-calendário. */
   days: WeekDayStatus[];
 }
 
-/** Estado da semana corrente: dias concluídos vs. plano, para home. */
+/** Estado da semana corrente, para a home. */
 export async function getWeekStatus(): Promise<WeekStatus> {
   const sessions = await completedSessions();
   const today = localDateKey();
   const monday = weekStartKey(today);
   const todayWeekday = weekdayOf();
 
-  // Datas (weekday real) treinadas nesta semana, com a origem (plano tem
+  const thisWeek = sessions.filter((s) => {
+    const diff = daysBetween(monday, s.date);
+    return diff >= 0 && diff <= 6;
+  });
+
+  // Dias (weekday real) treinados nesta semana, com a origem (plano tem
   // prioridade sobre avulso quando o mesmo dia tem os dois).
   const doneWeekdays = new Map<number, "plan" | "freeform">();
-  for (const s of sessions) {
-    const diff = daysBetween(monday, s.date);
-    if (diff < 0 || diff > 6) continue;
+  for (const s of thisWeek) {
     const wd = weekdayOf(new Date(s.date + "T00:00:00"));
     const src: "plan" | "freeform" = s.source === "freeform" ? "freeform" : "plan";
     if (doneWeekdays.get(wd) !== "plan") doneWeekdays.set(wd, src);
   }
 
-  const planWeekdays = new Set(plan.days.map((d) => d.weekday));
-  const planLabelByWeekday = new Map(plan.days.map((d) => [d.weekday, d.label]));
-
   // Ordem Seg(1)→Dom(0) para o mini-calendário.
   const order = [1, 2, 3, 4, 5, 6, 0];
   const days: WeekDayStatus[] = order.map((weekday) => ({
     weekday,
-    label: planLabelByWeekday.get(weekday) ?? WEEKDAY_LABELS[weekday],
-    isPlanDay: planWeekdays.has(weekday),
+    label: WEEKDAY_LABELS[weekday],
     done: doneWeekdays.has(weekday),
     isToday: weekday === todayWeekday,
     source: doneWeekdays.get(weekday) ?? null,
   }));
 
-  const freeformCount = [...doneWeekdays.values()].filter(
-    (s) => s === "freeform"
-  ).length;
-
   return {
-    done: doneWeekdays.size,
-    planTotal: plan.days.length,
-    freeformCount,
+    done: thisWeek.length,
+    planTotal: plan.workouts.length,
+    freeformCount: thisWeek.filter((s) => s.source === "freeform").length,
     days,
   };
+}
+
+export interface HeatmapDay {
+  /** dateKey local YYYY-MM-DD */
+  date: string;
+  /** treinos concluídos nesse dia (plano + avulso) */
+  count: number;
+  future: boolean;
+  isToday: boolean;
+}
+
+/**
+ * Calendário de constância: `weeksBack` semanas (a última é a corrente), cada
+ * uma com 7 dias Seg→Dom. Devolve semana → dias, na ordem do calendário.
+ */
+export async function getActivityHeatmap(weeksBack = 12): Promise<HeatmapDay[][]> {
+  const sessions = await completedSessions();
+  const counts = new Map<string, number>();
+  for (const s of sessions) counts.set(s.date, (counts.get(s.date) ?? 0) + 1);
+
+  const today = localDateKey();
+  const firstMonday = shiftDays(weekStartKey(today), -7 * (weeksBack - 1));
+
+  return Array.from({ length: weeksBack }, (_, w) => {
+    const monday = shiftDays(firstMonday, 7 * w);
+    return Array.from({ length: 7 }, (_, d) => {
+      const date = shiftDays(monday, d);
+      return {
+        date,
+        count: counts.get(date) ?? 0,
+        future: daysBetween(today, date) > 0,
+        isToday: date === today,
+      };
+    });
+  });
 }

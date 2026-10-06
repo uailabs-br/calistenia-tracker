@@ -45,7 +45,7 @@ async function logMu(
   const reps = opts.reps ?? [3, 3, 3];
   const rir = opts.rir === undefined ? 2 : opts.rir;
   await tick();
-  const s = await createSession(1);
+  const s = await createSession("A");
   const performed: SetPerformed = { type: "reps_rir", reps, rir, form_ok: opts.formOk ?? true };
   await upsertLog({
     session_id: s.id,
@@ -83,7 +83,7 @@ describe("mapeamento exercício → nível", () => {
 describe("skill_ref no schema do plano", () => {
   const withRef = (ref: unknown) => {
     const p = structuredClone(planData) as any;
-    p.days[0].blocks[0].exercises[0].skill_ref = ref;
+    p.workouts[0].blocks[0].exercises[0].skill_ref = ref;
     return planSchema.safeParse(p);
   };
 
@@ -133,7 +133,7 @@ describe("getSkillState: só conta o que vale hoje", () => {
 
   it("log de exercício que o plano não vincula mais àquele nível é ignorado", async () => {
     // log antigo mal atrelado: pistol squat gravado como nível 2 da escada
-    const s = await createSession(1);
+    const s = await createSession("A");
     await db.exerciseLogs.add({
       id: "old-1",
       session_id: s.id,
@@ -215,7 +215,7 @@ describe("getSkillState: regress só por falha de verdade", () => {
     // hoje o plano diz 3 reps; na época o alvo era 2 → 2 reps CUMPRIU o plano
     for (let i = 0; i < 3; i++) {
       await tick();
-      const s = await createSession(1);
+      const s = await createSession("A");
       await upsertLog({
         session_id: s.id,
         exercise_id: MU,
@@ -241,7 +241,7 @@ describe("getProgressionReady (motor genérico)", () => {
 
   async function logGeneric(finish: Finish) {
     await tick();
-    const s = await createSession(1);
+    const s = await createSession("A");
     await upsertLog({
       session_id: s.id,
       exercise_id: EX,

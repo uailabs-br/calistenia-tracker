@@ -53,7 +53,7 @@ export async function computePR(
     ).find((l) => l.exercise_id === exerciseId && !l.deleted_at);
     if (!log || log.skipped || !isClean(log, negFlags)) continue;
     // alvo do dia em que foi feito (snapshot): mudar o plano não reescreve recorde
-    const ex = resolveLogExercise(log, session.weekday);
+    const ex = resolveLogExercise(log, session.workout_id);
     const v = maxSet(effectiveSets(log, ex.parsed ?? parsed, ex.target));
     if (v !== null && (prevBest === null || v > prevBest)) prevBest = v;
   }

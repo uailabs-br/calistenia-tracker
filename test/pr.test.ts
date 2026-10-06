@@ -14,7 +14,7 @@ beforeEach(async () => {
 });
 
 async function record(values: number[], flags: string[] = []) {
-  const s = await createSession(1);
+  const s = await createSession("A");
   await upsertLog({
     session_id: s.id,
     exercise_id: HOLD,

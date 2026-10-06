@@ -65,10 +65,8 @@ export function ConsistencyCard({
           } else if (d.isToday) {
             cls = `${base} border-2`;
             style = { borderColor: "var(--ac)", color: "var(--ac)" };
-          } else if (d.isPlanDay) {
-            cls = `${base} border border-border text-muted`;
           } else {
-            cls = `${base} text-border`;
+            cls = `${base} border border-border text-muted`;
           }
           return (
             <span key={d.weekday} className={cls} style={style}>

@@ -63,7 +63,7 @@ describe("integridade do catálogo", () => {
 
   it("todo exercício do plano bundlado que existe no catálogo tem a MESMA unidade", () => {
     // mesmo id = mesmo movimento: a unidade não pode divergir do plano
-    for (const d of planData.days)
+    for (const d of planData.workouts)
       for (const b of d.blocks)
         for (const ex of b.exercises) {
           const c = getCatalogExercise(ex.id);

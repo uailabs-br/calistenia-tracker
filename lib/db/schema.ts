@@ -1,6 +1,8 @@
 import Dexie, { type EntityTable } from "dexie";
 import type { Parsed } from "@/lib/plan/schema";
 import type { SkillCategory } from "@/lib/plan/skills";
+import { PLAN_OVERRIDE_KEY } from "@/lib/plan/loader";
+import { legacyWeekdayMapFromStorage } from "@/lib/plan/legacyPlan";
 
 /** Modelo de dados - PRD seção 5. Convenções: UUID, updated_at, soft delete. */
 
@@ -11,9 +13,10 @@ export type SessionSource = "plan" | "freeform";
 
 export interface Session {
   id: string; // UUID
-  plan_day_id: string | null; // `${plan.id}:${weekday}` - null em sessões freeform
+  plan_day_id: string | null; // `${plan.id}:${workout_id}` - null em sessões freeform
   plan_version: number;
-  weekday: number;
+  /** Treino do plano feito (`Workout.id`, ex: "A"). null em sessões avulsas. */
+  workout_id: string | null;
   date: string; // dateKey local YYYY-MM-DD
   status: SessionStatus;
   started_at: number;
@@ -143,6 +146,45 @@ export class TrackerDB extends Dexie {
         "id, session_id, exercise_id, skill_id, updated_at, deleted_at",
       customExercises: "id, name, updated_at, deleted_at",
     });
+    // v5: treinos por letra (A, B, C…) em vez de dia da semana. `weekday` vira
+    // `workout_id`, pela ordem do plano vigente neste aparelho (ver legacyPlan.ts).
+    this.version(5)
+      .stores({
+        sessions:
+          "id, plan_day_id, date, status, workout_id, source, updated_at, deleted_at",
+        exerciseLogs:
+          "id, session_id, exercise_id, skill_id, updated_at, deleted_at",
+        customExercises: "id, name, updated_at, deleted_at",
+      })
+      .upgrade(async (tx) => {
+        const map = legacyWeekdayMapFromStorage(readPlanOverrideRaw());
+        await tx
+          .table("sessions")
+          .toCollection()
+          .modify((s: Record<string, unknown>) => {
+            const weekday = s.weekday as number;
+            let workoutId: string | null = null;
+            if (s.source !== "freeform") {
+              workoutId = map.get(weekday) ?? `legacy-${weekday}`;
+            }
+            s.workout_id = workoutId;
+            // plan_day_id guarda `${plan.id}:${weekday}`; troca só o sufixo.
+            if (typeof s.plan_day_id === "string" && workoutId) {
+              s.plan_day_id = s.plan_day_id.replace(/:[^:]*$/, `:${workoutId}`);
+            }
+            delete s.weekday;
+          });
+      });
+  }
+}
+
+/** Override de plano do localStorage, cru. Ausente fora do navegador. */
+function readPlanOverrideRaw(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem(PLAN_OVERRIDE_KEY);
+  } catch {
+    return null;
   }
 }
 

@@ -145,7 +145,7 @@ describe("getSkillState", () => {
   const EX = "pull-up-peso-morto"; // pull_up L4, reps_rir, sessions_required 2
 
   async function logPullUp(reps: number[], rir: number, formOk: boolean) {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await upsertLog({
       session_id: s.id,
       exercise_id: EX,

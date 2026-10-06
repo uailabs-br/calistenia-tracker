@@ -197,8 +197,8 @@ const EXERCISE_TO_SKILL: Record<string, ExerciseSkillMapping> = Object.fromEntri
  */
 const PLAN_SKILL_REFS: Map<string, { skill_id: string; level: number } | null> = (() => {
   const map = new Map<string, { skill_id: string; level: number } | null>();
-  for (const day of plan.days) {
-    for (const block of day.blocks) {
+  for (const workout of plan.workouts) {
+    for (const block of workout.blocks) {
       for (const ex of block.exercises) {
         if (ex.skill_ref === undefined || map.has(ex.id)) continue;
         map.set(ex.id, ex.skill_ref);
@@ -236,13 +236,13 @@ export function skillStepExerciseIds(): string[] {
 }
 
 /** Mapeia o rótulo de skill de um dia do plano para a skill canônica. */
-const DAY_SKILL_TO_ID: Record<string, string> = {
+const WORKOUT_SKILL_TO_ID: Record<string, string> = {
   "Muscle Up": "muscle_up",
   MU: "muscle_up",
   "HS / Frog to HS": "handstand_hold",
   "Frog to HS": "handstand_hold",
 };
 
-export function skillIdForDay(daySkill: string): string | undefined {
-  return DAY_SKILL_TO_ID[daySkill];
+export function skillIdForWorkout(daySkill: string): string | undefined {
+  return WORKOUT_SKILL_TO_ID[daySkill];
 }

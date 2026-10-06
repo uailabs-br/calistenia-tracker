@@ -29,7 +29,7 @@ describe("resolveLogExercise", () => {
         exercise_id: EX,
         snapshot: { name: "Nome antigo", target: "4 × 10", parsed: parsed(4, 10) },
       },
-      1
+      "A"
     );
     expect(r).toEqual({
       name: "Nome antigo",
@@ -39,18 +39,18 @@ describe("resolveLogExercise", () => {
   });
 
   it("sem snapshot cai pro plano vigente", () => {
-    const r = resolveLogExercise({ exercise_id: EX }, 1);
+    const r = resolveLogExercise({ exercise_id: EX }, "A");
     expect(r.name).toBe("Negativa transição (banda 35kg)");
     expect(r.parsed?.target).toBe(3);
   });
 
-  it("sem snapshot, dia da semana errado ainda acha o exercício no plano", () => {
-    const r = resolveLogExercise({ exercise_id: EX }, 6);
+  it("sem snapshot, treino errado ainda acha o exercício no plano", () => {
+    const r = resolveLogExercise({ exercise_id: EX }, "ZZ");
     expect(r.name).toBe("Negativa transição (banda 35kg)");
   });
 
   it("exercício desconhecido e sem snapshot → nome null, sem alvo", () => {
-    expect(resolveLogExercise({ exercise_id: "nao-existe" }, 1)).toEqual({
+    expect(resolveLogExercise({ exercise_id: "nao-existe" }, "A")).toEqual({
       name: null,
       target: "",
       parsed: null,
@@ -68,7 +68,7 @@ describe("upsertLog e o snapshot", () => {
   };
 
   it("grava o snapshot no primeiro registro", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     const log = await upsertLog({
       ...base,
       session_id: s.id,
@@ -78,7 +78,7 @@ describe("upsertLog e o snapshot", () => {
   });
 
   it("regravar não sobrescreve o snapshot original", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await upsertLog({
       ...base,
       session_id: s.id,
@@ -93,7 +93,7 @@ describe("upsertLog e o snapshot", () => {
   });
 
   it("log legado sem snapshot recebe um na próxima gravação", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     const legacy = await upsertLog({ ...base, session_id: s.id });
     expect(legacy.snapshot).toBeNull();
     const again = await upsertLog({
@@ -107,7 +107,7 @@ describe("upsertLog e o snapshot", () => {
 
 describe("métricas leem o alvo do momento, não o do plano de hoje", () => {
   it("volume de um 'como previsto' antigo usa o alvo do snapshot", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await upsertLog({
       session_id: s.id,
       exercise_id: EX,
@@ -125,7 +125,7 @@ describe("métricas leem o alvo do momento, não o do plano de hoje", () => {
   });
 
   it("recorde: alvo antigo mais alto não é 'batido' por série menor de hoje", async () => {
-    const past = await createSession(1);
+    const past = await createSession("A");
     await upsertLog({
       session_id: past.id,
       exercise_id: EX,
@@ -153,7 +153,7 @@ describe("métricas leem o alvo do momento, não o do plano de hoje", () => {
   });
 
   it("recorde real ainda é detectado", async () => {
-    const past = await createSession(1);
+    const past = await createSession("A");
     await upsertLog({
       session_id: past.id,
       exercise_id: EX,
@@ -178,7 +178,7 @@ describe("métricas leem o alvo do momento, não o do plano de hoje", () => {
   });
 
   it("getLoggedExercises inclui exercício fora do plano, com nome e unidade do snapshot", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await upsertLog({
       session_id: s.id,
       exercise_id: "removido-do-plano",
@@ -204,7 +204,7 @@ describe("métricas leem o alvo do momento, não o do plano de hoje", () => {
 
 describe("backup preserva o snapshot", () => {
   it("export → limpar → import mantém o snapshot do log", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await upsertLog({
       session_id: s.id,
       exercise_id: EX,
@@ -226,7 +226,7 @@ describe("backup preserva o snapshot", () => {
   });
 
   it("backup antigo (sem snapshot) importa com snapshot null", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await upsertLog({
       session_id: s.id,
       exercise_id: EX,

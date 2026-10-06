@@ -8,8 +8,8 @@ import { getCriteria, exerciseSkillMapping } from "@/lib/plan/skills";
 // conjunto de exercise_ids do plano, garantindo que cada mapeamento aponta
 // pra um exercício e um nível que realmente existem.
 const planExerciseIds = new Set(
-  planData.days.flatMap((day) =>
-    day.blocks.flatMap((block) => block.exercises.map((ex) => ex.id))
+  planData.workouts.flatMap((workout) =>
+    workout.blocks.flatMap((block) => block.exercises.map((ex) => ex.id))
   )
 );
 

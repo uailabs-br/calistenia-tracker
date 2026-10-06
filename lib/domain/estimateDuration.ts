@@ -1,4 +1,4 @@
-import type { PlanDay, Parsed } from "@/lib/plan/schema";
+import type { Workout, Parsed } from "@/lib/plan/schema";
 import { parseRestSeconds } from "./parseTarget";
 
 // Trabalho por série, em segundos, por unidade. Constantes grosseiras só para
@@ -22,8 +22,8 @@ function workPerSet(parsed: Parsed): number {
  * trabalho das séries + descanso entre séries + um descanso ao trocar de
  * exercício. Exercícios sem `parsed` (sem stepper) não entram. 0 = não estimável.
  */
-export function estimateDurationSeconds(day: PlanDay): number {
-  const exercises = day.blocks.flatMap((b) => b.exercises);
+export function estimateDurationSeconds(workout: Workout): number {
+  const exercises = workout.blocks.flatMap((b) => b.exercises);
   let total = 0;
   exercises.forEach((ex, i) => {
     if (!ex.parsed) return;
@@ -40,8 +40,8 @@ export function estimateDurationSeconds(day: PlanDay): number {
  * Duração para exibição: `~Xmin` estimado quando há dados; senão, o texto livre
  * do plano como fallback (ex.: dias de prática sem `parsed`).
  */
-export function durationLabel(day: PlanDay): string {
-  const seconds = estimateDurationSeconds(day);
-  if (seconds <= 0) return day.duration;
+export function durationLabel(workout: Workout): string {
+  const seconds = estimateDurationSeconds(workout);
+  if (seconds <= 0) return workout.duration;
   return `~${Math.round(seconds / 60)}min`;
 }

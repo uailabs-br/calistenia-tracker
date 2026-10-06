@@ -23,7 +23,7 @@ export async function getFirstCleanSuccess(
     ).filter((l) => !l.deleted_at && !l.skipped && ids.has(l.exercise_id));
     for (const log of logs) {
       if (result.has(log.exercise_id)) continue;
-      const target = resolveLogExercise(log, session.weekday).parsed?.target ?? null;
+      const target = resolveLogExercise(log, session.workout_id).parsed?.target ?? null;
       if (hitTarget(log, target) && isClean(log, negFlagsOf(log.exercise_id))) {
         result.set(log.exercise_id, session.date);
       }

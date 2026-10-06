@@ -18,9 +18,9 @@ export interface WeekReview {
   weekStart: string;
   /** domingo da semana revisada (dateKey) */
   weekEnd: string;
-  /** dias distintos treinados */
-  daysDone: number;
-  /** dias de treino previstos no plano */
+  /** treinos concluídos (plano + avulso) */
+  sessionsDone: number;
+  /** nº de treinos do plano */
   planTotal: number;
   /** volume total da semana (reps + segundos somados — proxy de carga) */
   volume: number;
@@ -65,7 +65,7 @@ export async function getWeekReview(monday?: string): Promise<WeekReview | null>
     for (const s of weekSessions) {
       for (const log of logsBySession.get(s.id) ?? []) {
         if (log.skipped) continue;
-        const ex = resolveLogExercise(log, s.weekday);
+        const ex = resolveLogExercise(log, s.workout_id);
         sum += totalVolume(log, ex.parsed, ex.target);
       }
     }
@@ -96,8 +96,8 @@ export async function getWeekReview(monday?: string): Promise<WeekReview | null>
   return {
     weekStart: reviewMonday,
     weekEnd: shiftDays(reviewMonday, 6),
-    daysDone: new Set(lastWeek.map((s) => s.date)).size,
-    planTotal: plan.days.length,
+    sessionsDone: lastWeek.length,
+    planTotal: plan.workouts.length,
     volume,
     volumeDeltaPct,
     avgRpe,
@@ -162,19 +162,19 @@ function pick(arr: string[], seed: string): string {
 
 /** Constrói "o que foi bom", "a melhorar" e a frase a partir dos dados. */
 export function buildWeekReviewTexts(r: WeekReview): WeekReviewTexts {
-  const fullWeek = r.daysDone >= r.planTotal;
+  const fullWeek = r.sessionsDone >= r.planTotal;
   const volumeUp = r.volumeDeltaPct !== null && r.volumeDeltaPct > 0;
 
   const good = fullWeek
-    ? `Semana completa: ${r.daysDone}/${r.planTotal} treinos.`
+    ? `Semana completa: ${r.sessionsDone}/${r.planTotal} treinos.`
     : volumeUp
       ? `Volume ${r.volumeDeltaPct}% acima da semana anterior.`
-      : `${r.daysDone} ${r.daysDone === 1 ? "dia treinado" : "dias treinados"} — o histórico continua vivo.`;
+      : `${r.sessionsDone} ${r.sessionsDone === 1 ? "treino feito" : "treinos feitos"} — o histórico continua vivo.`;
 
   let improve: string | null = null;
   if (!fullWeek) {
-    const missing = r.planTotal - r.daysDone;
-    improve = `${missing} ${missing === 1 ? "treino ficou" : "treinos ficaram"} pelo caminho — vale olhar quais dias travaram.`;
+    const missing = Math.max(0, r.planTotal - r.sessionsDone);
+    improve = `${missing} ${missing === 1 ? "treino ficou" : "treinos ficaram"} pelo caminho — vale olhar o que travou.`;
   } else if (r.volumeDeltaPct !== null && r.volumeDeltaPct < 0) {
     improve = `Volume ${Math.abs(r.volumeDeltaPct)}% abaixo da semana anterior.`;
   } else if (r.skippedCount > 0) {

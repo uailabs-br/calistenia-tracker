@@ -29,6 +29,7 @@ import {
   setProfileName,
   getWeekGoal,
   setWeekGoal,
+  WEEK_GOAL_MAX,
 } from "@/lib/utils/profile";
 import pkg from "@/package.json";
 import {
@@ -58,7 +59,7 @@ export default function ConfigPage() {
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [showReset, setShowReset] = useState(false);
   const [name, setName] = useState("");
-  const [goal, setGoal] = useState(plan.days.length);
+  const [goal, setGoal] = useState(plan.workouts.length);
   const [install, setInstall] = useState<InstallState | null>(null);
   const [planText, setPlanText] = useState("");
   const [planErrors, setPlanErrors] = useState<string[] | null>(null);
@@ -72,7 +73,7 @@ export default function ConfigPage() {
   // Só no cliente: localStorage (nome, meta) e detecção de instalação.
   useEffect(() => {
     setName(getProfileName());
-    setGoal(getWeekGoal() ?? plan.days.length);
+    setGoal(getWeekGoal() ?? plan.workouts.length);
     setHasOverride(hasPlanOverride());
     setAiGoalsCount(getAiGoals().length);
     if (isStandalone()) {
@@ -246,18 +247,18 @@ export default function ConfigPage() {
           Meta semanal
         </label>
         <p className="mt-0.5 text-sm text-muted">
-          Quantos treinos por semana fecham o anel. Padrão: {plan.days.length}.
+          Quantos treinos por semana fecham o anel. Padrão: {plan.workouts.length}.
         </p>
         <input
           id="week-goal"
           type="number"
           min={1}
-          max={7}
+          max={WEEK_GOAL_MAX}
           value={goal}
           onChange={(e) => {
             const n = Number(e.target.value);
             setGoal(n);
-            setWeekGoal(n === plan.days.length ? null : n);
+            setWeekGoal(n === plan.workouts.length ? null : n);
           }}
           className="tnum mt-2 w-20 rounded-xl border border-border bg-surface2 px-3 py-2.5 text-base outline-none focus:border-muted"
         />
@@ -472,7 +473,7 @@ export default function ConfigPage() {
       {pendingPlan && (
         <ConfirmDialog
           title="Importar treino novo?"
-          message={`Substitui o plano atual por "${pendingPlan.summary.name}" — ${pendingPlan.summary.days} dias, ${pendingPlan.summary.exercises} exercícios (v${pendingPlan.summary.version}). O app recarrega pra aplicar.`}
+          message={`Substitui o plano atual por "${pendingPlan.summary.name}" — ${pendingPlan.summary.workouts} treinos, ${pendingPlan.summary.exercises} exercícios (v${pendingPlan.summary.version}). O app recarrega pra aplicar.`}
           confirmLabel="Importar"
           onConfirm={handleApplyPlan}
           onCancel={() => setPendingPlan(null)}

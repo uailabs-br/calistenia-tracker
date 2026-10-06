@@ -47,7 +47,7 @@ export function WeekReviewCard() {
       <div className="mt-3 flex gap-4">
         <div>
           <p className="tnum text-lg font-semibold leading-none">
-            {review.daysDone}/{review.planTotal}
+            {review.sessionsDone}/{review.planTotal}
           </p>
           <p className="mt-1 text-[10px] uppercase tracking-wide text-muted">
             treinos

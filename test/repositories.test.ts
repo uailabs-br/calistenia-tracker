@@ -20,22 +20,22 @@ beforeEach(async () => {
 
 describe("sessions repository", () => {
   it("cria sessão in_progress com UUID, updated_at e tombstone nulo", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     expect(s.id).toMatch(/[0-9a-f-]{36}/);
     expect(s.status).toBe("in_progress");
     expect(s.updated_at).toBeGreaterThan(0);
     expect(s.deleted_at).toBeNull();
-    expect(s.plan_day_id).toBe(planDayId(1));
+    expect(s.plan_day_id).toBe(planDayId("A"));
   });
 
   it("getActiveSession retorna a in_progress mais recente", async () => {
-    await createSession(1);
+    await createSession("A");
     const active = await getActiveSession();
     expect(active?.status).toBe("in_progress");
   });
 
   it("completeSession grava rpe e ended_at", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await completeSession(s.id, 4, "  boa  ");
     const done = await db.sessions.get(s.id);
     expect(done?.status).toBe("completed");
@@ -45,7 +45,7 @@ describe("sessions repository", () => {
   });
 
   it("soft delete não remove fisicamente", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await softDeleteSession(s.id);
     const row = await db.sessions.get(s.id);
     expect(row).toBeDefined();
@@ -85,9 +85,7 @@ describe("treino avulso (freeform)", () => {
     const yesterday = shiftDays(localDateKey(), -1);
     const s = await createFreeformSession(20, 1);
     expect(s.date).toBe(yesterday);
-    expect(s.weekday).toBe(
-      new Date(yesterday + "T00:00:00").getDay()
-    );
+    expect(s.workout_id).toBeNull();
     expect(s.status).toBe("completed");
     expect((s.ended_at as number) - s.started_at).toBe(20 * 60_000);
   });
@@ -95,7 +93,7 @@ describe("treino avulso (freeform)", () => {
 
 describe("logs repository", () => {
   it("upsert é idempotente por (session, exercise)", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await upsertLog({
       session_id: s.id,
       exercise_id: "mu-puxada-explosiva",
@@ -119,7 +117,7 @@ describe("logs repository", () => {
   });
 
   it("removeLog faz soft delete", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await upsertLog({
       session_id: s.id,
       exercise_id: "mu-puxada-explosiva",
@@ -135,7 +133,7 @@ describe("logs repository", () => {
 
 describe("logs repository — motor de progressão v2", () => {
   it("exercício mapeado (reps_rir) grava skill_id/level_at_time/criterion_met", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     const log = await upsertLog({
       session_id: s.id,
       exercise_id: "pull-up-peso-morto", // pull_up L4, reps_rir {sets:3, reps:8, rir_max:2}
@@ -156,7 +154,7 @@ describe("logs repository — motor de progressão v2", () => {
   });
 
   it("exercício mapeado sem sets_performed → criterion_met null, sem quebrar", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     const log = await upsertLog({
       session_id: s.id,
       exercise_id: "pull-up-peso-morto",
@@ -170,7 +168,7 @@ describe("logs repository — motor de progressão v2", () => {
   });
 
   it("exercício sem mapeamento → os 5 campos do motor ficam null", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     const log = await upsertLog({
       session_id: s.id,
       exercise_id: "mu-false-grip-hang", // acessório, sem skill_id
@@ -187,7 +185,7 @@ describe("logs repository — motor de progressão v2", () => {
   });
 
   it("regravar (upsert) recalcula criterion_met com o novo sets_performed", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await upsertLog({
       session_id: s.id,
       exercise_id: "pull-up-peso-morto",
@@ -214,7 +212,7 @@ describe("logs repository — motor de progressão v2", () => {
 
 describe("última performance", () => {
   it("as_target vira 'como previsto'", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await upsertLog({
       session_id: s.id,
       exercise_id: "mu-puxada-explosiva",
@@ -234,7 +232,7 @@ describe("última performance", () => {
   });
 
   it("exclui a própria sessão em andamento", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await upsertLog({
       session_id: s.id,
       exercise_id: "mu-puxada-explosiva",
@@ -251,7 +249,7 @@ describe("última performance", () => {
   it("é cross-day: exercício com ID compartilhado vê histórico de outro dia", async () => {
     // mu-false-grip-hang aparece na Seg (1) e na Qui (4).
     // Registra na segunda; na quinta a última performance deve enxergar.
-    const seg = await createSession(1);
+    const seg = await createSession("A");
     await upsertLog({
       session_id: seg.id,
       exercise_id: "mu-false-grip-hang",
@@ -273,7 +271,7 @@ describe("última performance", () => {
 
 describe("backup export/import", () => {
   it("ciclo completo: export → limpar → import mantém histórico", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await upsertLog({
       session_id: s.id,
       exercise_id: "mu-puxada-explosiva",
@@ -297,14 +295,14 @@ describe("backup export/import", () => {
   });
 
   it("arquivo corrompido falha sem tocar no banco", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await expect(importMerge({ garbage: true })).rejects.toThrow();
     expect(await db.sessions.count()).toBe(1);
     expect((await db.sessions.get(s.id))?.status).toBe("in_progress");
   });
 
   it("merge não sobrescreve registro local mais novo", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await completeSession(s.id, 2, "antigo");
     const dump = await exportAll();
     // torna o local mais novo
@@ -355,6 +353,9 @@ describe("backup export/import", () => {
       "11111111-1111-4111-8111-111111111111"
     );
     expect(restored?.source).toBe("plan");
+    // weekday 1 no padrão bundlado (Seg–Sex) vira o treino A
+    expect(restored?.workout_id).toBe("A");
+    expect((restored as unknown as Record<string, unknown>).weekday).toBeUndefined();
   });
 
   it("backup antigo sem campos do motor v2 importa com null (compat)", async () => {

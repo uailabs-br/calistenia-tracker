@@ -33,7 +33,7 @@ beforeEach(async () => {
 async function doneSession(
   opts: { asTarget?: boolean; sets?: number[]; extras?: number[]; exercise?: string } = {}
 ) {
-  const s = await createSession(1);
+  const s = await createSession("A");
   const ex = opts.exercise ?? PU;
   await upsertLog({
     session_id: s.id,
@@ -109,13 +109,13 @@ describe("repositório", () => {
   });
 
   it("sem log do exercício → null e nada é gravado", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     expect(await addExtraSet(s.id, PU, 6)).toBeNull();
     expect(await db.exerciseLogs.count()).toBe(0);
   });
 
   it("exercício pulado não aceita extra", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await upsertLog({
       session_id: s.id,
       exercise_id: PU,
@@ -144,7 +144,7 @@ describe("repositório", () => {
   });
 
   it("regravar o exercício (upsert) preserva as extras", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     await upsertLog({
       session_id: s.id,
       exercise_id: PU,
@@ -166,7 +166,7 @@ describe("repositório", () => {
   });
 
   it("upsert com extra_sets grava no registro novo e substitui no re-registro", async () => {
-    const s = await createSession(1);
+    const s = await createSession("A");
     const first = await upsertLog({
       session_id: s.id,
       exercise_id: PU,
@@ -302,7 +302,7 @@ describe("a progressão NÃO é afetada por extras", () => {
     // muscle_up nível 3 · 3×3 reps, rir ≤ 2
     for (let i = 0; i < 2; i++) {
       await new Promise((r) => setTimeout(r, 3));
-      const s = await createSession(1);
+      const s = await createSession("A");
       await upsertLog({
         session_id: s.id,
         exercise_id: "mu-negativa-transicao",

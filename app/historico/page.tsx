@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, type Session } from "@/lib/db/schema";
-import { plan, getDayByWeekday } from "@/lib/plan/loader";
+import { plan, getWorkoutById } from "@/lib/plan/loader";
 import {
   shortDate,
   weekStartKey,
@@ -28,7 +28,7 @@ function SessionRow({
   nested?: boolean;
 }) {
   const isFreeform = session.source === "freeform";
-  const day = isFreeform ? undefined : getDayByWeekday(session.weekday);
+  const day = isFreeform ? undefined : (session.workout_id ? getWorkoutById(session.workout_id) : undefined);
   const duration =
     session.started_at && session.ended_at
       ? formatDuration(session.started_at, session.ended_at)
@@ -98,7 +98,7 @@ function ClosedWeek({ review, rows }: { review: WeekReview; rows: Session[] }) {
             Semana de {shortDate(review.weekStart)}
           </span>
           <span className="tnum text-sm font-semibold">
-            {review.daysDone}/{review.planTotal}
+            {review.sessionsDone}/{review.planTotal}
             {review.volumeDeltaPct !== null && (
               <span className="ml-2 text-xs font-normal text-muted">
                 vol {review.volumeDeltaPct > 0 ? "+" : ""}

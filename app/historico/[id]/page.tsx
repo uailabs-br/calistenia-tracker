@@ -4,7 +4,7 @@ import { use } from "react";
 import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, type ExerciseLog } from "@/lib/db/schema";
-import { getDayByWeekday } from "@/lib/plan/loader";
+import { getWorkoutById } from "@/lib/plan/loader";
 import { getCatalogExercise } from "@/lib/plan/catalog";
 import { resolveLogExercise } from "@/lib/plan/resolve";
 import type { PlanExercise } from "@/lib/plan/schema";
@@ -54,7 +54,7 @@ export default function SessionDetailPage({
 
   const { session, logs } = data;
   const isFreeform = session.source === "freeform";
-  const day = isFreeform ? undefined : getDayByWeekday(session.weekday);
+  const day = isFreeform ? undefined : (session.workout_id ? getWorkoutById(session.workout_id) : undefined);
   const accent = day?.accent ?? "#a89cff";
   const duration =
     session.started_at && session.ended_at
@@ -74,7 +74,7 @@ export default function SessionDetailPage({
     .filter((l) => !planIds.has(l.exercise_id))
     .sort((a, b) => a.logged_at - b.logged_at)
     .map((log) => {
-      const r = resolveLogExercise(log, session.weekday);
+      const r = resolveLogExercise(log, session.workout_id);
       const exercise: PlanExercise = {
         id: log.exercise_id,
         name: r.name ?? getCatalogExercise(log.exercise_id)?.name ?? log.exercise_id,

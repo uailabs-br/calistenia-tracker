@@ -15,7 +15,7 @@ async function logSession(
   flags: string[],
   opts: { asTarget?: boolean; sets?: number[] } = {}
 ) {
-  const s = await createSession(1);
+  const s = await createSession("A");
   await upsertLog({
     session_id: s.id,
     exercise_id: EX,

@@ -1,5 +1,5 @@
 import { db } from "@/lib/db/schema";
-import { getDayByWeekday, plan } from "@/lib/plan/loader";
+import { getWorkoutById, plan } from "@/lib/plan/loader";
 import { resolveLogExercise } from "@/lib/plan/resolve";
 import type { Plan } from "@/lib/plan/schema";
 import { extraSets, plannedSets } from "@/lib/domain/volume";
@@ -25,7 +25,8 @@ export interface AiHistoryExercise {
 
 export interface AiHistorySession {
   date: string;
-  day: string;
+  /** Treino do plano ("A — MU + Puxar") ou "avulso". */
+  workout: string;
   exercises: AiHistoryExercise[];
 }
 
@@ -60,10 +61,10 @@ async function buildSessions(): Promise<AiHistorySession[]> {
     ).filter((l) => !l.deleted_at);
     if (logs.length === 0) continue;
 
-    const day = getDayByWeekday(session.weekday);
+    const workout = session.workout_id ? getWorkoutById(session.workout_id) : undefined;
     const addedIds = new Set(session.added_exercises ?? []);
     const exercises: AiHistoryExercise[] = logs.map((log) => {
-      const ex = resolveLogExercise(log, session.weekday);
+      const ex = resolveLogExercise(log, session.workout_id);
       const parsed = ex.parsed;
       let performed: AiHistoryExercise["performed"];
       if (log.skipped) performed = "pulado";
@@ -86,7 +87,7 @@ async function buildSessions(): Promise<AiHistorySession[]> {
 
     out.push({
       date: session.date,
-      day: day ? `${day.label} — ${day.title}` : `dia ${session.weekday}`,
+      workout: workout ? `${workout.label} — ${workout.title}` : "avulso",
       exercises,
     });
   }

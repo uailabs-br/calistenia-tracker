@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import type { PlanDay } from "@/lib/plan/schema";
+import type { Workout } from "@/lib/plan/schema";
 import type { Session, ExerciseLog } from "@/lib/db/schema";
 import {
   addExtraSet,
@@ -44,13 +44,13 @@ import { ProgressionNudge } from "./ProgressionNudge";
 
 export function SessionRunner({
   session,
-  day,
+  workout,
   onCompleted,
   onFinished,
   initialExerciseId,
 }: {
   session: Session;
-  day: PlanDay;
+  workout: Workout;
   /** Disparado ANTES de gravar a sessão como concluída — sinaliza o pai pra
    *  não desmontar o runner quando a query de "sessão ativa" cair pra null.
    *  Precisa vir antes da gravação: se viesse depois, teria uma janela em que
@@ -66,7 +66,7 @@ export function SessionRunner({
 
   const planFlat = useMemo(
     () =>
-      day.blocks.flatMap((block) =>
+      workout.blocks.flatMap((block) =>
         block.exercises.map((exercise) => ({
           exercise,
           isSkill: block.is_skill,
@@ -74,7 +74,7 @@ export function SessionRunner({
           added: false,
         }))
       ),
-    [day]
+    [workout]
   );
 
   const logs = useLiveQuery(() => getLogsForSession(session.id), [session.id]);
@@ -437,7 +437,7 @@ export function SessionRunner({
           <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface2">
             <div
               className="h-full rounded-full transition-[width] duration-300"
-              style={{ width: `${progressPct}%`, background: day.accent }}
+              style={{ width: `${progressPct}%`, background: workout.accent }}
             />
           </div>
           <span className="tnum shrink-0 text-xs text-muted">
@@ -447,13 +447,13 @@ export function SessionRunner({
       </div>
 
       {/* Título → progresso (acima) → por que → aquecimento → exercícios */}
-      <CollapsibleTip tip={day.tip} accent={day.accent} />
-      {day.warmup && (
+      <CollapsibleTip tip={workout.tip} accent={workout.accent} />
+      {workout.warmup && (
         <div className="mb-3 mt-3">
           <WarmupCard
-            warmup={day.warmup}
-            accent={day.accent}
-            accentBg={day.accent_bg}
+            warmup={workout.warmup}
+            accent={workout.accent}
+            accentBg={workout.accent_bg}
           />
         </div>
       )}
@@ -472,7 +472,7 @@ export function SessionRunner({
               <ExerciseCard
                 exercise={item.exercise}
                 isSkill={item.isSkill}
-                accent={day.accent}
+                accent={workout.accent}
                 sessionId={session.id}
                 log={logByExercise.get(item.exercise.id)}
                 hasPR={prResults.has(item.exercise.id)}
@@ -495,19 +495,19 @@ export function SessionRunner({
         type="button"
         onClick={() => setShowAdd(true)}
         className="tap mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed py-3 text-sm font-medium active:scale-[0.99]"
-        style={{ borderColor: day.accent, color: day.accent }}
+        style={{ borderColor: workout.accent, color: workout.accent }}
       >
         <PlusIcon className="h-4 w-4" />
         Adicionar exercício
       </button>
 
-      {pending === 0 && <ProgressionNudge day={day} accent={day.accent} />}
+      {pending === 0 && <ProgressionNudge workout={workout} accent={workout.accent} />}
 
       <button
         type="button"
         onClick={() => setShowRpe(true)}
         className="tap mt-6 w-full rounded-xl border py-3 font-medium"
-        style={{ borderColor: day.accent, color: day.accent }}
+        style={{ borderColor: workout.accent, color: workout.accent }}
       >
         Finalizar treino
       </button>
@@ -524,14 +524,14 @@ export function SessionRunner({
         <RestTimer
           key={rest.key}
           seconds={rest.seconds}
-          accent={day.accent}
+          accent={workout.accent}
           onDone={() => setRest(null)}
         />
       )}
 
       {showAdd && (
         <AddExerciseSheet
-          accent={day.accent}
+          accent={workout.accent}
           presentIds={new Set(flat.map((f) => f.exercise.id))}
           customExercises={customs ?? []}
           recentIds={recentIds ?? []}
@@ -543,7 +543,7 @@ export function SessionRunner({
 
       {showRpe && (
         <RpeSheet
-          accent={day.accent}
+          accent={workout.accent}
           pendingCount={pending}
           onConfirm={confirmFinalize}
           onCancel={() => setShowRpe(false)}
@@ -552,7 +552,7 @@ export function SessionRunner({
 
       {showSummary && (
         <SessionSummary
-          accent={day.accent}
+          accent={workout.accent}
           seed={session.id}
           exercisesDone={doneCount}
           repsVolume={repsVolume}

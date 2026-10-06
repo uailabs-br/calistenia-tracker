@@ -1,10 +1,11 @@
 import { planSchema, type Plan } from "./schema";
 import { PLAN_OVERRIDE_KEY } from "./loader";
+import { convertLegacyPlan, isLegacyPlan } from "./legacyPlan";
 
 export interface PlanSummary {
   name: string;
   version: number;
-  days: number;
+  workouts: number;
   exercises: number;
 }
 
@@ -20,11 +21,11 @@ function stripCodeFences(text: string): string {
 }
 
 function summarize(plan: Plan): PlanSummary {
-  const exercises = plan.days.reduce(
-    (n, d) => n + d.blocks.reduce((m, b) => m + b.exercises.length, 0),
+  const exercises = plan.workouts.reduce(
+    (n, w) => n + w.blocks.reduce((m, b) => m + b.exercises.length, 0),
     0
   );
-  return { name: plan.name, version: plan.version, days: plan.days.length, exercises };
+  return { name: plan.name, version: plan.version, workouts: plan.workouts.length, exercises };
 }
 
 /** Valida o JSON de um treino colado pelo usuário contra o mesmo schema do build. */
@@ -39,7 +40,8 @@ export function parsePlanInput(raw: string): ParsePlanResult {
     };
   }
 
-  const result = planSchema.safeParse(json);
+  // Plano no formato antigo (agenda por dia da semana) é convertido, não recusado.
+  const result = planSchema.safeParse(isLegacyPlan(json) ? convertLegacyPlan(json) : json);
   if (!result.success) {
     return {
       ok: false,

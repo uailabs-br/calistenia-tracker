@@ -8,10 +8,10 @@ function minimalPlan(overrides: Record<string, unknown> = {}) {
     name: "Plano de teste",
     source: "test",
     imported_at: "2026-08-24",
-    days: [
+    workouts: [
       {
-        weekday: 1,
-        label: "Seg",
+        id: "A",
+        label: "A",
         title: "Dia de teste",
         skill: "Teste",
         duration: "~10 min",
@@ -53,9 +53,23 @@ describe("parsePlanInput", () => {
     expect(result.summary).toEqual({
       name: "Plano de teste",
       version: 1,
-      days: 1,
+      workouts: 1,
       exercises: 1,
     });
+  });
+
+  it("plano no formato antigo (agenda por dia) → convertido em treinos A, B…", () => {
+    const old = minimalPlan();
+    const legacy = {
+      ...old,
+      days: [{ ...(old.workouts[0] as object), weekday: 3, label: "Qua" }],
+      workouts: undefined,
+    };
+    const result = parsePlanInput(JSON.stringify(legacy));
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.plan.workouts.map((w) => [w.id, w.label])).toEqual([["A", "A"]]);
+    expect(result.summary.workouts).toBe(1);
   });
 
   it("JSON inválido → mensagem amigável", () => {
@@ -71,9 +85,9 @@ describe("parsePlanInput", () => {
     expect(result.ok).toBe(true);
   });
 
-  it("exercise_id duplicado no mesmo dia → erro legível", () => {
+  it("exercise_id duplicado no mesmo treino → erro legível", () => {
     const plan = minimalPlan();
-    const day = plan.days[0] as { blocks: { exercises: unknown[] }[] };
+    const day = plan.workouts[0] as { blocks: { exercises: unknown[] }[] };
     const dup = { ...(day.blocks[0].exercises[0] as object) };
     day.blocks[0].exercises.push(dup);
     const result = parsePlanInput(JSON.stringify(plan));
@@ -84,7 +98,7 @@ describe("parsePlanInput", () => {
 
   it("neg_flag fora de flags → erro legível", () => {
     const plan = minimalPlan();
-    const day = plan.days[0] as { blocks: { exercises: { neg_flags: string[] }[] }[] };
+    const day = plan.workouts[0] as { blocks: { exercises: { neg_flags: string[] }[] }[] };
     day.blocks[0].exercises[0].neg_flags = ["não está em flags"];
     const result = parsePlanInput(JSON.stringify(plan));
     expect(result.ok).toBe(false);

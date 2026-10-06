@@ -56,7 +56,7 @@ export async function getProgressionReady(
     if (!log || log.skipped) continue; // não feito nessa sessão
     if (since !== undefined && log.logged_at <= since) continue;
 
-    const target = resolveLogExercise(log, session.weekday).parsed?.target ?? null;
+    const target = resolveLogExercise(log, session.workout_id).parsed?.target ?? null;
     if (!hitTarget(log, target) || !isClean(log, negFlags)) return false;
 
     if (++checked >= READY_STREAK) return true;

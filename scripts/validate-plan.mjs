@@ -85,9 +85,9 @@ const progression = z
   })
   .strict();
 
-const day = z
+const workout = z
   .object({
-    weekday: z.number().int().min(0).max(6),
+    id: z.string().min(1),
     label: z.string().min(1),
     title: z.string().min(1),
     skill: z.string(),
@@ -109,19 +109,29 @@ const planSchema = z
     name: z.string().min(1),
     source: z.string(),
     imported_at: z.string(),
-    days: z.array(day).min(1),
+    workouts: z.array(workout).min(1),
   })
   .strict()
   .superRefine((p, ctx) => {
-    // Único dentro de um dia; o mesmo movimento pode repetir o ID entre dias.
-    for (const d of p.days) {
+    const ids = new Set();
+    for (const w of p.workouts) {
+      if (ids.has(w.id)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `ID de treino duplicado no plano: ${w.id}`,
+        });
+      }
+      ids.add(w.id);
+    }
+    // Único dentro de um treino; o mesmo movimento pode repetir o ID entre treinos.
+    for (const w of p.workouts) {
       const seen = new Set();
-      for (const b of d.blocks) {
+      for (const b of w.blocks) {
         for (const ex of b.exercises) {
           if (seen.has(ex.id)) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
-              message: `ID de exercício duplicado no mesmo dia (${d.label}): ${ex.id}`,
+              message: `ID de exercício duplicado no mesmo treino (${w.id}): ${ex.id}`,
             });
           }
           seen.add(ex.id);
@@ -129,7 +139,7 @@ const planSchema = z
             if (!ex.flags.includes(neg)) {
               ctx.addIssue({
                 code: z.ZodIssueCode.custom,
-                message: `neg_flag inexistente em flags (${d.label} / ${ex.id}): ${neg}`,
+                message: `neg_flag inexistente em flags (${w.id} / ${ex.id}): ${neg}`,
               });
             }
           }
@@ -138,7 +148,7 @@ const planSchema = z
             if (!levels || !levels.has(ex.skill_ref.level)) {
               ctx.addIssue({
                 code: z.ZodIssueCode.custom,
-                message: `skill_ref inexistente (${d.label} / ${ex.id}): ${ex.skill_ref.skill_id} nível ${ex.skill_ref.level}`,
+                message: `skill_ref inexistente (${w.id} / ${ex.id}): ${ex.skill_ref.skill_id} nível ${ex.skill_ref.level}`,
               });
             }
           }
@@ -156,12 +166,12 @@ if (!result.success) {
   process.exit(1);
 }
 
-const exCount = plan.days.reduce(
-  (n, d) => n + d.blocks.reduce((m, b) => m + b.exercises.length, 0),
+const exCount = plan.workouts.reduce(
+  (n, w) => n + w.blocks.reduce((m, b) => m + b.exercises.length, 0),
   0
 );
 console.log(
-  `✓ plan.json válido — ${plan.days.length} dias, ${exCount} exercícios (v${plan.version})`
+  `✓ plan.json válido — ${plan.workouts.length} treinos, ${exCount} exercícios (v${plan.version})`
 );
 
 // ── Catálogo de exercícios (lib/plan/catalog.json) ─────────────────────────
