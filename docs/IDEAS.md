@@ -28,7 +28,7 @@
 ### [5.1] Notificação/lembrete de treino
 Lembrete configurado pelo usuário da hora do treino: push com tom leve (sem ser forçado),
 variações ao longo da semana.
-- **Feito:** seção em Config (`ReminderSettings`), copy determinística por dia (`reminderCopy.ts`),
+- **Feito:** seção em Config (`ReminderSettings`), copy determinística por data (`reminderCopy.ts`),
   pedido de permissão, preferências em `profile.ts`. Confirmado em uso real (2026-07-24) que
   **nada disso entrega notificação de verdade** — não é config de navegador, a feature nunca
   teve mecanismo de disparo (sem listener `push` no SW, sem servidor, sem agendamento).
@@ -38,8 +38,11 @@ variações ao longo da semana.
   `endpoint` da própria Push API). Persistência em Upstash Redis (Vercel Marketplace, free
   tier). Como o plano no Vercel é Hobby (Cron nativo só roda 1x/dia), o gatilho periódico
   seria um **GitHub Actions agendado** (grátis, a cada ~10min) chamando um endpoint protegido
-  por secret. Reusaria `getDayByWeekday` (sem push em dia de folga) e `reminderCopy.ts`
-  (mensagem) sem alterar nenhum dos dois. Riscos aceitos no desenho: push no iOS só funciona
+  por secret. Reusaria `reminderCopy.ts` (mensagem determinística por data) sem alterá-lo.
+  **Nota (pós-v1.8):** o desenho original previa "sem push em dia de folga" via
+  `getDayByWeekday` — essa função não existe mais, porque o plano deixou de ter dias fixos
+  (ver [Q2] decidida abaixo). Ao retomar, o gatilho precisa de outro critério (ex.: dias
+  desde a última sessão), não o dia da semana. Riscos aceitos no desenho: push no iOS só funciona
   em PWA instalada (16.4+), GitHub Actions cron é best-effort e desliga sozinho em repositório
   com 60+ dias sem atividade.
 - **Falta (R4):** retomar a implementação (rotas de API, service worker, client de subscribe,
@@ -58,8 +61,14 @@ Se confirmar, vale investir em cues (7.3) e em ligar mais níveis a exercícios 
 ---
 
 ## ❓ Decisões de produto em aberto
-- **[Q2] Faz sentido os treinos terem dias fixos?** — decisão de modelo; impacta a meta
-  semanal e a aderência por dia.
+_Nenhuma no momento._
+
+### Decididas
+- **[Q2] Faz sentido os treinos terem dias fixos?** — **não.** Resolvido na v1.8+: o plano
+  deixou de ser agenda semanal e os treinos passaram a ser identificados por letra (A, B, C…)
+  numa sequência cíclica. A meta semanal conta sessões, não dias cumpridos, e a aderência
+  por dia da semana saiu das métricas (entraram equilíbrio entre treinos e calendário de
+  constância). Ver [PLAN-treinos-por-letra.md](PLAN-treinos-por-letra.md).
 
 ---
 

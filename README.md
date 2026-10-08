@@ -46,7 +46,7 @@ O plano é o ponto de partida, não uma camisa de força:
 - **Adicionar exercício.** "Adicionar exercício" no fim do treino abre um catálogo de 120 exercícios (calistenia e básicos) com busca sem acento, filtro por grupo e por skill, variações mais fácil/difícil e recentes. Um toque adiciona. Não achou? Cria o seu na hora. Entra nas métricas como qualquer outro.
 - **Sinal de progressão.** Aparece no fim da sessão, com o nome do exercício **do seu plano**. "Dispensar" reinicia a contagem. Só considera sessões válidas e exercícios que o plano ainda vincula àquela skill.
 
-Decisões e motivos em [`PLAN-treino-dinamico.md`](PLAN-treino-dinamico.md).
+Decisões e motivos em [`docs/PLAN-treino-dinamico.md`](docs/PLAN-treino-dinamico.md).
 
 ## Arquitetura
 
@@ -132,16 +132,21 @@ npm run validate:plan  # valida o plano contra o schema Zod
 ## Estrutura
 
 ```
-app/                  # rotas: / (início), treino/[id], historico, metricas, config
-components/session/    # ExerciseCard, Stepper, FlagChips, RpeSheet, WorkoutPills, SessionRunner, AddExerciseSheet
-components/config/     # ReminderSettings, CustomExercisesCard
-components/metrics/     # StatTile, Sparkline, FlagIncidenceRow
-components/ui/         # BottomNav, PageHeader, SwUpdater, icons
-lib/db/               # schema Dexie, repositories/, queries/, backup
-lib/domain/           # parseTarget, volume, nextWorkout (sequência de treinos)
+app/                  # rotas: / (início), treino/[id], historico, metricas, skills, config
+components/home/      # NextWorkoutCard, ConsistencyCard, WeekReviewCard, ResumeBanner, FreeformLog*
+components/session/   # ExerciseCard, Stepper, FlagChips, RpeSheet, WorkoutPills, SessionRunner, AddExerciseSheet
+components/metrics/   # StatTile, Sparkline, FlagIncidenceRow, Badges
+components/config/    # ReminderSettings, CustomExercisesCard
+components/ui/        # BottomNav, PageHeader, SwUpdater, Toast, icons
+lib/db/               # schema Dexie, repositories/ (escrita), queries/ (leitura), backup
+lib/domain/           # parseTarget, volume, nextWorkout (sequência de treinos), streak, badges
 lib/plan/             # plan.json (fonte de verdade), schema Zod, loader, resolve, legacyPlan (formato antigo),
-                      # catalog.json (catálogo de exercícios), skills/progressions
+                      # catalog.json (catálogo de exercícios), skills/progressions, import/export pra IA
+lib/utils/            # date, id, profile, hooks (wake lock, a11y de modal)
 scripts/              # validate-plan, generate-icons
+test/                 # Vitest (unitários) + fixtures/ (backups de exemplo pra teste manual)
+public/               # ícones e manifest do PWA (sw.js é gerado no build)
+docs/                 # PRD, planos, decisões por feature e acompanhamento — ver docs/README.md
 ```
 
 ## Roadmap
@@ -152,4 +157,4 @@ scripts/              # validate-plan, generate-icons
 
 ---
 
-Projeto pessoal. Documentação de produto em [`PRD-calistenia-tracker-v1.md`](PRD-calistenia-tracker-v1.md), plano de execução em [`PLANO_IMPLEMENTACAO.md`](PLANO_IMPLEMENTACAO.md) e progresso em [`ACOMPANHAMENTO.md`](ACOMPANHAMENTO.md).
+Projeto pessoal. Toda a documentação vive em [`docs/`](docs/) — comece pelo [índice](docs/README.md): produto em [`PRD-calistenia-tracker-v1.md`](docs/PRD-calistenia-tracker-v1.md), plano de execução em [`PLANO_IMPLEMENTACAO.md`](docs/PLANO_IMPLEMENTACAO.md), progresso em [`ACOMPANHAMENTO.md`](docs/ACOMPANHAMENTO.md) e backlog em [`IDEAS.md`](docs/IDEAS.md).

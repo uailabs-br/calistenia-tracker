@@ -64,7 +64,7 @@ Preparam o v2 (sync/local-first) sem pagar o custo agora:
 
 Entregas:
 
-- `plan.json` gerado a partir de `treino-calistenia-jul-2026.html` com:
+- `plan.json` gerado a partir de `docs/referencia/treino-calistenia-jul-2026.html` com:
   - `version: 1` e `imported_at` no root
   - IDs de exercício como slug estável
   - `parsed` preenchido onde o volume é numérico, `null` onde não é ("10-12 tentativas")
