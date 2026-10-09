@@ -2,7 +2,11 @@
  * Persistência do onboarding. Local, por aparelho e fora do backup do Dexie,
  * como nome e meta semanal (ver profile.ts).
  */
-import type { OnboardingAnswers } from "@/lib/domain/onboarding";
+import {
+  levelFromLegacy,
+  type LegacyAnswers,
+  type OnboardingAnswers,
+} from "@/lib/domain/onboarding";
 
 const KEY = "calistenia:onboarding";
 const LOST_KEY = "calistenia:plan-lost";
@@ -13,11 +17,20 @@ interface Stored {
   at: string;
 }
 
+/** Respostas gravadas antes da pergunta de nível ganham o nível que elas implicam. */
+function withLevel(answers: unknown): OnboardingAnswers | null {
+  if (!answers || typeof answers !== "object") return null;
+  const a = answers as Partial<OnboardingAnswers> & Partial<LegacyAnswers>;
+  if (a.level) return a as OnboardingAnswers;
+  return { ...(a as object), level: levelFromLegacy(a as LegacyAnswers) } as OnboardingAnswers;
+}
+
 function read(): Stored | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = JSON.parse(localStorage.getItem(KEY) ?? "null");
-    return raw && raw.done === true ? (raw as Stored) : null;
+    if (!raw || raw.done !== true) return null;
+    return { ...raw, answers: withLevel(raw.answers) } as Stored;
   } catch {
     return null;
   }

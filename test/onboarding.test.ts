@@ -1,71 +1,62 @@
 import { describe, it, expect } from "vitest";
 import {
+  GOALS,
+  LEVELS,
+  aboveTopSeed,
   availableTags,
+  levelFromLegacy,
+  levelSkillsFor,
   mapAnswersToSkillLevels,
-  seedFits,
   planIdFromPlanDayId,
-  questionsFor,
+  seedFits,
   shouldRunOnboarding,
+  skipSeed,
   suggestSeed,
+  type Equipment,
+  type Level,
   type OnboardingAnswers,
 } from "@/lib/domain/onboarding";
 import { getSkillById } from "@/lib/plan/skills";
+import { DEFAULT_SEED_ID, getSeed } from "@/lib/plan/seeds";
 
-const base: OnboardingAnswers = {
-  equipment: "praca",
-  push_up: "1-5",
-  pull_up: "ainda_nao",
-  handstand_hold: "nunca",
-  dips: "nunca",
-  days_per_week: 3,
-};
+const EQUIPMENTS: Equipment[] = ["chao", "casa_barra", "praca", "academia"];
+
+const base: OnboardingAnswers = { equipment: "praca", level: "intermediario", days_per_week: 3 };
 const with_ = (p: Partial<OnboardingAnswers>): OnboardingAnswers => ({ ...base, ...p });
 
 describe("mapAnswersToSkillLevels", () => {
-  // Trava a tabela da spec contra a escada real: se o progressions.json for
+  // Trava as posições contra a escada real: se o progressions.json for
   // renumerado (já aconteceu, v1→v3), o teste acusa em vez de gravar a etapa errada.
-  const cases: [string, string, number, string][] = [
-    ["push_up", "0", 0, "Flexão Inclinada"],
-    ["push_up", "1-5", 1, "Flexão no Chão"],
-    ["push_up", "6-15", 2, "Flexão Diamante"],
-    ["push_up", "16+", 3, "Archer Push-up"],
-    ["pull_up", "nunca", 0, "Dead Hang + Scapular Pull"],
-    ["pull_up", "ainda_nao", 1, "Row Australiano / Ring Row"],
-    ["pull_up", "1-2", 3, "Pull-up (Pronado)"],
-    ["pull_up", "3-7", 4, "Pull-up Pegada Larga"],
-    ["pull_up", "8+", 5, "Archer Pull-up"],
-    ["handstand_hold", "nunca", 0, "Wrist Prep + Hollow Body"],
-    ["handstand_hold", "segundos", 2, "Handstand com Costas à Parede"],
-    ["handstand_hold", "30s", 3, "Toe-pull / Heel-pull off the wall"],
-    ["handstand_hold", "solto", 5, "Handstand Livre (10-30s)"],
-    ["dips", "nunca", 0, "Support Hold (Suporte Estático)"],
-    ["dips", "pes_chao", 1, "Dip Negativo"],
-    ["dips", "completo", 2, "Dip Completo"],
-    ["dips", "8+", 3, "Ring Dip"],
+  const cases: [Level, string, number, string][] = [
+    ["intermediario", "push_up", 2, "Flexão Diamante"],
+    ["intermediario", "pull_up", 3, "Pull-up (Pronado)"],
+    ["intermediario", "handstand_hold", 2, "Handstand com Costas à Parede"],
+    ["intermediario", "dips", 2, "Dip Completo"],
+    ["avancado", "push_up", 3, "Archer Push-up"],
+    ["avancado", "pull_up", 5, "Archer Pull-up"],
+    ["avancado", "handstand_hold", 5, "Handstand Livre (10-30s)"],
+    ["avancado", "dips", 3, "Ring Dip"],
+    ["iniciante", "push_up", 0, "Flexão Inclinada"],
+    ["iniciante", "pull_up", 0, "Dead Hang + Scapular Pull"],
+    ["iniciante", "handstand_hold", 0, "Wrist Prep + Hollow Body"],
+    ["iniciante", "dips", 0, "Support Hold (Suporte Estático)"],
   ];
 
-  it.each(cases)("%s = %s → índice %i (%s)", (skill, answer, index, label) => {
-    const levels = mapAnswersToSkillLevels(with_({ [skill]: answer } as Partial<OnboardingAnswers>));
+  it.each(cases)("%s / %s → índice %i (%s)", (level, skill, index, label) => {
+    const levels = mapAnswersToSkillLevels(with_({ level }));
     expect(levels[skill]).toBe(index);
     expect(getSkillById(skill)?.steps[index]?.label).toBe(label);
   });
 
-  it("respostas mais fortes nunca dão índice menor (monotonia)", () => {
-    const order: Record<string, string[]> = {
-      push_up: ["0", "1-5", "6-15", "16+"],
-      pull_up: ["nunca", "ainda_nao", "1-2", "3-7", "8+"],
-      handstand_hold: ["nunca", "segundos", "30s", "solto"],
-      dips: ["nunca", "pes_chao", "completo", "8+"],
-    };
-    for (const [skill, answers] of Object.entries(order)) {
-      const idx = answers.map(
-        (a) => mapAnswersToSkillLevels(with_({ [skill]: a } as Partial<OnboardingAnswers>))[skill]
-      );
+  it("nível mais alto nunca dá posição menor em nenhuma skill (monotonia)", () => {
+    const by = LEVELS.map((level) => mapAnswersToSkillLevels(with_({ level })));
+    for (const skill of Object.keys(by[0])) {
+      const idx = by.map((l) => l[skill]);
       expect(idx).toEqual([...idx].sort((x, y) => x - y));
     }
   });
 
-  it("só devolve skills que foram perguntadas pro equipamento", () => {
+  it("só devolve as skills que o equipamento permite", () => {
     expect(Object.keys(mapAnswersToSkillLevels(with_({ equipment: "chao" }))).sort()).toEqual([
       "handstand_hold",
       "push_up",
@@ -82,50 +73,47 @@ describe("mapAnswersToSkillLevels", () => {
       "push_up",
     ]);
   });
-
-  it("ignora resposta de barra/paralelas se o equipamento não tem", () => {
-    const levels = mapAnswersToSkillLevels(with_({ equipment: "chao", pull_up: "8+", dips: "8+" }));
-    expect(levels.pull_up).toBeUndefined();
-    expect(levels.dips).toBeUndefined();
-  });
 });
 
-describe("questionsFor", () => {
-  it("só o chão → 2 perguntas; barra → 3; paralelas → 4, na ordem da tela", () => {
-    expect(questionsFor("chao")).toEqual(["push_up", "handstand_hold"]);
-    expect(questionsFor("casa_barra")).toEqual(["push_up", "pull_up", "handstand_hold"]);
-    expect(questionsFor("praca")).toEqual(["push_up", "pull_up", "handstand_hold", "dips"]);
-    expect(questionsFor("academia")).toEqual(["push_up", "pull_up", "handstand_hold", "dips"]);
+describe("levelSkillsFor", () => {
+  it("só o chão → 2 skills; barra → 3; paralelas → 4, na ordem do resumo", () => {
+    expect(levelSkillsFor("chao")).toEqual(["push_up", "handstand_hold"]);
+    expect(levelSkillsFor("casa_barra")).toEqual(["push_up", "pull_up", "handstand_hold"]);
+    expect(levelSkillsFor("praca")).toEqual(["push_up", "pull_up", "handstand_hold", "dips"]);
+    expect(levelSkillsFor("academia")).toEqual(["push_up", "pull_up", "handstand_hold", "dips"]);
   });
 });
 
 describe("suggestSeed", () => {
-  it("sem barra → iniciante-sem-barra, mesmo com flexão forte", () => {
-    expect(suggestSeed(with_({ equipment: "chao", push_up: "16+" }))).toBe("iniciante-sem-barra");
+  it("sem barra → iniciante-sem-barra, em qualquer nível", () => {
+    for (const level of LEVELS) {
+      expect(suggestSeed({ equipment: "chao", level })).toBe("iniciante-sem-barra");
+    }
   });
 
-  it("com barra e pouca flexão ou sem barra feita → iniciante-com-barra", () => {
-    expect(suggestSeed(with_({ push_up: "1-5", pull_up: "3-7" }))).toBe("iniciante-com-barra");
-    expect(suggestSeed(with_({ push_up: "16+", pull_up: "ainda_nao" }))).toBe("iniciante-com-barra");
-    expect(suggestSeed(with_({ push_up: "6-15", pull_up: "nunca" }))).toBe("iniciante-com-barra");
+  it("iniciante com barra → iniciante-com-barra, mesmo com paralelas", () => {
+    for (const equipment of ["casa_barra", "praca", "academia"] as const) {
+      expect(suggestSeed({ equipment, level: "iniciante" })).toBe("iniciante-com-barra");
+    }
   });
 
-  it("flexão ≥6 e barra ≥1 com paralelas → intermediario", () => {
-    expect(suggestSeed(with_({ push_up: "6-15", pull_up: "1-2" }))).toBe("intermediario");
-    expect(suggestSeed(with_({ equipment: "academia", push_up: "16+", pull_up: "8+" }))).toBe(
-      "intermediario"
-    );
-  });
-
-  it("limite: 5 flexões ainda é iniciante, 6 já não", () => {
-    expect(suggestSeed(with_({ push_up: "1-5", pull_up: "1-2" }))).toBe("iniciante-com-barra");
-    expect(suggestSeed(with_({ push_up: "6-15", pull_up: "1-2" }))).toBe("intermediario");
+  it("intermediário e avançado com paralelas → intermediario", () => {
+    for (const equipment of ["praca", "academia"] as const) {
+      expect(suggestSeed({ equipment, level: "intermediario" })).toBe("intermediario");
+      expect(suggestSeed({ equipment, level: "avancado" })).toBe("intermediario");
+    }
   });
 
   it("forte mas só com barra em casa (sem paralelas) erra pra baixo", () => {
-    expect(suggestSeed(with_({ equipment: "casa_barra", push_up: "16+", pull_up: "8+" }))).toBe(
-      "iniciante-com-barra"
-    );
+    expect(suggestSeed({ equipment: "casa_barra", level: "avancado" })).toBe("iniciante-com-barra");
+  });
+
+  it("a semente sugerida sempre serve ao equipamento informado", () => {
+    for (const equipment of EQUIPMENTS) {
+      for (const level of LEVELS) {
+        expect(seedFits(getSeed(suggestSeed({ equipment, level }))!.tags, equipment)).toBe(true);
+      }
+    }
   });
 });
 
@@ -193,5 +181,106 @@ describe("seedFits", () => {
 
   it("a semente sugerida sempre serve ao equipamento informado", () => {
     expect(seedFits(availableTags("chao"), "chao")).toBe(true);
+  });
+});
+
+describe("GOALS", () => {
+  it("são gerais: nenhum objetivo depende de equipamento nem aponta uma skill", () => {
+    expect(GOALS).toEqual(["forca", "resistencia", "skills", "mobilidade"]);
+  });
+});
+
+describe("aboveTopSeed", () => {
+  it("só o avançado está acima das sementes", () => {
+    expect(aboveTopSeed({ level: "avancado" })).toBe(true);
+    expect(aboveTopSeed({ level: "intermediario" })).toBe(false);
+    expect(aboveTopSeed({ level: "iniciante" })).toBe(false);
+  });
+});
+
+describe("skipSeed", () => {
+  it("pular antes de responder o equipamento aplica o padrão do bundle", () => {
+    for (const equipment of EQUIPMENTS) {
+      expect(skipSeed({ equipmentAnswered: false, equipment })).toBe(DEFAULT_SEED_ID);
+    }
+  });
+
+  it("pular depois de marcar 'só o chão' NÃO aplica um plano que pede barra", () => {
+    const id = skipSeed({ equipmentAnswered: true, equipment: "chao" });
+    expect(id).toBe("iniciante-sem-barra");
+    expect(seedFits(getSeed(id)!.tags, "chao")).toBe(true);
+  });
+
+  it("pular nunca aplica o intermediario: o nível não respondido é o menor", () => {
+    for (const equipment of EQUIPMENTS) {
+      const id = skipSeed({ equipmentAnswered: true, equipment });
+      expect(id).not.toBe("intermediario");
+      expect(seedFits(getSeed(id)!.tags, equipment)).toBe(true);
+    }
+  });
+});
+
+describe("levelFromLegacy", () => {
+  // Respostas gravadas antes da pergunta de nível: 4 perguntas de capacidade.
+  const praca = {
+    equipment: "praca" as const,
+    push_up: "0" as const,
+    pull_up: "nunca" as const,
+    handstand_hold: "nunca" as const,
+    dips: "nunca" as const,
+  };
+
+  it("tudo no mínimo → iniciante", () => {
+    expect(levelFromLegacy(praca)).toBe("iniciante");
+  });
+
+  it("alcança a faixa do intermediário em TODA skill → intermediario", () => {
+    expect(
+      levelFromLegacy({ ...praca, push_up: "6-15", pull_up: "1-2", handstand_hold: "segundos", dips: "completo" })
+    ).toBe("intermediario");
+  });
+
+  it("tudo no máximo → avancado", () => {
+    expect(
+      levelFromLegacy({ ...praca, push_up: "16+", pull_up: "8+", handstand_hold: "solto", dips: "8+" })
+    ).toBe("avancado");
+  });
+
+  it("uma skill abaixo da faixa derruba o nível inteiro (erra pra baixo)", () => {
+    expect(
+      levelFromLegacy({ ...praca, push_up: "16+", pull_up: "8+", handstand_hold: "segundos", dips: "8+" })
+    ).toBe("intermediario");
+    expect(
+      levelFromLegacy({ ...praca, push_up: "16+", pull_up: "ainda_nao", handstand_hold: "solto", dips: "8+" })
+    ).toBe("iniciante");
+  });
+
+  it("só considera as skills que o equipamento perguntava", () => {
+    // só o chão: barra e dips nunca foram perguntadas, não podem reprovar
+    expect(
+      levelFromLegacy({ equipment: "chao", push_up: "16+", handstand_hold: "solto" })
+    ).toBe("avancado");
+  });
+});
+
+describe("planIdFromPlanDayId", () => {
+  it("tudo antes do último ':'", () => {
+    expect(planIdFromPlanDayId("plan-calistenia-ago-2026:A")).toBe("plan-calistenia-ago-2026");
+  });
+
+  it("id de plano com hífen e dígitos", () => {
+    expect(planIdFromPlanDayId("seed-iniciante-com-barra-v2:C")).toBe("seed-iniciante-com-barra-v2");
+  });
+
+  it("sufixo com ':' usa o último", () => {
+    expect(planIdFromPlanDayId("plano:x:B")).toBe("plano:x");
+  });
+
+  it("vazio, nulo, sem ':' ou começando em ':' → null", () => {
+    expect(planIdFromPlanDayId("")).toBeNull();
+    expect(planIdFromPlanDayId(null)).toBeNull();
+    expect(planIdFromPlanDayId(undefined)).toBeNull();
+    expect(planIdFromPlanDayId("semdoispontos")).toBeNull();
+    expect(planIdFromPlanDayId(":A")).toBeNull();
   });
 });

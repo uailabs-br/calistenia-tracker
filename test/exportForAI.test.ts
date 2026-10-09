@@ -137,30 +137,54 @@ describe("buildPersonaText", () => {
 });
 
 describe("exportForAI — perfil_declarado", () => {
-  it("traduz as respostas pra nome de skill e etapa em foco, sem jargão de índice", () => {
+  it("traduz o nível pra nome de skill e etapa em foco, sem jargão de índice", () => {
     const perfil = buildDeclaredProfile({
       equipment: "praca",
-      push_up: "6-15",
-      pull_up: "1-2",
-      handstand_hold: "nunca",
-      dips: "completo",
+      level: "intermediario",
       days_per_week: 4,
     });
     expect(perfil.equipamento).toBe("praca");
+    expect(perfil.nivel).toBe("intermediario");
     expect(perfil.dias_por_semana).toBe(4);
     expect(perfil.skills).toContainEqual({ skill: "Pull-up", etapa_em_foco: "Pull-up (Pronado)" });
     expect(perfil.skills).toContainEqual({ skill: "Push-up", etapa_em_foco: "Flexão Diamante" });
     expect(perfil.skills).toHaveLength(4);
   });
 
-  it("só lista as skills que foram perguntadas pro equipamento", () => {
+  it("só lista as skills que o equipamento permite", () => {
+    const perfil = buildDeclaredProfile({ equipment: "chao", level: "iniciante", days_per_week: 3 });
+    expect(perfil.skills.map((s) => s.skill).sort()).toEqual(["Handstand (Equilíbrio)", "Push-up"]);
+  });
+
+  it("objetivo e limitações entram no perfil", () => {
+    const perfil = buildDeclaredProfile({
+      equipment: "praca",
+      level: "avancado",
+      goal: "skills",
+      limitations: ["ombro", "punho"],
+      days_per_week: 5,
+    });
+    expect(perfil.nivel).toBe("avancado");
+    expect(perfil.objetivo).toBe("skills");
+    expect(perfil.limitacoes).toEqual(["ombro", "punho"]);
+  });
+
+  it("lista de limitações vazia é 'nada declarado': campo ausente, não [] no prompt", () => {
     const perfil = buildDeclaredProfile({
       equipment: "chao",
-      push_up: "0",
-      handstand_hold: "nunca",
+      level: "iniciante",
+      goal: "forca",
+      limitations: [],
       days_per_week: 3,
     });
-    expect(perfil.skills.map((s) => s.skill).sort()).toEqual(["Handstand (Equilíbrio)", "Push-up"]);
+    expect(perfil.objetivo).toBe("forca");
+    expect("limitacoes" in perfil).toBe(false);
+  });
+
+  it("respostas sem objetivo nem limitações não ganham campo inventado", () => {
+    const perfil = buildDeclaredProfile({ equipment: "chao", level: "iniciante", days_per_week: 3 });
+    expect("objetivo" in perfil).toBe(false);
+    expect("limitacoes" in perfil).toBe(false);
   });
 
   it("sem onboarding feito, o campo não aparece no export", async () => {

@@ -20,6 +20,83 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, em `main`, 2026-10-09, 5ª leva):** revisão de UX/UI do
+> onboarding (sem mudar o que ele coleta). **Ritmo vertical:** cada tela colava o
+> conteúdo no topo com um vazio no rodapé; agora o corpo centra num wrapper
+> `my-auto` dentro do scroller — telas curtas ganham ar no centro óptico, o resumo
+> (mais cheio) encosta no topo sozinho, e nada corta nem força scroll (continua
+> 0px de rolagem no iPhone SE e no piso real de Android, 360×640, em todos os
+> caminhos). **Textos de apoio** reescritos com o valor na frente e mais curtos
+> (ex.: a tela de objetivo abria com "Não muda o plano agora"; agora abre com "Pra
+> onde você quer evoluir primeiro"), e o `daysFeedback` menos genérico. **Grade de
+> objetivo:** `gap-2`→`gap-3`, padding maior e `min-h` por card, pra respiro
+> horizontal e altura igual entre os quatro. **Tipografia:** títulos 24px semibold
+> → 28px bold com `tracking-tight`; subtítulos 14→15px com `leading-relaxed`. Sem
+> ícone novo nem lib de cor (SVG próprio é a regra do repo). Pendência conhecida: no
+> seletor de plano o "· sugerido" quebra pro fim do título de duas linhas — vira
+> selo próprio depois, se valer. 400 testes.
+
+> **Atualização (pós-v1.8, em `main`, 2026-10-09, 4ª leva):** as 3 a 5 perguntas de
+> capacidade (flexões seguidas, barras, parada de mão, dips) viraram **uma pergunta
+> de nível** — Iniciante / Intermediário / Avançado, com uma frase de contexto em
+> cada. Motivo: o fluxo cai pra 7 telas fixas (a barra de progresso não salta mais
+> com o equipamento) e o nível é um sinal legível pra IA. **A definição dos níveis
+> vem da escada do app (`progressions.json`), não de contagem de repetição:**
+> avançado em calistenia é quem *tem* skills (muscle-up estrito, handstand livre,
+> straddle planche), e as frases citam os critérios que a escada usa pra dar uma
+> etapa por batida (pull-up 3×8, dip completo 3×8, diamante 3×10, handstand na
+> parede 30s). Cada nível grava a **faixa baixa** das posições (`LEVEL_POSITIONS`),
+> porque `max(logs, manual)` não corrige palpite alto. Respostas no formato antigo
+> são migradas na leitura (`levelFromLegacy`: o maior nível que a pessoa alcança em
+> *toda* skill perguntada). Alternativa descartada: manter as 4 perguntas como
+> refinamento opcional — mais precisão, mas o fluxo longo que o nível veio encurtar.
+> **Pendente — decisão sua:** (1) os limiares das três frases são minha leitura das
+> escadas e precisam da sua calibração (ficam em `levelOptions`, `questions.ts`);
+> (2) a semente `intermediario` prescreve pull-up 4×4, que na escada é a etapa
+> *anterior* ao 3×8 — o nome promete mais do que o conteúdo entrega, e não existe
+> semente avançada. 400 testes.
+
+> **Atualização (pós-v1.8, em `main`, 2026-10-09, 3ª leva):** o objetivo da 2ª leva
+> (por skill: flexão, barra, muscle-up, parada de mão) foi **descartado**: o app tem
+> 16 skills e uma lista por skill nunca cobriria todas — quem quer planche não achava
+> a opção. Virou foco geral em grade 2×2 (**Força, Resistência, Skills, Mobilidade**),
+> independente do equipamento, e vai pro export como `objetivo: "skills"`. A skill
+> específica fica em Config → "Meus objetivos" (persona), que já lista todas.
+> Alternativa descartada: multi-select de skills no onboarding (repete a persona e
+> estoura a tela). 398 testes.
+
+> **Atualização (pós-v1.8, em `main`, 2026-10-09, 2ª leva):** o onboarding passou a
+> perguntar **objetivo** (substituído na 3ª leva, acima) e **dor/limitação**. Nenhum dos dois muda o plano sugerido
+> (as sementes são generalistas; mudar composição por objetivo seria gerar treino,
+> fora da tese) — os dois vão pro `perfil_declarado` do `exportForAI`, que até aqui
+> dizia à IA só o que a pessoa *consegue*, nunca o que ela *quer* nem do que
+> desviar. Limitação é múltipla escolha e a tela diz na cara que o app não tira
+> exercício sozinho. **Saída acima das sementes:** quem responde o máximo em toda
+> pergunta feita pro equipamento dela (`aboveTopSeed`) recebe no resumo o aviso de
+> que os planos prontos param no intermediário, com atalho "trazer meu plano" que
+> grava tudo e cai no import do Config — não existe semente avançada, e escrever
+> uma é curadoria, não código. "Bananeira" virou **"parada de mão"** (o termo do
+> resto do repo). Telas continuam sem scroll: remedido nos 4 equipamentos × 2
+> viewports **também no caminho do máximo**, que é o estado mais cheio do resumo.
+> 399 testes.
+
+> **Atualização (pós-v1.8, em `main`, 2026-10-09):** revisão do onboarding depois
+> de ler o fluxo inteiro. **Tela de resumo** no fim: mostra a etapa em que cada
+> skill foi gravada, a meta semanal e o plano escolhido (com o primeiro treino),
+> e é a única chance de corrigir um palpite antes de `max(logs, manual)` colar
+> nele — "escolher plano" virou desvio a partir dela, não tela terminal.
+> **Nenhuma tela rola:** `h-dvh` com rodapé fixo (medido em Chromium a 375×667 e
+> 360×600, nos 4 caminhos de equipamento) e o passo seguinte sempre começa do
+> topo; o `pb-24` da nav saiu das rotas sem nav (`AppMain`) e o rodapé passou a
+> respeitar a safe area. **Pergunta da parada de mão reescrita** ("consegue fazer
+> bananeira na parede?"), com cada opção dizendo subir *e* aguentar. **Corrigido:**
+> "Pular" aplicava `iniciante-com-barra` mesmo pra quem tinha acabado de marcar
+> "só o chão" — agora respeita o equipamento já respondido (`skipSeed`), e some no
+> resumo. 390 testes. **Pendente desta revisão:** pergunta de objetivo (hoje o
+> `perfil_declarado` diz à IA o que a pessoa consegue, nunca o que ela quer),
+> saída pra quem está acima da semente `intermediario`, e a decisão sobre
+> perguntar dor/limitação. *(Os três foram feitos na 2ª leva, acima.)*
+
 > **Atualização (pós-v1.8, em `main`, 2026-10-08):** o app deixou de pressupor
 > o autor e passou a poder ser testado por terceiros. O `plan.json` bundlado não
 > é mais o plano pessoal (que vive em `lib/plan/plans/` e é reaplicado sozinho

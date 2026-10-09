@@ -1,6 +1,5 @@
 import {
   mapAnswersToSkillLevels,
-  questionsFor,
   type OnboardingAnswers,
 } from "@/lib/domain/onboarding";
 import type { Plan } from "@/lib/plan/schema";

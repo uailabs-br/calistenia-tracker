@@ -1,4 +1,12 @@
-import type { Equipment, OnboardingAnswers, QuestionKey } from "@/lib/domain/onboarding";
+import {
+  hasBar,
+  hasParallels,
+  type Equipment,
+  type Goal,
+  type Level,
+  type LevelSkill,
+  type Limitation,
+} from "@/lib/domain/onboarding";
 
 /**
  * Textos do onboarding. Linguagem de quem nunca ouviu "RIR" nem "etapa de
@@ -18,68 +26,83 @@ export const EQUIPMENT_OPTIONS: Option<Equipment>[] = [
   { value: "academia", label: "Academia", hint: "Barra e paralelas à vontade." },
 ];
 
-interface Question<K extends QuestionKey> {
-  title: string;
-  hint?: string;
-  options: Option<NonNullable<OnboardingAnswers[K]>>[];
+/**
+ * Nível: a frase de baixo cita CONQUISTAS da escada do app (progressions.json),
+ * não contagem de repetição — "intermediário" sem âncora vira o que cada um
+ * quiser. Os critérios citados são os que a escada usa pra dar a etapa por
+ * batida: pull-up 3×8, dip completo 3×8, diamante 3×10, handstand na parede 30s.
+ * O texto muda com o equipamento pra ninguém ler sobre barra sem ter barra.
+ */
+export function levelOptions(equipment: Equipment): Option<Level>[] {
+  const bar = hasBar(equipment);
+  const dips = hasParallels(equipment);
+  return [
+    {
+      value: "iniciante",
+      label: "Iniciante",
+      hint: bar
+        ? "Ainda construo a base: menos de 10 flexões seguidas e ainda não faço 8 barras."
+        : "Ainda construo a base: menos de 10 flexões limpas seguidas e parada de mão ainda não.",
+    },
+    {
+      value: "intermediario",
+      label: "Intermediário",
+      hint: bar
+        ? `Faço 8 barras${dips ? ", dips completos" : ""} e parada de mão na parede por 30s. Começo a treinar skills.`
+        : "Faço 10 flexões limpas e seguro a parada de mão na parede por 30s. Começo a treinar skills.",
+    },
+    {
+      value: "avancado",
+      label: "Avançado",
+      hint: bar
+        ? "Já faço muscle-up ou treino planche e front lever de verdade. Parada de mão livre."
+        : "Parada de mão livre, flexão archer e planche em progressão. Skills são o meu treino.",
+    },
+  ];
 }
 
-export const QUESTIONS: { [K in QuestionKey]: Question<K> } = {
-  push_up: {
-    title: "Quantas flexões seguidas você faz?",
-    hint: "Com o peito chegando perto do chão, sem parar no meio.",
-    options: [
-      { value: "0", label: "Nenhuma ainda" },
-      { value: "1-5", label: "1 a 5" },
-      { value: "6-15", label: "6 a 15" },
-      { value: "16+", label: "16 ou mais" },
-    ],
-  },
-  pull_up: {
-    title: "Consegue fazer uma barra?",
-    hint: "Do braço esticado até o queixo passar da barra.",
-    options: [
-      { value: "nunca", label: "Nunca tentei" },
-      { value: "ainda_nao", label: "Tentei, ainda não consigo" },
-      { value: "1-2", label: "1 a 2" },
-      { value: "3-7", label: "3 a 7" },
-      { value: "8+", label: "8 ou mais" },
-    ],
-  },
-  handstand_hold: {
-    title: "Consegue ficar de cabeça pra baixo?",
-    hint: "Apoiado nas mãos, com os pés na parede.",
-    options: [
-      { value: "nunca", label: "Nunca tentei" },
-      { value: "segundos", label: "Alguns segundos" },
-      { value: "30s", label: "30 segundos ou mais" },
-      { value: "solto", label: "Sem parede, solto" },
-    ],
-  },
-  dips: {
-    title: "Consegue descer e subir nas paralelas?",
-    hint: "Apoiado nos braços, sem dar impulso.",
-    options: [
-      { value: "nunca", label: "Nunca tentei" },
-      { value: "pes_chao", label: "Só com os pés no chão ajudando" },
-      { value: "completo", label: "Sim, de 1 a 7" },
-      { value: "8+", label: "Sim, 8 ou mais" },
-    ],
-  },
+/**
+ * Nome curto de cada skill no resumo final. O catálogo chama de "Push-up",
+ * "Handstand (Equilíbrio)"; aqui vale a palavra que a pergunta usou.
+ */
+export const SKILL_SHORT_LABEL: Record<LevelSkill, string> = {
+  push_up: "Flexão",
+  pull_up: "Barra",
+  handstand_hold: "Parada de mão",
+  dips: "Paralelas",
 };
 
-/** Padrão de cada capacidade: a menor resposta, que erra pra baixo (ver domain/onboarding.ts). */
-export const CAPACITY_DEFAULTS = {
-  push_up: "0",
-  pull_up: "nunca",
-  handstand_hold: "nunca",
-  dips: "nunca",
-} as const;
+/**
+ * Objetivo, em uma palavra (ver `Goal`). Não muda o plano sugerido: é o que a IA
+ * usa pra escrever o próximo ciclo, e o que o resumo devolve pra pessoa.
+ */
+export const GOAL_OPTIONS: Option<Goal>[] = [
+  { value: "forca", label: "Força", hint: "Ficar mais forte" },
+  { value: "resistencia", label: "Resistência", hint: "Mais repetições" },
+  { value: "skills", label: "Skills", hint: "Movimentos avançados" },
+  { value: "mobilidade", label: "Mobilidade", hint: "Flexibilidade ativa" },
+];
+
+export const GOAL_LABEL: Record<Goal, string> = {
+  forca: "Força",
+  resistencia: "Resistência",
+  skills: "Skills",
+  mobilidade: "Mobilidade",
+};
+
+/** Limitações: múltipla escolha, e "nada" é a lista vazia. */
+export const LIMITATION_OPTIONS: { value: Limitation; label: string }[] = [
+  { value: "ombro", label: "Ombro" },
+  { value: "punho", label: "Punho" },
+  { value: "cotovelo", label: "Cotovelo" },
+  { value: "joelho", label: "Joelho" },
+  { value: "lombar", label: "Lombar" },
+];
 
 export const DAYS_OPTIONS = [2, 3, 4, 5, 6] as const;
 
 export function daysFeedback(days: number): string {
-  if (days <= 3) return "Ótimo para começar com consistência.";
-  if (days === 4) return "Frequência ideal para evolução constante.";
-  return "Alta frequência — certifique-se de recuperar bem.";
+  if (days <= 3) return "Um ritmo que dá pra manter — consistência vale mais que volume.";
+  if (days === 4) return "O ponto de equilíbrio entre evoluir e recuperar.";
+  return "Alta frequência — capriche no descanso e no sono.";
 }

@@ -88,15 +88,10 @@ describe("registro de sementes", () => {
 
   it("toda semente sugerida por suggestSeed existe no registro", () => {
     for (const equipment of ["chao", "casa_barra", "praca", "academia"] as const) {
-      const id = suggestSeed({
-        equipment,
-        push_up: "16+",
-        pull_up: "8+",
-        handstand_hold: "nunca",
-        dips: "8+",
-        days_per_week: 3,
-      });
-      expect(getSeed(id), id).toBeDefined();
+      for (const level of ["iniciante", "intermediario", "avancado"] as const) {
+        const id = suggestSeed({ equipment, level });
+        expect(getSeed(id), id).toBeDefined();
+      }
     }
   });
 
@@ -109,11 +104,10 @@ describe("registro de sementes", () => {
 describe("tags das sementes x equipamento", () => {
   it("a semente sugerida sempre é executável com o equipamento informado", () => {
     const combos = ["chao", "casa_barra", "praca", "academia"] as const;
-    const caps = ["0", "16+"] as const;
     for (const equipment of combos)
-      for (const push_up of caps) {
-        const id = suggestSeed({ equipment, push_up, pull_up: "8+", handstand_hold: "nunca", dips: "8+", days_per_week: 3 });
-        expect(seedFits(getSeed(id)!.tags, equipment), `${equipment}/${push_up} → ${id}`).toBe(true);
+      for (const level of ["iniciante", "intermediario", "avancado"] as const) {
+        const id = suggestSeed({ equipment, level });
+        expect(seedFits(getSeed(id)!.tags, equipment), `${equipment}/${level} → ${id}`).toBe(true);
       }
   });
 });

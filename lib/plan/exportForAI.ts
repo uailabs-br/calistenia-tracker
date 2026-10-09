@@ -4,7 +4,10 @@ import { resolveLogExercise } from "@/lib/plan/resolve";
 import type { Plan } from "@/lib/plan/schema";
 import { extraSets, plannedSets } from "@/lib/domain/volume";
 import { skills, getLevelInfo } from "@/lib/plan/skills";
-import { mapAnswersToSkillLevels, type OnboardingAnswers } from "@/lib/domain/onboarding";
+import {
+  mapAnswersToSkillLevels,
+  type OnboardingAnswers,
+} from "@/lib/domain/onboarding";
 import { getOnboardingAnswers } from "@/lib/utils/onboarding";
 import {
   getSkillLogs,
@@ -49,16 +52,31 @@ export interface AiProgressSignal {
  */
 export interface AiDeclaredProfile {
   equipamento: string;
+  /** Autodeclarado: iniciante, intermediario ou avancado (definidos pela escada do app). */
+  nivel: string;
   dias_por_semana: number;
   /** Etapa que a pessoa disse estar trabalhando; as anteriores ela já faz. */
   skills: { skill: string; etapa_em_foco: string }[];
+  /**
+   * O que ela QUER, em uma palavra (forca, resistencia, skills, mobilidade).
+   * Todo o resto do export diz o que ela consegue; só isto diz pra onde ir. A
+   * skill específica não está aqui: vem de "Meus objetivos" (persona).
+   */
+  objetivo?: string;
+  /** Articulações que ela declarou incomodadas. Nenhum exercício foi tirado por isso. */
+  limitacoes?: string[];
 }
 
 export function buildDeclaredProfile(a: OnboardingAnswers): AiDeclaredProfile {
   const levels = mapAnswersToSkillLevels(a);
   return {
     equipamento: a.equipment,
+    nivel: a.level,
     dias_por_semana: a.days_per_week,
+    // Opcionais: quem respondeu antes da versão que passou a perguntar não tem
+    // os campos, e campo ausente é melhor que campo inventado.
+    ...(a.goal ? { objetivo: a.goal } : {}),
+    ...(a.limitations?.length ? { limitacoes: a.limitations } : {}),
     skills: Object.entries(levels).flatMap(([id, idx]) => {
       const skill = skills.find((s) => s.id === id);
       const step = skill?.steps[idx];
