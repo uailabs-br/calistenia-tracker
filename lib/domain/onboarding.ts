@@ -31,6 +31,27 @@ export function hasParallels(e: Equipment): boolean {
   return HAS_PARALLELS.includes(e);
 }
 
+/**
+ * O que cada setup oferece. Uma semente serve se tudo que ela pede está aqui:
+ * quem treina na praça também consegue fazer a semente que só usa o chão (ela
+ * pede MENOS, não outra coisa).
+ */
+const TAGS: Record<Equipment, string[]> = {
+  chao: ["chão", "parede"],
+  casa_barra: ["chão", "parede", "barra"],
+  praca: ["chão", "parede", "barra", "paralelas"],
+  academia: ["chão", "parede", "barra", "paralelas"],
+};
+
+export function availableTags(e: Equipment): string[] {
+  return TAGS[e];
+}
+
+export function seedFits(seedTags: readonly string[], e: Equipment): boolean {
+  const have = new Set(TAGS[e]);
+  return seedTags.every((t) => have.has(t));
+}
+
 /** Perguntas de capacidade que fazem sentido para o equipamento, na ordem da tela. */
 export function questionsFor(equipment: Equipment): QuestionKey[] {
   const keys: QuestionKey[] = ["push_up"];

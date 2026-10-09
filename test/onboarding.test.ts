@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
+  availableTags,
   mapAnswersToSkillLevels,
+  seedFits,
   planIdFromPlanDayId,
   questionsFor,
   shouldRunOnboarding,
@@ -164,5 +166,32 @@ describe("planIdFromPlanDayId", () => {
     expect(planIdFromPlanDayId(undefined)).toBeNull();
     expect(planIdFromPlanDayId("semdoispontos")).toBeNull();
     expect(planIdFromPlanDayId(":A")).toBeNull();
+  });
+});
+
+describe("seedFits", () => {
+  const SEM_BARRA = ["chão", "parede"];
+  const COM_BARRA = ["chão", "parede", "barra"];
+  const INTERMEDIARIO = ["chão", "parede", "barra", "paralelas"];
+
+  it("semente que pede menos serve a quem tem mais", () => {
+    expect(seedFits(SEM_BARRA, "praca")).toBe(true);
+    expect(seedFits(SEM_BARRA, "casa_barra")).toBe(true);
+    expect(seedFits(COM_BARRA, "academia")).toBe(true);
+  });
+
+  it("semente que pede mais não serve a quem tem menos", () => {
+    expect(seedFits(COM_BARRA, "chao")).toBe(false);
+    expect(seedFits(INTERMEDIARIO, "casa_barra")).toBe(false);
+    expect(seedFits(INTERMEDIARIO, "chao")).toBe(false);
+  });
+
+  it("cada setup serve a si mesmo", () => {
+    expect(seedFits(SEM_BARRA, "chao")).toBe(true);
+    expect(seedFits(INTERMEDIARIO, "praca")).toBe(true);
+  });
+
+  it("a semente sugerida sempre serve ao equipamento informado", () => {
+    expect(seedFits(availableTags("chao"), "chao")).toBe(true);
   });
 });

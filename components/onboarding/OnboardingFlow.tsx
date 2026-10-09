@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/db/schema";
 import {
-  mapAnswersToSkillLevels,
   questionsFor,
+  seedFits,
   suggestSeed,
   type Equipment,
   type OnboardingAnswers,
@@ -13,10 +13,11 @@ import {
   type SeedId,
 } from "@/lib/domain/onboarding";
 import { DEFAULT_SEED_ID, getSeed, seeds } from "@/lib/plan/seeds";
+import { plan } from "@/lib/plan/loader";
 import { applyPlan } from "@/lib/plan/importPlan";
-import { saveOnboarding } from "@/lib/utils/onboarding";
-import { setProfileName, setWeekGoal } from "@/lib/utils/profile";
-import { setSkillLevel } from "@/lib/utils/skillLevel";
+import { getOnboardingAnswers, saveOnboarding } from "@/lib/utils/onboarding";
+import { commitOnboarding } from "@/lib/utils/onboardingCommit";
+import { getProfileName } from "@/lib/utils/profile";
 import {
   CAPACITY_DEFAULTS,
   DAYS_OPTIONS,
@@ -87,23 +88,48 @@ function Choices<V extends string>({
   );
 }
 
-export default function OnboardingPage() {
+export type OnboardingMode = "first" | "redo";
+
+/**
+ * "first": quem ainda não tem rastro de uso (ver PlanBoot). "redo": quem já usa o
+ * app e quer refazer as perguntas; nada é gravado até o último passo, e o plano
+ * em uso é a opção padrão, porque trocar de plano é a parte destrutiva.
+ */
+export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
+  const redo = mode === "redo";
   const router = useRouter();
   const [index, setIndex] = useState(0);
   const [name, setName] = useState("");
   const [equipment, setEquipment] = useState<Equipment>("chao");
   const [capacity, setCapacity] = useState<Capacity>({ ...CAPACITY_DEFAULTS });
   const [days, setDays] = useState<number>(3);
-  const [chosenSeed, setChosenSeed] = useState<SeedId | null>(null);
+  // null = padrão do modo: a sugerida (first) ou "manter meu plano" (redo)
+  const [chosenSeed, setChosenSeed] = useState<SeedId | "current" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [finishing, setFinishing] = useState(false);
 
-  // Quem já tem histórico não passa por aqui: aplicar uma semente trocaria o plano dele.
+  // Primeira vez: quem já tem histórico não passa por aqui, aplicar uma semente
+  // trocaria o plano dele. Ao refazer, parte das respostas anteriores (lidas depois
+  // do mount, porque o storage não existe no HTML estático).
   useEffect(() => {
-    db.sessions.count().then((n) => {
-      if (n > 0) router.replace("/");
-    });
-  }, [router]);
+    if (!redo) {
+      db.sessions.count().then((n) => {
+        if (n > 0) router.replace("/");
+      });
+      return;
+    }
+    setName(getProfileName());
+    const prev = getOnboardingAnswers();
+    if (!prev) return;
+    setEquipment(prev.equipment);
+    setCapacity((c) => ({
+      push_up: prev.push_up,
+      pull_up: prev.pull_up ?? c.pull_up,
+      handstand_hold: prev.handstand_hold,
+      dips: prev.dips ?? c.dips,
+    }));
+    setDays(prev.days_per_week);
+  }, [redo, router]);
 
   const steps: Step[] = useMemo(
     () => ["nome", "equipamento", ...questionsFor(equipment), "frequencia", "plano"],
@@ -121,30 +147,38 @@ export default function OnboardingPage() {
     days_per_week: days,
   };
   const suggested = suggestSeed(answers);
-  const seedId = chosenSeed ?? suggested;
+  const seedId: SeedId | "current" = chosenSeed ?? (redo ? "current" : suggested);
 
   /**
-   * Ordem importa: o reload mata o estado do React, então perfil, meta e skills
-   * são gravados ANTES de aplicar o plano. A navegação final é completa
-   * (location.assign), não do router, porque `plan` é avaliado no load do módulo.
+   * A navegação final é completa (location.assign), não do router, porque `plan`
+   * é avaliado no load do módulo. A gravação e sua ordem estão em commitOnboarding.
    */
-  const finish = (skip: boolean) => {
+  const finish = () => {
     setFinishing(true);
     setError(null);
     try {
-      if (skip) {
-        saveOnboarding(null);
-        applyPlan(getSeed(DEFAULT_SEED_ID)!.plan);
-      } else {
-        if (name.trim()) setProfileName(name);
-        for (const [skillId, level] of Object.entries(mapAnswersToSkillLevels(answers))) {
-          // 0 é a posição padrão: gravar só poluiria a página da skill com "ajuste manual"
-          if (level > 0) setSkillLevel(skillId, level);
-        }
-        setWeekGoal(days);
-        saveOnboarding(answers);
-        applyPlan(getSeed(seedId)!.plan);
-      }
+      commitOnboarding({
+        answers,
+        name,
+        plan: seedId === "current" ? null : getSeed(seedId)!.plan,
+      });
+      window.location.assign(redo ? "/config" : "/");
+    } catch {
+      setFinishing(false);
+      setError("Não consegui salvar neste navegador. Confira se o armazenamento do site está liberado.");
+    }
+  };
+
+  /** "Pular" só existe na primeira vez; aplica a semente padrão. Ao refazer, cancela. */
+  const skip = () => {
+    if (redo) {
+      router.push("/config");
+      return;
+    }
+    setFinishing(true);
+    try {
+      saveOnboarding(null);
+      applyPlan(getSeed(DEFAULT_SEED_ID)!.plan);
       window.location.assign("/");
     } catch {
       setFinishing(false);
@@ -152,7 +186,7 @@ export default function OnboardingPage() {
     }
   };
 
-  const next = () => (isLast ? finish(false) : setIndex((i) => i + 1));
+  const next = () => (isLast ? finish() : setIndex((i) => i + 1));
   const back = () => setIndex((i) => Math.max(0, i - 1));
 
   return (
@@ -174,20 +208,22 @@ export default function OnboardingPage() {
       <div className="mt-3 flex justify-end">
         <button
           type="button"
-          onClick={() => finish(true)}
+          onClick={skip}
           disabled={finishing}
           className="tap px-2 text-sm text-muted active:opacity-70"
         >
-          Pular
+          {redo ? "Cancelar" : "Pular"}
         </button>
       </div>
 
       <div className="anim-fade-in flex-1 pt-4" key={step}>
         {step === "nome" && (
           <>
-            <h1 className="text-2xl font-semibold">Como te chamo?</h1>
+            <h1 className="text-2xl font-semibold">{redo ? "Refazer suas respostas" : "Como te chamo?"}</h1>
             <p className="mt-2 text-sm text-muted">
-              Só pra te cumprimentar. Pode deixar em branco.
+              {redo
+                ? "Seu histórico não muda. Só o nível e o equipamento que o app considera. Como te chamo?"
+                : "Só pra te cumprimentar. Pode deixar em branco."}
             </p>
             <input
               type="text"
@@ -268,20 +304,30 @@ export default function OnboardingPage() {
 
         {step === "plano" && (
           <>
-            <h1 className="text-2xl font-semibold">Seu ponto de partida</h1>
+            <h1 className="text-2xl font-semibold">{redo ? "E o plano?" : "Seu ponto de partida"}</h1>
             <p className="mt-2 text-sm text-muted">
-              Escolhi um plano pra você. Se não fizer sentido, troque.
+              {redo
+                ? "Trocar de plano não apaga nada do histórico, mas muda os treinos daqui pra frente."
+                : "Escolhi um plano pra você. Se não fizer sentido, troque."}
             </p>
             <div role="radiogroup" aria-label="Plano" className="mt-6 flex flex-col gap-3">
+              {redo && (
+                <OptionButton
+                  selected={seedId === "current"}
+                  onClick={() => setChosenSeed("current")}
+                  label="Manter meu plano atual"
+                  hint={`${plan.name}. Só atualiza seu nível nas skills.`}
+                />
+              )}
               {seeds.map((s) => {
-                const fits = s.equipment.includes(equipment);
+                const fits = seedFits(s.tags, equipment);
                 return (
                   <OptionButton
                     key={s.id}
                     selected={s.id === seedId}
                     onClick={() => setChosenSeed(s.id)}
                     label={s.id === suggested ? `${s.name} · sugerido` : s.name}
-                    hint={fits ? s.summary : `${s.summary} Pede equipamento que você não marcou.`}
+                    hint={fits ? s.summary : `${s.summary} Precisa de equipamento que você não marcou.`}
                   />
                 );
               })}
@@ -314,7 +360,7 @@ export default function OnboardingPage() {
           className="tap flex-1 rounded-xl py-3.5 font-semibold active:scale-[0.99] disabled:opacity-60"
           style={{ background: "var(--ac)", color: "var(--color-on-accent)" }}
         >
-          {isLast ? (finishing ? "Salvando..." : "Começar") : "Continuar"}
+          {isLast ? (finishing ? "Salvando..." : redo ? "Salvar" : "Começar") : "Continuar"}
         </button>
       </div>
     </div>

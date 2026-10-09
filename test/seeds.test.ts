@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 import { planSchema } from "@/lib/plan/schema";
 import { DEFAULT_SEED_ID, getSeed, seeds } from "@/lib/plan/seeds";
 import { getKnownPlan, knownPlanIds } from "@/lib/plan/plans";
-import { suggestSeed } from "@/lib/domain/onboarding";
+import { seedFits, suggestSeed } from "@/lib/domain/onboarding";
 
 type CatalogEntry = { id: string; equipment: string[] };
 const catalog: CatalogEntry[] = JSON.parse(
@@ -102,5 +102,17 @@ describe("registro de sementes", () => {
   it("as sementes cobrem todos os equipamentos", () => {
     const covered = new Set(seeds.flatMap((s) => s.equipment));
     expect([...covered].sort()).toEqual(["academia", "casa_barra", "chao", "praca"]);
+  });
+});
+
+describe("tags das sementes x equipamento", () => {
+  it("a semente sugerida sempre é executável com o equipamento informado", () => {
+    const combos = ["chao", "casa_barra", "praca", "academia"] as const;
+    const caps = ["0", "16+"] as const;
+    for (const equipment of combos)
+      for (const push_up of caps) {
+        const id = suggestSeed({ equipment, push_up, pull_up: "8+", handstand_hold: "nunca", dips: "8+", days_per_week: 3 });
+        expect(seedFits(getSeed(id)!.tags, equipment), `${equipment}/${push_up} → ${id}`).toBe(true);
+      }
   });
 });

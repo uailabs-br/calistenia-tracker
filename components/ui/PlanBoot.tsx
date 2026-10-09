@@ -23,7 +23,7 @@ export function PlanBoot() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (pathname === "/onboarding") return;
+    if (pathname.startsWith("/onboarding")) return;
     let cancelled = false;
 
     (async () => {
