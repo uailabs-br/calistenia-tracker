@@ -255,9 +255,23 @@ export async function resetAll(): Promise<void> {
     await db.customExercises.clear();
   });
   if (typeof localStorage !== "undefined") {
-    localStorage.removeItem(LAST_EXPORT_KEY);
+    // "Começar do zero" inclui o que o onboarding deixou: sem isso o app volta
+    // com onboarding concluído, nível declarado e plano trocado de antes.
+    for (const key of RESET_KEYS) localStorage.removeItem(key);
   }
 }
+
+/** Chaves locais que o reset apaga junto com o banco. */
+const RESET_KEYS = [
+  LAST_EXPORT_KEY,
+  "calistenia:onboarding",
+  "calistenia:plan-override",
+  "calistenia:plan-recovery-off",
+  "calistenia:plan-lost",
+  "calistenia:coach-marks",
+  "calistenia:skill-levels",
+  "calistenia:week-goal",
+];
 
 export function sessionsSinceExport(currentCompleted: number): number {
   if (typeof localStorage === "undefined") return 0;

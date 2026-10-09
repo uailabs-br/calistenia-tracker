@@ -70,10 +70,14 @@ describe("commitOnboarding", () => {
     expect(levels().push_up).toBe(3);
   });
 
-  it("refazer não mexe em skill que não foi perguntada agora (mudou pra só o chão)", async () => {
-    await commit(answers({ pull_up: "3-7" }));
+  it("trocar pra 'só o chão' limpa barra e dips: o nível antigo não pode ficar grudado", async () => {
+    await commit(answers({ pull_up: "3-7", dips: "8+" }));
+    expect(levels()).toMatchObject({ pull_up: 4, dips: 3 });
     await commit(answers({ equipment: "chao", pull_up: undefined, dips: undefined }));
-    expect(levels().pull_up).toBe(4);
+    expect(levels().pull_up).toBeUndefined();
+    expect(levels().dips).toBeUndefined();
+    // o que ainda é perguntado continua valendo
+    expect(levels().push_up).toBe(2);
   });
 
   it("nome em branco ao refazer limpa o nome", async () => {

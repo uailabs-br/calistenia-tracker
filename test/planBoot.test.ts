@@ -145,3 +145,34 @@ describe("getKnownPlan", () => {
     expect(getKnownPlan(PESSOAL)?.workouts.map((w) => w.id)).toEqual(["A", "B", "C", "D", "E"]);
   });
 });
+
+describe("reset e onboarding", () => {
+  it("depois de apagar tudo (soft delete), a decisão é onboarding e não um laço", async () => {
+    // o guard da tela e o decidePlanBoot precisam concordar sobre o que é
+    // "banco vazio", senão o usuário pinga entre "/" e "/onboarding"
+    await addSession({ deleted_at: 5_000 });
+    await addSession({ deleted_at: 5_000, plan_day_id: `${BUNDLED}:B` });
+    expect((await boot()).action).toBe("onboarding");
+  });
+});
+
+describe("plano editado por fora", () => {
+  it("mesmo id do repo mas outra versão → tratado como perdido, não sobrescrito", async () => {
+    // a IA edita o plano preservando o id da raiz e sobe a versão; a cópia do
+    // repo não é esse plano, e reaplicá-la apagaria a edição silenciosamente
+    await addSession({ plan_day_id: `${PESSOAL}:A`, plan_version: 99 });
+    expect(await boot()).toEqual({ action: "lost", planId: PESSOAL });
+  });
+
+  it("mesma versão continua sendo recuperado normalmente", async () => {
+    const v = getKnownPlan(PESSOAL)!.version;
+    await addSession({ plan_day_id: `${PESSOAL}:A`, plan_version: v });
+    expect((await boot()).action).toBe("apply");
+  });
+
+  it("sessão de versão ANTERIOR é recuperada: a cópia do repo é o sucessor", async () => {
+    const v = getKnownPlan(PESSOAL)!.version;
+    await addSession({ plan_day_id: `${PESSOAL}:A`, plan_version: v - 1 });
+    expect((await boot()).action).toBe("apply");
+  });
+});

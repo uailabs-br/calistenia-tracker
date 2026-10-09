@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { plan } from "@/lib/plan/loader";
 import { applyPlan, hasPlanOverride, hasRecoveryOptOut } from "@/lib/plan/importPlan";
@@ -22,8 +22,13 @@ export function PlanBoot() {
   const router = useRouter();
   const { toast } = useToast();
 
+  // Uma decisão por carga do app: a leitura varre a tabela de sessões, e repetir
+  // isso a cada navegação não muda a resposta (aplicar um plano recarrega a página).
+  const decided = useRef(false);
+
   useEffect(() => {
-    if (pathname.startsWith("/onboarding")) return;
+    if (pathname.startsWith("/onboarding") || decided.current) return;
+    decided.current = true;
     let cancelled = false;
 
     (async () => {

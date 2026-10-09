@@ -40,6 +40,11 @@ export async function decidePlanBoot(input: {
     const planId = planIdFromPlanDayId(last.plan_day_id);
     if (!planId || planId === input.currentPlanId) return { action: "none" };
     const known = getKnownPlan(planId);
+    // Sessão de uma versão MAIS NOVA que a cópia do repo: o plano foi editado por
+    // fora (a IA preserva o id da raiz) e o override era a única cópia. Reaplicar
+    // a cópia velha apagaria a edição, então trata como perdido. Versão igual ou
+    // mais antiga é o caso normal — a cópia do repo é o sucessor legítimo.
+    if (known && last.plan_version > known.version) return { action: "lost", planId };
     return known ? { action: "apply", plan: known } : { action: "lost", planId };
   }
 

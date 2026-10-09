@@ -41,7 +41,11 @@
               "neg_flags": [
                 "desci pouco",
                 "quadril caiu"
-              ]
+              ],
+              "skill_ref": {
+                "skill_id": "push_up",
+                "level": 1
+              }
             },
             {
               "id": "push-up-joelhos",
@@ -63,7 +67,11 @@
               "neg_flags": [
                 "desci pouco",
                 "quadril caiu"
-              ]
+              ],
+              "skill_ref": {
+                "skill_id": "push_up",
+                "level": 1
+              }
             }
           ]
         },
@@ -91,7 +99,8 @@
               "neg_flags": [
                 "quadril caiu",
                 "soltei antes"
-              ]
+              ],
+              "skill_ref": null
             },
             {
               "id": "dead-bug",
@@ -113,7 +122,8 @@
               "neg_flags": [
                 "lombar descolou",
                 "perdi o ritmo"
-              ]
+              ],
+              "skill_ref": null
             }
           ]
         }
@@ -173,7 +183,11 @@
               "neg_flags": [
                 "desci pouco",
                 "joelho entrou"
-              ]
+              ],
+              "skill_ref": {
+                "skill_id": "pistol_squat",
+                "level": 1
+              }
             },
             {
               "id": "afundo",
@@ -195,7 +209,8 @@
               "neg_flags": [
                 "desci pouco",
                 "perdi o equilíbrio"
-              ]
+              ],
+              "skill_ref": null
             }
           ]
         },
@@ -223,7 +238,8 @@
               "neg_flags": [
                 "lombar arqueou",
                 "perdi o ritmo"
-              ]
+              ],
+              "skill_ref": null
             },
             {
               "id": "wall-sit",
@@ -245,7 +261,8 @@
               "neg_flags": [
                 "soltei antes",
                 "subi o quadril"
-              ]
+              ],
+              "skill_ref": null
             }
           ]
         }
@@ -299,7 +316,8 @@
               ],
               "neg_flags": [
                 "punho incomodou"
-              ]
+              ],
+              "skill_ref": null
             },
             {
               "id": "frog-stand",
@@ -321,7 +339,11 @@
               "neg_flags": [
                 "não tirei os pés",
                 "punho incomodou"
-              ]
+              ],
+              "skill_ref": {
+                "skill_id": "handstand_hold",
+                "level": 1
+              }
             }
           ]
         },
@@ -349,7 +371,8 @@
               "neg_flags": [
                 "lombar descolou",
                 "soltei antes"
-              ]
+              ],
+              "skill_ref": null
             },
             {
               "id": "l-sit-tuck",
@@ -371,7 +394,11 @@
               "neg_flags": [
                 "não consegui sair do chão",
                 "ombro subiu até a orelha"
-              ]
+              ],
+              "skill_ref": {
+                "skill_id": "l_sit",
+                "level": 1
+              }
             }
           ]
         }

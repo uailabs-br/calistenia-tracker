@@ -113,9 +113,13 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
   // do mount, porque o storage não existe no HTML estático).
   useEffect(() => {
     if (!redo) {
-      db.sessions.count().then((n) => {
-        if (n > 0) router.replace("/");
-      });
+      // Só sessões VIVAS, igual ao decidePlanBoot: contar as apagadas faria o
+      // usuário que deletou tudo pingar entre "/" e "/onboarding" pra sempre.
+      db.sessions
+        .toArray()
+        .then((rows) => {
+          if (rows.some((r) => !r.deleted_at)) router.replace("/");
+        });
       return;
     }
     setName(getProfileName());

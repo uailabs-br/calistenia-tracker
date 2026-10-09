@@ -41,7 +41,11 @@
               "neg_flags": [
                 "balançou",
                 "não esticou embaixo"
-              ]
+              ],
+              "skill_ref": {
+                "skill_id": "pull_up",
+                "level": 4
+              }
             },
             {
               "id": "pull-up-negativa-lenta",
@@ -63,7 +67,11 @@
               "neg_flags": [
                 "caí rápido",
                 "não esticou embaixo"
-              ]
+              ],
+              "skill_ref": {
+                "skill_id": "pull_up",
+                "level": 3
+              }
             },
             {
               "id": "row-inverso-elevado",
@@ -85,7 +93,11 @@
               "neg_flags": [
                 "quadril caiu",
                 "puxei pela metade"
-              ]
+              ],
+              "skill_ref": {
+                "skill_id": "pull_up",
+                "level": 2
+              }
             }
           ]
         },
@@ -113,7 +125,8 @@
               "neg_flags": [
                 "balançou",
                 "subi pouco"
-              ]
+              ],
+              "skill_ref": null
             }
           ]
         }
@@ -173,7 +186,11 @@
               "neg_flags": [
                 "desci pouco",
                 "ombro subiu até a orelha"
-              ]
+              ],
+              "skill_ref": {
+                "skill_id": "dips",
+                "level": 3
+              }
             },
             {
               "id": "dip-negativo",
@@ -195,7 +212,11 @@
               "neg_flags": [
                 "caí rápido",
                 "ombro incomodou"
-              ]
+              ],
+              "skill_ref": {
+                "skill_id": "dips",
+                "level": 2
+              }
             }
           ]
         },
@@ -223,7 +244,11 @@
               "neg_flags": [
                 "desci pouco",
                 "quadril caiu"
-              ]
+              ],
+              "skill_ref": {
+                "skill_id": "push_up",
+                "level": 2
+              }
             },
             {
               "id": "pike-push-up",
@@ -245,7 +270,8 @@
               "neg_flags": [
                 "amplitude curta",
                 "ombro incomodou"
-              ]
+              ],
+              "skill_ref": null
             }
           ]
         }
@@ -305,7 +331,11 @@
               "neg_flags": [
                 "lombar arqueou",
                 "soltei antes"
-              ]
+              ],
+              "skill_ref": {
+                "skill_id": "handstand_hold",
+                "level": 3
+              }
             },
             {
               "id": "l-sit-uma-perna",
@@ -327,7 +357,11 @@
               "neg_flags": [
                 "não consegui sair do chão",
                 "ombro subiu até a orelha"
-              ]
+              ],
+              "skill_ref": {
+                "skill_id": "l_sit",
+                "level": 2
+              }
             }
           ]
         },
@@ -355,7 +389,11 @@
               "neg_flags": [
                 "calcanhar levantou",
                 "perdi o equilíbrio"
-              ]
+              ],
+              "skill_ref": {
+                "skill_id": "pistol_squat",
+                "level": 3
+              }
             },
             {
               "id": "agachamento-salto",
@@ -377,7 +415,8 @@
               "neg_flags": [
                 "aterrissei duro",
                 "joelho entrou"
-              ]
+              ],
+              "skill_ref": null
             },
             {
               "id": "hollow-hold",
@@ -399,7 +438,8 @@
               "neg_flags": [
                 "lombar descolou",
                 "soltei antes"
-              ]
+              ],
+              "skill_ref": null
             }
           ]
         }

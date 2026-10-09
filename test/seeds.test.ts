@@ -5,6 +5,7 @@ import { planSchema } from "@/lib/plan/schema";
 import { DEFAULT_SEED_ID, getSeed, seeds } from "@/lib/plan/seeds";
 import { getKnownPlan, knownPlanIds } from "@/lib/plan/plans";
 import { seedFits, suggestSeed } from "@/lib/domain/onboarding";
+import { skillIdForWorkout } from "@/lib/plan/skills";
 
 type CatalogEntry = { id: string; equipment: string[] };
 const catalog: CatalogEntry[] = JSON.parse(
@@ -114,5 +115,30 @@ describe("tags das sementes x equipamento", () => {
         const id = suggestSeed({ equipment, push_up, pull_up: "8+", handstand_hold: "nunca", dips: "8+", days_per_week: 3 });
         expect(seedFits(getSeed(id)!.tags, equipment), `${equipment}/${push_up} → ${id}`).toBe(true);
       }
+  });
+});
+
+describe("sementes alimentam o motor de progressão", () => {
+  it("todo exercício declara skill_ref (objeto ou null explícito)", () => {
+    for (const seed of seeds)
+      for (const w of seed.plan.workouts)
+        for (const b of w.blocks)
+          for (const e of b.exercises)
+            expect(e.skill_ref !== undefined, `${seed.id}/${e.id}`).toBe(true);
+  });
+
+  it("cada semente liga pelo menos 5 exercícios a uma etapa de skill", () => {
+    for (const seed of seeds) {
+      const n = seed.plan.workouts
+        .flatMap((w) => w.blocks.flatMap((b) => b.exercises))
+        .filter((e) => e.skill_ref).length;
+      expect(n, seed.id).toBeGreaterThanOrEqual(5);
+    }
+  });
+
+  it("o rótulo de skill de cada treino resolve numa skill do catálogo", () => {
+    for (const seed of seeds)
+      for (const w of seed.plan.workouts)
+        expect(skillIdForWorkout(w.skill), `${seed.id}/${w.id}: ${w.skill}`).toBeDefined();
   });
 });

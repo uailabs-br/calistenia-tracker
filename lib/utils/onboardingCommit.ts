@@ -1,9 +1,16 @@
-import { mapAnswersToSkillLevels, type OnboardingAnswers } from "@/lib/domain/onboarding";
+import {
+  mapAnswersToSkillLevels,
+  questionsFor,
+  type OnboardingAnswers,
+} from "@/lib/domain/onboarding";
 import type { Plan } from "@/lib/plan/schema";
 import { applyPlan } from "@/lib/plan/importPlan";
 import { saveOnboarding } from "@/lib/utils/onboarding";
 import { clearSkillLevel, setSkillLevel } from "@/lib/utils/skillLevel";
 import { setProfileName, setWeekGoal } from "@/lib/utils/profile";
+
+/** Skills que o onboarding pergunta (em algum equipamento). */
+const CAPACITY_SKILLS = ["push_up", "pull_up", "handstand_hold", "dips"] as const;
 
 /**
  * Grava o resultado do onboarding, na primeira vez e ao refazer.
@@ -26,8 +33,13 @@ export function commitOnboarding(input: {
 }): void {
   const { answers, name, plan } = input;
   setProfileName(name);
-  for (const [skillId, level] of Object.entries(mapAnswersToSkillLevels(answers))) {
-    if (level > 0) setSkillLevel(skillId, level);
+  const levels = mapAnswersToSkillLevels(answers);
+  // Toda skill que ESTE onboarding poderia ter respondido entra na conta, mesmo
+  // sem resposta agora: quem trocou a praça por "só o chão" deixa de responder
+  // barra e dips, e o ajuste antigo precisa sair junto.
+  for (const skillId of CAPACITY_SKILLS) {
+    const level = levels[skillId];
+    if (level && level > 0) setSkillLevel(skillId, level);
     else clearSkillLevel(skillId);
   }
   setWeekGoal(answers.days_per_week);
