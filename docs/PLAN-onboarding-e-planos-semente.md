@@ -1,8 +1,8 @@
 # PLAN — Onboarding e planos-semente
 
-Status: **implementado na `dev`** (2026-10-08), com duas pendências: o conteúdo das sementes é
-**rascunho que precisa de revisão do autor**, e a interação do onboarding **nunca foi exercitada em
-navegador** (só `next build`, `next start` e o HTML da primeira tela). Primeira entrega do caminho
+Status: **implementado e em `main`** (2026-10-08). Duas pendências: o conteúdo das sementes é
+**rascunho que precisa de revisão do autor**, e o app **não foi usado num celular de verdade** — o
+fluxo foi exercitado em Chromium headless sobre a build de produção. Primeira entrega do caminho
 "app testável por terceiros". Entrega 2 (treino livre) e canal de feedback ficam fora deste plano —
 ver [Fora de escopo](#fora-de-escopo).
 
@@ -24,8 +24,20 @@ Registro das decisões tomadas ao implementar. O resto do documento descreve o d
 | `exportForAI` com as respostas | `perfil_declarado` (equipamento, dias, etapa em foco por skill) | Como previsto; marcado como autodeclarado pra IA preferir `progressao` |
 | `intermediario` com barra | Exige **paralelas** (praça ou academia) | É o equipamento da semente |
 
-**Não feito:** "refazer onboarding" no Config (o card de planos prontos cobre a troca de plano, mas
-não refaz a coleta de capacidade); respostas do onboarding fora do localStorage.
+**Achados da revisão de código, já corrigidos:** laço infinito entre `/` e `/onboarding` para quem
+apagou todas as sessões (a tela contava sessões apagadas, o `decidePlanBoot` não); sementes sem
+`skill_ref`, que deixavam o motor de progressão e o mapa de skills vazios justo para quem acabou de
+entrar; rótulos de treino das sementes que não resolviam skill; refazer com menos equipamento
+deixando nível antigo grudado; "Deletar todos os dados" que não limpava o estado do onboarding;
+plano editado por fora sobrescrito pela cópia do repo; e varredura da tabela de sessões a cada
+navegação.
+
+**Também corrigido aqui:** a hidratação quebrava em Config, Histórico e Treino sempre que havia
+plano importado (React #418) — bug anterior a esta entrega, que o onboarding tornou o caminho
+normal. Ver `lib/utils/usePlanReady.ts`.
+
+**Não feito:** ~~"refazer onboarding" no Config~~ (feito) ; respostas do onboarding fora do localStorage; e um canal de feedback
+para o teste (entrega separada, ver Fora de escopo).
 
 ## Contexto
 

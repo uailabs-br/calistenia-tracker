@@ -9,7 +9,7 @@ Serwist (PWA), Zod. Visão geral em [README.md](README.md); documentação em [d
 
 ```bash
 npm run dev            # http://localhost:3000
-npm test               # Vitest (363 testes) — o gate principal
+npm test               # Vitest (387 testes) — o gate principal
 npx tsc --noEmit       # typecheck (strict)
 npm run validate:plan  # valida plan.json + catalog.json contra o schema Zod
 npm run build          # valida o plano e depois builda (o build falha se o plano estiver inválido)
@@ -65,6 +65,11 @@ certo lendo o `plan_day_id` do histórico. Duas armadilhas: o `vitest.config.ts`
 `skill_ref` dele), então `test/seeds.test.ts` lê o bundlado do disco; e a posição de skill é
 `max(logs, manual)`, então um palpite alto do onboarding **não se corrige sozinho**: na dúvida,
 grave a menor etapa.
+
+**10. Nada derivado do plano pode ser renderizado antes do mount.** `loadPlan()` lê o override do
+localStorage, que não existe no HTML estático: renderizar nome, número de treinos ou conteúdo do
+plano no primeiro render quebra a hidratação (React #418) e repinta a tela. Use
+`lib/utils/usePlanReady.ts` ou estado preenchido em `useEffect`.
 
 ## Guard-rails de produto
 
