@@ -1,8 +1,31 @@
 # PLAN — Onboarding e planos-semente
 
-Status: **proposto, não implementado** (2026-10-08). Primeira entrega do caminho "app testável por
-terceiros". Entrega 2 (treino livre) e canal de feedback ficam fora deste plano — ver
-[Fora de escopo](#fora-de-escopo).
+Status: **implementado na `dev`** (2026-10-08), com duas pendências: o conteúdo das sementes é
+**rascunho que precisa de revisão do autor**, e a interação do onboarding **nunca foi exercitada em
+navegador** (só `next build`, `next start` e o HTML da primeira tela). Primeira entrega do caminho
+"app testável por terceiros". Entrega 2 (treino livre) e canal de feedback ficam fora deste plano —
+ver [Fora de escopo](#fora-de-escopo).
+
+## O que mudou em relação ao proposto
+
+Registro das decisões tomadas ao implementar. O resto do documento descreve o desenho original.
+
+| Proposto | Implementado | Por quê |
+|---|---|---|
+| Gate do onboarding em `app/page.tsx` | No `PlanBoot`, no layout | Quem entra direto em `/historico` ou `/metricas` também precisa cair no onboarding |
+| `CoachMark` em `Portal` + `useModalA11y` | Dica **inline** no cartão, sem bloquear o toque | Um modal na primeira série interrompe justo a interação que se quer ensinar |
+| Ordem das dicas: toque, chips, alvo | **alvo, toque, chips** | É a ordem em que a pessoa lê o cartão, de cima pra baixo |
+| Dica sempre mostrada | Pula a que não se aplica ao cartão (alvo sem número, modo ajustar) | Senão uma dica inaplicável trava as seguintes |
+| 7 telas | 8: as 7 mais a confirmação do plano (3 a 5 de capacidade conforme o equipamento) | A spec já pedia a tela "escolher outro"; faltava contá-la |
+| Gravar a posição de todas as skills respondidas | Só índice **> 0** | 0 é a posição padrão; gravar marcaria "ajuste manual" na página da skill à toa |
+| Navegar com `reload` ao final | `location.assign("/")` | O reload ficaria em `/onboarding` |
+| — | **Opt-out da recuperação** em `clearPlanOverride` | Sem ele, "Restaurar plano padrão" era desfeito pelo `PlanBoot` no boot seguinte. Achado ao reler o fluxo, não previsto |
+| — | "Planos prontos" no Config | Quem escolheu a semente errada não passa mais pelo onboarding depois da 1ª sessão |
+| `exportForAI` com as respostas | `perfil_declarado` (equipamento, dias, etapa em foco por skill) | Como previsto; marcado como autodeclarado pra IA preferir `progressao` |
+| `intermediario` com barra | Exige **paralelas** (praça ou academia) | É o equipamento da semente |
+
+**Não feito:** "refazer onboarding" no Config (o card de planos prontos cobre a troca de plano, mas
+não refaz a coleta de capacidade); respostas do onboarding fora do localStorage.
 
 ## Contexto
 

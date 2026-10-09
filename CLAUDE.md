@@ -9,7 +9,7 @@ Serwist (PWA), Zod. Visão geral em [README.md](README.md); documentação em [d
 
 ```bash
 npm run dev            # http://localhost:3000
-npm test               # Vitest (277 testes) — o gate principal
+npm test               # Vitest (363 testes) — o gate principal
 npx tsc --noEmit       # typecheck (strict)
 npm run validate:plan  # valida plan.json + catalog.json contra o schema Zod
 npm run build          # valida o plano e depois builda (o build falha se o plano estiver inválido)
@@ -57,6 +57,14 @@ precisa de teste em `test/migration.test.ts`. Nunca editar uma `version()` já p
 
 **8. Série extra conta em volume e recorde, mas não na progressão.** Deliberado: uma série
 cansada a mais não deve reprovar um treino que cumpriu o plano.
+
+**9. O `plan.json` bundlado é o plano genérico (`iniciante-com-barra`), não o do autor.** O plano
+pessoal está em `lib/plan/plans/` e as sementes em `lib/plan/seeds/`; `PlanBoot` reaplica o plano
+certo lendo o `plan_day_id` do histórico. Duas armadilhas: o `vitest.config.ts` **aponta
+`plan.json` pro plano pessoal** (seis testes e o `PLAN_SKILL_REFS` dependem das declarações de
+`skill_ref` dele), então `test/seeds.test.ts` lê o bundlado do disco; e a posição de skill é
+`max(logs, manual)`, então um palpite alto do onboarding **não se corrige sozinho**: na dúvida,
+grave a menor etapa.
 
 ## Guard-rails de produto
 

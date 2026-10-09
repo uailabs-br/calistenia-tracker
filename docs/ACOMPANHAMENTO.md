@@ -20,6 +20,16 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, em `dev`, 2026-10-08):** onboarding e planos-semente, pra o app
+> poder ser testado por terceiros. O `plan.json` bundlado deixou de ser o plano pessoal do autor e
+> virou o `iniciante-com-barra`; o pessoal vive em `lib/plan/plans/` e é reaplicado sozinho pelo
+> `PlanBoot`, que acha o plano certo no `plan_day_id` do histórico. Onboarding de até 8 telas com
+> perguntas leigas de capacidade que semeiam o mapa de skills e escolhem uma de três sementes;
+> dicas de primeiro uso no cartão do exercício; "Planos prontos" no Config; `perfil_declarado` no
+> export pra IA. 363 testes. **Pendente:** revisão do autor sobre o conteúdo das sementes (são
+> rascunho) e um teste da interação em navegador. Detalhes e desvios em
+> [`PLAN-onboarding-e-planos-semente.md`](PLAN-onboarding-e-planos-semente.md).
+
 > **Atualização (pós-v1.8, em `main`):** treinos por letra. O plano deixou de ser uma
 > agenda por dia da semana: cada treino tem `id` (A, B, C…) e a ordem do plano é a
 > sequência — o próximo é o seguinte ao último concluído, em ciclo, sem limite de

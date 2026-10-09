@@ -45,7 +45,7 @@ Um por feature grande. Registram **o porquê** das decisões, não o passo a pas
 
 | Documento | Entregue em | Decisão central |
 |---|---|---|
-| [`PLAN-onboarding-e-planos-semente.md`](PLAN-onboarding-e-planos-semente.md) | **proposto — não implementado** | Onboarding de 4 perguntas leigas de capacidade (escada de skills invisível) que semeia o mapa de skills e roteia pra um de 3 planos-semente. Destrava o uso por terceiros, inclusive iniciantes. **Doc vivo até ser entregue.** |
+| [`PLAN-onboarding-e-planos-semente.md`](PLAN-onboarding-e-planos-semente.md) | **implementado na `dev`** (sementes em rascunho) | Onboarding de 4 perguntas leigas de capacidade (escada de skills invisível) que semeia o mapa de skills e roteia pra um de 3 planos-semente. Destrava o uso por terceiros, inclusive iniciantes. Tem uma seção com o que mudou em relação ao proposto. |
 | [`PLAN-treinos-por-letra.md`](PLAN-treinos-por-letra.md) | v1.8+ (`7776ac4`) | Treinos deixam de ser dias da semana e passam a ser letras (A, B, C…) numa sequência cíclica. Separa identidade, ordem e data. Inclui a migração do histórico (Dexie v5). |
 | [`PLAN-treino-dinamico.md`](PLAN-treino-dinamico.md) | v1.8 | Série extra, exercício adicionado no meio do treino e snapshot do exercício em cada log — mudar o plano deixa de reescrever o passado. |
 | [`PLAN-treino-avulso.md`](PLAN-treino-avulso.md) | v1.6 | Registrar treino fora do programa como `Session` sem `plan_day_id`, reaproveitando o pipeline de streak. |
