@@ -1,0 +1,403 @@
+{
+  "id": "seed-iniciante-com-barra",
+  "version": 1,
+  "name": "Iniciante — com barra",
+  "source": "semente-rascunho-2026-10-08",
+  "imported_at": "2026-10-08",
+  "workouts": [
+    {
+      "id": "A",
+      "label": "A",
+      "title": "Puxar + Core",
+      "skill": "Barra",
+      "duration": "~28 min",
+      "accent": "#A89CFF",
+      "accent_bg": "#1E1B35",
+      "is_practice": false,
+      "warmup": "Círculos de ombro × 10 · escápulas na barra × 5 — 2 min",
+      "tip": "Hoje o foco é puxar. Faça as séries com folga: pare quando a técnica começar a piorar, não quando cansar. Se marcar o mesmo problema 2 treinos seguidos, volte um passo.",
+      "blocks": [
+        {
+          "label": "Skill — Barra · 16 min",
+          "is_skill": true,
+          "exercises": [
+            {
+              "id": "dead-hang",
+              "name": "Dead hang (pendurar)",
+              "target": "3 × 20s",
+              "parsed": {
+                "sets": 3,
+                "target": 20,
+                "unit": "seconds",
+                "per_side": false
+              },
+              "obs": "Pendurado na barra, ombros longe das orelhas, corpo parado.",
+              "rest": "descanso 60s",
+              "flags": [
+                "segurei o tempo todo",
+                "soltei antes",
+                "ombro subiu até a orelha"
+              ],
+              "neg_flags": [
+                "soltei antes",
+                "ombro subiu até a orelha"
+              ]
+            },
+            {
+              "id": "scapular-pull",
+              "name": "Scapular pull",
+              "target": "3 × 8",
+              "parsed": {
+                "sets": 3,
+                "target": 8,
+                "unit": "reps",
+                "per_side": false
+              },
+              "obs": "Pendurado, braços esticados. Só os ombros trabalham: desce e sobe as escápulas sem dobrar o cotovelo.",
+              "rest": "descanso 60s",
+              "flags": [
+                "movimento só nos ombros",
+                "dobrei o cotovelo",
+                "balançou"
+              ],
+              "neg_flags": [
+                "dobrei o cotovelo",
+                "balançou"
+              ]
+            },
+            {
+              "id": "row-inverso-barra-baixa",
+              "name": "Row inverso (australiano)",
+              "target": "3 × 8",
+              "parsed": {
+                "sets": 3,
+                "target": 8,
+                "unit": "reps",
+                "per_side": false
+              },
+              "obs": "Barra na altura da cintura, corpo reto e inclinado. Puxa o peito até a barra e desce devagar.",
+              "rest": "descanso 75s",
+              "flags": [
+                "peito tocou a barra",
+                "quadril caiu",
+                "puxei pela metade"
+              ],
+              "neg_flags": [
+                "quadril caiu",
+                "puxei pela metade"
+              ]
+            }
+          ]
+        },
+        {
+          "label": "Core · 8 min",
+          "is_skill": false,
+          "exercises": [
+            {
+              "id": "plank",
+              "name": "Prancha",
+              "target": "3 × 20s",
+              "parsed": {
+                "sets": 3,
+                "target": 20,
+                "unit": "seconds",
+                "per_side": false
+              },
+              "obs": "Antebraços no chão, corpo reto. Aperta glúteo e barriga; não deixa a lombar afundar.",
+              "rest": "descanso 45s",
+              "flags": [
+                "segurei o tempo todo",
+                "quadril caiu",
+                "soltei antes"
+              ],
+              "neg_flags": [
+                "quadril caiu",
+                "soltei antes"
+              ]
+            }
+          ]
+        }
+      ],
+      "progression": [
+        {
+          "exercise_id": "dead-hang",
+          "criteria": "Quando fizer 3 × 20s sem marcar \"soltei antes\" por 2 sessões seguidas → próximo passo: Scapular pull."
+        },
+        {
+          "exercise_id": "scapular-pull",
+          "criteria": "Quando fizer 3 × 8 sem marcar \"dobrei o cotovelo\" por 2 sessões seguidas → próximo passo: Row inverso (australiano)."
+        },
+        {
+          "exercise_id": "row-inverso-barra-baixa",
+          "criteria": "Quando fizer 3 × 8 sem marcar \"quadril caiu\" por 2 sessões seguidas → próximo passo: Row inverso (pés elevados)."
+        },
+        {
+          "exercise_id": "plank",
+          "criteria": "Quando fizer 3 × 20s sem marcar \"quadril caiu\" por 2 sessões seguidas → próximo passo: Hollow body hold."
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "label": "B",
+      "title": "Empurrar + Pernas",
+      "skill": "Flexão",
+      "duration": "~28 min",
+      "accent": "#6ECFAB",
+      "accent_bg": "#132820",
+      "is_practice": false,
+      "warmup": "Círculos de ombro × 10 · wrist prep × 10 · agachamento sem peso × 10 — 2 min",
+      "tip": "Dia de empurrar e pernas. Faça as séries com folga: pare quando a técnica começar a piorar, não quando cansar. Se marcar o mesmo problema 2 treinos seguidos, volte um passo.",
+      "blocks": [
+        {
+          "label": "Skill — Flexão · 12 min",
+          "is_skill": true,
+          "exercises": [
+            {
+              "id": "push-up-inclinada",
+              "name": "Flexão inclinada",
+              "target": "3 × 10",
+              "parsed": {
+                "sets": 3,
+                "target": 10,
+                "unit": "reps",
+                "per_side": false
+              },
+              "obs": "Mãos na parede ou num apoio firme, corpo reto da cabeça aos pés. Desce até o peito chegar perto do apoio e empurra de volta.",
+              "rest": "descanso 60s",
+              "flags": [
+                "peito chegou perto",
+                "desci pouco",
+                "quadril caiu"
+              ],
+              "neg_flags": [
+                "desci pouco",
+                "quadril caiu"
+              ]
+            },
+            {
+              "id": "push-up-joelhos",
+              "name": "Flexão com joelhos no chão",
+              "target": "3 × 8",
+              "parsed": {
+                "sets": 3,
+                "target": 8,
+                "unit": "reps",
+                "per_side": false
+              },
+              "obs": "Joelhos no chão, corpo reto dos joelhos à cabeça. Desce com controle, sem deixar o quadril sobrar nem afundar.",
+              "rest": "descanso 60s",
+              "flags": [
+                "peito chegou perto",
+                "desci pouco",
+                "quadril caiu"
+              ],
+              "neg_flags": [
+                "desci pouco",
+                "quadril caiu"
+              ]
+            }
+          ]
+        },
+        {
+          "label": "Pernas · 12 min",
+          "is_skill": false,
+          "exercises": [
+            {
+              "id": "agachamento",
+              "name": "Agachamento livre",
+              "target": "3 × 12",
+              "parsed": {
+                "sets": 3,
+                "target": 12,
+                "unit": "reps",
+                "per_side": false
+              },
+              "obs": "Pés na largura dos ombros, joelhos acompanham os pés. Desce até as coxas ficarem paralelas ao chão.",
+              "rest": "descanso 60s",
+              "flags": [
+                "desci até paralelo",
+                "desci pouco",
+                "joelho entrou"
+              ],
+              "neg_flags": [
+                "desci pouco",
+                "joelho entrou"
+              ]
+            },
+            {
+              "id": "ponte-gluteo",
+              "name": "Ponte de glúteo",
+              "target": "3 × 12",
+              "parsed": {
+                "sets": 3,
+                "target": 12,
+                "unit": "reps",
+                "per_side": false
+              },
+              "obs": "Deitado, pés no chão. Sobe o quadril apertando o glúteo; no topo, corpo reto de ombro a joelho.",
+              "rest": "descanso 45s",
+              "flags": [
+                "subi até o topo",
+                "lombar arqueou",
+                "perdi o ritmo"
+              ],
+              "neg_flags": [
+                "lombar arqueou",
+                "perdi o ritmo"
+              ]
+            }
+          ]
+        }
+      ],
+      "progression": [
+        {
+          "exercise_id": "push-up-inclinada",
+          "criteria": "Quando fizer 3 × 10 sem marcar \"desci pouco\" por 2 sessões seguidas → próximo passo: Flexão no chão."
+        },
+        {
+          "exercise_id": "push-up-joelhos",
+          "criteria": "Quando fizer 3 × 8 sem marcar \"desci pouco\" por 2 sessões seguidas → próximo passo: Flexão no chão."
+        },
+        {
+          "exercise_id": "agachamento",
+          "criteria": "Quando fizer 3 × 12 sem marcar \"desci pouco\" por 2 sessões seguidas → próximo passo: Agachamento com salto."
+        },
+        {
+          "exercise_id": "ponte-gluteo",
+          "criteria": "Quando fizer 3 × 12 sem marcar \"lombar arqueou\" por 2 sessões seguidas → próximo passo: Ponte de glúteo unilateral."
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "label": "C",
+      "title": "Parada de mão + Core",
+      "skill": "Parada de mão",
+      "duration": "~28 min",
+      "accent": "#FF9066",
+      "accent_bg": "#2A1810",
+      "is_practice": false,
+      "warmup": "Wrist prep completo · círculos de ombro — 2 min",
+      "tip": "Dia de parada de mão e puxada leve. Faça as séries com folga: pare quando a técnica começar a piorar, não quando cansar. Se marcar o mesmo problema 2 treinos seguidos, volte um passo.",
+      "blocks": [
+        {
+          "label": "Skill — Parada de mão · 10 min",
+          "is_skill": true,
+          "exercises": [
+            {
+              "id": "wrist-prep",
+              "name": "Preparo de punhos",
+              "target": "2 × 10",
+              "parsed": {
+                "sets": 2,
+                "target": 10,
+                "unit": "reps",
+                "per_side": false
+              },
+              "obs": "De quatro, mãos no chão. Faz círculos e balanços de peso para frente e para trás, sem pressa.",
+              "rest": "descanso 30s",
+              "flags": [
+                "punho tranquilo",
+                "punho incomodou"
+              ],
+              "neg_flags": [
+                "punho incomodou"
+              ]
+            },
+            {
+              "id": "frog-stand",
+              "name": "Frog stand (rã)",
+              "target": "3 × 15s",
+              "parsed": {
+                "sets": 3,
+                "target": 15,
+                "unit": "seconds",
+                "per_side": false
+              },
+              "obs": "Agachado, apoia os joelhos nos cotovelos e inclina o peso pra frente até tirar os pés do chão.",
+              "rest": "descanso 60s",
+              "flags": [
+                "tirei os pés do chão",
+                "não tirei os pés",
+                "punho incomodou"
+              ],
+              "neg_flags": [
+                "não tirei os pés",
+                "punho incomodou"
+              ]
+            }
+          ]
+        },
+        {
+          "label": "Puxar + Core · 14 min",
+          "is_skill": false,
+          "exercises": [
+            {
+              "id": "row-inverso-barra-baixa",
+              "name": "Row inverso (australiano)",
+              "target": "3 × 8",
+              "parsed": {
+                "sets": 3,
+                "target": 8,
+                "unit": "reps",
+                "per_side": false
+              },
+              "obs": "Barra na altura da cintura, corpo reto e inclinado. Puxa o peito até a barra e desce devagar.",
+              "rest": "descanso 75s",
+              "flags": [
+                "peito tocou a barra",
+                "quadril caiu",
+                "puxei pela metade"
+              ],
+              "neg_flags": [
+                "quadril caiu",
+                "puxei pela metade"
+              ]
+            },
+            {
+              "id": "hollow-hold",
+              "name": "Hollow body hold",
+              "target": "3 × 15s",
+              "parsed": {
+                "sets": 3,
+                "target": 15,
+                "unit": "seconds",
+                "per_side": false
+              },
+              "obs": "Lombar colada no chão, braços e pernas esticados e levantados. Se a lombar descolar, dobra os joelhos.",
+              "rest": "descanso 60s",
+              "flags": [
+                "lombar colada",
+                "lombar descolou",
+                "soltei antes"
+              ],
+              "neg_flags": [
+                "lombar descolou",
+                "soltei antes"
+              ]
+            }
+          ]
+        }
+      ],
+      "progression": [
+        {
+          "exercise_id": "wrist-prep",
+          "criteria": "Quando fizer 2 × 10 sem marcar \"punho incomodou\" por 2 sessões seguidas → próximo passo: Handstand com peito na parede."
+        },
+        {
+          "exercise_id": "frog-stand",
+          "criteria": "Quando fizer 3 × 15s sem marcar \"não tirei os pés\" por 2 sessões seguidas → próximo passo: Handstand com peito na parede."
+        },
+        {
+          "exercise_id": "row-inverso-barra-baixa",
+          "criteria": "Quando fizer 3 × 8 sem marcar \"quadril caiu\" por 2 sessões seguidas → próximo passo: Row inverso (pés elevados)."
+        },
+        {
+          "exercise_id": "hollow-hold",
+          "criteria": "Quando fizer 3 × 15s sem marcar \"lombar descolou\" por 2 sessões seguidas → próximo passo: Tuck dragon flag."
+        }
+      ]
+    }
+  ]
+}

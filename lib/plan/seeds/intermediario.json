@@ -1,0 +1,427 @@
+{
+  "id": "seed-intermediario",
+  "version": 1,
+  "name": "Intermediário — barra e paralelas",
+  "source": "semente-rascunho-2026-10-08",
+  "imported_at": "2026-10-08",
+  "workouts": [
+    {
+      "id": "A",
+      "label": "A",
+      "title": "Puxar",
+      "skill": "Barra",
+      "duration": "~35 min",
+      "accent": "#A89CFF",
+      "accent_bg": "#1E1B35",
+      "is_practice": false,
+      "warmup": "Hang passivo 30s · escápulas na barra × 8 · círculos de ombro — 3 min",
+      "tip": "Hoje o foco é a barra. Faça as séries com folga: pare quando a técnica começar a piorar, não quando cansar. Se marcar o mesmo problema 2 treinos seguidos, volte um passo.",
+      "blocks": [
+        {
+          "label": "Skill — Barra · 20 min",
+          "is_skill": true,
+          "exercises": [
+            {
+              "id": "pull-up-peso-morto",
+              "name": "Pull-up (barra fixa)",
+              "target": "4 × 4",
+              "parsed": {
+                "sets": 4,
+                "target": 4,
+                "unit": "reps",
+                "per_side": false
+              },
+              "obs": "Parte do braço esticado, sem balanço. Sobe até o queixo passar a barra e desce controlando.",
+              "rest": "descanso 90s",
+              "flags": [
+                "queixo passou a barra",
+                "balançou",
+                "não esticou embaixo"
+              ],
+              "neg_flags": [
+                "balançou",
+                "não esticou embaixo"
+              ]
+            },
+            {
+              "id": "pull-up-negativa-lenta",
+              "name": "Pull-up negativa",
+              "target": "3 × 4",
+              "parsed": {
+                "sets": 3,
+                "target": 4,
+                "unit": "reps",
+                "per_side": false
+              },
+              "obs": "Sobe pulando até o queixo passar a barra e desce em 3 a 5s, até o braço esticar.",
+              "rest": "descanso 90s",
+              "flags": [
+                "desci em 3s ou mais",
+                "caí rápido",
+                "não esticou embaixo"
+              ],
+              "neg_flags": [
+                "caí rápido",
+                "não esticou embaixo"
+              ]
+            },
+            {
+              "id": "row-inverso-elevado",
+              "name": "Row inverso (pés elevados)",
+              "target": "3 × 8",
+              "parsed": {
+                "sets": 3,
+                "target": 8,
+                "unit": "reps",
+                "per_side": false
+              },
+              "obs": "Pés elevados, corpo reto. Puxa o peito até a barra, sem deixar o quadril cair.",
+              "rest": "descanso 75s",
+              "flags": [
+                "peito tocou a barra",
+                "quadril caiu",
+                "puxei pela metade"
+              ],
+              "neg_flags": [
+                "quadril caiu",
+                "puxei pela metade"
+              ]
+            }
+          ]
+        },
+        {
+          "label": "Core · 10 min",
+          "is_skill": false,
+          "exercises": [
+            {
+              "id": "hanging-knee-raise",
+              "name": "Elevação de joelhos na barra",
+              "target": "3 × 8",
+              "parsed": {
+                "sets": 3,
+                "target": 8,
+                "unit": "reps",
+                "per_side": false
+              },
+              "obs": "Pendurado, sobe os joelhos até o quadril sem balançar o corpo.",
+              "rest": "descanso 60s",
+              "flags": [
+                "subi sem balançar",
+                "balançou",
+                "subi pouco"
+              ],
+              "neg_flags": [
+                "balançou",
+                "subi pouco"
+              ]
+            }
+          ]
+        }
+      ],
+      "progression": [
+        {
+          "exercise_id": "pull-up-peso-morto",
+          "criteria": "Quando fizer 4 × 4 sem marcar \"balançou\" por 2 sessões seguidas → próximo passo: Pull-up pegada larga."
+        },
+        {
+          "exercise_id": "pull-up-negativa-lenta",
+          "criteria": "Quando fizer 3 × 4 sem marcar \"caí rápido\" por 2 sessões seguidas → próximo passo: Pull-up (barra fixa)."
+        },
+        {
+          "exercise_id": "row-inverso-elevado",
+          "criteria": "Quando fizer 3 × 8 sem marcar \"quadril caiu\" por 2 sessões seguidas → próximo passo: Pull-up negativa."
+        },
+        {
+          "exercise_id": "hanging-knee-raise",
+          "criteria": "Quando fizer 3 × 8 sem marcar \"balançou\" por 2 sessões seguidas → próximo passo: Elevação de pernas na barra."
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "label": "B",
+      "title": "Empurrar",
+      "skill": "Dips",
+      "duration": "~35 min",
+      "accent": "#6ECFAB",
+      "accent_bg": "#132820",
+      "is_practice": false,
+      "warmup": "Círculos de ombro × 10 · wrist prep × 10 · suporte nas paralelas 15s — 3 min",
+      "tip": "Dia de empurrar. Faça as séries com folga: pare quando a técnica começar a piorar, não quando cansar. Se marcar o mesmo problema 2 treinos seguidos, volte um passo.",
+      "blocks": [
+        {
+          "label": "Skill — Dips · 18 min",
+          "is_skill": true,
+          "exercises": [
+            {
+              "id": "dip-paralelas",
+              "name": "Dip nas paralelas",
+              "target": "3 × 6",
+              "parsed": {
+                "sets": 3,
+                "target": 6,
+                "unit": "reps",
+                "per_side": false
+              },
+              "obs": "Ombros longe das orelhas, tronco levemente inclinado. Desce até o cotovelo a 90° e sobe até esticar.",
+              "rest": "descanso 90s",
+              "flags": [
+                "cotovelo chegou a 90°",
+                "desci pouco",
+                "ombro subiu até a orelha"
+              ],
+              "neg_flags": [
+                "desci pouco",
+                "ombro subiu até a orelha"
+              ]
+            },
+            {
+              "id": "dip-negativo",
+              "name": "Dip negativo",
+              "target": "3 × 4",
+              "parsed": {
+                "sets": 3,
+                "target": 4,
+                "unit": "reps",
+                "per_side": false
+              },
+              "obs": "Sobe até o braço esticar e desce em 3 a 5s.",
+              "rest": "descanso 75s",
+              "flags": [
+                "desci em 3s ou mais",
+                "caí rápido",
+                "ombro incomodou"
+              ],
+              "neg_flags": [
+                "caí rápido",
+                "ombro incomodou"
+              ]
+            }
+          ]
+        },
+        {
+          "label": "Empurrar · 14 min",
+          "is_skill": false,
+          "exercises": [
+            {
+              "id": "push-up-com-pausa",
+              "name": "Flexão com pausa",
+              "target": "3 × 8",
+              "parsed": {
+                "sets": 3,
+                "target": 8,
+                "unit": "reps",
+                "per_side": false
+              },
+              "obs": "Pausa de 1s com o peito quase no chão, depois empurra. A pausa tira o impulso do rebote.",
+              "rest": "descanso 75s",
+              "flags": [
+                "pausa de 1s feita",
+                "desci pouco",
+                "quadril caiu"
+              ],
+              "neg_flags": [
+                "desci pouco",
+                "quadril caiu"
+              ]
+            },
+            {
+              "id": "pike-push-up",
+              "name": "Pike push-up",
+              "target": "3 × 8",
+              "parsed": {
+                "sets": 3,
+                "target": 8,
+                "unit": "reps",
+                "per_side": false
+              },
+              "obs": "Quadril alto, corpo em V invertido. Cabeça desce entre as mãos e empurra de volta.",
+              "rest": "descanso 75s",
+              "flags": [
+                "cabeça passou das mãos",
+                "amplitude curta",
+                "ombro incomodou"
+              ],
+              "neg_flags": [
+                "amplitude curta",
+                "ombro incomodou"
+              ]
+            }
+          ]
+        }
+      ],
+      "progression": [
+        {
+          "exercise_id": "dip-paralelas",
+          "criteria": "Quando fizer 3 × 6 sem marcar \"desci pouco\" por 2 sessões seguidas → próximo passo: Dip em argolas."
+        },
+        {
+          "exercise_id": "dip-negativo",
+          "criteria": "Quando fizer 3 × 4 sem marcar \"caí rápido\" por 2 sessões seguidas → próximo passo: Dip nas paralelas."
+        },
+        {
+          "exercise_id": "push-up-com-pausa",
+          "criteria": "Quando fizer 3 × 8 sem marcar \"desci pouco\" por 2 sessões seguidas → próximo passo: Flexão diamante."
+        },
+        {
+          "exercise_id": "pike-push-up",
+          "criteria": "Quando fizer 3 × 8 sem marcar \"amplitude curta\" por 2 sessões seguidas → próximo passo: Pike push-up elevado."
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "label": "C",
+      "title": "Skill + Pernas",
+      "skill": "Parada de mão",
+      "duration": "~35 min",
+      "accent": "#FF9066",
+      "accent_bg": "#2A1810",
+      "is_practice": false,
+      "warmup": "Wrist prep completo · frog stand 15s · agachamento sem peso × 10 — 3 min",
+      "tip": "Dia de parada de mão, L-sit e pernas. Faça as séries com folga: pare quando a técnica começar a piorar, não quando cansar. Se marcar o mesmo problema 2 treinos seguidos, volte um passo.",
+      "blocks": [
+        {
+          "label": "Skill — Parada de mão · 12 min",
+          "is_skill": true,
+          "exercises": [
+            {
+              "id": "hs-costas-parede",
+              "name": "Handstand com costas na parede",
+              "target": "3 × 20s",
+              "parsed": {
+                "sets": 3,
+                "target": 20,
+                "unit": "seconds",
+                "per_side": false
+              },
+              "obs": "Costas pra parede, corpo o mais reto possível. Empurra o chão pra longe e aperta a barriga.",
+              "rest": "descanso 90s",
+              "flags": [
+                "corpo reto",
+                "lombar arqueou",
+                "soltei antes"
+              ],
+              "neg_flags": [
+                "lombar arqueou",
+                "soltei antes"
+              ]
+            },
+            {
+              "id": "l-sit-uma-perna",
+              "name": "L-sit uma perna",
+              "target": "3 × 10s",
+              "parsed": {
+                "sets": 3,
+                "target": 10,
+                "unit": "seconds",
+                "per_side": false
+              },
+              "obs": "Uma perna esticada à frente e a outra dobrada. Troca o lado a cada série.",
+              "rest": "descanso 60s",
+              "flags": [
+                "tirei o quadril do chão",
+                "não consegui sair do chão",
+                "ombro subiu até a orelha"
+              ],
+              "neg_flags": [
+                "não consegui sair do chão",
+                "ombro subiu até a orelha"
+              ]
+            }
+          ]
+        },
+        {
+          "label": "Pernas + Core · 18 min",
+          "is_skill": false,
+          "exercises": [
+            {
+              "id": "pistol-assistido",
+              "name": "Pistol assistido (com apoio)",
+              "target": "3 × 5/lado",
+              "parsed": {
+                "sets": 3,
+                "target": 5,
+                "unit": "reps",
+                "per_side": true
+              },
+              "obs": "Segura num apoio com a mão e desce numa perna só, a outra esticada à frente. Usa o apoio o mínimo possível.",
+              "rest": "descanso 90s",
+              "flags": [
+                "desci até o fundo",
+                "calcanhar levantou",
+                "perdi o equilíbrio"
+              ],
+              "neg_flags": [
+                "calcanhar levantou",
+                "perdi o equilíbrio"
+              ]
+            },
+            {
+              "id": "agachamento-salto",
+              "name": "Agachamento com salto",
+              "target": "3 × 8",
+              "parsed": {
+                "sets": 3,
+                "target": 8,
+                "unit": "reps",
+                "per_side": false
+              },
+              "obs": "Desce em agachamento e salta pra cima. Aterrissa macio, joelhos dobrados.",
+              "rest": "descanso 75s",
+              "flags": [
+                "aterrissei macio",
+                "aterrissei duro",
+                "joelho entrou"
+              ],
+              "neg_flags": [
+                "aterrissei duro",
+                "joelho entrou"
+              ]
+            },
+            {
+              "id": "hollow-hold",
+              "name": "Hollow body hold",
+              "target": "3 × 15s",
+              "parsed": {
+                "sets": 3,
+                "target": 15,
+                "unit": "seconds",
+                "per_side": false
+              },
+              "obs": "Lombar colada no chão, braços e pernas esticados e levantados. Se a lombar descolar, dobra os joelhos.",
+              "rest": "descanso 60s",
+              "flags": [
+                "lombar colada",
+                "lombar descolou",
+                "soltei antes"
+              ],
+              "neg_flags": [
+                "lombar descolou",
+                "soltei antes"
+              ]
+            }
+          ]
+        }
+      ],
+      "progression": [
+        {
+          "exercise_id": "hs-costas-parede",
+          "criteria": "Quando fizer 3 × 20s sem marcar \"lombar arqueou\" por 2 sessões seguidas → próximo passo: Toe-pull / heel-pull na parede."
+        },
+        {
+          "exercise_id": "l-sit-uma-perna",
+          "criteria": "Quando fizer 3 × 10s sem marcar \"não consegui sair do chão\" por 2 sessões seguidas → próximo passo: L-sit no chão."
+        },
+        {
+          "exercise_id": "pistol-assistido",
+          "criteria": "Quando fizer 3 × 5 sem marcar \"calcanhar levantou\" por 2 sessões seguidas → próximo passo: Pistol em caixa (box pistol)."
+        },
+        {
+          "exercise_id": "hollow-hold",
+          "criteria": "Quando fizer 3 × 15s sem marcar \"lombar descolou\" por 2 sessões seguidas → próximo passo: Tuck dragon flag."
+        }
+      ]
+    }
+  ]
+}
