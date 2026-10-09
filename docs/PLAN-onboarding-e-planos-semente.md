@@ -126,8 +126,11 @@ Skills não perguntadas (as outras 12) seguem enchendo por log e por ajuste manu
 ```
 sem barra                                    → iniciante-sem-barra
 com barra  +  (flexão ≤5  ou  barra "ainda não"/"nunca")  → iniciante-com-barra
-com barra  +  flexão ≥6   e   barra ≥1–2     → intermediario
+com barra  +  flexão ≥6   e   barra ≥1–2  +  paralelas (praça/academia) → intermediario
 ```
+
+Forte mas só com barra em casa (sem paralelas) fica na de iniciante: a semente `intermediario` usa
+paralelas, e a regra é errar pra baixo.
 
 A semente é **sugerida, não imposta**: a última tela mostra qual foi escolhida, o que ela treina, e
 um "escolher outro". Decisão sem explicação é decisão que o usuário não confia.
@@ -222,8 +225,8 @@ export function shouldRunOnboarding(s: {
 ```
 
 ```ts
-// lib/plan/seeds.ts
-export type SeedId = "iniciante-sem-barra" | "iniciante-com-barra" | "intermediario";
+// lib/plan/seeds.ts — `SeedId` e `Equipment` são definidos em lib/domain/onboarding.ts
+// (o domínio é puro e não pode importar os JSON das sementes); seeds.ts os reexporta.
 export interface Seed {
   id: SeedId;
   name: string;
