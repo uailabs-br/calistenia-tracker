@@ -54,12 +54,30 @@ export function parsePlanInput(raw: string): ParsePlanResult {
   return { ok: true, plan: result.data, summary: summarize(result.data) };
 }
 
+/**
+ * Voltar ao plano padrão foi escolha explícita. Sem este registro, o PlanBoot
+ * (lib/plan/boot.ts) reaplicaria o plano do histórico no boot seguinte e o botão
+ * "Restaurar plano padrão" não faria nada. Aplicar um plano apaga o registro.
+ */
+const RECOVERY_OPT_OUT_KEY = "calistenia:plan-recovery-off";
+
 export function applyPlan(plan: Plan): void {
   localStorage.setItem(PLAN_OVERRIDE_KEY, JSON.stringify(plan));
+  localStorage.removeItem(RECOVERY_OPT_OUT_KEY);
 }
 
 export function clearPlanOverride(): void {
   localStorage.removeItem(PLAN_OVERRIDE_KEY);
+  localStorage.setItem(RECOVERY_OPT_OUT_KEY, "1");
+}
+
+export function hasRecoveryOptOut(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return localStorage.getItem(RECOVERY_OPT_OUT_KEY) !== null;
+  } catch {
+    return false;
+  }
 }
 
 export function hasPlanOverride(): boolean {

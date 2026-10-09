@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { plan } from "@/lib/plan/loader";
-import { applyPlan, hasPlanOverride } from "@/lib/plan/importPlan";
+import { applyPlan, hasPlanOverride, hasRecoveryOptOut } from "@/lib/plan/importPlan";
 import { decidePlanBoot } from "@/lib/plan/boot";
 import {
   isOnboardingDone,
@@ -31,6 +31,7 @@ export function PlanBoot() {
         currentPlanId: plan.id,
         hasOverride: hasPlanOverride(),
         onboardingDone: isOnboardingDone(),
+        recoveryOptOut: hasRecoveryOptOut(),
       });
       if (cancelled) return;
 

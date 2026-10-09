@@ -25,6 +25,8 @@ export async function decidePlanBoot(input: {
   currentPlanId: string;
   hasOverride: boolean;
   onboardingDone: boolean;
+  /** A pessoa voltou ao plano padrão de propósito: não recuperar pelo histórico. */
+  recoveryOptOut?: boolean;
 }): Promise<PlanBootDecision> {
   if (input.hasOverride) return { action: "none" };
 
@@ -34,6 +36,7 @@ export async function decidePlanBoot(input: {
     .sort((a, b) => b.started_at - a.started_at)[0];
 
   if (last) {
+    if (input.recoveryOptOut) return { action: "none" };
     const planId = planIdFromPlanDayId(last.plan_day_id);
     if (!planId || planId === input.currentPlanId) return { action: "none" };
     const known = getKnownPlan(planId);

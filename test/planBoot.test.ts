@@ -99,6 +99,22 @@ describe("decidePlanBoot — sem loop", () => {
   });
 });
 
+describe("decidePlanBoot — restaurar plano padrão", () => {
+  it("quem restaurou o padrão de propósito não é puxado de volta pelo histórico", async () => {
+    await addSession({ plan_day_id: "seed-intermediario:A" });
+    expect((await boot({ recoveryOptOut: true })).action).toBe("none");
+  });
+
+  it("sem opt-out o mesmo histórico reaplica (o opt-out é o que muda o resultado)", async () => {
+    await addSession({ plan_day_id: "seed-intermediario:A" });
+    expect((await boot()).action).toBe("apply");
+  });
+
+  it("o opt-out não impede o onboarding de quem não tem sessões", async () => {
+    expect((await boot({ recoveryOptOut: true })).action).toBe("onboarding");
+  });
+});
+
 describe("decidePlanBoot — onboarding", () => {
   it("banco vazio, sem override, onboarding não feito → onboarding", async () => {
     expect((await boot()).action).toBe("onboarding");
