@@ -114,7 +114,7 @@ export function RestTimer({
           <svg
             width={size}
             height={size}
-            className="-rotate-90"
+            className="-rotate-90 overflow-visible"
             aria-hidden="true"
           >
             <circle
@@ -136,11 +136,15 @@ export function RestTimer({
               strokeDasharray={circ}
               strokeDashoffset={finished ? 0 : circ * (1 - pct / 100)}
               className="transition-[stroke-dashoffset] duration-150 ease-linear"
+              style={{
+                // overflow-visible no svg: o arco encosta na borda e cortaria o brilho.
+                filter: `drop-shadow(0 0 4px color-mix(in oklab, ${color} 50%, transparent)) drop-shadow(0 0 10px color-mix(in oklab, ${color} 22%, transparent))`,
+              }}
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span
-              className={`tnum text-[3.25rem] font-semibold leading-none tabular-nums ${ending ? "anim-pulse" : ""}`}
+              className={`display text-[3.75rem] leading-none ${ending ? "anim-pulse" : ""}`}
               style={{ color }}
             >
               {finished ? "✓" : formatClock(remaining)}

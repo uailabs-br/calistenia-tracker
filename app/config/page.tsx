@@ -1,31 +1,33 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/db/schema";
 import { plan } from "@/lib/plan/loader";
 import type { Plan } from "@/lib/plan/schema";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { CollapsibleCard } from "@/components/ui/CollapsibleCard";
+import { SettingsGroup } from "@/components/ui/SettingsGroup";
+import { SettingsRow } from "@/components/ui/SettingsRow";
 import { useToast } from "@/components/ui/Toast";
 import { ReminderSettings } from "@/components/config/ReminderSettings";
-import { CustomExercisesCard } from "@/components/config/CustomExercisesCard";
-import { AI_SCHEMA_PROMPT } from "@/lib/plan/aiSchema";
-import { exportForAI } from "@/lib/plan/exportForAI";
-import { getSkillById } from "@/lib/plan/skills";
-import { getAiGoals, getAiNotes, buildPersonaText } from "@/lib/utils/aiPersona";
-import { ChevronRightIcon } from "@/components/ui/icons";
 import {
-  parsePlanInput,
-  applyPlan,
-  clearPlanOverride,
-  hasPlanOverride,
-  summarize,
-  type PlanSummary,
-} from "@/lib/plan/importPlan";
-import { seeds } from "@/lib/plan/seeds";
+  DeviceIcon,
+  DownloadIcon,
+  FlagIcon,
+  ListIcon,
+  MinusIcon,
+  PlusIcon,
+  SlidersIcon,
+  SparkleIcon,
+  TargetIcon,
+  TrashIcon,
+  UploadIcon,
+  UserIcon,
+} from "@/components/ui/icons";
+import { getCustomExercises } from "@/lib/db/repositories/customExercises";
+import { getAiGoals } from "@/lib/utils/aiPersona";
+import { haptic } from "@/lib/utils/haptics";
 import {
   getProfileName,
   setProfileName,
@@ -49,7 +51,6 @@ import {
   markExported,
   sessionsSinceExport,
   resetAll,
-  type ImportResult,
 } from "@/lib/db/backup";
 
 /** Estado da instalação PWA nesta visita. */
@@ -58,29 +59,25 @@ type InstallState = "standalone" | "ios" | "prompt" | "manual";
 export default function ConfigPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [showReset, setShowReset] = useState(false);
   const [name, setName] = useState("");
   // null até o mount: `plan` vem do override do localStorage, que não existe no
   // HTML estático. Renderizar qualquer coisa derivada dele direto quebra a hidratação.
   const [goal, setGoal] = useState<number | null>(null);
   const [install, setInstall] = useState<InstallState | null>(null);
-  const [planText, setPlanText] = useState("");
-  const [planErrors, setPlanErrors] = useState<string[] | null>(null);
-  const [pendingPlan, setPendingPlan] = useState<{ plan: Plan; summary: PlanSummary } | null>(
-    null
-  );
-  const [showRestorePlan, setShowRestorePlan] = useState(false);
   /** Plano em vigor. Só depois do mount — ver o comentário de `goal`. */
   const [activePlan, setActivePlan] = useState<Plan | null>(null);
-  const [hasOverride, setHasOverride] = useState(false);
   const [aiGoalsCount, setAiGoalsCount] = useState(0);
+  const [exporting, setExporting] = useState(false);
+  const [importing, setImporting] = useState(false);
+  // Erro de restauração fica à vista junto das linhas de backup (o toast some e
+  // a mensagem do arquivo inválido costuma ser longa demais pra caber nele).
+  const [importError, setImportError] = useState<string | null>(null);
 
   // Só no cliente: localStorage (nome, meta) e detecção de instalação.
   useEffect(() => {
     setName(getProfileName());
     setGoal(getWeekGoal() ?? plan.workouts.length);
-    setHasOverride(hasPlanOverride());
     setActivePlan(plan);
     setAiGoalsCount(getAiGoals().length);
     if (isStandalone()) {
@@ -105,433 +102,258 @@ export default function ConfigPage() {
     const rows = await db.sessions.where("status").equals("completed").toArray();
     return rows.filter((s) => !s.deleted_at).length;
   }, []);
+  const customCount = useLiveQuery(async () => (await getCustomExercises()).length, []);
 
-  const pendingBackup =
-    completed !== undefined ? sessionsSinceExport(completed) : 0;
+  const pendingBackup = completed !== undefined ? sessionsSinceExport(completed) : 0;
 
-  const handleExport = async () => {
-    setMsg(null);
-    const backup = await exportAll();
-    const blob = backupToBlob(backup);
-    const filename = backupFilename();
+  const changeGoal = (delta: number) => {
+    if (goal === null) return;
+    const next = Math.min(WEEK_GOAL_MAX, Math.max(1, goal + delta));
+    if (next === goal) return;
+    haptic();
+    setGoal(next);
+    // Igual ao padrão do plano = sem override, pra meta acompanhar o plano se ele mudar.
+    setWeekGoal(next === activePlan?.workouts.length ? null : next);
+  };
 
-    // Web Share (iOS/Android) com fallback para download
-    const file = new File([blob], filename, { type: "application/json" });
-    const nav = navigator as Navigator & {
-      canShare?: (data: { files: File[] }) => boolean;
-    };
-    if (nav.canShare?.({ files: [file] }) && navigator.share) {
-      try {
-        await navigator.share({ files: [file], title: filename });
-        markExported(completed ?? 0);
-        setMsg({ ok: true, text: "Backup compartilhado." });
-        return;
-      } catch {
-        /* usuário cancelou - cai no download */
+  const handleExport = async (): Promise<boolean> => {
+    setExporting(true);
+    try {
+      const backup = await exportAll();
+      const blob = backupToBlob(backup);
+      const filename = backupFilename();
+
+      // Web Share (iOS/Android) com fallback para download
+      const file = new File([blob], filename, { type: "application/json" });
+      const nav = navigator as Navigator & {
+        canShare?: (data: { files: File[] }) => boolean;
+      };
+      if (nav.canShare?.({ files: [file] }) && navigator.share) {
+        try {
+          await navigator.share({ files: [file], title: filename });
+          markExported(completed ?? 0);
+          haptic();
+          toast({ message: "Backup compartilhado", variant: "success" });
+          return true;
+        } catch {
+          /* usuário cancelou - cai no download */
+        }
       }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      markExported(completed ?? 0);
+      haptic();
+      toast({ message: "Backup salvo", variant: "success" });
+      return true;
+    } catch {
+      toast({ message: "Não deu pra fazer o backup", variant: "error" });
+      return false;
+    } finally {
+      setExporting(false);
     }
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-    markExported(completed ?? 0);
-    setMsg({ ok: true, text: `Backup salvo: ${filename}` });
   };
 
   const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    setMsg(null);
+    setImportError(null);
     const file = e.target.files?.[0];
     if (!file) return;
+    setImporting(true);
     try {
-      const text = await file.text();
-      const raw = JSON.parse(text);
-      const r: ImportResult = await importMerge(raw);
-      setMsg({
-        ok: true,
-        text: `Importado: +${r.sessionsAdded} sessões, +${r.logsAdded} registros (atualizados: ${r.sessionsUpdated}/${r.logsUpdated}).`,
+      const raw = JSON.parse(await file.text());
+      const r = await importMerge(raw);
+      haptic();
+      toast({
+        message: `Backup restaurado: +${r.sessionsAdded} sessões, +${r.logsAdded} registros`,
+        variant: "success",
       });
     } catch (err) {
-      setMsg({
-        ok: false,
-        text: err instanceof Error ? err.message : "Falha ao importar.",
-      });
+      setImportError(err instanceof Error ? err.message : "Esse arquivo não é um backup do app.");
+      toast({ message: "Não deu pra restaurar esse arquivo", variant: "error" });
     } finally {
+      setImporting(false);
       if (fileRef.current) fileRef.current.value = "";
     }
   };
 
-  const copyText = async (text: string) => {
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(text);
-      return;
-    }
-    const textarea = document.createElement("textarea");
-    textarea.value = text;
-    textarea.style.position = "fixed";
-    textarea.style.opacity = "0";
-    document.body.appendChild(textarea);
-    textarea.select();
-    document.execCommand("copy");
-    document.body.removeChild(textarea);
-  };
-
-  const handleCopyAll = async () => {
-    try {
-      const goalNames = getAiGoals()
-        .map((id) => getSkillById(id)?.name)
-        .filter((n): n is string => Boolean(n));
-      const persona = buildPersonaText(goalNames, getAiNotes());
-      const historico = await exportForAI();
-      const full = `${persona}\n\n${AI_SCHEMA_PROMPT}${JSON.stringify(historico, null, 2)}\n`;
-      await copyText(full);
-      toast({ message: "Prompt completo copiado — cola na IA", variant: "success" });
-    } catch {
-      toast({ message: "Não deu pra copiar", variant: "error" });
-    }
-  };
-
-  const handleValidatePlan = () => {
-    setPlanErrors(null);
-    const result = parsePlanInput(planText);
-    if (!result.ok) {
-      setPlanErrors(result.errors);
-      return;
-    }
-    setPendingPlan(result);
-  };
-
-  const handleApplyPlan = () => {
-    if (!pendingPlan) return;
-    applyPlan(pendingPlan.plan);
-    window.location.reload();
-  };
-
-  const handleRestoreDefaultPlan = () => {
-    setShowRestorePlan(false);
-    clearPlanOverride();
-    window.location.reload();
-  };
-
   const handleReset = async () => {
     setShowReset(false);
-    setMsg(null);
     try {
       await resetAll();
-      setMsg({ ok: true, text: "Dados apagados. Tudo começa do zero." });
-    } catch (err) {
-      setMsg({
-        ok: false,
-        text: err instanceof Error ? err.message : "Falha ao resetar.",
-      });
+      haptic(20);
+      toast({ message: "Dados apagados. Tudo começa do zero." });
+    } catch {
+      toast({ message: "Não deu pra apagar os dados", variant: "error" });
     }
   };
+
+  const installRow = {
+    standalone: { description: "Já instalado. Abrindo pela tela inicial, o app funciona sem internet.", value: "Instalado" },
+    ios: { description: "No Safari: toque em Compartilhar e depois em “Adicionar à Tela de Início”.", value: undefined },
+    prompt: { description: "Adicione à tela inicial pra abrir sem internet e proteger seu histórico.", value: undefined },
+    manual: { description: "Use o menu do navegador → “Adicionar à tela inicial”.", value: undefined },
+  } as const;
+  const installInfo = install ? installRow[install] : null;
 
   return (
     <div className="px-4">
-      <PageHeader title="Config" subtitle="Perfil, backup e dados" />
+      <PageHeader title="Ajustes" />
 
-      <CollapsibleCard title="Perfil" className="mb-3">
-        <p className="mt-1 text-sm text-muted">
-          Seu nome aparece na saudação da tela inicial.
-        </p>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value);
-            setProfileName(e.target.value);
-          }}
-          placeholder="Seu nome"
-          aria-label="Seu nome"
-          maxLength={30}
-          autoComplete="given-name"
-          className="mt-3 w-full rounded-xl border border-border bg-surface2 px-3 py-2.5 text-base outline-none placeholder:text-muted focus:border-muted"
+      <SettingsGroup title="Perfil">
+        <SettingsRow
+          icon={UserIcon}
+          label="Nome"
+          trailing={
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                setProfileName(e.target.value);
+              }}
+              placeholder="Como te chamar"
+              aria-label="Seu nome"
+              maxLength={30}
+              autoComplete="given-name"
+              className="w-40 min-w-0 bg-transparent text-right text-base outline-none placeholder:text-muted"
+            />
+          }
         />
-
-        <label htmlFor="week-goal" className="mt-4 block text-sm font-medium">
-          Meta semanal
-        </label>
-        <p className="mt-0.5 text-sm text-muted">
-          Quantos treinos por semana fecham o anel.{" "}
-          {activePlan ? `Padrão: ${activePlan.workouts.length}.` : ""}
-        </p>
-        <input
-          id="week-goal"
-          type="number"
-          min={1}
-          max={WEEK_GOAL_MAX}
-          value={goal ?? ""}
-          onChange={(e) => {
-            const n = Number(e.target.value);
-            setGoal(n);
-            setWeekGoal(n === (activePlan?.workouts.length ?? -1) ? null : n);
-          }}
-          className="tnum mt-2 w-20 rounded-xl border border-border bg-surface2 px-3 py-2.5 text-base outline-none focus:border-muted"
-        />
-
-        <div className="mt-5 border-t border-border pt-4">
-          <p className="text-sm font-medium">Nível e equipamento</p>
-          <p className="mt-0.5 text-sm text-muted">
-            Mudou de equipamento ou evoluiu? Responda de novo as perguntas do
-            começo. Seu histórico não é afetado, e você escolhe se troca de plano.
-          </p>
-          <Link
-            href="/onboarding/refazer"
-            className="tap mt-3 flex items-center justify-between gap-2 rounded-xl border border-border bg-surface2 px-3 py-2.5 text-sm font-medium"
-          >
-            Refazer onboarding
-            <ChevronRightIcon className="h-4 w-4 shrink-0 text-muted" />
-          </Link>
-        </div>
-      </CollapsibleCard>
-
-      <CollapsibleCard title="Criar treino com IA" className="mb-3">
-        <p className="mt-1 text-sm text-muted">
-          1. Copia o prompt (junta objetivos, esquema, seu plano atual,
-          histórico e sinal de progressão) e pede pra IA (Claude etc.) ajustar
-          seu treino. 2. Cola a resposta abaixo pra aplicar no app. Isso troca
-          só os exercícios do plano — seu histórico de sessões não é afetado.
-        </p>
-
-        <Link
-          href="/config/persona"
-          className="tap mt-3 flex items-center justify-between gap-2 rounded-xl border border-border bg-surface2 px-3 py-2.5 text-sm"
-        >
-          <span>
-            Meus objetivos
-            <span className="ml-1.5 text-muted">
-              {aiGoalsCount > 0 ? `· ${aiGoalsCount} selecionados` : "· nenhum ainda"}
-            </span>
-          </span>
-          <ChevronRightIcon className="h-4 w-4 shrink-0 text-muted" />
-        </Link>
-
-        <button
-          type="button"
-          onClick={handleCopyAll}
-          className="tap mt-2 w-full rounded-xl border border-border bg-surface2 py-3 font-medium"
-        >
-          Copiar prompt completo para IA
-        </button>
-
-        <p className="mt-4 text-sm font-medium">Planos prontos</p>
-        <p className="mt-0.5 text-sm text-muted">
-          Quer recomeçar de um plano pronto? Seu histórico não é afetado.
-        </p>
-        <ul className="mt-2 flex flex-col gap-2">
-          {seeds.map((seed) => (
-            <li key={seed.id}>
+        <SettingsRow
+          icon={TargetIcon}
+          label="Meta semanal"
+          trailing={
+            <span className="flex shrink-0 items-center gap-1">
               <button
                 type="button"
-                onClick={() => setPendingPlan({ plan: seed.plan, summary: summarize(seed.plan) })}
-                className="tap w-full rounded-xl border border-border bg-surface2 px-3 py-2.5 text-left active:scale-[0.99]"
+                onClick={() => changeGoal(-1)}
+                disabled={goal === null || goal <= 1}
+                aria-label="Diminuir meta semanal"
+                className="tap flex items-center justify-center rounded-full text-muted disabled:opacity-30"
               >
-                <span className="block text-sm font-medium">
-                  {seed.name}
-                  {seed.plan.id === activePlan?.id && <span className="ml-1.5 text-muted">· em uso</span>}
-                </span>
-                <span className="mt-0.5 block text-xs text-muted">{seed.summary}</span>
+                <MinusIcon className="h-4 w-4" />
               </button>
-            </li>
-          ))}
-        </ul>
-
-        <textarea
-          value={planText}
-          onChange={(e) => {
-            setPlanText(e.target.value);
-            setPlanErrors(null);
-          }}
-          placeholder="Cola aqui o JSON do treino que a IA devolveu…"
-          rows={4}
-          aria-label="JSON do treino"
-          className="mt-4 w-full rounded-xl border border-border bg-surface2 px-3 py-2.5 text-sm outline-none placeholder:text-muted focus:border-muted"
+              <span className="tnum min-w-[2ch] text-center text-base" aria-live="polite">
+                {goal ?? "–"}
+              </span>
+              <button
+                type="button"
+                onClick={() => changeGoal(1)}
+                disabled={goal === null || goal >= WEEK_GOAL_MAX}
+                aria-label="Aumentar meta semanal"
+                className="tap flex items-center justify-center rounded-full text-muted disabled:opacity-30"
+              >
+                <PlusIcon className="h-4 w-4" />
+              </button>
+            </span>
+          }
         />
+        <SettingsRow
+          icon={SlidersIcon}
+          label="Nível e equipamento"
+          href="/onboarding/refazer"
+        />
+      </SettingsGroup>
 
-        {planErrors && (
-          <div
-            className="mt-2 rounded-card border px-3 py-2 text-xs"
-            style={{ borderColor: "var(--color-danger)", color: "var(--color-danger)" }}
-          >
-            <p className="font-medium">Não deu pra importar:</p>
-            <ul className="mt-1 list-disc pl-4">
-              {planErrors.map((err, i) => (
-                <li key={i}>{err}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <button
-          type="button"
-          onClick={handleValidatePlan}
-          disabled={!planText.trim()}
-          className="tap mt-2 w-full rounded-xl border border-border bg-surface2 py-3 font-medium disabled:opacity-40"
-        >
-          Importar treino
-        </button>
-
-        {hasOverride && (
-          <button
-            type="button"
-            onClick={() => setShowRestorePlan(true)}
-            className="tap mt-2 w-full text-center text-xs text-muted underline"
-          >
-            Restaurar plano padrão
-          </button>
-        )}
-      </CollapsibleCard>
-
-      <CustomExercisesCard className="mb-3" />
+      <SettingsGroup title="Treino">
+        <SettingsRow
+          icon={SparkleIcon}
+          label="Montar treino com IA"
+          href="/config/plano"
+        />
+        <SettingsRow
+          icon={FlagIcon}
+          label="Meus objetivos"
+          value={aiGoalsCount > 0 ? `${aiGoalsCount} escolhidos` : "nenhum ainda"}
+          href="/config/persona"
+        />
+        <SettingsRow
+          icon={ListIcon}
+          label="Meus exercícios"
+          value={customCount ? String(customCount) : undefined}
+          href="/config/exercicios"
+        />
+      </SettingsGroup>
 
       <ReminderSettings />
 
-      {pendingBackup >= 4 && (
-        <div
-          className="mb-4 rounded-card border px-4 py-3 text-sm"
-          style={{ borderColor: "var(--color-warn)", color: "var(--color-warn)" }}
-        >
-          {pendingBackup} sessões sem backup. Exporte para não perder o histórico.
-        </div>
-      )}
-
-      <CollapsibleCard title="Exportar histórico">
-        <p className="mt-1 text-sm text-muted">
-          Baixa suas sessões e registros de treino (o que você já fez) num
-          arquivo JSON. Guarde em local seguro. O navegador do iOS pode apagar
-          os dados sob pressão de armazenamento.
-        </p>
-        <button
-          type="button"
+      <SettingsGroup
+        title="Dados"
+        footer={
+          importError ? (
+            <span role="alert" style={{ color: "var(--color-danger)" }}>
+              {importError}
+            </span>
+          ) : (
+            "O backup guarda os treinos que você já fez num arquivo. Guarde em um lugar seguro: no iPhone, o navegador pode apagar os dados do app. Restaurar junta com o que já está aqui, sem sobrescrever o mais recente."
+          )
+        }
+      >
+        <SettingsRow
+          icon={DownloadIcon}
+          label="Fazer backup"
+          description={
+            pendingBackup >= 4
+              ? `${pendingBackup} sessões sem backup`
+              : undefined
+          }
+          attention={pendingBackup >= 4}
           onClick={handleExport}
-          className="tap mt-3 w-full rounded-xl bg-text py-3 font-medium text-bg"
-        >
-          Exportar backup
-        </button>
-      </CollapsibleCard>
-
-      <CollapsibleCard title="Importar histórico" className="mt-3">
-        <p className="mt-1 text-sm text-muted">
-          Restaura sessões e registros a partir de um backup exportado por
-          este app (mescla por ID, não sobrescreve o que for mais recente).
-          Não muda o treino que você está seguindo — pra isso, veja
-          &quot;Criar treino com IA&quot; acima.
-        </p>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="application/json,.json"
-          onChange={handleImportFile}
-          className="hidden"
+          busy={exporting}
         />
-        <button
-          type="button"
+        <SettingsRow
+          icon={UploadIcon}
+          label="Restaurar backup"
           onClick={() => fileRef.current?.click()}
-          className="tap mt-3 w-full rounded-xl border border-border bg-surface2 py-3 font-medium"
-        >
-          Escolher arquivo…
-        </button>
-      </CollapsibleCard>
-
-      {msg && (
-        <p
-          className="mt-3 rounded-card border px-4 py-3 text-sm"
-          style={{
-            borderColor: msg.ok ? "var(--color-success)" : "var(--color-danger)",
-            color: msg.ok ? "var(--color-success)" : "var(--color-danger)",
-          }}
-        >
-          {msg.text}
-        </p>
-      )}
-
-      <CollapsibleCard title="Instalar app" className="mt-3">
-        {install === "standalone" ? (
-          <p className="mt-1 text-sm text-muted">
-            Já instalado neste dispositivo. Abrindo pela tela inicial, o app
-            funciona offline e o histórico fica protegido contra limpeza
-            automática de armazenamento.
-          </p>
-        ) : (
-          <>
-            <p className="mt-1 text-sm text-muted">
-              {install === "ios"
-                ? "No Safari: toque em Compartilhar e depois em “Adicionar à Tela de Início”. Protege seu histórico contra limpeza automática do iOS."
-                : "Adicione à tela inicial para abrir offline e proteger seu histórico contra limpeza de armazenamento."}
-            </p>
-            {install === "prompt" && (
-              <button
-                type="button"
-                onClick={handleInstall}
-                className="tap mt-3 w-full rounded-xl border border-border bg-surface2 py-3 font-medium"
-              >
-                Instalar
-              </button>
-            )}
-            {install === "manual" && (
-              <p className="mt-2 text-xs text-muted">
-                Se o botão de instalar não aparecer, use o menu do navegador →
-                “Adicionar à tela inicial”.
-              </p>
-            )}
-          </>
+          busy={importing}
+        />
+        {installInfo && (
+          <SettingsRow
+            icon={DeviceIcon}
+            label="Instalar o app"
+            description={installInfo.description}
+            value={installInfo.value}
+            onClick={install === "prompt" ? handleInstall : undefined}
+          />
         )}
-      </CollapsibleCard>
+      </SettingsGroup>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="application/json,.json"
+        onChange={handleImportFile}
+        className="hidden"
+      />
 
-      <CollapsibleCard title="Deletar dados" className="mt-6" danger>
-        <p className="mt-1 text-sm text-muted">
-          Apaga todo o histórico (sessões e registros) e os exercícios que você
-          criou, deste dispositivo. Não dá para desfazer. Exporte um backup antes
-          se quiser guardar.
-        </p>
-        <button
-          type="button"
+      <SettingsGroup className="mt-8">
+        <SettingsRow
+          icon={TrashIcon}
+          label="Apagar todos os dados"
+          description="Remove os treinos que você fez e os exercícios que criou, deste aparelho. Não dá pra desfazer."
           onClick={() => setShowReset(true)}
-          className="tap mt-3 w-full rounded-xl border py-3 font-medium"
-          style={{ borderColor: "var(--color-danger)", color: "var(--color-danger)" }}
-        >
-          Deletar pra sempre
-        </button>
-      </CollapsibleCard>
+          danger
+        />
+      </SettingsGroup>
 
-      <section className="mt-6 text-xs text-muted">
+      <section className="text-xs text-muted">
         <p>Calistenia Tracker v{pkg.version.split(".").slice(0, 2).join(".")}</p>
-        <p>
-          {activePlan ? `Plano: ${activePlan.name} (v${activePlan.version})` : ""}
-        </p>
+        <p>{activePlan ? `Treino atual: ${activePlan.name} (v${activePlan.version})` : ""}</p>
       </section>
       <div className="h-4" />
 
       {showReset && (
         <ConfirmDialog
-          title="Deletar todos os dados?"
-          message="Todo o histórico de sessões e registros, e os exercícios que você criou, serão apagados deste dispositivo. Esta ação não pode ser desfeita."
-          confirmLabel="Deletar pra sempre"
+          title="Apagar todos os dados?"
+          message="Todos os treinos que você fez e os exercícios que criou serão apagados deste aparelho. Não dá pra desfazer. Se quiser guardar, faça um backup antes."
+          confirmLabel="Apagar tudo"
           danger
+          secondaryLabel="Fazer backup antes"
+          onSecondary={handleExport}
           onConfirm={handleReset}
           onCancel={() => setShowReset(false)}
-        />
-      )}
-
-      {pendingPlan && (
-        <ConfirmDialog
-          title="Importar treino novo?"
-          message={`Substitui o plano atual por "${pendingPlan.summary.name}" — ${pendingPlan.summary.workouts} treinos, ${pendingPlan.summary.exercises} exercícios (v${pendingPlan.summary.version}). O app recarrega pra aplicar.`}
-          confirmLabel="Importar"
-          onConfirm={handleApplyPlan}
-          onCancel={() => setPendingPlan(null)}
-        />
-      )}
-
-      {showRestorePlan && (
-        <ConfirmDialog
-          title="Restaurar plano padrão?"
-          message="Volta pro treino embutido no app, descartando o treino importado neste dispositivo. Seu histórico de sessões não é afetado."
-          confirmLabel="Restaurar"
-          onConfirm={handleRestoreDefaultPlan}
-          onCancel={() => setShowRestorePlan(false)}
         />
       )}
     </div>

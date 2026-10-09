@@ -40,7 +40,7 @@ export function HomeGreeting() {
       <p className="font-mono text-xs uppercase tracking-wide text-muted">
         {WEEKDAYS[now.getDay()]} · {date}
       </p>
-      <h1 className="mt-1 text-2xl font-semibold leading-tight">
+      <h1 className="display mt-1 text-3xl leading-tight">
         {greetingFor(now.getHours())}
         {name ? `, ${name}` : ""}
       </h1>

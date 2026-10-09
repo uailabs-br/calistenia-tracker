@@ -1,0 +1,1750 @@
+{
+  "format": "calistenia-tracker-backup",
+  "version": 1,
+  "exported_at": "2026-07-30T18:30:00.000Z",
+  "plan": {
+    "id": "plan-calistenia-jul-2026",
+    "version": 1
+  },
+  "sessions": [
+    {
+      "id": "6460d251-65f4-4d7f-9f4f-048cb08f5fdb",
+      "plan_day_id": "plan-calistenia-jul-2026:5",
+      "plan_version": 1,
+      "weekday": 5,
+      "date": "2026-06-05",
+      "status": "completed",
+      "started_at": 1780695000000,
+      "ended_at": 1780696920000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1780696920000,
+      "deleted_at": null
+    },
+    {
+      "id": "7bf5cdcb-5d10-43f9-9f18-223bdda688da",
+      "plan_day_id": "plan-calistenia-jul-2026:4",
+      "plan_version": 1,
+      "weekday": 4,
+      "date": "2026-06-11",
+      "status": "completed",
+      "started_at": 1781213400000,
+      "ended_at": 1781215320000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1781215320000,
+      "deleted_at": null
+    },
+    {
+      "id": "326a2262-1e18-465a-b9ab-575103c94964",
+      "plan_day_id": "plan-calistenia-jul-2026:5",
+      "plan_version": 1,
+      "weekday": 5,
+      "date": "2026-06-12",
+      "status": "completed",
+      "started_at": 1781299800000,
+      "ended_at": 1781301720000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1781301720000,
+      "deleted_at": null
+    },
+    {
+      "id": "51c8ab62-2560-4975-895b-3bb169bac9a0",
+      "plan_day_id": "plan-calistenia-jul-2026:4",
+      "plan_version": 1,
+      "weekday": 4,
+      "date": "2026-06-18",
+      "status": "completed",
+      "started_at": 1781818200000,
+      "ended_at": 1781820120000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1781820120000,
+      "deleted_at": null
+    },
+    {
+      "id": "5015acc6-2f8e-441b-bdb8-1b529f49fdf7",
+      "plan_day_id": "plan-calistenia-jul-2026:5",
+      "plan_version": 1,
+      "weekday": 5,
+      "date": "2026-06-19",
+      "status": "completed",
+      "started_at": 1781904600000,
+      "ended_at": 1781906520000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1781906520000,
+      "deleted_at": null
+    },
+    {
+      "id": "59ba0926-e801-44ae-a1e8-f957d1e083b2",
+      "plan_day_id": "plan-calistenia-jul-2026:4",
+      "plan_version": 1,
+      "weekday": 4,
+      "date": "2026-06-25",
+      "status": "completed",
+      "started_at": 1782423000000,
+      "ended_at": 1782424920000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1782424920000,
+      "deleted_at": null
+    },
+    {
+      "id": "11df6080-48cb-4f89-9be1-928b7995e17c",
+      "plan_day_id": "plan-calistenia-jul-2026:5",
+      "plan_version": 1,
+      "weekday": 5,
+      "date": "2026-06-26",
+      "status": "completed",
+      "started_at": 1782509400000,
+      "ended_at": 1782511320000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1782511320000,
+      "deleted_at": null
+    },
+    {
+      "id": "97e74ddc-1f85-450b-991a-474ad10296d6",
+      "plan_day_id": "plan-calistenia-jul-2026:4",
+      "plan_version": 1,
+      "weekday": 4,
+      "date": "2026-07-02",
+      "status": "completed",
+      "started_at": 1783027800000,
+      "ended_at": 1783029720000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1783029720000,
+      "deleted_at": null
+    },
+    {
+      "id": "b3561d40-5676-4be7-8c4b-fc43ca5fa45d",
+      "plan_day_id": "plan-calistenia-jul-2026:5",
+      "plan_version": 1,
+      "weekday": 5,
+      "date": "2026-07-03",
+      "status": "completed",
+      "started_at": 1783114200000,
+      "ended_at": 1783116120000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1783116120000,
+      "deleted_at": null
+    },
+    {
+      "id": "610b2eb2-488e-4468-a667-73a95634e303",
+      "plan_day_id": "plan-calistenia-jul-2026:1",
+      "plan_version": 1,
+      "weekday": 1,
+      "date": "2026-07-06",
+      "status": "completed",
+      "started_at": 1783373400000,
+      "ended_at": 1783375320000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1783375320000,
+      "deleted_at": null
+    },
+    {
+      "id": "e211d8d4-2670-4f3d-ac58-f89c5cad3547",
+      "plan_day_id": "plan-calistenia-jul-2026:2",
+      "plan_version": 1,
+      "weekday": 2,
+      "date": "2026-07-07",
+      "status": "completed",
+      "started_at": 1783459800000,
+      "ended_at": 1783461720000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1783461720000,
+      "deleted_at": null
+    },
+    {
+      "id": "4835e64a-a9a1-47f2-8eeb-ac86d4d2f3b8",
+      "plan_day_id": "plan-calistenia-jul-2026:4",
+      "plan_version": 1,
+      "weekday": 4,
+      "date": "2026-07-09",
+      "status": "completed",
+      "started_at": 1783632600000,
+      "ended_at": 1783634520000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1783634520000,
+      "deleted_at": null
+    },
+    {
+      "id": "d0870eb7-92b1-46b0-ac0d-e1c46c240ed5",
+      "plan_day_id": "plan-calistenia-jul-2026:5",
+      "plan_version": 1,
+      "weekday": 5,
+      "date": "2026-07-10",
+      "status": "completed",
+      "started_at": 1783719000000,
+      "ended_at": 1783720920000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1783720920000,
+      "deleted_at": null
+    },
+    {
+      "id": "da3cad83-6972-4d69-9d91-1c374cec0ff4",
+      "plan_day_id": "plan-calistenia-jul-2026:1",
+      "plan_version": 1,
+      "weekday": 1,
+      "date": "2026-07-13",
+      "status": "completed",
+      "started_at": 1783978200000,
+      "ended_at": 1783980120000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1783980120000,
+      "deleted_at": null
+    },
+    {
+      "id": "11358422-0803-4ee9-939f-cd4948cc3246",
+      "plan_day_id": "plan-calistenia-jul-2026:2",
+      "plan_version": 1,
+      "weekday": 2,
+      "date": "2026-07-14",
+      "status": "completed",
+      "started_at": 1784064600000,
+      "ended_at": 1784066520000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1784066520000,
+      "deleted_at": null
+    },
+    {
+      "id": "e4b01d08-e4a0-4556-9a3d-f30119d41628",
+      "plan_day_id": "plan-calistenia-jul-2026:4",
+      "plan_version": 1,
+      "weekday": 4,
+      "date": "2026-07-16",
+      "status": "completed",
+      "started_at": 1784237400000,
+      "ended_at": 1784239320000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1784239320000,
+      "deleted_at": null
+    },
+    {
+      "id": "cf83ac7d-8815-4edc-a812-193e832471fe",
+      "plan_day_id": "plan-calistenia-jul-2026:5",
+      "plan_version": 1,
+      "weekday": 5,
+      "date": "2026-07-17",
+      "status": "completed",
+      "started_at": 1784323800000,
+      "ended_at": 1784325720000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1784325720000,
+      "deleted_at": null
+    },
+    {
+      "id": "2b9e55ad-8bf9-4dd3-a3c9-e23e06a6b680",
+      "plan_day_id": "plan-calistenia-jul-2026:1",
+      "plan_version": 1,
+      "weekday": 1,
+      "date": "2026-07-20",
+      "status": "completed",
+      "started_at": 1784583000000,
+      "ended_at": 1784584920000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1784584920000,
+      "deleted_at": null
+    },
+    {
+      "id": "ded7aebb-3160-4c46-861b-30814897c2d7",
+      "plan_day_id": "plan-calistenia-jul-2026:2",
+      "plan_version": 1,
+      "weekday": 2,
+      "date": "2026-07-21",
+      "status": "completed",
+      "started_at": 1784669400000,
+      "ended_at": 1784671320000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1784671320000,
+      "deleted_at": null
+    },
+    {
+      "id": "0dcb6ccd-ceb3-4be4-b3f6-045cbefbffd6",
+      "plan_day_id": "plan-calistenia-jul-2026:4",
+      "plan_version": 1,
+      "weekday": 4,
+      "date": "2026-07-23",
+      "status": "completed",
+      "started_at": 1784842200000,
+      "ended_at": 1784844120000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1784844120000,
+      "deleted_at": null
+    },
+    {
+      "id": "a52b350e-a0f0-438b-b0cf-649cf151a8a5",
+      "plan_day_id": "plan-calistenia-jul-2026:5",
+      "plan_version": 1,
+      "weekday": 5,
+      "date": "2026-07-24",
+      "status": "completed",
+      "started_at": 1784928600000,
+      "ended_at": 1784930520000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1784930520000,
+      "deleted_at": null
+    },
+    {
+      "id": "f72c606a-be6a-46e8-810a-0b9628e9eeb6",
+      "plan_day_id": "plan-calistenia-jul-2026:1",
+      "plan_version": 1,
+      "weekday": 1,
+      "date": "2026-07-27",
+      "status": "completed",
+      "started_at": 1785187800000,
+      "ended_at": 1785189720000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1785189720000,
+      "deleted_at": null
+    },
+    {
+      "id": "9c949b13-62ae-4ae1-bd2e-df09c5870fc7",
+      "plan_day_id": "plan-calistenia-jul-2026:2",
+      "plan_version": 1,
+      "weekday": 2,
+      "date": "2026-07-28",
+      "status": "completed",
+      "started_at": 1785274200000,
+      "ended_at": 1785276120000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1785276120000,
+      "deleted_at": null
+    },
+    {
+      "id": "c22be24a-501b-4e85-bc2b-5ede43a22567",
+      "plan_day_id": "plan-calistenia-jul-2026:4",
+      "plan_version": 1,
+      "weekday": 4,
+      "date": "2026-07-30",
+      "status": "completed",
+      "started_at": 1785447000000,
+      "ended_at": 1785448920000,
+      "rpe": 3,
+      "note": null,
+      "source": "plan",
+      "updated_at": 1785448920000,
+      "deleted_at": null
+    }
+  ],
+  "exerciseLogs": [
+    {
+      "id": "6ec4ce07-2d6a-4080-827d-6ae4e653d1bb",
+      "session_id": "f72c606a-be6a-46e8-810a-0b9628e9eeb6",
+      "exercise_id": "mu-puxada-explosiva",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": "explosão boa, chegou no esterno",
+      "skipped": false,
+      "logged_at": 1785188100000,
+      "updated_at": 1785188100000,
+      "deleted_at": null,
+      "skill_id": "muscle_up",
+      "level_at_time": 1,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          5,
+          5,
+          4,
+          4
+        ],
+        "rir": 1,
+        "form_ok": true
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "10d2bcbe-916a-4366-a123-0a2bc4d44cf9",
+      "session_id": "2b9e55ad-8bf9-4dd3-a3c9-e23e06a6b680",
+      "exercise_id": "mu-puxada-explosiva",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1784583300000,
+      "updated_at": 1784583300000,
+      "deleted_at": null,
+      "skill_id": "muscle_up",
+      "level_at_time": 1,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          4,
+          4,
+          4,
+          5
+        ],
+        "rir": 2,
+        "form_ok": true
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "0814ccba-3cd6-49a6-bfc7-b703f32e57e5",
+      "session_id": "da3cad83-6972-4d69-9d91-1c374cec0ff4",
+      "exercise_id": "mu-puxada-explosiva",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": "parou no queixo na última série",
+      "skipped": false,
+      "logged_at": 1783978500000,
+      "updated_at": 1783978500000,
+      "deleted_at": null,
+      "skill_id": "muscle_up",
+      "level_at_time": 1,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          4,
+          4,
+          3,
+          4
+        ],
+        "rir": 2,
+        "form_ok": true
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "cd0f097b-d47f-44e8-a055-b1bda7bb155a",
+      "session_id": "f72c606a-be6a-46e8-810a-0b9628e9eeb6",
+      "exercise_id": "mu-false-grip-pullup",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": "grip soltou no fim das séries",
+      "skipped": false,
+      "logged_at": 1785188100000,
+      "updated_at": 1785188100000,
+      "deleted_at": null,
+      "skill_id": "muscle_up",
+      "level_at_time": 2,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          5,
+          4,
+          4
+        ],
+        "rir": 2,
+        "form_ok": false
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "070c4928-0d77-4711-9ce0-195dca243e33",
+      "session_id": "2b9e55ad-8bf9-4dd3-a3c9-e23e06a6b680",
+      "exercise_id": "mu-false-grip-pullup",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1784583300000,
+      "updated_at": 1784583300000,
+      "deleted_at": null,
+      "skill_id": "muscle_up",
+      "level_at_time": 2,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          4,
+          4,
+          3
+        ],
+        "rir": 2,
+        "form_ok": true
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "737d0b84-915c-4364-b644-303fcbb651a0",
+      "session_id": "da3cad83-6972-4d69-9d91-1c374cec0ff4",
+      "exercise_id": "mu-false-grip-pullup",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": "RIR alto, ainda pesado",
+      "skipped": false,
+      "logged_at": 1783978500000,
+      "updated_at": 1783978500000,
+      "deleted_at": null,
+      "skill_id": "muscle_up",
+      "level_at_time": 2,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          5,
+          4,
+          4
+        ],
+        "rir": 3,
+        "form_ok": true
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "ac1b4f23-157d-4173-883b-199fa203f499",
+      "session_id": "610b2eb2-488e-4468-a667-73a95634e303",
+      "exercise_id": "mu-false-grip-pullup",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1783373700000,
+      "updated_at": 1783373700000,
+      "deleted_at": null,
+      "skill_id": "muscle_up",
+      "level_at_time": 2,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          5,
+          5,
+          5
+        ],
+        "rir": 1,
+        "form_ok": true
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "262fe1c2-c005-4997-97cc-37074195dd86",
+      "session_id": "f72c606a-be6a-46e8-810a-0b9628e9eeb6",
+      "exercise_id": "mu-negativa-transicao",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": "chicken wing na 2a série",
+      "skipped": false,
+      "logged_at": 1785188100000,
+      "updated_at": 1785188100000,
+      "deleted_at": null,
+      "skill_id": "muscle_up",
+      "level_at_time": 3,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          3,
+          2,
+          3
+        ],
+        "rir": 2,
+        "form_ok": true
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "2cb089bf-5296-4f92-8efa-07694a39c654",
+      "session_id": "2b9e55ad-8bf9-4dd3-a3c9-e23e06a6b680",
+      "exercise_id": "mu-negativa-transicao",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1784583300000,
+      "updated_at": 1784583300000,
+      "deleted_at": null,
+      "skill_id": "muscle_up",
+      "level_at_time": 3,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          3,
+          3,
+          3
+        ],
+        "rir": 1,
+        "form_ok": true
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "9788d490-0c48-42e5-adcc-04bfdff83a3d",
+      "session_id": "f72c606a-be6a-46e8-810a-0b9628e9eeb6",
+      "exercise_id": "mu-straight-bar-dip",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": "bateu exato no limite (8 reps, RIR 2)",
+      "skipped": false,
+      "logged_at": 1785188100000,
+      "updated_at": 1785188100000,
+      "deleted_at": null,
+      "skill_id": "dips",
+      "level_at_time": 3,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          8,
+          8,
+          8
+        ],
+        "rir": 2,
+        "form_ok": true
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "b2294b52-1083-4ce9-883d-c020606f97de",
+      "session_id": "2b9e55ad-8bf9-4dd3-a3c9-e23e06a6b680",
+      "exercise_id": "mu-straight-bar-dip",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1784583300000,
+      "updated_at": 1784583300000,
+      "deleted_at": null,
+      "skill_id": "dips",
+      "level_at_time": 3,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          9,
+          8,
+          8
+        ],
+        "rir": 1,
+        "form_ok": true
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "b6841294-421b-47e9-a952-2936414b740e",
+      "session_id": "9c949b13-62ae-4ae1-bd2e-df09c5870fc7",
+      "exercise_id": "hs-frog-to-hs-negativa",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": "5/10 tentativas com hold limpo >=3s",
+      "skipped": false,
+      "logged_at": 1785274500000,
+      "updated_at": 1785274500000,
+      "deleted_at": null,
+      "skill_id": "handstand_hold",
+      "level_at_time": 4,
+      "criteria_type": "skill_consistency",
+      "sets_performed": {
+        "type": "skill_consistency",
+        "attempts_total": 10,
+        "attempts_good": 5
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "10fbd3c2-f460-4eba-ae8c-632f160c4701",
+      "session_id": "ded7aebb-3160-4c46-861b-30814897c2d7",
+      "exercise_id": "hs-frog-to-hs-negativa",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1784669700000,
+      "updated_at": 1784669700000,
+      "deleted_at": null,
+      "skill_id": "handstand_hold",
+      "level_at_time": 4,
+      "criteria_type": "skill_consistency",
+      "sets_performed": {
+        "type": "skill_consistency",
+        "attempts_total": 10,
+        "attempts_good": 4
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "fb95a474-eb62-41f5-83ae-0c8c7987a63e",
+      "session_id": "11358422-0803-4ee9-939f-cd4948cc3246",
+      "exercise_id": "hs-frog-to-hs-negativa",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": "dia ruim de equilíbrio",
+      "skipped": false,
+      "logged_at": 1784064900000,
+      "updated_at": 1784064900000,
+      "deleted_at": null,
+      "skill_id": "handstand_hold",
+      "level_at_time": 4,
+      "criteria_type": "skill_consistency",
+      "sets_performed": {
+        "type": "skill_consistency",
+        "attempts_total": 10,
+        "attempts_good": 2
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "b9c59efe-5011-44b5-a05a-86364a1a49f6",
+      "session_id": "9c949b13-62ae-4ae1-bd2e-df09c5870fc7",
+      "exercise_id": "hs-pike-pushup-elevado",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": "reps e RIR bateram, mas quadril caiu — form_ok reprova o critério",
+      "skipped": false,
+      "logged_at": 1785274500000,
+      "updated_at": 1785274500000,
+      "deleted_at": null,
+      "skill_id": "hspu",
+      "level_at_time": 2,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          9,
+          8,
+          8
+        ],
+        "rir": 1,
+        "form_ok": false
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "8c81fe72-222f-4209-924d-8c53fad304e6",
+      "session_id": "ded7aebb-3160-4c46-861b-30814897c2d7",
+      "exercise_id": "hs-pike-pushup-elevado",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1784669700000,
+      "updated_at": 1784669700000,
+      "deleted_at": null,
+      "skill_id": "hspu",
+      "level_at_time": 2,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          8,
+          8,
+          8
+        ],
+        "rir": 2,
+        "form_ok": true
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "4d77e8a3-8c0d-4e56-af51-34854a6ba3d0",
+      "session_id": "9c949b13-62ae-4ae1-bd2e-df09c5870fc7",
+      "exercise_id": "core-l-sit-chao",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": "não sustentou os 10s",
+      "skipped": false,
+      "logged_at": 1785274500000,
+      "updated_at": 1785274500000,
+      "deleted_at": null,
+      "skill_id": "l_sit",
+      "level_at_time": 3,
+      "criteria_type": "hold_clean",
+      "sets_performed": {
+        "type": "hold_clean",
+        "durations_seconds": [
+          8,
+          7,
+          8
+        ],
+        "form_ok": true
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "cea8be00-a145-4058-8448-a19d8614a5e7",
+      "session_id": "ded7aebb-3160-4c46-861b-30814897c2d7",
+      "exercise_id": "core-l-sit-chao",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1784669700000,
+      "updated_at": 1784669700000,
+      "deleted_at": null,
+      "skill_id": "l_sit",
+      "level_at_time": 3,
+      "criteria_type": "hold_clean",
+      "sets_performed": {
+        "type": "hold_clean",
+        "durations_seconds": [
+          9,
+          8,
+          9
+        ],
+        "form_ok": true
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "a2bed302-9f88-4a43-963e-c01064929f29",
+      "session_id": "11358422-0803-4ee9-939f-cd4948cc3246",
+      "exercise_id": "core-l-sit-chao",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1784064900000,
+      "updated_at": 1784064900000,
+      "deleted_at": null,
+      "skill_id": "l_sit",
+      "level_at_time": 3,
+      "criteria_type": "hold_clean",
+      "sets_performed": {
+        "type": "hold_clean",
+        "durations_seconds": [
+          10,
+          7,
+          9
+        ],
+        "form_ok": true
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "41394fe4-bceb-40b9-8299-250a9a4ff179",
+      "session_id": "e211d8d4-2670-4f3d-ac58-f89c5cad3547",
+      "exercise_id": "core-l-sit-chao",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1783460100000,
+      "updated_at": 1783460100000,
+      "deleted_at": null,
+      "skill_id": "l_sit",
+      "level_at_time": 3,
+      "criteria_type": "hold_clean",
+      "sets_performed": {
+        "type": "hold_clean",
+        "durations_seconds": [
+          10,
+          10,
+          11
+        ],
+        "form_ok": true
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "727a12a1-6059-43b9-a443-758993cc29d5",
+      "session_id": "c22be24a-501b-4e85-bc2b-5ede43a22567",
+      "exercise_id": "mu-jumping-barra-baixa",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": "3/3 — consistência perfeita, limiar exato",
+      "skipped": false,
+      "logged_at": 1785447300000,
+      "updated_at": 1785447300000,
+      "deleted_at": null,
+      "skill_id": "muscle_up",
+      "level_at_time": 4,
+      "criteria_type": "skill_consistency",
+      "sets_performed": {
+        "type": "skill_consistency",
+        "attempts_total": 3,
+        "attempts_good": 3
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "678c7b3a-ee86-4f5e-b0d6-6eaf2cfee7d6",
+      "session_id": "0dcb6ccd-ceb3-4be4-b3f6-045cbefbffd6",
+      "exercise_id": "mu-jumping-barra-baixa",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1784842500000,
+      "updated_at": 1784842500000,
+      "deleted_at": null,
+      "skill_id": "muscle_up",
+      "level_at_time": 4,
+      "criteria_type": "skill_consistency",
+      "sets_performed": {
+        "type": "skill_consistency",
+        "attempts_total": 3,
+        "attempts_good": 3
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "bd329505-e9a8-4e95-ba14-3f45309d366f",
+      "session_id": "e4b01d08-e4a0-4556-9a3d-f30119d41628",
+      "exercise_id": "mu-jumping-barra-baixa",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": "2/3 — abaixo do 1.0 exigido",
+      "skipped": false,
+      "logged_at": 1784237700000,
+      "updated_at": 1784237700000,
+      "deleted_at": null,
+      "skill_id": "muscle_up",
+      "level_at_time": 4,
+      "criteria_type": "skill_consistency",
+      "sets_performed": {
+        "type": "skill_consistency",
+        "attempts_total": 3,
+        "attempts_good": 2
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "f666f335-2d98-4f95-95e8-49c51c4f5893",
+      "session_id": "c22be24a-501b-4e85-bc2b-5ede43a22567",
+      "exercise_id": "fl-tuck-hold",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": "primeira vez medindo — ainda tracking",
+      "skipped": false,
+      "logged_at": 1785447300000,
+      "updated_at": 1785447300000,
+      "deleted_at": null,
+      "skill_id": "front_lever",
+      "level_at_time": 1,
+      "criteria_type": "hold_clean",
+      "sets_performed": {
+        "type": "hold_clean",
+        "durations_seconds": [
+          11,
+          10,
+          12
+        ],
+        "form_ok": true
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "fc09efb4-124e-44c6-abac-0cb679233a13",
+      "session_id": "c22be24a-501b-4e85-bc2b-5ede43a22567",
+      "exercise_id": "pull-up-peso-morto",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1785447300000,
+      "updated_at": 1785447300000,
+      "deleted_at": null,
+      "skill_id": "pull_up",
+      "level_at_time": 4,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          9,
+          8,
+          8
+        ],
+        "rir": 1,
+        "form_ok": true
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "1654339d-5083-4f90-846b-2a90a9c04f6d",
+      "session_id": "0dcb6ccd-ceb3-4be4-b3f6-045cbefbffd6",
+      "exercise_id": "pull-up-peso-morto",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1784842500000,
+      "updated_at": 1784842500000,
+      "deleted_at": null,
+      "skill_id": "pull_up",
+      "level_at_time": 4,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          8,
+          7,
+          6
+        ],
+        "rir": 3,
+        "form_ok": true
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "f281a291-44c2-48e8-a5b5-6422eddf9ae9",
+      "session_id": "e4b01d08-e4a0-4556-9a3d-f30119d41628",
+      "exercise_id": "pull-up-peso-morto",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1784237700000,
+      "updated_at": 1784237700000,
+      "deleted_at": null,
+      "skill_id": "pull_up",
+      "level_at_time": 4,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          9,
+          8,
+          8
+        ],
+        "rir": 1,
+        "form_ok": true
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "09d36006-ca44-4262-bdc3-91ece486f006",
+      "session_id": "4835e64a-a9a1-47f2-8eeb-ac86d4d2f3b8",
+      "exercise_id": "pull-up-peso-morto",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1783632900000,
+      "updated_at": 1783632900000,
+      "deleted_at": null,
+      "skill_id": "pull_up",
+      "level_at_time": 4,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          8,
+          7,
+          6
+        ],
+        "rir": 3,
+        "form_ok": true
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "99748126-9279-4943-a140-09cad3dcc628",
+      "session_id": "97e74ddc-1f85-450b-991a-474ad10296d6",
+      "exercise_id": "pull-up-peso-morto",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1783028100000,
+      "updated_at": 1783028100000,
+      "deleted_at": null,
+      "skill_id": "pull_up",
+      "level_at_time": 4,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          9,
+          8,
+          8
+        ],
+        "rir": 1,
+        "form_ok": true
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "223cebb7-dede-47d6-b2ea-904096772244",
+      "session_id": "59ba0926-e801-44ae-a1e8-f957d1e083b2",
+      "exercise_id": "pull-up-peso-morto",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1782423300000,
+      "updated_at": 1782423300000,
+      "deleted_at": null,
+      "skill_id": "pull_up",
+      "level_at_time": 4,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          8,
+          7,
+          6
+        ],
+        "rir": 3,
+        "form_ok": true
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "ba9b550f-abef-41a3-b556-e582bf391d0f",
+      "session_id": "51c8ab62-2560-4975-895b-3bb169bac9a0",
+      "exercise_id": "pull-up-peso-morto",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1781818500000,
+      "updated_at": 1781818500000,
+      "deleted_at": null,
+      "skill_id": "pull_up",
+      "level_at_time": 4,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          9,
+          8,
+          8
+        ],
+        "rir": 1,
+        "form_ok": true
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "f8cdb1c8-b77b-44cd-9563-4ce7ab4459a6",
+      "session_id": "7bf5cdcb-5d10-43f9-9f18-223bdda688da",
+      "exercise_id": "pull-up-peso-morto",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1781213700000,
+      "updated_at": 1781213700000,
+      "deleted_at": null,
+      "skill_id": "pull_up",
+      "level_at_time": 4,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          8,
+          7,
+          6
+        ],
+        "rir": 3,
+        "form_ok": true
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "91d72b20-a587-4dc5-8db7-770805f3ce39",
+      "session_id": "c22be24a-501b-4e85-bc2b-5ede43a22567",
+      "exercise_id": "row-inverso-barra-baixa",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1785447300000,
+      "updated_at": 1785447300000,
+      "deleted_at": null,
+      "skill_id": "pull_up",
+      "level_at_time": 2,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          9,
+          8,
+          7
+        ],
+        "rir": 3,
+        "form_ok": true
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "7b438799-bf1c-4d40-98d9-bd37b7b7858e",
+      "session_id": "0dcb6ccd-ceb3-4be4-b3f6-045cbefbffd6",
+      "exercise_id": "row-inverso-barra-baixa",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1784842500000,
+      "updated_at": 1784842500000,
+      "deleted_at": null,
+      "skill_id": "pull_up",
+      "level_at_time": 2,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          9,
+          8,
+          7
+        ],
+        "rir": 3,
+        "form_ok": true
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "53371a79-7416-432c-b202-66440c529de3",
+      "session_id": "e4b01d08-e4a0-4556-9a3d-f30119d41628",
+      "exercise_id": "row-inverso-barra-baixa",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1784237700000,
+      "updated_at": 1784237700000,
+      "deleted_at": null,
+      "skill_id": "pull_up",
+      "level_at_time": 2,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          9,
+          8,
+          7
+        ],
+        "rir": 3,
+        "form_ok": true
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "917d4dc9-af27-4f7a-b4a1-e79c8757722b",
+      "session_id": "4835e64a-a9a1-47f2-8eeb-ac86d4d2f3b8",
+      "exercise_id": "row-inverso-barra-baixa",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1783632900000,
+      "updated_at": 1783632900000,
+      "deleted_at": null,
+      "skill_id": "pull_up",
+      "level_at_time": 2,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          11,
+          10,
+          10
+        ],
+        "rir": 1,
+        "form_ok": true
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "cd05624f-91db-42b5-b14b-fa6946dbd979",
+      "session_id": "97e74ddc-1f85-450b-991a-474ad10296d6",
+      "exercise_id": "row-inverso-barra-baixa",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1783028100000,
+      "updated_at": 1783028100000,
+      "deleted_at": null,
+      "skill_id": "pull_up",
+      "level_at_time": 2,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          11,
+          10,
+          10
+        ],
+        "rir": 1,
+        "form_ok": true
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "812bbd7f-515b-4e03-9d34-3a982bb20ed7",
+      "session_id": "a52b350e-a0f0-438b-b0cf-649cf151a8a5",
+      "exercise_id": "legs-pistol-split-squat",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": "unilateral — 3 séries de 10+ nos dois lados",
+      "skipped": false,
+      "logged_at": 1784928900000,
+      "updated_at": 1784928900000,
+      "deleted_at": null,
+      "skill_id": "pistol_squat",
+      "level_at_time": 2,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          11,
+          11,
+          10
+        ],
+        "rir": 1,
+        "form_ok": true
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "645d0a83-fff6-4956-9312-af62fbfae8c9",
+      "session_id": "cf83ac7d-8815-4edc-a812-193e832471fe",
+      "exercise_id": "legs-pistol-split-squat",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1784324100000,
+      "updated_at": 1784324100000,
+      "deleted_at": null,
+      "skill_id": "pistol_squat",
+      "level_at_time": 2,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          10,
+          10,
+          10
+        ],
+        "rir": 2,
+        "form_ok": true
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "a5420ccc-3930-4a2a-bbcc-427fe453d882",
+      "session_id": "a52b350e-a0f0-438b-b0cf-649cf151a8a5",
+      "exercise_id": "push-up-com-pausa",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": "pulado por dor no punho — não deve contar como falha na sequência",
+      "skipped": true,
+      "logged_at": 1784928900000,
+      "updated_at": 1784928900000,
+      "deleted_at": null,
+      "skill_id": "push_up",
+      "level_at_time": 2,
+      "criteria_type": null,
+      "sets_performed": null,
+      "criterion_met": null
+    },
+    {
+      "id": "4a7a56a7-1d74-4c86-b330-d3c4ed2abd95",
+      "session_id": "cf83ac7d-8815-4edc-a812-193e832471fe",
+      "exercise_id": "push-up-com-pausa",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1784324100000,
+      "updated_at": 1784324100000,
+      "deleted_at": null,
+      "skill_id": "push_up",
+      "level_at_time": 2,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          10,
+          10,
+          10
+        ],
+        "rir": 1,
+        "form_ok": true
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "f59974ab-33be-40ea-9239-9b28ccca1dcf",
+      "session_id": "d0870eb7-92b1-46b0-ac0d-e1c46c240ed5",
+      "exercise_id": "push-up-com-pausa",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1783719300000,
+      "updated_at": 1783719300000,
+      "deleted_at": null,
+      "skill_id": "push_up",
+      "level_at_time": 2,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          11,
+          10,
+          10
+        ],
+        "rir": 2,
+        "form_ok": true
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "4dd6cad5-da6d-4c54-856f-0fa3207e52bd",
+      "session_id": "a52b350e-a0f0-438b-b0cf-649cf151a8a5",
+      "exercise_id": "core-dragon-flag-negativa",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": "falhou nas reps (série 2 e 3 abaixo de 5)",
+      "skipped": false,
+      "logged_at": 1784928900000,
+      "updated_at": 1784928900000,
+      "deleted_at": null,
+      "skill_id": "dragon_flag",
+      "level_at_time": 4,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          5,
+          4,
+          4
+        ],
+        "rir": 2,
+        "form_ok": true
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "297443f8-747b-4418-9ac2-0815da69c9d9",
+      "session_id": "cf83ac7d-8815-4edc-a812-193e832471fe",
+      "exercise_id": "core-dragon-flag-negativa",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": "reps ok, RIR alto demais",
+      "skipped": false,
+      "logged_at": 1784324100000,
+      "updated_at": 1784324100000,
+      "deleted_at": null,
+      "skill_id": "dragon_flag",
+      "level_at_time": 4,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          5,
+          5,
+          5
+        ],
+        "rir": 3,
+        "form_ok": true
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "18577c8b-ec50-41bd-9143-6f23d724d529",
+      "session_id": "d0870eb7-92b1-46b0-ac0d-e1c46c240ed5",
+      "exercise_id": "core-dragon-flag-negativa",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": "reps e RIR ok, mas quadril quebrou (form_ok falso)",
+      "skipped": false,
+      "logged_at": 1783719300000,
+      "updated_at": 1783719300000,
+      "deleted_at": null,
+      "skill_id": "dragon_flag",
+      "level_at_time": 4,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          5,
+          5,
+          5
+        ],
+        "rir": 2,
+        "form_ok": false
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "13a127f2-f9be-4818-9c6c-31fb5ad219be",
+      "session_id": "b3561d40-5676-4be7-8c4b-fc43ca5fa45d",
+      "exercise_id": "core-dragon-flag-negativa",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1783114500000,
+      "updated_at": 1783114500000,
+      "deleted_at": null,
+      "skill_id": "dragon_flag",
+      "level_at_time": 4,
+      "criteria_type": "reps_rir",
+      "sets_performed": {
+        "type": "reps_rir",
+        "reps": [
+          6,
+          5,
+          5
+        ],
+        "rir": 1,
+        "form_ok": true
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "18a7149d-e605-4769-b31c-e6ea800bee13",
+      "session_id": "a52b350e-a0f0-438b-b0cf-649cf151a8a5",
+      "exercise_id": "hs-kickup-controlado",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1784928900000,
+      "updated_at": 1784928900000,
+      "deleted_at": null,
+      "skill_id": "handstand_hold",
+      "level_at_time": 6,
+      "criteria_type": "skill_consistency",
+      "sets_performed": {
+        "type": "skill_consistency",
+        "attempts_total": 5,
+        "attempts_good": 3
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "068ed92c-6de0-48cc-b69e-c2577ac13d55",
+      "session_id": "cf83ac7d-8815-4edc-a812-193e832471fe",
+      "exercise_id": "hs-kickup-controlado",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1784324100000,
+      "updated_at": 1784324100000,
+      "deleted_at": null,
+      "skill_id": "handstand_hold",
+      "level_at_time": 6,
+      "criteria_type": "skill_consistency",
+      "sets_performed": {
+        "type": "skill_consistency",
+        "attempts_total": 5,
+        "attempts_good": 2
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "97e556c2-2594-4fc0-aaf3-78d27620a271",
+      "session_id": "d0870eb7-92b1-46b0-ac0d-e1c46c240ed5",
+      "exercise_id": "hs-kickup-controlado",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1783719300000,
+      "updated_at": 1783719300000,
+      "deleted_at": null,
+      "skill_id": "handstand_hold",
+      "level_at_time": 6,
+      "criteria_type": "skill_consistency",
+      "sets_performed": {
+        "type": "skill_consistency",
+        "attempts_total": 5,
+        "attempts_good": 3
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "e6298f76-8821-434e-a676-31d66bf9d6dd",
+      "session_id": "b3561d40-5676-4be7-8c4b-fc43ca5fa45d",
+      "exercise_id": "hs-kickup-controlado",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1783114500000,
+      "updated_at": 1783114500000,
+      "deleted_at": null,
+      "skill_id": "handstand_hold",
+      "level_at_time": 6,
+      "criteria_type": "skill_consistency",
+      "sets_performed": {
+        "type": "skill_consistency",
+        "attempts_total": 5,
+        "attempts_good": 2
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "ef7f2088-e809-4f42-9b9a-00c446b7e136",
+      "session_id": "11df6080-48cb-4f89-9be1-928b7995e17c",
+      "exercise_id": "hs-kickup-controlado",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1782509700000,
+      "updated_at": 1782509700000,
+      "deleted_at": null,
+      "skill_id": "handstand_hold",
+      "level_at_time": 6,
+      "criteria_type": "skill_consistency",
+      "sets_performed": {
+        "type": "skill_consistency",
+        "attempts_total": 5,
+        "attempts_good": 3
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "222a7a14-ed90-41b6-b5a1-90a62b1cc52f",
+      "session_id": "5015acc6-2f8e-441b-bdb8-1b529f49fdf7",
+      "exercise_id": "hs-kickup-controlado",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1781904900000,
+      "updated_at": 1781904900000,
+      "deleted_at": null,
+      "skill_id": "handstand_hold",
+      "level_at_time": 6,
+      "criteria_type": "skill_consistency",
+      "sets_performed": {
+        "type": "skill_consistency",
+        "attempts_total": 5,
+        "attempts_good": 2
+      },
+      "criterion_met": false
+    },
+    {
+      "id": "195ea8fe-75d8-453e-8b81-1ab2d206d092",
+      "session_id": "326a2262-1e18-465a-b9ab-575103c94964",
+      "exercise_id": "hs-kickup-controlado",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1781300100000,
+      "updated_at": 1781300100000,
+      "deleted_at": null,
+      "skill_id": "handstand_hold",
+      "level_at_time": 6,
+      "criteria_type": "skill_consistency",
+      "sets_performed": {
+        "type": "skill_consistency",
+        "attempts_total": 5,
+        "attempts_good": 3
+      },
+      "criterion_met": true
+    },
+    {
+      "id": "a87bc85f-78e5-49a9-94ed-af7d84b12884",
+      "session_id": "6460d251-65f4-4d7f-9f4f-048cb08f5fdb",
+      "exercise_id": "hs-kickup-controlado",
+      "as_target": true,
+      "sets": null,
+      "flags_selected": [],
+      "note": null,
+      "skipped": false,
+      "logged_at": 1780695300000,
+      "updated_at": 1780695300000,
+      "deleted_at": null,
+      "skill_id": "handstand_hold",
+      "level_at_time": 6,
+      "criteria_type": "skill_consistency",
+      "sets_performed": {
+        "type": "skill_consistency",
+        "attempts_total": 5,
+        "attempts_good": 2
+      },
+      "criterion_met": false
+    }
+  ]
+}

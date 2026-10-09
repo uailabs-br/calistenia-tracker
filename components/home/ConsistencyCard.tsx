@@ -8,6 +8,13 @@ import { ProgressRing } from "@/components/ui/ProgressRing";
 
 const DAY_LETTERS = ["S", "T", "Q", "Q", "S", "S", "D"]; // Seg→Dom
 
+/** Glow neon na cor do treino (--ac). Spread >= 0: com spread negativo a sombra
+ *  fica menor que o círculo de 28px e o brilho some atrás dele. */
+const GLOW =
+  "0 0 7px 1px color-mix(in oklab, var(--ac) 50%, transparent), 0 0 16px 2px color-mix(in oklab, var(--ac) 20%, transparent)";
+const GLOW_SOFT =
+  "0 0 6px 0 color-mix(in oklab, var(--ac) 32%, transparent), inset 0 0 5px 0 color-mix(in oklab, var(--ac) 18%, transparent)";
+
 /** Constância: anel da meta semanal + streak + mini-calendário da semana. */
 export function ConsistencyCard({
   streak,
@@ -58,13 +65,13 @@ export function ConsistencyCard({
           let style: React.CSSProperties | undefined;
           if (d.source === "freeform") {
             cls = `${base} border-2 border-dashed font-semibold`;
-            style = { borderColor: "var(--ac)", color: "var(--ac)" };
+            style = { borderColor: "var(--ac)", color: "var(--ac)", boxShadow: GLOW_SOFT };
           } else if (d.done) {
             cls = `${base} font-semibold`;
-            style = { background: "var(--ac)", color: "var(--color-on-accent)" };
+            style = { background: "var(--ac)", color: "var(--color-on-accent)", boxShadow: GLOW };
           } else if (d.isToday) {
             cls = `${base} border-2`;
-            style = { borderColor: "var(--ac)", color: "var(--ac)" };
+            style = { borderColor: "var(--ac)", color: "var(--ac)", boxShadow: GLOW_SOFT };
           } else {
             cls = `${base} border border-border text-muted`;
           }

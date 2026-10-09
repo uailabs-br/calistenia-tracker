@@ -9,13 +9,12 @@ const DAY_LETTERS = ["S", "T", "Q", "Q", "S", "S", "D"]; // Seg→Dom
 /** Rótulos acessíveis: a letra sozinha ("S", "Q") é ambígua para leitor de tela. */
 const DAY_NAMES = ["segunda", "terça", "quarta", "quinta", "sexta", "sábado", "domingo"];
 
-/** Roxo do accent das métricas, em rgb pra montar as sombras com transparência. */
-const RGB = "168, 156, 255";
+/** Azul-violeta do accent das métricas, em rgb pra montar as sombras com transparência. */
+const RGB = "129, 116, 232";
 
 /**
  * Treinou = gradiente com brilho (luz vindo de cima, sombra colorida embaixo);
- * não treinou = rebaixo sutil, como um slot vazio. Dois treinos no dia sobem um
- * degrau de brilho. Futuro = invisível.
+ * não treinou = rebaixo sutil, como um slot vazio. Futuro = invisível.
  */
 export function heatStyle(level: HeatLevel, isToday: boolean): React.CSSProperties {
   const ring = isToday ? `0 0 0 1.5px rgba(${RGB}, 0.9), ` : "";
@@ -27,15 +26,10 @@ export function heatStyle(level: HeatLevel, isToday: boolean): React.CSSProperti
         background: "linear-gradient(180deg, #1c1c1e 0%, var(--color-surface2) 100%)",
         boxShadow: `${ring}inset 0 1px 2px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.03)`,
       };
-    case "one":
+    case "trained":
       return {
-        background: `linear-gradient(145deg, #c4bcff 0%, #a89cff 55%, #8a7cf0 100%)`,
-        boxShadow: `${ring}inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 8px -1px rgba(${RGB}, 0.5)`,
-      };
-    case "many":
-      return {
-        background: `linear-gradient(145deg, #ece8ff 0%, #c4bcff 45%, #a89cff 100%)`,
-        boxShadow: `${ring}inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 0 0 1px rgba(${RGB}, 0.5), 0 3px 12px -1px rgba(${RGB}, 0.75)`,
+        background: `linear-gradient(145deg, #ada5f0 0%, #8174e8 55%, #6e63c5 100%)`,
+        boxShadow: `${ring}inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 8px -2px rgba(${RGB}, 0.3)`,
       };
   }
 }
@@ -93,11 +87,17 @@ export function ConsistencyHeatmap({ weeks }: { weeks: HeatmapDay[][] }) {
       </div>
 
       <div className="mt-3 flex items-center justify-end gap-2 text-[10px] text-muted">
-        <span>menos</span>
-        {(["empty", "one", "many"] as const).map((level) => (
-          <span key={level} className="h-3 w-3 rounded-[3px]" style={heatStyle(level, false)} />
+        {(
+          [
+            ["empty", "não treinou"],
+            ["trained", "treinou"],
+          ] as const
+        ).map(([level, label]) => (
+          <span key={level} className="flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-[3px]" style={heatStyle(level, false)} />
+            {label}
+          </span>
         ))}
-        <span>mais</span>
       </div>
     </div>
   );

@@ -19,7 +19,7 @@ export function WorkoutHeader({ workout }: { workout: Workout }) {
           <span className="font-mono text-xs text-muted">· prática</span>
         )}
       </div>
-      <h1 className="mt-2 text-2xl font-semibold leading-tight">{workout.title}</h1>
+      <h1 className="display mt-2 text-3xl leading-tight">{workout.title}</h1>
     </header>
   );
 }

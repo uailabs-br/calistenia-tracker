@@ -129,10 +129,14 @@ describe("buildPersonaText", () => {
     expect(text).toContain("ombro direito sensível");
   });
 
-  it("sem objetivos nem notas, ainda devolve a instrução base", () => {
-    const text = buildPersonaText([], "");
-    expect(text).toContain("coach especialista em calistenia");
-    expect(text).not.toContain("objetivos prioritários");
+  it("sem objetivos nem notas, devolve vazio — o papel de coach está no prompt", () => {
+    expect(buildPersonaText([], "")).toBe("");
+  });
+
+  it("só notas não inventa linha de objetivo", () => {
+    const text = buildPersonaText([], "sem paralelas essa semana");
+    expect(text).toContain("sem paralelas essa semana");
+    expect(text).not.toContain("prioritárias");
   });
 });
 

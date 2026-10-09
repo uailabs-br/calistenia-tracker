@@ -1,7 +1,7 @@
 /**
  * Singleton do `beforeinstallprompt`. O evento dispara uma única vez por
  * page-load — capturado aqui no import do módulo, fica disponível para
- * qualquer tela (nudge da home e entrada em Config).
+ * qualquer tela (nudge da home e entrada em Ajustes).
  */
 
 export interface BeforeInstallPromptEvent extends Event {

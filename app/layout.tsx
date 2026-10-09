@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, DM_Mono } from "next/font/google";
+import { DM_Sans, DM_Mono, Barlow_Condensed } from "next/font/google";
 import "./globals.css";
 import { BottomNav } from "@/components/ui/BottomNav";
 import { SwUpdater } from "@/components/ui/SwUpdater";
@@ -19,6 +19,15 @@ const dmMono = DM_Mono({
   subsets: ["latin"],
   weight: ["400", "500"],
   variable: "--font-dm-mono",
+  display: "swap",
+});
+
+// Display condensada: só títulos de página e números grandes (sessão/timer).
+// Dois pesos, pra não pesar no bundle offline.
+const barlow = Barlow_Condensed({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  variable: "--font-barlow",
   display: "swap",
 });
 
@@ -51,7 +60,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR" className={`${dmSans.variable} ${dmMono.variable}`}>
+    <html lang="pt-BR" className={`${dmSans.variable} ${dmMono.variable} ${barlow.variable}`}>
       <body>
         <ToastProvider>
           <SwUpdater />

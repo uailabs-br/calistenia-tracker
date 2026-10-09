@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { getReminder, setReminder } from "@/lib/utils/profile";
-import { CollapsibleCard } from "@/components/ui/CollapsibleCard";
+import { SettingsGroup } from "@/components/ui/SettingsGroup";
+import { SettingsRow } from "@/components/ui/SettingsRow";
+import { Switch } from "@/components/ui/Switch";
+import { BellIcon, TimerIcon } from "@/components/ui/icons";
+import { haptic } from "@/lib/utils/haptics";
 
 type Permission = "default" | "granted" | "denied" | "unsupported";
 
@@ -42,68 +46,50 @@ export function ReminderSettings() {
       setPerm(result as Permission);
       if (result !== "granted") return; // sem permissão, não ativa
     }
+    haptic();
     persist({ enabled: !enabled });
   };
 
   return (
-    <CollapsibleCard title="Lembrete de treino" className="mb-3">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-muted">
-          {perm === "unsupported"
-            ? "Não suportado neste navegador."
-            : "Um empurrão no horário que você escolher."}
-        </p>
-
-        {perm !== "unsupported" && (
-          <button
-            type="button"
-            role="switch"
-            aria-checked={enabled}
-            aria-label="Ativar lembrete de treino"
-            onClick={toggle}
-            className="relative inline-flex shrink-0 items-center transition-colors"
-            style={{
-              width: 44,
-              height: 24,
-              borderRadius: 9999,
-              border: "1px solid var(--color-border)",
-              background: enabled ? "var(--ac)" : "var(--color-surface2)",
-            }}
-          >
-            <span
-              className="block bg-white shadow transition-transform"
-              style={{
-                width: 18,
-                height: 18,
-                borderRadius: 9999,
-                transform: enabled ? "translateX(23px)" : "translateX(3px)",
-              }}
-            />
-          </button>
-        )}
-      </div>
-
-      {perm === "denied" && (
-        <p className="mt-3 text-xs" style={{ color: "var(--color-warn)" }}>
-          Permissão de notificação bloqueada. Libere nas configurações do
-          navegador para ativar.
-        </p>
-      )}
-
+    <SettingsGroup
+      title="Lembrete"
+      footer={
+        perm === "denied" ? (
+          <span style={{ color: "var(--color-warn)" }}>
+            O navegador bloqueou as notificações. Libere nas configurações do
+            navegador para ativar o lembrete.
+          </span>
+        ) : undefined
+      }
+    >
+      <SettingsRow
+        icon={BellIcon}
+        label="Lembrete de treino"
+        description={
+          perm === "unsupported" ? "Este navegador não permite lembretes." : undefined
+        }
+        trailing={
+          perm !== "unsupported" ? (
+            <Switch checked={enabled} onToggle={toggle} label="Ativar lembrete de treino" />
+          ) : undefined
+        }
+      />
       {enabled && perm === "granted" && (
-        <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
-          <label htmlFor="reminder-time" className="text-sm font-medium">
-            Horário
-          </label>
-          <input
-            id="reminder-time"
-            type="time"
-            value={time}
-            onChange={(e) => persist({ time: e.target.value })}
-            className="tnum rounded-xl border border-border bg-surface2 px-3 py-2 text-base outline-none focus:border-muted"
-          />
-        </div>
+        <SettingsRow
+          icon={TimerIcon}
+          label="Horário"
+          trailing={
+            <input
+              id="reminder-time"
+              type="time"
+              value={time}
+              aria-label="Horário do lembrete"
+              onChange={(e) => persist({ time: e.target.value })}
+              className="tnum rounded-xl border border-border bg-surface2 px-3 py-2 text-base outline-none focus:border-muted"
+            />
+          }
+        />
       )}
-    </CollapsibleCard>
+    </SettingsGroup>
   );
 }

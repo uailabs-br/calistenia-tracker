@@ -427,8 +427,8 @@ export function ExerciseCard({
             <button
               type="button"
               onClick={recordAttempts}
-              className="tap flex items-center justify-center gap-2 rounded-xl py-3 font-medium active:scale-[0.99]"
-              style={{ background: accent, color: "var(--color-on-accent)" }}
+              className="btn-primary tap flex items-center justify-center gap-2 rounded-xl py-3 font-medium"
+              style={{ "--ac": accent } as React.CSSProperties}
             >
               <CheckIcon className="h-5 w-5" />
               Confirmar
@@ -439,8 +439,8 @@ export function ExerciseCard({
             <button
               type="button"
               onClick={recordAsTarget}
-              className="tap flex flex-1 items-center justify-center gap-2 rounded-xl py-3 font-medium active:scale-[0.99]"
-              style={{ background: accent, color: "var(--color-on-accent)" }}
+              className="btn-primary tap flex flex-1 items-center justify-center gap-2 rounded-xl py-3 font-medium"
+              style={{ "--ac": accent } as React.CSSProperties}
             >
               <CheckIcon className="h-5 w-5" />
               Fiz como previsto
@@ -448,7 +448,8 @@ export function ExerciseCard({
             <button
               type="button"
               onClick={startAdjust}
-              className="tap rounded-xl border border-border bg-surface2 px-4 font-medium text-text"
+              className="btn-secondary tap rounded-xl px-4 font-medium"
+              style={{ "--ac": accent } as React.CSSProperties}
             >
               Ajustar
             </button>

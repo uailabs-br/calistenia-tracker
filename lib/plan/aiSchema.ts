@@ -1,102 +1,212 @@
 import progressionsData from "./progressions.json";
+import catalogData from "./catalog.json";
+import { getCriteria, formatCriteria, WORKOUT_SKILL_LABELS } from "./skills";
 
-/** Escadas canônicas (id: nível=nome | ...) geradas do catálogo, pra IA não inventar ids/níveis. */
-const SKILL_LADDERS = (
-  progressionsData.skills as { id: string; progressions: { level: number; name: string }[] }[]
-)
-  .map((s) => `- ${s.id}: ${s.progressions.map((p) => `${p.level}=${p.name}`).join(" | ")}`)
+/** Chaves técnicas de equipamento das escadas → pt-BR, pra IA ler sem decodificar. */
+const EQUIPMENT_PT: Record<string, string> = {
+  pull_up_bar: "barra fixa",
+  parallel_bars: "paralelas",
+  parallettes: "parallettes",
+  bench: "banco",
+  vertical_pole: "poste vertical",
+};
+
+const GROUP_PT: Record<string, string> = {
+  pull: "puxar",
+  push: "empurrar",
+  core: "core",
+  legs: "pernas",
+};
+
+interface RawLadderSkill {
+  id: string;
+  name: string;
+  group: string;
+  equipment_required: string[];
+  prerequisites?: { skill_id: string; min_level: number }[];
+  progressions: { level: number; name: string }[];
+}
+
+/**
+ * Escadas canônicas geradas do catálogo, pra IA não inventar ids/níveis.
+ *
+ * Cada degrau leva o critério NUMÉRICO que o motor de progressão verifica (o
+ * mesmo texto que a UI mostra): sem ele a IA escreve alvo abaixo do critério e o
+ * atleta nunca fica "pronto pra subir" — treina bem e o app não reage.
+ * Equipamento e pré-requisito evitam a prescrição impossível (front lever pra
+ * quem não tem barra, ou pra quem ainda não tem pull-up).
+ */
+const SKILL_LADDERS = (progressionsData.skills as unknown as RawLadderSkill[])
+  .map((s) => {
+    const equip =
+      s.equipment_required.length > 0
+        ? s.equipment_required.map((e) => EQUIPMENT_PT[e] ?? e).join(" + ")
+        : "só o chão";
+    const prereq =
+      s.prerequisites && s.prerequisites.length > 0
+        ? ` · só depois de ${s.prerequisites
+            .map((p) => `${p.skill_id} nível ${p.min_level}`)
+            .join(" e ")}`
+        : "";
+    const steps = s.progressions
+      .map((p) => {
+        const criteria = getCriteria(s.id, p.level);
+        const target = criteria ? ` → ${formatCriteria(criteria)}` : "";
+        return `  ${p.level}=${p.name}${target}`;
+      })
+      .join("\n");
+    return `${s.id} — ${s.name} (${GROUP_PT[s.group] ?? s.group} · ${equip}${prereq})\n${steps}`;
+  })
+  .join("\n");
+
+interface RawCatalogItem {
+  id: string;
+  name: string;
+  category: string;
+}
+
+/**
+ * Ids que o app já conhece, por categoria. O histórico agrega por `id`: se a IA
+ * batizar o mesmo movimento com outro id, o passado do atleta nele desaparece da
+ * leitura. Não é lista fechada — é a lista dos ids que já têm dono.
+ */
+const CATALOG_IDS = ["Puxar", "Empurrar", "Core", "Pernas"]
+  .map((cat) => {
+    const items = (catalogData as RawCatalogItem[]).filter((e) => e.category === cat);
+    return `${cat}:\n${items.map((e) => `  ${e.id} = ${e.name}`).join("\n")}`;
+  })
   .join("\n");
 
 /**
- * Prompt pronto pra colar numa LLM (Claude etc.) pra gerar/ajustar os treinos de
- * treino no formato que o app espera. Espelha `schema.ts` — se os campos do
- * plan.json mudarem, atualiza aqui também.
+ * Contrato de saída: o que o app aceita em `plan.json`. Espelha `schema.ts` — se
+ * os campos mudarem lá, muda aqui também. O método de treino (como decidir o que
+ * escrever) está em `aiPrompt.ts`; aqui é só forma.
  */
-export const AI_SCHEMA_PROMPT = `Vou te descrever um treino de calistenia. Formata a resposta EXATAMENTE no esquema JSON abaixo (é o formato que o app usa pra plan.json). Devolve só o JSON, sem explicação.
+export const AI_SCHEMA_PROMPT = `# CONTRATO DE SAÍDA — plan.json
 
-ESQUEMA DE TREINO — plan.json (calistenia app)
+Estrutura: plan > workouts[] > blocks[] > exercises[]. Todo objeto é "strict":
+campo extra é erro de validação e o app recusa o plano inteiro.
 
-Estrutura: plan > workouts[] > blocks[] > exercises[]
+## Plano (objeto de topo — OBRIGATÓRIO, é o que o app valida primeiro)
+{
+  "id": "ciclo-mu-2026-10",   // kebab-case. Ajuste de um plano existente MANTÉM o id do plano_atual
+  "version": 2,                // inteiro > 0. Ajuste = version do plano_atual + 1
+  "name": "Muscle-up + Handstand — ciclo 2",  // nome curto que o atleta vê
+  "source": "claude-2026-10",  // texto livre: quem gerou
+  "imported_at": "2026-10-09", // AAAA-MM-DD
+  "workouts": [ ...ver Workout... ]   // mínimo 1
+}
 
 ## Workout (um treino do plano)
 {
   "id": "A",               // identidade estável do treino: letra ou código curto, ÚNICO no plano
   "label": "A",            // rótulo exibido (normalmente igual ao id)
   "title": "Muscle Up",    // título curto do treino
-  "skill": "Muscle Up",    // nome livre, mas se mapear pra uma skill canônica use:
-                           //   "Muscle Up" | "MU" | "HS / Frog to HS" | "Frog to HS"
-                           //   (ou "Folga" para treinos de prática/descanso)
-  "duration": "~32 min",   // texto livre
-  "accent": "#A89CFF",     // hex 6 dígitos — cor de destaque do treino
-  "accent_bg": "#1E1B35",  // hex 6 dígitos — fundo combinando (mais escuro)
+  "skill": "Muscle Up",    // texto livre, MAS só estes rótulos resolvem pra skill canônica
+                           // (usados pelo mapa de skills e pelos avisos de progressão):
+                           //   ${WORKOUT_SKILL_LABELS.map((l) => `"${l}"`).join(" | ")}
+                           // qualquer outro texto é só exibição (use "Folga" pra treino de prática/descanso)
+  "duration": "32 min",    // texto livre; o app recalcula pelas séries e descansos quando dá
+  "accent": "#8174E8",     // hex 6 dígitos — cor de destaque do treino
+  "accent_bg": "#1D1B2B",  // hex 6 dígitos — fundo combinando (a UI é escura: use valor bem escuro)
   "is_practice": false,    // true = treino de prática (técnica), não de força
   "warmup": "texto livre do aquecimento",
   "tip": "texto livre — dica/contexto do treino",
-  "blocks": [ ...ver Block... ],
+  "blocks": [ ...ver Block... ],       // mínimo 1
   "progression": [ ...ver Progression... ]
 }
 
 ## Block (grupo de exercícios dentro do treino)
 {
   "label": "Skill — Componentes do MU · 16 min",
-  "is_skill": true,        // true = bloco de skill/técnica, false = bloco de suporte/acessório
+  "is_skill": true,        // true = bloco de skill/técnica, false = suporte/acessório
   "exercises": [ ...ver Exercise... ]  // mínimo 1
 }
 
 ## Exercise
 {
-  "id": "mu-puxada-explosiva",  // kebab-case, prefixo = skill (mu-, hs-, core-, legs-, row-, pull-up-, push-up-)
-                                  // ÚNICO dentro do treino; pode repetir entre treinos (histórico agrega por id)
+  "id": "mu-puxada-explosiva",  // kebab-case, prefixo = skill (mu-, hs-, fl-, core-, legs-, row-, pull-up-, push-up-)
+                                  // ÚNICO dentro do treino; o MESMO movimento usa o MESMO id entre treinos
+                                  // (o histórico e as flags agregam por id)
   "name": "Puxada explosiva",
-  "target": "4 × 4",             // texto livre exibido (ex: "4 × 4", "2 × 20s", "8-10 entradas")
-  "parsed": {                    // null se o target não for sets×alvo parseável (ex: ranges tipo "8-10 entradas")
+  "target": "4 × 4",             // ver REGRAS DE ALVO abaixo — não é texto livre de verdade
+  "parsed": {                    // null quando o alvo é intervalo ou não tem número limpo
     "sets": 4,
     "target": 4,
     "unit": "reps",              // "reps" | "seconds" | "attempts"
     "per_side": false            // true se o alvo é POR LADO (unilateral)
   },
   "obs": "instrução técnica de execução — o que prestar atenção",
-  "rest": "descanso 120s",       // texto livre
+  "rest": "descanso 120s",       // ver REGRAS DE DESCANSO abaixo
   "flags": ["chegou no esterno", "parou no queixo", "kip apareceu"],
-  // ↑ tags de observação pós-set que o usuário marca durante o treino (2-4 flags típico)
+  // ↑ tags que o atleta marca no fim da série. 2 a 4, curtas, na voz dele, e
+  //   VERIFICÁVEIS olhando a série (não "senti forte"). Inclua ao menos uma
+  //   positiva (o acerto técnico do degrau) e uma negativa (a falha típica).
   "neg_flags": ["parou no queixo", "kip apareceu"],
-  // ↑ OPCIONAL — subconjunto de \`flags\` que conta como execução "suja"/falha
-  //   (usado pro motor de progressão saber se a tentativa foi limpa)
+  // ↑ OPCIONAL — subconjunto EXATO de \`flags\` (string idêntica) que conta como
+  //   execução suja. É o que o motor usa pra não promover técnica ruim.
   "skill_ref": { "skill_id": "muscle_up", "level": 3 }
-  // ↑ OPCIONAL — só se este exercício FOR o degrau da escada de uma skill (lista abaixo).
-  //   O app avalia o critério daquele degrau (reps × RIR, hold limpo, tentativas) pra sugerir
-  //   subir/descer. Use null quando NÃO for nenhum degrau (evita atrelar o exercício ao degrau errado).
-  //   Omita se não tiver certeza. Só vale skill_id/level que existam na lista.
+  // ↑ OPCIONAL — só se este exercício FOR o degrau da escada de uma skill.
+  //   Use null quando NÃO for degrau nenhum (evita atrelar ao degrau errado).
+  //   Omita se não tiver certeza. Só vale skill_id/level que existam nas escadas.
 }
 
 ## Progression (fim do treino — o que evolui e quando)
 {
-  "exercise_id": "mu-puxada-explosiva",  // aponta pro id de um exercício do treino, OU null
-  "label": "MU completo (barra alta)",   // OBRIGATÓRIO se exercise_id for null (marco sem exercício associado)
+  "exercise_id": "mu-puxada-explosiva",  // id de um exercício DESTE treino, ou null
+  "label": "MU completo (barra alta)",   // OBRIGATÓRIO se exercise_id for null (marco sem exercício)
   "criteria": "texto livre — quando e como progredir esse exercício/marco"
 }
 
-## Skills e degraus válidos pra skill_ref (id: nível=nome)
+## REGRAS DE ALVO (\`target\` e \`parsed\`)
+O app lê sets e o PISO do alvo do TEXTO de \`target\` em runtime — é ele que
+monta os contadores da tela de treino. Então:
+- Escreva sempre no formato "N × M": "3 × 8" · "3 × 20s" · "4 × 6-8/lado" · "5 × 3 tentativas".
+- Alvo em prosa ("8-10 entradas") perde o contador: o app lê 1 série de 8.
+- Intervalo ("6-8", "8-10s") → \`parsed\` é SEMPRE null, mesmo que dê pra estimar
+  o teto. O app usa o piso que está no texto.
+- Alvo fixo → \`parsed\` preenchido, \`parsed.target\` igual ao número do texto.
+- Exercício com \`skill_ref\` usa alvo FIXO (nunca intervalo). Com \`parsed\` null o
+  motor não consegue dizer que o alvo foi batido, e 3 sessões assim viram sinal
+  falso de regressão.
+- O alvo de um exercício com \`skill_ref\` tem que ALCANÇAR o critério do degrau
+  (lista de escadas abaixo). Alvo menor que o critério trava o atleta: ele cumpre
+  o plano pra sempre e nunca fica "pronto pra subir".
+
+## REGRAS DE TEXTO DENTRO DO JSON
+Os campos de texto (\`obs\`, \`tip\`, \`warmup\`, \`criteria\`, \`name\`…) são string JSON
+pura, não markdown. NÃO escape caractere de markdown dentro delas: \`\\~\`, \`\\*\`,
+\`\\_\`, \`\\#\` não são escapes válidos em JSON e fazem o app recusar o plano
+inteiro. Escreva \`"~38 min"\`, não \`"\\~38 min"\`. Só os escapes do JSON valem
+(\`\\"\`, \`\\\\\`, \`\\n\`).
+
+## REGRAS DE DESCANSO (\`rest\`)
+O app extrai o maior número do texto e trata como SEGUNDOS, pro cronômetro.
+- Sempre em segundos: "descanso 120s", "descanso 90s", "30-45s entre tentativas".
+- NUNCA em minutos: "descanso 2 min" liga um cronômetro de 2 segundos.
+
+## REGRAS DE IDENTIDADE (o que preserva o histórico)
+- Ao ajustar um plano existente, PRESERVE o \`id\` de cada treino que continua
+  existindo: o histórico aponta pra ele. Id novo só pra treino novo.
+- PRESERVE o \`id\` de cada exercício que continua existindo, mesmo mudando alvo,
+  obs, descanso ou bloco. Mudar o id é começar o histórico daquele movimento de zero.
+- PRESERVE o \`skill_ref\` dos exercícios que você não mudou.
+- Movimento novo que já existe na lista de ids conhecidos abaixo: use o id dela.
+- \`exercise_id\` duplicado dentro do MESMO treino é erro de validação.
+- Se \`neg_flags\` existir, cada item TEM que estar também em \`flags\`.
+- \`skill_ref\` não-null: skill_id e level TÊM que existir nas escadas abaixo.
+- Cores accent/accent_bg sempre hex de 6 dígitos com #.
+
+## SEM DIA DA SEMANA
+Não existe weekday, nem "Seg/Ter/…", nem "dia" como estrutura. A ORDEM do array
+\`workouts[]\` É a sequência: o app mostra como próximo o seguinte ao último
+concluído, em ciclo (A → B → C → A…). Não há limite de treinos — 2, 3, 5 ou 8, o
+que fizer sentido pro objetivo.
+
+## ESCADAS DE SKILL — ids, níveis e o critério que o app verifica
+Formato: \`nível=nome do degrau → critério que o motor checa\`.
 ${SKILL_LADDERS}
 
-REGRAS IMPORTANTES:
-- Todo objeto é "strict": não pode ter campos extras além dos listados.
-- NÃO existe dia da semana. Não use weekday, nem "Seg/Ter/…", nem "dia" como estrutura.
-- A ORDEM do array workouts[] é a sequência de treino: o app mostra o próximo como o
-  seguinte ao último concluído, em volta do ciclo (A → B → C → A…).
-- Não há limite de treinos: 2, 3, 5 ou 8, o que fizer sentido pro objetivo.
-- id de treino ÚNICO no plano. Ao ajustar um plano existente, PRESERVE o id de cada treino
-  que continua existindo: o histórico aponta pra ele. Crie id novo só pra treino novo.
-- exercise_id duplicado dentro do MESMO treino é erro de validação.
-- Se \`neg_flags\` existir, cada item dele TEM que estar também em \`flags\`.
-- \`parsed\` só é preenchido quando dá pra extrair sets/target/unit numéricos limpos do \`target\`;
-  senão usa null (ex.: "8-10 entradas" vira parsed: null).
-- Se o alvo de reps/segundos for um INTERVALO (ex.: "6-8", "8-10s"), \`parsed\` é SEMPRE null —
-  mesmo que dê pra estimar um teto (ex.: "3 × 6-8/lado" NÃO vira {sets:3, target:8, ...}).
-  O app extrai sets e o piso do intervalo direto do texto de \`target\` em runtime.
-- Se \`skill_ref\` existir e não for null, skill_id e level TÊM que existir na lista de degraus acima.
-- Ao editar um plano existente, PRESERVE o \`skill_ref\` dos exercícios que você não mudou.
-- Cores accent/accent_bg sempre hex de 6 dígitos, minúsculo ou maiúsculo, com #.
-
-Meu treino:
+## IDS JÁ CONHECIDOS PELO APP (use estes quando o movimento for um deles)
+${CATALOG_IDS}
 `;

@@ -12,8 +12,8 @@ import {
 const items = [
   { href: "/", label: "Início", Icon: HomeIcon },
   { href: "/historico", label: "Histórico", Icon: HistoryIcon },
-  { href: "/metricas", label: "Métricas", Icon: ChartIcon },
-  { href: "/config", label: "Config", Icon: CogIcon },
+  { href: "/metricas", label: "Evolução", Icon: ChartIcon },
+  { href: "/config", label: "Ajustes", Icon: CogIcon },
 ];
 
 export function BottomNav() {

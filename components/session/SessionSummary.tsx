@@ -70,8 +70,8 @@ export function SessionSummary({
           ref={ref}
           tabIndex={-1}
           onClick={(e) => e.stopPropagation()}
-          className="anim-scale-in w-full max-w-sm rounded-2xl border bg-surface2 px-6 py-7 text-center shadow-2xl outline-none"
-          style={{ borderColor: accent }}
+          className="anim-scale-in glow w-full max-w-sm rounded-2xl bg-surface2 px-6 py-7 text-center outline-none"
+          style={{ "--ac": accent } as React.CSSProperties}
         >
           <span
             className="mx-auto flex h-14 w-14 items-center justify-center rounded-full"
@@ -80,7 +80,7 @@ export function SessionSummary({
           >
             <CheckIcon className="h-7 w-7" />
           </span>
-          <h2 className="mt-4 text-lg font-semibold">Treino concluído</h2>
+          <h2 className="display-caps mt-4 text-2xl">Treino concluído</h2>
 
           <div className="mt-4 grid grid-cols-2 gap-2 text-left">
             <StatTile value={exercisesDone} label="exercícios" accent={accent} />
@@ -116,8 +116,8 @@ export function SessionSummary({
           <button
             type="button"
             onClick={onClose}
-            className="tap mt-6 w-full rounded-xl py-3 font-medium active:scale-[0.99]"
-            style={{ background: accent, color: "var(--color-on-accent)" }}
+            className="btn-primary tap mt-6 w-full rounded-xl py-3 font-medium"
+            style={{ "--ac": accent } as React.CSSProperties}
           >
             Voltar pro início
           </button>

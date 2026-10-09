@@ -1,8 +1,9 @@
-import { db } from "@/lib/db/schema";
-import { getWorkoutById, plan } from "@/lib/plan/loader";
+import { db, type ExerciseLog, type Session } from "@/lib/db/schema";
+import { getWorkoutById, negFlagsOf, plan } from "@/lib/plan/loader";
 import { resolveLogExercise } from "@/lib/plan/resolve";
 import type { Plan } from "@/lib/plan/schema";
-import { extraSets, plannedSets } from "@/lib/domain/volume";
+import { effectiveSets, extraSets, plannedSets } from "@/lib/domain/volume";
+import { isClean } from "@/lib/db/queries/progressionReady";
 import { skills, getLevelInfo } from "@/lib/plan/skills";
 import {
   mapAnswersToSkillLevels,
@@ -26,6 +27,23 @@ export interface AiHistoryExercise {
   added?: true;
   flags: string[];
   note: string | null;
+}
+
+/**
+ * Movimento que ficou ANTES da janela de detalhe, em quatro números. `desde` é
+ * o que separa "treina isso há três semanas" de "treina há oito meses e a
+ * melhor série não mudou" — o segundo caso pede mudar de abordagem, não de
+ * degrau, e sem ele a IA não tem como ver a diferença.
+ */
+export interface AiHistorySummary {
+  id: string;
+  exercicio: string;
+  /** Primeira e última vez NESSE período (não no histórico todo). */
+  desde: string;
+  ate: string;
+  sessoes: number;
+  /** Melhor série limpa do período ("8 reps", "32s"). Ausente em alvo de tentativas. */
+  melhor_serie?: string;
 }
 
 export interface AiHistorySession {
@@ -92,53 +110,148 @@ export interface AiExport {
   plano_atual: Plan;
   /** Só existe se a pessoa fez o onboarding (e não pulou). */
   perfil_declarado?: AiDeclaredProfile;
+  /** Janela de detalhe: as sessões recentes inteiras (ver `detailWindow`). */
   sessions: AiHistorySession[];
+  /** Só existe se houver histórico mais antigo que a janela. */
+  historico_anterior?: AiHistorySummary[];
   progressao: AiProgressSignal[];
 }
 
-async function buildSessions(): Promise<AiHistorySession[]> {
+/**
+ * Janela de DETALHE do histórico, medida em sessões de plano — não em dias.
+ *
+ * O que decide o próximo ciclo é quantas vezes a IA vê cada movimento, e um
+ * exercício mora num treino só: num plano de 5 treinos ele volta a cada 5
+ * sessões. Janela em dias dá resolução diferente pra cada formato de plano
+ * (30 dias num plano de 5 treinos = 2,6 passadas por exercício, abaixo das 3
+ * sessões seguidas que o motor precisa pra decidir regressão) e zera o
+ * histórico de quem parou cinco semanas. Seis voltas do ciclo dão ~6 passadas
+ * por exercício, com piso pra plano curto.
+ */
+const WINDOW_CYCLES = 6;
+const WINDOW_MIN_SESSIONS = 18;
+
+export function detailWindow(workouts: number): number {
+  return Math.max(WINDOW_MIN_SESSIONS, WINDOW_CYCLES * workouts);
+}
+
+/** Melhor série do log, na definição de recorde do app (só execução limpa). */
+function bestSet(log: ExerciseLog, workoutId: string | null): { value: number; unit: "reps" | "seconds" } | null {
+  if (log.skipped || !isClean(log, negFlagsOf(log.exercise_id))) return null;
+  const ex = resolveLogExercise(log, workoutId);
+  // `attempts` não tem recorde comparável (ver computePR)
+  if (!ex.parsed || ex.parsed.unit === "attempts") return null;
+  const sets = effectiveSets(log, ex.parsed, ex.target);
+  return sets.length > 0 ? { value: Math.max(...sets), unit: ex.parsed.unit } : null;
+}
+
+function summarizeOld(entries: { session: Session; logs: ExerciseLog[] }[]): AiHistorySummary[] {
+  const acc = new Map<
+    string,
+    { nome: string; desde: string; ate: string; sessoes: number; best: { value: number; unit: "reps" | "seconds" } | null }
+  >();
+  for (const { session, logs } of entries) {
+    for (const log of logs) {
+      if (log.skipped) continue; // pulado não é treino desse movimento
+      const ex = resolveLogExercise(log, session.workout_id);
+      const cur = acc.get(log.exercise_id);
+      const best = bestSet(log, session.workout_id);
+      if (!cur) {
+        acc.set(log.exercise_id, {
+          nome: ex.name ?? log.exercise_id,
+          desde: session.date,
+          ate: session.date,
+          sessoes: 1,
+          best,
+        });
+        continue;
+      }
+      cur.sessoes += 1;
+      if (session.date < cur.desde) cur.desde = session.date;
+      if (session.date > cur.ate) cur.ate = session.date;
+      if (best && (!cur.best || best.value > cur.best.value)) cur.best = best;
+    }
+  }
+  return [...acc.entries()].map(([id, v]) => ({
+    id,
+    exercicio: v.nome,
+    desde: v.desde,
+    ate: v.ate,
+    sessoes: v.sessoes,
+    ...(v.best
+      ? { melhor_serie: v.best.unit === "seconds" ? `${v.best.value}s` : `${v.best.value} reps` }
+      : {}),
+  }));
+}
+
+function buildExercises(session: Session, logs: ExerciseLog[]): AiHistoryExercise[] {
+  const addedIds = new Set(session.added_exercises ?? []);
+  return logs.map((log) => {
+    const ex = resolveLogExercise(log, session.workout_id);
+    const parsed = ex.parsed;
+    let performed: AiHistoryExercise["performed"];
+    if (log.skipped) performed = "pulado";
+    else if (log.as_target) performed = "como previsto";
+    else {
+      const values = plannedSets(log, parsed, ex.target);
+      performed = values.length > 0 ? values : "feito";
+    }
+    const extras = extraSets(log);
+    return {
+      name: ex.name ?? log.exercise_id,
+      target: ex.target,
+      performed,
+      ...(extras.length > 0 ? { extra_sets: extras } : {}),
+      ...(addedIds.has(log.exercise_id) ? { added: true as const } : {}),
+      flags: log.flags_selected,
+      note: log.note,
+    };
+  });
+}
+
+/**
+ * Histórico em duas resoluções: as sessões da janela inteiras, o que veio antes
+ * resumido por movimento. Sessão avulsa não consome janela — ela entra se cair
+ * no período das sessões de plano mantidas, mas não empurra treino de plano pro
+ * resumo (quem registra muito treino fora do plano perderia justo a passada dos
+ * exercícios que a IA vai editar).
+ */
+async function buildHistory(
+  windowSessions: number
+): Promise<{ sessions: AiHistorySession[]; anterior: AiHistorySummary[] }> {
   const sessions = (await db.sessions.toArray())
     .filter((s) => s.status === "completed" && !s.deleted_at)
     .sort((a, b) => (a.started_at ?? 0) - (b.started_at ?? 0));
 
-  const out: AiHistorySession[] = [];
+  const entries: { session: Session; logs: ExerciseLog[] }[] = [];
   for (const session of sessions) {
     const logs = (
       await db.exerciseLogs.where("session_id").equals(session.id).toArray()
     ).filter((l) => !l.deleted_at);
     if (logs.length === 0) continue;
-
-    const workout = session.workout_id ? getWorkoutById(session.workout_id) : undefined;
-    const addedIds = new Set(session.added_exercises ?? []);
-    const exercises: AiHistoryExercise[] = logs.map((log) => {
-      const ex = resolveLogExercise(log, session.workout_id);
-      const parsed = ex.parsed;
-      let performed: AiHistoryExercise["performed"];
-      if (log.skipped) performed = "pulado";
-      else if (log.as_target) performed = "como previsto";
-      else {
-        const values = plannedSets(log, parsed, ex.target);
-        performed = values.length > 0 ? values : "feito";
-      }
-      const extras = extraSets(log);
-      return {
-        name: ex.name ?? log.exercise_id,
-        target: ex.target,
-        performed,
-        ...(extras.length > 0 ? { extra_sets: extras } : {}),
-        ...(addedIds.has(log.exercise_id) ? { added: true as const } : {}),
-        flags: log.flags_selected,
-        note: log.note,
-      };
-    });
-
-    out.push({
-      date: session.date,
-      workout: workout ? `${workout.label} — ${workout.title}` : "avulso",
-      exercises,
-    });
+    entries.push({ session, logs });
   }
-  return out;
+
+  const planned = entries.filter((e) => e.session.workout_id);
+  const cutoff =
+    planned.length > windowSessions
+      ? (planned[planned.length - windowSessions].session.started_at ?? 0)
+      : null;
+  const recent =
+    cutoff === null ? entries : entries.filter((e) => (e.session.started_at ?? 0) >= cutoff);
+  const old = cutoff === null ? [] : entries.filter((e) => (e.session.started_at ?? 0) < cutoff);
+
+  return {
+    sessions: recent.map(({ session, logs }) => {
+      const workout = session.workout_id ? getWorkoutById(session.workout_id) : undefined;
+      return {
+        date: session.date,
+        workout: workout ? `${workout.label} — ${workout.title}` : "avulso",
+        exercises: buildExercises(session, logs),
+      };
+    }),
+    anterior: summarizeOld(old),
+  };
 }
 
 /** Skill sem treino nessa janela sai do resumo: a IA não deve recomendar sobre o que ficou pra trás. */
@@ -191,14 +304,18 @@ async function buildProgressao(): Promise<AiProgressSignal[]> {
   return out;
 }
 
-/** Plano em vigor + resumo do histórico + sinal de progressão, pronto pra colar numa IA externa. */
-export async function exportForAI(): Promise<AiExport> {
-  const [sessions, progressao] = await Promise.all([buildSessions(), buildProgressao()]);
+/** Plano em vigor + histórico (janela + resumo) + sinal de progressão, pronto pra colar numa IA externa. */
+export async function exportForAI(
+  opts: { windowSessions?: number } = {}
+): Promise<AiExport> {
+  const window = opts.windowSessions ?? detailWindow(plan.workouts.length);
+  const [history, progressao] = await Promise.all([buildHistory(window), buildProgressao()]);
   const declared = getOnboardingAnswers();
   return {
     plano_atual: plan,
     ...(declared ? { perfil_declarado: buildDeclaredProfile(declared) } : {}),
-    sessions,
+    sessions: history.sessions,
+    ...(history.anterior.length > 0 ? { historico_anterior: history.anterior } : {}),
     progressao,
   };
 }

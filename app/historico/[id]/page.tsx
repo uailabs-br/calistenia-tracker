@@ -55,7 +55,7 @@ export default function SessionDetailPage({
   const { session, logs } = data;
   const isFreeform = session.source === "freeform";
   const day = isFreeform ? undefined : (session.workout_id ? getWorkoutById(session.workout_id) : undefined);
-  const accent = day?.accent ?? "#a89cff";
+  const accent = day?.accent ?? "#8174e8";
   const duration =
     session.started_at && session.ended_at
       ? formatDuration(session.started_at, session.ended_at)
@@ -110,7 +110,7 @@ export default function SessionDetailPage({
             </span>
           )}
         </div>
-        <h1 className="mt-2 text-2xl font-semibold leading-tight">
+        <h1 className="display mt-2 text-3xl leading-tight">
           {isFreeform ? "Treino avulso" : (day?.title ?? "Treino")}
         </h1>
         <p className="mt-1 text-sm text-muted">{longDate(session.date)}</p>

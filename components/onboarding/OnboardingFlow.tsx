@@ -187,7 +187,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
 
   // Toda troca de tela começa do topo. O miolo é remontado (key), o que já
   // zera o scroll dele; o window.scrollTo cobre quem chegou aqui de uma página
-  // rolada (ex.: "refazer onboarding", que fica no fim do Config).
+  // rolada (ex.: "refazer onboarding", que fica em Ajustes).
   useEffect(() => {
     scroller.current?.scrollTo({ top: 0 });
     window.scrollTo({ top: 0 });
@@ -314,7 +314,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
         <div className="my-auto w-full py-1">
         {view === "plano" && (
           <>
-            <h1 className="text-[1.75rem] font-bold leading-[1.15] tracking-tight">Escolher o plano</h1>
+            <h1 className="display text-[2.125rem] leading-[1.1]">Escolher o plano</h1>
             <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-muted">
               {redo
                 ? "Trocar de plano não apaga nada do histórico, mas muda os treinos daqui pra frente."
@@ -351,7 +351,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
 
         {view === "step" && step === "nome" && (
           <>
-            <h1 className="text-[1.75rem] font-bold leading-[1.15] tracking-tight">{redo ? "Refazer suas respostas" : "Como te chamo?"}</h1>
+            <h1 className="display text-[2.125rem] leading-[1.1]">{redo ? "Refazer suas respostas" : "Como te chamo?"}</h1>
             <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-muted">
               {redo
                 ? "Seu histórico fica intacto — vamos só reconferir seu nível e seu equipamento."
@@ -372,7 +372,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
 
         {view === "step" && step === "equipamento" && (
           <>
-            <h1 className="text-[1.75rem] font-bold leading-[1.15] tracking-tight">Onde você treina?</h1>
+            <h1 className="display text-[2.125rem] leading-[1.1]">Onde você treina?</h1>
             <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-muted">
               Montamos seu treino com o que você tem à mão.
             </p>
@@ -389,7 +389,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
 
         {view === "step" && step === "nivel" && (
           <>
-            <h1 className="text-[1.75rem] font-bold leading-[1.15] tracking-tight">Qual seu nível atual?</h1>
+            <h1 className="display text-[2.125rem] leading-[1.1]">Qual seu nível atual?</h1>
             <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-muted">
               Na dúvida, fique com o menor — seu treino sobe de nível sozinho conforme você evolui.
             </p>
@@ -406,7 +406,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
 
         {view === "step" && step === "limitacoes" && (
           <>
-            <h1 className="text-[1.75rem] font-bold leading-[1.15] tracking-tight">Alguma dor ou limitação hoje?</h1>
+            <h1 className="display text-[2.125rem] leading-[1.1]">Alguma dor ou limitação hoje?</h1>
             <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-muted">
               Pode marcar mais de uma. Nada sai do seu treino — serve pra você, e
               pra IA do próximo ciclo, pegar leve na região.
@@ -457,10 +457,10 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
 
         {view === "step" && step === "objetivo" && (
           <>
-            <h1 className="text-[1.75rem] font-bold leading-[1.15] tracking-tight">Qual seu foco principal?</h1>
+            <h1 className="display text-[2.125rem] leading-[1.1]">Qual seu foco principal?</h1>
             <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-muted">
               Pra onde você quer evoluir primeiro. Guia a IA no próximo ciclo e não
-              muda o plano de agora — skills específicas você escolhe em Config.
+              muda o plano de agora — skills específicas você escolhe em Ajustes.
             </p>
             <div
               role="radiogroup"
@@ -490,7 +490,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
 
         {view === "step" && step === "frequencia" && (
           <>
-            <h1 className="text-[1.75rem] font-bold leading-[1.15] tracking-tight">Quantos dias por semana?</h1>
+            <h1 className="display text-[2.125rem] leading-[1.1]">Quantos dias por semana?</h1>
             <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-muted">Escolha o que cabe na sua rotina de verdade.</p>
             <div className="mt-6 flex justify-center gap-3" role="radiogroup" aria-label="Dias por semana">
               {DAYS_OPTIONS.map((d) => (
@@ -516,7 +516,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
 
         {view === "step" && step === "resumo" && (
           <>
-            <h1 className="text-[1.75rem] font-bold leading-[1.15] tracking-tight">{redo ? "Tudo certo" : "Seu ponto de partida"}</h1>
+            <h1 className="display text-[2.125rem] leading-[1.1]">{redo ? "Tudo certo" : "Seu ponto de partida"}</h1>
             <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-muted">
               {redo
                 ? "É assim que o app passa a te ver. Seu histórico não muda."

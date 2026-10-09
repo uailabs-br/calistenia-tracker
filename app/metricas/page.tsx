@@ -20,7 +20,7 @@ import {
   getActivityHeatmap,
 } from "@/lib/db/queries/metrics";
 
-const AC = "#a89cff"; // accent neutro das métricas (roxo MU)
+const AC = "#8174e8"; // accent neutro das métricas (roxo MU)
 
 export default function MetricasPage() {
   const overview = useLiveQuery(() => getOverview(), []);
@@ -41,7 +41,7 @@ export default function MetricasPage() {
 
   return (
     <div className="px-4">
-      <PageHeader title="Métricas" subtitle="do log, sem invenção" />
+      <PageHeader title="Evolução" />
 
       {!overview ? (
         <MetricsSkeleton />

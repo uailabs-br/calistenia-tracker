@@ -11,6 +11,8 @@ export function ConfirmDialog({
   confirmLabel,
   cancelLabel = "Cancelar",
   danger = false,
+  secondaryLabel,
+  onSecondary,
   onConfirm,
   onCancel,
 }: {
@@ -19,6 +21,9 @@ export function ConfirmDialog({
   confirmLabel: string;
   cancelLabel?: string;
   danger?: boolean;
+  /** Atalho opcional acima dos botões (ex.: fazer backup antes de apagar tudo). */
+  secondaryLabel?: string;
+  onSecondary?: () => void;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -48,7 +53,16 @@ export function ConfirmDialog({
         <p id={descId} className="mt-2 text-sm leading-snug text-muted">
           {message}
         </p>
-        <div className="mt-5 flex gap-2">
+        {secondaryLabel && onSecondary && (
+          <button
+            type="button"
+            onClick={onSecondary}
+            className="tap mt-4 w-full rounded-xl border border-border bg-surface2 py-3 font-medium"
+          >
+            {secondaryLabel}
+          </button>
+        )}
+        <div className={`${secondaryLabel ? "mt-2" : "mt-5"} flex gap-2`}>
           <button
             type="button"
             onClick={onCancel}

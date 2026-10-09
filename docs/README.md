@@ -41,11 +41,14 @@
 
 ### Registros — decisões por feature
 
-Um por feature grande. Registram **o porquê** das decisões, não o passo a passo. Todos implementados.
+Um por feature grande. Registram **o porquê** das decisões, não o passo a passo.
+Implementados, salvo onde a coluna disser outra coisa.
 
 | Documento | Entregue em | Decisão central |
 |---|---|---|
+| [`PLAN-sync-e-auth.md`](PLAN-sync-e-auth.md) | **proposto** (alvo v2.0) | Auth anônimo na Supabase + sync local-first das 3 tabelas. Métrica deixa de ser feature e vira query: o dado sobe por razão de produto (durabilidade, 2º aparelho, gatilho de push real). Descarta telemetria anônima. **Revisa regras do CLAUDE.md** e revoga o guard-rail de sync. |
 | [`PLAN-onboarding-e-planos-semente.md`](PLAN-onboarding-e-planos-semente.md) | **implementado** (sementes em rascunho) | Onboarding de 4 perguntas leigas de capacidade (escada de skills invisível) que semeia o mapa de skills e roteia pra um de 3 planos-semente. Destrava o uso por terceiros, inclusive iniciantes. Tem uma seção com o que mudou em relação ao proposto. |
+| [`PLAN-config-ajustes.md`](PLAN-config-ajustes.md) | **implementado** (em refinamento) | Menu Config vira "Ajustes": lista agrupada estilo iOS, subtelas pra plano e exercícios, feedback local por linha e vocabulário de calistenia/app. Tem a alternativa descartada (manter cards colapsáveis). |
 | [`PLAN-treinos-por-letra.md`](PLAN-treinos-por-letra.md) | v1.8+ (`7776ac4`) | Treinos deixam de ser dias da semana e passam a ser letras (A, B, C…) numa sequência cíclica. Separa identidade, ordem e data. Inclui a migração do histórico (Dexie v5). |
 | [`PLAN-treino-dinamico.md`](PLAN-treino-dinamico.md) | v1.8 | Série extra, exercício adicionado no meio do treino e snapshot do exercício em cada log — mudar o plano deixa de reescrever o passado. |
 | [`PLAN-treino-avulso.md`](PLAN-treino-avulso.md) | v1.6 | Registrar treino fora do programa como `Session` sem `plan_day_id`, reaproveitando o pipeline de streak. |

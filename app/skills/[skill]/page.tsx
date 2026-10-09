@@ -27,7 +27,7 @@ const BackLink = () => (
 );
 
 const CAT_ACCENT: Record<string, string> = {
-  Puxar: "#a89cff",
+  Puxar: "#8174e8",
   Empurrar: "#7fd1ae",
   Core: "#f2b366",
   Pernas: "#e88fb0",

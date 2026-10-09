@@ -33,8 +33,8 @@ export function NextWorkoutCard({
 
   return (
     <section
-      className="anim-fade-in-up rounded-card border p-5"
-      style={{ borderColor: workout.accent, background: workout.accent_bg }}
+      className="anim-fade-in-up glow rounded-card p-5"
+      style={{ "--ac": workout.accent, background: workout.accent_bg } as React.CSSProperties}
     >
       <div className="flex items-center gap-2">
         <span
@@ -49,7 +49,7 @@ export function NextWorkoutCard({
         </span>
       </div>
 
-      <h2 className="mt-2 text-2xl font-semibold leading-tight">{workout.title}</h2>
+      <h2 className="display mt-2 text-3xl leading-tight">{workout.title}</h2>
 
       {doneToday.length > 0 && !activeHere && (
         <p className="mt-2 flex items-center gap-1.5 text-xs text-muted">
@@ -60,8 +60,8 @@ export function NextWorkoutCard({
 
       <Link
         href={`/treino/${workout.id}`}
-        className="tap mt-4 flex w-full items-center justify-center rounded-xl py-3.5 text-center font-semibold active:scale-[0.99]"
-        style={{ background: workout.accent, color: "var(--color-on-accent)" }}
+        className="btn-primary tap mt-4 flex w-full items-center justify-center rounded-xl py-3.5 text-center font-semibold"
+        style={{ "--ac": workout.accent } as React.CSSProperties}
       >
         {activeHere ? "Continuar treino" : "Começar treino"}
       </Link>

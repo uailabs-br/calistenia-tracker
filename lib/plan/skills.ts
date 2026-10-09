@@ -252,3 +252,10 @@ const WORKOUT_SKILL_TO_ID: Record<string, string> = {
 export function skillIdForWorkout(daySkill: string): string | undefined {
   return WORKOUT_SKILL_TO_ID[daySkill];
 }
+
+/**
+ * Rótulos de `workout.skill` que resolvem pra uma skill canônica. Exportado
+ * porque o prompt da IA (lib/plan/aiSchema.ts) precisa listá-los: rótulo fora
+ * daqui é só texto exibido, e o mapa de skills fica vazio sem a IA saber por quê.
+ */
+export const WORKOUT_SKILL_LABELS: string[] = Object.keys(WORKOUT_SKILL_TO_ID);

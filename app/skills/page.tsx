@@ -11,7 +11,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { ChevronRightIcon } from "@/components/ui/icons";
 
 const CAT_ACCENT: Record<string, string> = {
-  Puxar: "#a89cff",
+  Puxar: "#8174e8",
   Empurrar: "#7fd1ae",
   Core: "#f2b366",
   Pernas: "#e88fb0",
@@ -30,7 +30,7 @@ export default function SkillsIndexPage() {
 
   return (
     <div className="px-4">
-      <PageHeader title="Skills" subtitle="progressões de calistenia" />
+      <PageHeader title="Skills" />
 
       <ul className="flex flex-col gap-2">
         {skills.map((skill) => {

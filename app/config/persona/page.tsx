@@ -1,30 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { skills, type SkillCategory } from "@/lib/plan/skills";
 import { getAiGoals, setAiGoals, getAiNotes, setAiNotes } from "@/lib/utils/aiPersona";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { ChevronLeftIcon, CheckIcon } from "@/components/ui/icons";
+import { BackLink } from "@/components/ui/BackLink";
+import { CheckIcon } from "@/components/ui/icons";
 
 const CAT_ACCENT: Record<SkillCategory, string> = {
-  Puxar: "#a89cff",
+  Puxar: "#8174e8",
   Empurrar: "#7fd1ae",
   Core: "#f2b366",
   Pernas: "#e88fb0",
 };
 
 const CATEGORIES: SkillCategory[] = ["Puxar", "Empurrar", "Core", "Pernas"];
-
-const BackLink = () => (
-  <Link
-    href="/config"
-    className="tap -ml-2 mb-2 inline-flex items-center gap-1 pt-6 text-sm text-muted"
-  >
-    <ChevronLeftIcon className="h-4 w-4" />
-    Config
-  </Link>
-);
 
 /** Objetivos (skills prioritárias) + notas livres pra montar a persona da IA. */
 export default function PersonaPage() {
@@ -45,10 +35,10 @@ export default function PersonaPage() {
   return (
     <div className="px-4">
       <BackLink />
-      <PageHeader title="Meus objetivos" subtitle="pra montar o prompt da IA" />
+      <PageHeader title="Meus objetivos" />
       <p className="-mt-2 mb-4 text-sm text-muted">
-        Marca as skills que são prioridade agora. O app monta o texto de
-        persona sozinho pra colar na IA junto com o esquema e o histórico.
+        Marca as skills que são prioridade agora. O app monta o pedido
+        sozinho pra você colar na IA, junto com seu treino atual e seu histórico.
       </p>
 
       {CATEGORIES.map((cat) => {

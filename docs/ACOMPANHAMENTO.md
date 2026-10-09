@@ -20,6 +20,53 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, branch `onboarding-nivel-e-ux`, 2026-10-09, 7ª leva):**
+> revisão do **prompt de "Montar treino com IA"**, que era contrato de formato e virou
+> briefing de coach. Três buracos fechados: os campos de topo do plano (`id`, `version`,
+> `name`, `source`, `imported_at`) nunca estavam documentados — resposta boa era recusada
+> na validação; os tokens do export (`casa_barra`, `forca`, `regress`, `limitacoes`) iam
+> crus, sem legenda nem a ação que cada sinal exige; e as escadas iam sem o critério
+> numérico de cada degrau, então a IA escrevia alvo abaixo do critério e o atleta nunca
+> ficava `ready`. Agora o prompt leva o critério de cada degrau (de `formatCriteria`, o
+> mesmo texto da UI), equipamento e pré-requisito por skill, os ids que o app já conhece,
+> as duas armadilhas de runtime (`rest` em minutos vira segundos; `parsed: null` com
+> `skill_ref` vira sinal falso de regressão) e 15 regras de método. Novo
+> `lib/plan/aiPrompt.ts` (briefing + `buildAiPrompt`) separado de `aiSchema.ts` (formato).
+> Medido o tamanho em seguida: a instrução são ~6,2k tokens fixos e não tem corte que renda
+> (os candidatos dão 250–800 tokens e pedem filtro que erra); o que cresce é o dado. Daí
+> duas mudanças no payload: **serialização seletiva** (plano indentado, porque a IA edita
+> campo a campo; histórico compacto, porque é leitura em bloco) e **janela de detalhe no
+> `sessions`**, que não existia — o export mandava todo treino concluído, pra sempre. A
+> janela é em **sessões de plano, não em dias** (`detailWindow = max(18, 6 × treinos)`):
+> o que importa é quantas vezes a IA vê cada movimento, e 30 dias num plano de 5 treinos dá
+> 2,6 passadas, abaixo das 3 seguidas que o motor usa pra decidir regressão; janela em dias
+> também zera o histórico de quem parou cinco semanas. Sessão avulsa não consome janela. O
+> que fica atrás vira `historico_anterior`, resumido por movimento com `desde`/`ate`/
+> `sessoes`/`melhor_serie` — `desde` é o que deixa a IA ver estagnação longa. Com 60 treinos
+> registrados: ~28,6k → ~17,4k tokens, e agora com teto (200 treinos seguem ~17k).
+> No primeiro teste real a resposta da IA foi recusada por "JSON inválido": o
+> `stripCodeFences` só aceitava cerca de código que fosse o texto inteiro, e a resposta vem
+> com prosa em volta. A importação passou a isolar o JSON (cerca em qualquer posição, ou do
+> 1º `{` ao último `}`), a tolerar comentário `//` e vírgula sobrando — varrendo com
+> consciência de string, pra não mutilar URL nem `obs` — e a distinguir **resposta cortada**
+> (chaves abertas) de JSON sujo, com o trecho do erro na mensagem. No prompt: proibição de
+> texto em volta e pedido de JSON compacto (saída de ~7,0k → ~4,2k tokens, que é o que faz
+> caber no limite do chat). No segundo teste real a falha foi outra: a IA devolveu
+> `"duration":"\~38 min"` — escape de markdown, que o JSON não aceita, e o `~` vinha do
+> exemplo do próprio prompt. O parser passou a tolerar escape inválido (tirar a barra só
+> conserta: em JSON válido aquilo já era erro), o exemplo perdeu o `~` e o contrato ganhou
+> uma seção dizendo que campo de texto é string JSON, não markdown.
+> Ver [PLAN-prompt-ia.md](PLAN-prompt-ia.md). 432 testes.
+
+> **Atualização (pós-v1.8, branch `onboarding-nivel-e-ux`, 2026-10-09, 6ª leva):**
+> redesenho do menu **Config → Ajustes**. Lista agrupada estilo iOS (Perfil · Treino ·
+> Lembrete · Dados · apagar isolado no fim) com primitivas novas `SettingsGroup`,
+> `SettingsRow` e `Switch`; "Criar treino com IA" saiu da tela-mãe pra `/config/plano` e
+> "Meus exercícios" virou `/config/exercicios`. Feedback unificado em toast (some o banner
+> global), spinner por linha, haptics curtos e "Fazer backup antes" dentro do diálogo de
+> apagar tudo. Vocabulário trocado por termos de calistenia/app (ver
+> [PLAN-config-ajustes.md](PLAN-config-ajustes.md)). Meta semanal virou stepper. 403 testes.
+
 > **Atualização (pós-v1.8, em `main`, 2026-10-09, 5ª leva):** revisão de UX/UI do
 > onboarding (sem mudar o que ele coleta). **Ritmo vertical:** cada tela colava o
 > conteúdo no topo com um vazio no rodapé; agora o corpo centra num wrapper
