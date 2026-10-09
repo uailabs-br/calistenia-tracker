@@ -8,9 +8,9 @@ import { StatTile } from "@/components/metrics/StatTile";
 import { Badges } from "@/components/metrics/Badges";
 import { FlagIncidenceRow } from "@/components/metrics/FlagIncidenceRow";
 import { Sparkline } from "@/components/metrics/Sparkline";
+import { ConsistencyHeatmap } from "@/components/metrics/ConsistencyHeatmap";
 import Link from "next/link";
 import { ChevronDownIcon, ChevronRightIcon } from "@/components/ui/icons";
-import { shortDate } from "@/lib/utils/date";
 import {
   getOverview,
   getFlagIncidence,
@@ -21,18 +21,6 @@ import {
 } from "@/lib/db/queries/metrics";
 
 const AC = "#a89cff"; // accent neutro das métricas (roxo MU)
-const DAY_LETTERS = ["S", "T", "Q", "Q", "S", "S", "D"]; // Seg→Dom
-
-/** Cor de uma célula do calendário: treinou = cheio, não treinou = vazio. Futuro = invisível. */
-function heatCellStyle(d: { trained: boolean; future: boolean; isToday: boolean }): React.CSSProperties {
-  if (d.future) return { background: "transparent" };
-  const base: React.CSSProperties = d.isToday
-    ? { boxShadow: `inset 0 0 0 1.5px ${AC}` }
-    : {};
-  return d.trained
-    ? { ...base, background: AC }
-    : { ...base, background: "var(--color-surface2)" };
-}
 
 export default function MetricasPage() {
   const overview = useLiveQuery(() => getOverview(), []);
@@ -108,39 +96,7 @@ export default function MetricasPage() {
           {/* Calendário de constância: cada quadrado é um dia */}
           <h2 className="mb-2 mt-6 text-sm font-semibold">Últimas 12 semanas</h2>
           <div className="rounded-card border border-border bg-surface px-4 py-3">
-            {heatmap && (
-              <div className="flex gap-2">
-                <div className="flex flex-col font-mono text-[10px] text-muted">
-                  <div className="grid grid-rows-7 gap-1">
-                    {DAY_LETTERS.map((l, i) => (
-                      <span key={i} className="flex aspect-square items-center">{l}</span>
-                    ))}
-                  </div>
-                </div>
-                <div className="flex w-full flex-col gap-1">
-                  <div className="grid w-full grid-flow-col auto-cols-fr grid-rows-7 gap-1">
-                    {heatmap.flat().map((d) => (
-                      <div
-                        key={d.date}
-                        title={`${shortDate(d.date)} · ${d.count} ${d.count === 1 ? "treino" : "treinos"}`}
-                        className="aspect-square rounded-[4px]"
-                        style={heatCellStyle({ ...d, trained: d.count > 0 })}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-            <div className="mt-3 flex items-center justify-end gap-3 text-[10px] text-muted">
-              <span className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-[3px]" style={heatCellStyle({ trained: false, future: false, isToday: false })} />
-                não treinou
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-[3px]" style={heatCellStyle({ trained: true, future: false, isToday: false })} />
-                treinou
-              </span>
-            </div>
+            {heatmap && <ConsistencyHeatmap weeks={heatmap} />}
           </div>
 
           {/* Incidência de flags - métrica principal */}
