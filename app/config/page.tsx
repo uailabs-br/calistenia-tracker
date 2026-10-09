@@ -22,8 +22,10 @@ import {
   applyPlan,
   clearPlanOverride,
   hasPlanOverride,
+  summarize,
   type PlanSummary,
 } from "@/lib/plan/importPlan";
+import { seeds } from "@/lib/plan/seeds";
 import {
   getProfileName,
   setProfileName,
@@ -292,6 +294,28 @@ export default function ConfigPage() {
         >
           Copiar prompt completo para IA
         </button>
+
+        <p className="mt-4 text-sm font-medium">Planos prontos</p>
+        <p className="mt-0.5 text-sm text-muted">
+          Quer recomeçar de um plano pronto? Seu histórico não é afetado.
+        </p>
+        <ul className="mt-2 flex flex-col gap-2">
+          {seeds.map((seed) => (
+            <li key={seed.id}>
+              <button
+                type="button"
+                onClick={() => setPendingPlan({ plan: seed.plan, summary: summarize(seed.plan) })}
+                className="tap w-full rounded-xl border border-border bg-surface2 px-3 py-2.5 text-left active:scale-[0.99]"
+              >
+                <span className="block text-sm font-medium">
+                  {seed.name}
+                  {seed.plan.id === plan.id && <span className="ml-1.5 text-muted">· em uso</span>}
+                </span>
+                <span className="mt-0.5 block text-xs text-muted">{seed.summary}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
 
         <textarea
           value={planText}

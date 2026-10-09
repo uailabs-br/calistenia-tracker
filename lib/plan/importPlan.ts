@@ -20,7 +20,7 @@ function stripCodeFences(text: string): string {
   return fenced ? fenced[1].trim() : trimmed;
 }
 
-function summarize(plan: Plan): PlanSummary {
+export function summarize(plan: Plan): PlanSummary {
   const exercises = plan.workouts.reduce(
     (n, w) => n + w.blocks.reduce((m, b) => m + b.exercises.length, 0),
     0

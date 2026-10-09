@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { db } from "@/lib/db/schema";
 import { createSession, completeSession } from "@/lib/db/repositories/sessions";
 import { upsertLog } from "@/lib/db/repositories/logs";
-import { exportForAI } from "@/lib/plan/exportForAI";
+import { exportForAI, buildDeclaredProfile } from "@/lib/plan/exportForAI";
 import { buildPersonaText } from "@/lib/utils/aiPersona";
 import { plan } from "@/lib/plan/loader";
 
@@ -133,5 +133,38 @@ describe("buildPersonaText", () => {
     const text = buildPersonaText([], "");
     expect(text).toContain("coach especialista em calistenia");
     expect(text).not.toContain("objetivos prioritários");
+  });
+});
+
+describe("exportForAI — perfil_declarado", () => {
+  it("traduz as respostas pra nome de skill e etapa em foco, sem jargão de índice", () => {
+    const perfil = buildDeclaredProfile({
+      equipment: "praca",
+      push_up: "6-15",
+      pull_up: "1-2",
+      handstand_hold: "nunca",
+      dips: "completo",
+      days_per_week: 4,
+    });
+    expect(perfil.equipamento).toBe("praca");
+    expect(perfil.dias_por_semana).toBe(4);
+    expect(perfil.skills).toContainEqual({ skill: "Pull-up", etapa_em_foco: "Pull-up (Pronado)" });
+    expect(perfil.skills).toContainEqual({ skill: "Push-up", etapa_em_foco: "Flexão Diamante" });
+    expect(perfil.skills).toHaveLength(4);
+  });
+
+  it("só lista as skills que foram perguntadas pro equipamento", () => {
+    const perfil = buildDeclaredProfile({
+      equipment: "chao",
+      push_up: "0",
+      handstand_hold: "nunca",
+      days_per_week: 3,
+    });
+    expect(perfil.skills.map((s) => s.skill).sort()).toEqual(["Handstand (Equilíbrio)", "Push-up"]);
+  });
+
+  it("sem onboarding feito, o campo não aparece no export", async () => {
+    const out = await exportForAI();
+    expect("perfil_declarado" in out).toBe(false);
   });
 });
