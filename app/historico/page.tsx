@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, type Session } from "@/lib/db/schema";
 import { plan, getWorkoutById } from "@/lib/plan/loader";
+import { usePlanReady } from "@/lib/utils/usePlanReady";
 import {
   shortDate,
   weekStartKey,
@@ -161,10 +162,11 @@ export default function HistoricoPage() {
 
   const reviewByWeek = new Map((weekHistory ?? []).map((r) => [r.weekStart, r]));
   const currentKey = weekStartKey(localDateKey());
+  const planReady = usePlanReady();
 
   return (
     <div className="px-4">
-      <PageHeader title="Histórico" subtitle={plan.name} />
+      <PageHeader title="Histórico" subtitle={planReady ? plan.name : undefined} />
       {groups === undefined ? (
         <HistorySkeleton />
       ) : groups.length === 0 ? (

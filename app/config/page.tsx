@@ -22,8 +22,10 @@ import {
   applyPlan,
   clearPlanOverride,
   hasPlanOverride,
+  summarize,
   type PlanSummary,
 } from "@/lib/plan/importPlan";
+import { seeds } from "@/lib/plan/seeds";
 import {
   getProfileName,
   setProfileName,
@@ -59,7 +61,9 @@ export default function ConfigPage() {
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [showReset, setShowReset] = useState(false);
   const [name, setName] = useState("");
-  const [goal, setGoal] = useState(plan.workouts.length);
+  // null até o mount: `plan` vem do override do localStorage, que não existe no
+  // HTML estático. Renderizar qualquer coisa derivada dele direto quebra a hidratação.
+  const [goal, setGoal] = useState<number | null>(null);
   const [install, setInstall] = useState<InstallState | null>(null);
   const [planText, setPlanText] = useState("");
   const [planErrors, setPlanErrors] = useState<string[] | null>(null);
@@ -67,6 +71,8 @@ export default function ConfigPage() {
     null
   );
   const [showRestorePlan, setShowRestorePlan] = useState(false);
+  /** Plano em vigor. Só depois do mount — ver o comentário de `goal`. */
+  const [activePlan, setActivePlan] = useState<Plan | null>(null);
   const [hasOverride, setHasOverride] = useState(false);
   const [aiGoalsCount, setAiGoalsCount] = useState(0);
 
@@ -75,6 +81,7 @@ export default function ConfigPage() {
     setName(getProfileName());
     setGoal(getWeekGoal() ?? plan.workouts.length);
     setHasOverride(hasPlanOverride());
+    setActivePlan(plan);
     setAiGoalsCount(getAiGoals().length);
     if (isStandalone()) {
       setInstall("standalone");
@@ -247,21 +254,37 @@ export default function ConfigPage() {
           Meta semanal
         </label>
         <p className="mt-0.5 text-sm text-muted">
-          Quantos treinos por semana fecham o anel. Padrão: {plan.workouts.length}.
+          Quantos treinos por semana fecham o anel.{" "}
+          {activePlan ? `Padrão: ${activePlan.workouts.length}.` : ""}
         </p>
         <input
           id="week-goal"
           type="number"
           min={1}
           max={WEEK_GOAL_MAX}
-          value={goal}
+          value={goal ?? ""}
           onChange={(e) => {
             const n = Number(e.target.value);
             setGoal(n);
-            setWeekGoal(n === plan.workouts.length ? null : n);
+            setWeekGoal(n === (activePlan?.workouts.length ?? -1) ? null : n);
           }}
           className="tnum mt-2 w-20 rounded-xl border border-border bg-surface2 px-3 py-2.5 text-base outline-none focus:border-muted"
         />
+
+        <div className="mt-5 border-t border-border pt-4">
+          <p className="text-sm font-medium">Nível e equipamento</p>
+          <p className="mt-0.5 text-sm text-muted">
+            Mudou de equipamento ou evoluiu? Responda de novo as perguntas do
+            começo. Seu histórico não é afetado, e você escolhe se troca de plano.
+          </p>
+          <Link
+            href="/onboarding/refazer"
+            className="tap mt-3 flex items-center justify-between gap-2 rounded-xl border border-border bg-surface2 px-3 py-2.5 text-sm font-medium"
+          >
+            Refazer onboarding
+            <ChevronRightIcon className="h-4 w-4 shrink-0 text-muted" />
+          </Link>
+        </div>
       </CollapsibleCard>
 
       <CollapsibleCard title="Criar treino com IA" className="mb-3">
@@ -292,6 +315,28 @@ export default function ConfigPage() {
         >
           Copiar prompt completo para IA
         </button>
+
+        <p className="mt-4 text-sm font-medium">Planos prontos</p>
+        <p className="mt-0.5 text-sm text-muted">
+          Quer recomeçar de um plano pronto? Seu histórico não é afetado.
+        </p>
+        <ul className="mt-2 flex flex-col gap-2">
+          {seeds.map((seed) => (
+            <li key={seed.id}>
+              <button
+                type="button"
+                onClick={() => setPendingPlan({ plan: seed.plan, summary: summarize(seed.plan) })}
+                className="tap w-full rounded-xl border border-border bg-surface2 px-3 py-2.5 text-left active:scale-[0.99]"
+              >
+                <span className="block text-sm font-medium">
+                  {seed.name}
+                  {seed.plan.id === activePlan?.id && <span className="ml-1.5 text-muted">· em uso</span>}
+                </span>
+                <span className="mt-0.5 block text-xs text-muted">{seed.summary}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
 
         <textarea
           value={planText}
@@ -454,7 +499,7 @@ export default function ConfigPage() {
       <section className="mt-6 text-xs text-muted">
         <p>Calistenia Tracker v{pkg.version.split(".").slice(0, 2).join(".")}</p>
         <p>
-          Plano: {plan.name} (v{plan.version})
+          {activePlan ? `Plano: ${activePlan.name} (v${activePlan.version})` : ""}
         </p>
       </section>
       <div className="h-4" />

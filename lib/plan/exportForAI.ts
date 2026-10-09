@@ -4,6 +4,8 @@ import { resolveLogExercise } from "@/lib/plan/resolve";
 import type { Plan } from "@/lib/plan/schema";
 import { extraSets, plannedSets } from "@/lib/domain/volume";
 import { skills, getLevelInfo } from "@/lib/plan/skills";
+import { mapAnswersToSkillLevels, type OnboardingAnswers } from "@/lib/domain/onboarding";
+import { getOnboardingAnswers } from "@/lib/utils/onboarding";
 import {
   getSkillLogs,
   getSkillState,
@@ -40,11 +42,38 @@ export interface AiProgressSignal {
   proximo_degrau: string | null;
 }
 
+/**
+ * O que a pessoa declarou no onboarding. Autodeclarado e anterior a qualquer
+ * treino: a IA deve tratar como ponto de partida e preferir `progressao`, que
+ * vem dos registros, assim que houver histórico.
+ */
+export interface AiDeclaredProfile {
+  equipamento: string;
+  dias_por_semana: number;
+  /** Etapa que a pessoa disse estar trabalhando; as anteriores ela já faz. */
+  skills: { skill: string; etapa_em_foco: string }[];
+}
+
+export function buildDeclaredProfile(a: OnboardingAnswers): AiDeclaredProfile {
+  const levels = mapAnswersToSkillLevels(a);
+  return {
+    equipamento: a.equipment,
+    dias_por_semana: a.days_per_week,
+    skills: Object.entries(levels).flatMap(([id, idx]) => {
+      const skill = skills.find((s) => s.id === id);
+      const step = skill?.steps[idx];
+      return skill && step ? [{ skill: skill.name, etapa_em_foco: step.label }] : [];
+    }),
+  };
+}
+
 export interface AiExport {
   /** Plano em vigor (o que o app está rodando hoje) — a IA edita a partir daqui,
    *  não reconstrói do zero: nomes de exercício, obs, flags, aquecimento etc.
    *  só existem aqui, não no resumo condensado de `sessions`. */
   plano_atual: Plan;
+  /** Só existe se a pessoa fez o onboarding (e não pulou). */
+  perfil_declarado?: AiDeclaredProfile;
   sessions: AiHistorySession[];
   progressao: AiProgressSignal[];
 }
@@ -147,5 +176,11 @@ async function buildProgressao(): Promise<AiProgressSignal[]> {
 /** Plano em vigor + resumo do histórico + sinal de progressão, pronto pra colar numa IA externa. */
 export async function exportForAI(): Promise<AiExport> {
   const [sessions, progressao] = await Promise.all([buildSessions(), buildProgressao()]);
-  return { plano_atual: plan, sessions, progressao };
+  const declared = getOnboardingAnswers();
+  return {
+    plano_atual: plan,
+    ...(declared ? { perfil_declarado: buildDeclaredProfile(declared) } : {}),
+    sessions,
+    progressao,
+  };
 }

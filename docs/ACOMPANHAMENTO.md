@@ -20,6 +20,21 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, em `main`, 2026-10-08):** o app deixou de pressupor
+> o autor e passou a poder ser testado por terceiros. O `plan.json` bundlado não
+> é mais o plano pessoal (que vive em `lib/plan/plans/` e é reaplicado sozinho
+> pelo `PlanBoot`, que acha o plano certo no `plan_day_id` do histórico) e sim o
+> `iniciante-com-barra`. **Onboarding** de até 8 telas com perguntas leigas de
+> capacidade ("consegue fazer uma barra?"), que semeiam o mapa de skills e
+> escolhem uma de três **sementes**; refazível pelo Config. **Dicas de primeiro
+> uso** nas três interações que o app inventou (alvo, botão de um toque, chips).
+> **Mapa de calor** das métricas realinhado e com profundidade. Corrigida a
+> **hidratação** quebrada em Config, Histórico e Treino para quem tem plano
+> importado — bug anterior a esta leva. 387 testes. **Pendente:** revisão do
+> conteúdo das sementes (são rascunho) e uso real no celular. Decisões, desvios
+> e o que ficou de fora em
+> [`PLAN-onboarding-e-planos-semente.md`](PLAN-onboarding-e-planos-semente.md).
+
 > **Atualização (pós-v1.8, em `main`):** treinos por letra. O plano deixou de ser uma
 > agenda por dia da semana: cada treino tem `id` (A, B, C…) e a ordem do plano é a
 > sequência — o próximo é o seguinte ao último concluído, em ciclo, sem limite de

@@ -2,7 +2,7 @@
 
 ## 1. Objetivo
 
-App pessoal para registrar execução dos treinos de calistenia durante a sessão, com zero fricção. Não gera treino: consome o plano existente (convertido de `treino-calistenia-jul-2026.html` para JSON) e registra o que foi feito.
+App pessoal para registrar execução dos treinos de calistenia durante a sessão, com zero fricção. Não gera treino: consome o plano existente (convertido de `docs/referencia/treino-calistenia-jul-2026.html` para JSON) e registra o que foi feito.
 
 ## 2. Usuário e contexto de uso
 

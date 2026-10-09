@@ -5,6 +5,7 @@ import { BottomNav } from "@/components/ui/BottomNav";
 import { SwUpdater } from "@/components/ui/SwUpdater";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { ToastProvider } from "@/components/ui/Toast";
+import { PlanBoot } from "@/components/ui/PlanBoot";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -53,6 +54,7 @@ export default function RootLayout({
       <body>
         <ToastProvider>
           <SwUpdater />
+          <PlanBoot />
           <main className="mx-auto min-h-dvh w-full max-w-md pb-24">
             <PageTransition>{children}</PageTransition>
           </main>

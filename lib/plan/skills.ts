@@ -241,6 +241,12 @@ const WORKOUT_SKILL_TO_ID: Record<string, string> = {
   MU: "muscle_up",
   "HS / Frog to HS": "handstand_hold",
   "Frog to HS": "handstand_hold",
+  // rótulos das sementes (lib/plan/seeds/), em linguagem de iniciante
+  Barra: "pull_up",
+  "Flexão": "push_up",
+  "Parada de mão": "handstand_hold",
+  Dips: "dips",
+  Agachamento: "pistol_squat",
 };
 
 export function skillIdForWorkout(daySkill: string): string | undefined {

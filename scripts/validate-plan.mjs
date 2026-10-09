@@ -1,34 +1,16 @@
-// Valida lib/plan/plan.json contra o schema Zod em build.
-// Falha o build (exit 1) se o plano estiver inválido.
-import { readFileSync } from "node:fs";
+// Valida os planos contra o schema Zod em build: o plan.json bundlado, as
+// sementes (lib/plan/seeds/) e o plano pessoal (lib/plan/plans/).
+// Falha o build (exit 1) se qualquer um estiver inválido.
+import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
-import { register } from "node:module";
 
-// Permite importar o schema TS via tsx-less: usamos o build do zod direto,
-// re-declarando o schema em JS seria duplicação. Em vez disso, importamos o
-// schema TS compilado on-the-fly. Node 24 não roda .ts nativo aqui, então
-// carregamos o schema como módulo ESM usando o loader do próprio Next não é
-// trivial — então validamos com uma cópia mínima do contrato aqui.
+// O schema TS não é importável daqui (Node não roda .ts neste script), então o
+// contrato é reconstruído abaixo com zod. test/seeds.test.ts roda o schema real
+// sobre as mesmas sementes.
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const planPath = resolve(__dirname, "../lib/plan/plan.json");
-
-let raw;
-try {
-  raw = readFileSync(planPath, "utf8");
-} catch (e) {
-  console.error(`✗ Não foi possível ler ${planPath}: ${e.message}`);
-  process.exit(1);
-}
-
-let plan;
-try {
-  plan = JSON.parse(raw);
-} catch (e) {
-  console.error(`✗ plan.json não é JSON válido: ${e.message}`);
-  process.exit(1);
-}
+const planDir = resolve(__dirname, "../lib/plan");
 
 // Importa o schema Zod compartilhado. Usamos a versão compilada via esbuild
 // embutido do Next não está disponível fora do build, então validamos com zod
@@ -157,22 +139,22 @@ const planSchema = z
     }
   });
 
-const result = planSchema.safeParse(plan);
-if (!result.success) {
-  console.error("✗ plan.json inválido:\n");
-  for (const issue of result.error.issues) {
-    console.error(`  • ${issue.path.join(".") || "(root)"}: ${issue.message}`);
+/** Valida um arquivo de plano; devolve { plan } ou { errors }. */
+function validatePlanFile(path) {
+  let plan;
+  try {
+    plan = JSON.parse(readFileSync(path, "utf8"));
+  } catch (e) {
+    return { errors: [`não foi possível ler/parsear: ${e.message}`] };
   }
-  process.exit(1);
+  const result = planSchema.safeParse(plan);
+  if (!result.success) {
+    return {
+      errors: result.error.issues.map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`),
+    };
+  }
+  return { plan };
 }
-
-const exCount = plan.workouts.reduce(
-  (n, w) => n + w.blocks.reduce((m, b) => m + b.exercises.length, 0),
-  0
-);
-console.log(
-  `✓ plan.json válido — ${plan.workouts.length} treinos, ${exCount} exercícios (v${plan.version})`
-);
 
 // ── Catálogo de exercícios (lib/plan/catalog.json) ─────────────────────────
 // Falha o build se houver id duplicado, alternativa inexistente, skill fora de
@@ -207,3 +189,47 @@ if (catalogErrors.length > 0) {
   process.exit(1);
 }
 console.log(`✓ catalog.json válido — ${catalog.length} exercícios`);
+
+// ── Planos: bundlado, sementes e pessoal ───────────────────────────────────
+// Semente é conteúdo escrito à mão e não inventa movimento: todo exercise.id
+// precisa existir no catálogo (ids do catálogo são estáveis pra sempre).
+// O plano pessoal e o bundlado só passam pelo schema.
+const jsonIn = (dir) =>
+  readdirSync(resolve(planDir, dir))
+    .filter((f) => f.endsWith(".json"))
+    .map((f) => `${dir}/${f}`);
+
+const files = [
+  { rel: "plan.json", checkCatalog: false },
+  ...jsonIn("seeds").map((rel) => ({ rel, checkCatalog: true })),
+  ...jsonIn("plans").map((rel) => ({ rel, checkCatalog: false })),
+];
+
+let failed = false;
+const planIds = new Map();
+for (const { rel, checkCatalog } of files) {
+  const { plan, errors = [] } = validatePlanFile(resolve(planDir, rel));
+  if (plan && checkCatalog) {
+    for (const w of plan.workouts)
+      for (const b of w.blocks)
+        for (const ex of b.exercises)
+          if (!catalogIds.has(ex.id)) errors.push(`${w.id}: exercício fora do catálogo (${ex.id})`);
+  }
+  if (plan && rel !== "plan.json") {
+    // plan.json é cópia de uma semente, então repete o id de propósito
+    if (planIds.has(plan.id)) errors.push(`id de plano repetido (${plan.id}) em ${planIds.get(plan.id)}`);
+    planIds.set(plan.id, rel);
+  }
+  if (errors.length > 0) {
+    failed = true;
+    console.error(`✗ ${rel} inválido:\n`);
+    for (const m of errors) console.error(`  • ${m}`);
+    continue;
+  }
+  const exCount = plan.workouts.reduce(
+    (n, w) => n + w.blocks.reduce((m, b) => m + b.exercises.length, 0),
+    0
+  );
+  console.log(`✓ ${rel} válido — ${plan.workouts.length} treinos, ${exCount} exercícios (v${plan.version})`);
+}
+if (failed) process.exit(1);

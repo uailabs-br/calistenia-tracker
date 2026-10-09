@@ -54,7 +54,7 @@ Legenda: ✅ feito e coberto por teste/validador · ◑ parcial · ⏳ pendente 
 - **Sem migração de banco.** Quase tudo é derivável de `Session`/`ExerciseLog`; o novo mora em
   `lib/db/queries/*`. Preserva compat. de backup (v1).
 - **`neg_flags` no `plan.json` [decisão 1.1 — aditivo, não-quebra].** Estender `exerciseSchema`
-  ([lib/plan/schema.ts:17](lib/plan/schema.ts#L17)) com `neg_flags: z.array(z.string()).optional()` —
+  ([lib/plan/schema.ts:17](../lib/plan/schema.ts#L17)) com `neg_flags: z.array(z.string()).optional()` —
   lista de *labels* de flag que contam como execução **suja**. `flags_selected` (log) continua string[].
   Execução limpa de um log = `flags_selected` não intersecta `neg_flags` do exercício.
   - _Alternativa avaliada:_ trocar `flags: string[]` por `{label, quality}[]` — mais expressivo, mas
@@ -63,7 +63,7 @@ Legenda: ✅ feito e coberto por teste/validador · ◑ parcial · ⏳ pendente 
 - **Skill goal já é representável.** O item de `day.progression` com `exercise_id: null` + `label` já é
   a skill final (ex.: "MU completo"). Não precisa de `skill_goal` novo para o spike.
 - **Gatilho de avaliação = virada de semana.** Reusar o hook do `WeekReviewCard`
-  ([components/home/WeekReviewCard.tsx:19](components/home/WeekReviewCard.tsx#L19)) para consolidar
+  ([components/home/WeekReviewCard.tsx:19](../components/home/WeekReviewCard.tsx#L19)) para consolidar
   streak/badges sem interromper o treino.
 
 ---
@@ -71,7 +71,7 @@ Legenda: ✅ feito e coberto por teste/validador · ◑ parcial · ⏳ pendente 
 ## Fase 0 · Confiança (bugs de dado — fazer já)
 
 ### 0.1 — Check falso "feito" em Próximos treinos
-**Técnico:** em [WeekStrip.tsx:41](components/home/WeekStrip.tsx#L41) `done` vem de
+**Técnico:** em `WeekStrip.tsx:41` (hoje `UpNext`) `done` vem de
 `doneWeekdays` (dias feitos **na semana corrente**). Como `upcoming` lista **ocorrências futuras** por
 distância, o treino de segunda já feito reaparece como "próxima segunda" com check indevido. Ocorrência
 futura nunca está concluída → remover o ramo `done` do `WeekStrip` (sempre mostrar `d.label`/`duration`),
@@ -83,10 +83,10 @@ marcado como próximo. Sem regressão no mini-calendário do `ConsistencyCard` (
 `today=quarta`, a próxima segunda vem `done:false`. Manual: fazer treino, conferir a lista.
 
 ### 0.2 — Aderência por dia usa dia executado, não o sugerido
-**Técnico:** [metrics.ts:96](lib/db/queries/metrics.ts#L96) conta `sessions.filter(s => s.weekday === d.weekday)`
+**Técnico:** [metrics.ts:96](../lib/db/queries/metrics.ts#L96) conta `sessions.filter(s => s.weekday === d.weekday)`
 — `s.weekday` é o dia **do plano** (sugerido). Trocar por dia **executado**:
 `weekdayOf(new Date(s.date + "T00:00:00"))` (mesmo cálculo que `getWeekStatus` já usa em
-[metrics.ts:236](lib/db/queries/metrics.ts#L236)). **Decisão aberta:** agrupar por dia-calendário do
+[metrics.ts:236](../lib/db/queries/metrics.ts#L236)). **Decisão aberta:** agrupar por dia-calendário do
 plano (rótulos Seg…Dom) atribuindo a sessão ao weekday real — default recomendado; documenta que treino
 adiantado conta no dia em que foi feito.
 **DoD:** treino de terça feito na segunda soma na barra de **segunda**, não na de terça. `pct` continua
@@ -97,7 +97,7 @@ credita a segunda. `fake-indexeddb` (padrão dos testes de repo).
 ### 0.3 — Tempo sugerido do treino
 **Técnico:** hoje `day.duration` é texto livre. Criar `estimateDurationSeconds(day)` em
 `lib/domain/` somando por exercício: `sets * TRABALHO_POR_SERIE[unit]` + `(sets-1) * rest` +
-`rest` entre exercícios. `rest` via `parseRestSeconds` ([parseTarget.ts:47](lib/domain/parseTarget.ts#L47)),
+`rest` entre exercícios. `rest` via `parseRestSeconds` ([parseTarget.ts:47](../lib/domain/parseTarget.ts#L47)),
 já existente. `TRABALHO_POR_SERIE`: `seconds`→`target`; `reps`→~3s/rep; `attempts`→~20s (constantes
 comentadas, "para fins de teste" como a nota pede). Exibir `~Xmin` calculado; manter o texto do plano só
 como fallback quando `parsed` faltar.
@@ -137,7 +137,7 @@ falha.
 
 ### 4.1 — Progressão A: "pronto pra subir de nível" (genérica)
 **Técnico:** nova query `getProgressionReady(exerciseId)` em `lib/db/queries/`, prima de
-[lastPerformance.ts](lib/db/queries/lastPerformance.ts): pega as últimas **N=2** sessões `completed` do
+[lastPerformance.ts](../lib/db/queries/lastPerformance.ts): pega as últimas **N=2** sessões `completed` do
 movimento (ignora `skipped`); "bateu" = `as_target` **ou** todas as séries `≥ target`
 (via `effectiveSets`/`parsed`); "limpo" = sem interseção com `neg_flags`. Se N consecutivas bateram limpo →
 retorna nudge. UI: **não** interrompe no meio — card no fim da sessão (`SessionRunner`) ou no
@@ -178,8 +178,8 @@ tem mapa navegável. **Teste:** smoke de render por skill.
 
 ### 2.1 — Meta semanal única (o "anel")
 **Técnico:** dado já existe — `getWeekStatus` retorna `done`/`planTotal`
-([metrics.ts:226](lib/db/queries/metrics.ts#L226)), contando dias distintos. Trocar o número do
-`ConsistencyCard` ([ConsistencyCard.tsx:30](components/home/ConsistencyCard.tsx#L30)) por **anel de
+([metrics.ts:226](../lib/db/queries/metrics.ts#L226)), contando dias distintos. Trocar o número do
+`ConsistencyCard` ([ConsistencyCard.tsx:30](../components/home/ConsistencyCard.tsx#L30)) por **anel de
 progresso SVG** (`done/planTotal`), inequívoco ("3/5"). `planTotal` default = `plan.days.length`; permitir
 override em Config (persistir em `localStorage`/profile). Micro-celebração ao fechar (alimenta 2.2).
 **Design (racional):** um alvo, não painel (lição Apple Rings) — evita competir com as demais métricas.
@@ -188,7 +188,7 @@ override em Config (persistir em `localStorage`/profile). Micro-celebração ao 
 
 ### 2.2 — Streak semanal com freeze
 **Técnico:** hoje `currentStreak` conta "≥1 treino/semana"
-([metrics.ts:55](lib/db/queries/metrics.ts#L55)). Mudar unidade para **atingiu a meta semanal** (2.1);
+([metrics.ts:55](../lib/db/queries/metrics.ts#L55)). Mudar unidade para **atingiu a meta semanal** (2.1);
 semana corrente fica **pendente** (não quebra antes de terminar). Freeze **determinístico** (sem estado
 no banco): +1 proteção a cada 4 semanas cumpridas, teto 2; semana falha consome proteção e preserva a
 streak (não incrementa). **DoD:** meta batida estende streak; semana falha com proteção mantém; sem
@@ -201,7 +201,7 @@ proteção quebra; corrente nunca quebra no meio. **Teste:** unit sobre históri
 `seconds`→**maior hold único** (métrica-rainha das isometrias); `attempts`→sem PR. PR só se **limpo**
 (sem `neg_flags`). Bordas: 1ª vez ≠ PR; empate ≠ PR; `per_side` compara por lado; `as_target` só é PR se
 alvo > melhor anterior. UI: `useToast({variant:"success"})`
-([Toast.tsx:133](components/ui/Toast.tsx#L133)) "🏆 Novo recorde — 18s de parada de mão"; flag negativa →
+([Toast.tsx:133](../components/ui/Toast.tsx#L133)) "🏆 Novo recorde — 18s de parada de mão"; flag negativa →
 sem PR. **DoD:** superar melhor histórico limpo dispara toast 1×; empate/suja/1ª vez não disparam.
 **Teste:** unit de `computePR` por unidade + bordas (empate, per_side, as_target, suja).
 
@@ -223,7 +223,7 @@ agendamento no SW; hora configurável em Config; variações de copy (tom leve) 
 seletor de copy (determinístico); manual de permissão/entrega por plataforma.
 
 ### 5.2 — Histórico semanal consultável (Opção A)
-**Técnico:** reaproveita `getWeekReview` ([weekReview.ts:32](lib/db/queries/weekReview.ts#L32))
+**Técnico:** reaproveita `getWeekReview` ([weekReview.ts:32](../lib/db/queries/weekReview.ts#L32))
 generalizando para semanas passadas (parametrizar a segunda-base). Nova seção em Métricas listando
 resumos; o card da home vira só o "empurrão". **DoD:** resumo de qualquer semana com treino é consultável
 após dispensar o card. **Teste:** unit de `getWeekReview(monday)` para semana arbitrária.
