@@ -6,6 +6,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, type Session } from "@/lib/db/schema";
 import { getWorkoutById, plan } from "@/lib/plan/loader";
+import { usePlanReady } from "@/lib/utils/usePlanReady";
 import { skillIdForWorkout } from "@/lib/plan/skills";
 import { queueFrom } from "@/lib/domain/nextWorkout";
 import {
@@ -36,6 +37,7 @@ export default function TreinoPage() {
     getWorkoutById(urlId) ? urlId : plan.workouts[0].id
   );
   const workout = getWorkoutById(selected)!;
+  const planReady = usePlanReady();
 
   const [starting, setStarting] = useState(false);
   // null = carregado sem sessão; undefined = ainda carregando (distinção importa
@@ -110,6 +112,10 @@ export default function TreinoPage() {
       </div>
     );
   }
+
+  // Sem isto, o HTML estático traz o treino do plano embutido e o cliente, o do
+  // override: a hidratação falha e a tela inteira é repintada.
+  if (!planReady) return <div className="px-4 pt-6" aria-busy="true" />;
 
   return (
     <div className="px-4">
