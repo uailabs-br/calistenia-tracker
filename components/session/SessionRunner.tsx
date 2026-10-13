@@ -26,8 +26,8 @@ import { getCatalogExercise } from "@/lib/plan/catalog";
 import { getRecentExerciseIds } from "@/lib/db/queries/recentExercises";
 import { resolveAddedExercise } from "@/lib/plan/addedExercises";
 import { formatValue, parseRestSeconds } from "@/lib/domain/parseTarget";
-import { snapshotOf } from "@/lib/plan/resolve";
-import { extraSeed, extraSets, totalVolume } from "@/lib/domain/volume";
+import { resolveLogExercise, snapshotOf } from "@/lib/plan/resolve";
+import { extraSeed, extraSets, repsVolume as sumRepsVolume } from "@/lib/domain/volume";
 import { computePR, formatPR, type PRResult } from "@/lib/db/queries/pr";
 import { useWakeLock } from "@/lib/utils/useWakeLock";
 import { useToast } from "@/components/ui/Toast";
@@ -152,13 +152,14 @@ export function SessionRunner({
   const pending = flat.filter((f) => !logByExercise.has(f.exercise.id)).length;
   const doneCount = flat.length - pending;
   const progressPct = flat.length > 0 ? (doneCount / flat.length) * 100 : 0;
-  // Reps totais da sessão — só exercícios em unidade "reps" (holds/tentativas
-  // não somam no mesmo número, misturaria unidades diferentes).
-  const repsVolume = flat.reduce((sum, item) => {
-    const log = logByExercise.get(item.exercise.id);
-    if (!log || log.skipped || item.exercise.parsed?.unit !== "reps") return sum;
-    return sum + totalVolume(log, item.exercise.parsed);
-  }, 0);
+  // Reps totais da sessão. Cada exercício é lido pelo resolver (snapshot do log),
+  // não pelo plano vigente — ver regra 5 do CLAUDE.md.
+  const repsVolume = sumRepsVolume(
+    (logs ?? []).map((log) => {
+      const ex = resolveLogExercise(log, session.workout_id);
+      return { log, parsed: ex.parsed, target: ex.target };
+    })
+  );
 
   // Séries extras da sessão (para o fechamento do treino).
   const extraSetsCount = (logs ?? []).reduce((n, l) => n + extraSets(l).length, 0);

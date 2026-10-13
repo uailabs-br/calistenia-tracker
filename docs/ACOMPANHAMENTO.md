@@ -20,6 +20,27 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-10-12, ajustes de uso real — 439 testes):** seis ajustes
+> vindos do primeiro treino completo com o app. **(1) Contagem de reps** — o tile "reps
+> totais" do fechamento descartava em silêncio todo exercício com `parsed: null`, que é
+> *obrigatório* pra alvo em intervalo ("3 × 8-10") no contrato da IA; um treino de 70 reps
+> mostrava 16. A unidade e o "por lado" agora saem do texto do alvo quando falta `parsed`
+> (`unitOf`/`perSideOf`), a soma virou função pura (`repsVolume`) e lê cada exercício pelo
+> resolver (snapshot do log), não pelo plano vigente. Mesma raiz em `getLoggedExercises`
+> (isometria em intervalo caía no gráfico de volume) e em `totalVolume` (alvo "/lado" sem
+> `parsed` não dobrava). Nenhum dado gravado mudou, só a leitura. **(2)** Coach marks do
+> card removidos (poluíam o cartão); `CoachMark`, `coachMarks.ts` e o teste saíram.
+> **(3)** `obs` do exercício ficou colapsada ("como executar"), no card e na prévia do
+> treino, reusando `CollapsibleTip` com prop `label`. **(4)** Card "Crie seu primeiro treino
+> com IA" na home (`PlanBuilderCard`), só enquanto o plano em uso é uma semente
+> (`isSeedPlanId`) e fora de sessão; sobe acima do próximo treino quando não há sessão feita.
+> **(5)** Prompt da IA pede `obs` de uma frase (~100 caracteres) e `tip` de até 2; *sem*
+> `max()` no Zod — recusar o plano inteiro por texto longo seria falha dura pra problema
+> cosmético. **(6)** Demonstração visual por exercício: duas poses do RepDB (início → topo)
+> dentro do "como executar", carregadas só ao abrir e guardadas no cache do SW
+> (`CacheFirst`, teto de 120 entradas). 56 ids do catálogo mapeados; imagem fora do
+> repo. Decisão e alternativas em [PLAN-midia-exercicios.md](PLAN-midia-exercicios.md).
+
 > **Atualização (pós-v1.8, branch `onboarding-nivel-e-ux`, 2026-10-09, 7ª leva):**
 > revisão do **prompt de "Montar treino com IA"**, que era contrato de formato e virou
 > briefing de coach. Três buracos fechados: os campos de topo do plano (`id`, `version`,

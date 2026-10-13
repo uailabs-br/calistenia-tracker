@@ -2,17 +2,26 @@
 
 import { useState } from "react";
 import { ChevronDownIcon } from "@/components/ui/icons";
+import { ExerciseMedia } from "./ExerciseMedia";
 
-/** Dica do dia - colapsada por padrão para não ocupar a tela. */
+/** Texto explicativo colapsado por padrão para não ocupar a tela: "por que esse
+ *  treino?" no treino e "como executar" na instrução de cada exercício. */
 export function CollapsibleTip({
   tip,
   accent,
+  label = "por que esse treino?",
+  media,
+  mediaName = "",
 }: {
   tip: string;
   accent: string;
+  label?: string;
+  /** URLs da demonstração visual; aparece junto do texto, só com o bloco aberto. */
+  media?: string[] | null;
+  mediaName?: string;
 }) {
   const [open, setOpen] = useState(false);
-  if (!tip) return null;
+  if (!tip && !media) return null;
 
   return (
     <div className="mt-3">
@@ -28,9 +37,10 @@ export function CollapsibleTip({
             open ? "" : "-rotate-90"
           }`}
         />
-        por que esse treino?
+        {label}
       </button>
-      {open && (
+      {open && media && <ExerciseMedia urls={media} name={mediaName} />}
+      {open && tip && (
         <p
           className="mt-2 rounded-card border-l-2 bg-surface px-3 py-2 text-sm leading-relaxed text-muted"
           style={{ borderColor: accent }}

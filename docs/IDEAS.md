@@ -18,7 +18,6 @@
 | # | Item | Fase | Valor | Esforço | Status |
 |---|------|------|-------|---------|--------|
 | 5.1 | Notificação/lembrete de treino (push, tom leve) | 4 · Retenção | Médio-Alto | Médio | ◑ parcial — UI/copy/permissão prontos; **arquitetura de entrega real desenhada** (ver detalhe abaixo), implementação adiada por decisão do usuário |
-| 7.3 | Referência técnica visual (cues estruturados, sem vídeo) | 5 · Polish | Médio | Baixo/Médio | ⏳ conteúdo/curadoria |
 | — | Checkpoint do spike: validar "o mapa é viciante" com uso real | 7 · Validação | — | — | ⏳ depende de uso na semana |
 
 ---
@@ -48,14 +47,10 @@ variações ao longo da semana.
 - **Falta (R4):** retomar a implementação (rotas de API, service worker, client de subscribe,
   setup manual de VAPID/Upstash/secrets) quando decidido priorizar.
 
-### [7.3] Referência técnica visual (cues estruturados)
-Sem vídeo (protege o offline-first). Estruturar `obs`/`tip` como cues; no máximo uma
-imagem/GIF leve por movimento-chave. Custo real = conteúdo/curadoria, não código.
-
 ### Checkpoint do spike do mapa de skills
 O mapa de skills foi entregue na v1.4 (catálogo canônico de 15 skills). Falta a validação
 que justificava o spike: confirmar, com uso real, que acompanhar o mapa **retém/vicia**.
-Se confirmar, vale investir em cues (7.3) e em ligar mais níveis a exercícios do plano
+Se confirmar, vale investir em cues e em ligar mais níveis a exercícios do plano
 (`LEVEL_EXERCISE`) para melhorar a detecção automática de posição.
 
 ---

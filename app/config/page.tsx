@@ -341,6 +341,17 @@ export default function ConfigPage() {
       <section className="text-xs text-muted">
         <p>Calistenia Tracker v{pkg.version.split(".").slice(0, 2).join(".")}</p>
         <p>{activePlan ? `Treino atual: ${activePlan.name} (v${activePlan.version})` : ""}</p>
+        <p className="mt-1">
+          Ilustrações dos exercícios:{" "}
+          <a
+            href="https://repdb.co"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2"
+          >
+            Exercise data by RepDB (repdb.co)
+          </a>
+        </p>
       </section>
       <div className="h-4" />
 

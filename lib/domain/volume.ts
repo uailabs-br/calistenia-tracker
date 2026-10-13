@@ -1,6 +1,6 @@
 import type { Parsed } from "@/lib/plan/schema";
 import type { ExerciseLog } from "@/lib/db/schema";
-import { adjustSets, targetSets } from "./parseTarget";
+import { adjustSets, perSideOf, targetSets, unitOf } from "./parseTarget";
 
 type SetsLog = Pick<ExerciseLog, "as_target" | "sets" | "skipped" | "extra_sets">;
 
@@ -52,5 +52,23 @@ export function totalVolume(
 ): number {
   const sets = effectiveSets(log, parsed, target);
   const sum = sets.reduce((a, b) => a + b, 0);
-  return parsed?.per_side ? sum * 2 : sum;
+  return perSideOf(parsed, target) ? sum * 2 : sum;
+}
+
+export interface RepsVolumeEntry {
+  log: SetsLog;
+  parsed: Parsed | null;
+  target: string;
+}
+
+/**
+ * Reps totais de um conjunto de logs — só unidade "reps" (holds e tentativas não
+ * somam no mesmo número). A unidade e o lado vêm do `target` quando `parsed` é
+ * null: ignorar esses exercícios subcontava o treino.
+ */
+export function repsVolume(entries: RepsVolumeEntry[]): number {
+  return entries.reduce((sum, { log, parsed, target }) => {
+    if (log.skipped || unitOf(parsed, target) !== "reps") return sum;
+    return sum + totalVolume(log, parsed, target);
+  }, 0);
 }

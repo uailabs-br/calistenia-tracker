@@ -2,6 +2,7 @@ import { db, type Session, type ExerciseLog } from "@/lib/db/schema";
 import { getExerciseById, uniqueExercises, plan } from "@/lib/plan/loader";
 import { resolveLogExercise } from "@/lib/plan/resolve";
 import { totalVolume, effectiveSets } from "@/lib/domain/volume";
+import { unitOf } from "@/lib/domain/parseTarget";
 import { streakWithFreeze } from "@/lib/domain/streak";
 import { getWeekGoal } from "@/lib/utils/profile";
 import {
@@ -263,7 +264,11 @@ export async function getLoggedExercises(): Promise<LoggedExercise[]> {
     out.set(l.exercise_id, {
       id: l.exercise_id,
       name,
-      unit: (l.snapshot?.parsed ?? planEx?.parsed)?.unit ?? null,
+      // alvo em intervalo tem parsed null: a unidade sai do texto do alvo
+      unit: unitOf(
+        l.snapshot ? l.snapshot.parsed : (planEx?.parsed ?? null),
+        l.snapshot?.target ?? planEx?.target ?? ""
+      ),
     });
   }
   return [...out.values()];

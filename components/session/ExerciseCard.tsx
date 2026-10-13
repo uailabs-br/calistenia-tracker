@@ -18,8 +18,8 @@ import { Stepper } from "./Stepper";
 import { FlagChips } from "./FlagChips";
 import { ExerciseNote } from "./ExerciseNote";
 import { AttemptsCounter } from "./AttemptsCounter";
-import { CoachMark } from "./CoachMark";
-import { getSeenMarks, markSeen, pickCoachMark, type CoachId } from "@/lib/utils/coachMarks";
+import { CollapsibleTip } from "./CollapsibleTip";
+import { getExerciseMedia } from "@/lib/plan/media";
 
 export interface RecordInput {
   as_target: boolean;
@@ -88,13 +88,6 @@ export function ExerciseCard({
   const [attemptsTotal, setAttemptsTotal] = useState(0);
   const [attemptsGood, setAttemptsGood] = useState(0);
   const cardRef = useRef<HTMLDivElement>(null);
-
-  // Dicas de primeiro uso. Relê ao virar o card ativo: o estado vive no storage
-  // e outro card pode ter dispensado a dica enquanto este estava fechado.
-  const [seenMarks, setSeenMarks] = useState<string[] | null>(null);
-  useEffect(() => {
-    if (active) setSeenMarks(getSeenMarks());
-  }, [active]);
 
   // Séries extras: estado local (edição fluida com press-and-hold), gravado com
   // debounce. `extrasSeen` guarda o último valor já em sincronia com o banco —
@@ -299,14 +292,6 @@ export function ExerciseCard({
     !/tentativa/i.test(exercise.target);
   const loggedPlannedCount = log ? plannedSets(log, parsed, exercise.target).length : 0;
 
-  const applicableMarks: CoachId[] = [
-    ...(parsed ? (["target"] as const) : []),
-    ...(mapping?.criteria_type !== "skill_consistency" && !adjusting ? (["one-tap"] as const) : []),
-    ...(exercise.flags.length > 0 ? (["flags"] as const) : []),
-  ];
-  const coachMark = seenMarks ? pickCoachMark(applicableMarks, seenMarks) : null;
-  const dismissMark = (id: CoachId) => setSeenMarks(markSeen(id));
-
   // ── Card colapsado ─────────────────────────────────────────────────
   if (!active) {
     return (
@@ -405,13 +390,13 @@ export function ExerciseCard({
       <p className="tnum mt-0.5 text-xs text-muted">
         última: {lastPerf ? formatLastPerf(lastPerf, parsed) : "…"}
       </p>
-      {exercise.obs && (
-        <p className="mt-2 text-sm leading-snug text-muted">{exercise.obs}</p>
-      )}
-
-      {(coachMark === "target" || coachMark === "one-tap") && (
-        <CoachMark id={coachMark} accent={accent} onDismiss={() => dismissMark(coachMark)} />
-      )}
+      <CollapsibleTip
+        tip={exercise.obs}
+        accent={accent}
+        label="como executar"
+        media={getExerciseMedia(exercise.id)}
+        mediaName={exercise.name}
+      />
 
       <div className="mt-3">
         {mapping?.criteria_type === "skill_consistency" ? (
@@ -552,10 +537,6 @@ export function ExerciseCard({
             Série extra
           </button>
         </div>
-      )}
-
-      {coachMark === "flags" && (
-        <CoachMark id="flags" accent={accent} onDismiss={() => dismissMark("flags")} />
       )}
 
       <FlagChips

@@ -55,3 +55,12 @@ export const DEFAULT_SEED_ID: SeedId = "iniciante-com-barra";
 export function getSeed(id: SeedId): Seed | undefined {
   return seeds.find((s) => s.id === id);
 }
+
+/**
+ * O plano em uso ainda é um dos prontos (ou o bundlado, que tem o id de uma
+ * semente)? O onboarding aplica semente via `applyPlan`, então "tem override" não
+ * distingue "escolhi pronto" de "montei com IA" — o id distingue.
+ */
+export function isSeedPlanId(planId: string): boolean {
+  return seeds.some((s) => s.plan.id === planId);
+}

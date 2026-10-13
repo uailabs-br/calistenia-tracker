@@ -130,3 +130,17 @@ describe("buildAiPrompt — método de progressão", () => {
     expect(text).toContain("limitacoes");
   });
 });
+
+describe("buildAiPrompt — texto enxuto", () => {
+  const text = buildAiPrompt("", EMPTY);
+  it("pede obs de uma frase no contrato e no briefing", () => {
+    expect(AI_SCHEMA_PROMPT).toContain("REGRAS DE TAMANHO DO TEXTO");
+    expect(AI_SCHEMA_PROMPT).toContain("UMA frase");
+    expect(text).toContain("ENXUTO");
+  });
+  it("confere o tamanho no checklist final", () => {
+    const checklist = text.slice(text.indexOf("# ANTES DE RESPONDER"), text.indexOf("# DADOS DO ATLETA"));
+    expect(checklist).toContain("uma frase só");
+  });
+});
+

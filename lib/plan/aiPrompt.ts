@@ -106,7 +106,7 @@ progresso nela.
     \`performed\` abaixo do alvo sem flag negativa = alvo agressivo demais.
     Flag negativa repetida = degrau cedo demais. \`note\` é a voz dele: leia.
 11. LIMITAÇÃO É SUA, NÃO DELE. Pra cada item de \`limitacoes\`, troque o vetor que
-    dói e escreva o porquê em \`obs\`: ombro → sem dip profundo nem puxada atrás
+    dói e escreva o porquê em \`obs\`, numa frase: ombro → sem dip profundo nem puxada atrás
     da nuca, mais trabalho escapular; punho → apoio em paralelas ou punho
     fechado; cotovelo → menos ROM e menos volume de braço reto; joelho → ROM
     parcial, split squat antes de pistol; lombar → core anti-extensão (hollow,
@@ -122,7 +122,9 @@ progresso nela.
     espalhada: corte ~30% das séries do ciclo antes de insistir. É fadiga
     acumulada, não falta de estímulo.
 15. ESCREVA PRO ATLETA. \`obs\`, \`tip\`, \`warmup\` e \`criteria\` em pt-BR, direto, na
-    segunda pessoa, dizendo o que observar — não teoria de treinamento.
+    segunda pessoa, dizendo o que observar — não teoria de treinamento. ENXUTO:
+    \`obs\` é UMA frase de até ~100 caracteres; \`tip\` até 2 frases. Texto longo
+    polui a tela de treino.
 `;
 
 const AI_CHECKLIST = `# ANTES DE RESPONDER, CONFIRA
@@ -140,6 +142,7 @@ const AI_CHECKLIST = `# ANTES DE RESPONDER, CONFIRA
 - \`neg_flags\` é subconjunto exato de \`flags\`; nenhum id de exercício repetido
   dentro do mesmo treino.
 - Nada que o equipamento não permita; cada limitação declarada endereçada.
+- \`obs\` com uma frase só (até ~100 caracteres); \`tip\` com até 2.
 - Séries × alvo × descanso batem com a \`duration\` que você escreveu.
 `;
 

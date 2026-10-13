@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { planSchema } from "@/lib/plan/schema";
-import { DEFAULT_SEED_ID, getSeed, seeds } from "@/lib/plan/seeds";
+import { DEFAULT_SEED_ID, getSeed, isSeedPlanId, seeds } from "@/lib/plan/seeds";
 import { getKnownPlan, knownPlanIds } from "@/lib/plan/plans";
 import { seedFits, suggestSeed } from "@/lib/domain/onboarding";
 import { skillIdForWorkout } from "@/lib/plan/skills";
@@ -134,5 +134,15 @@ describe("sementes alimentam o motor de progressão", () => {
     for (const seed of seeds)
       for (const w of seed.plan.workouts)
         expect(skillIdForWorkout(w.skill), `${seed.id}/${w.id}: ${w.skill}`).toBeDefined();
+  });
+});
+
+describe("isSeedPlanId", () => {
+  it("reconhece o id de cada semente", () => {
+    for (const seed of seeds) expect(isSeedPlanId(seed.plan.id)).toBe(true);
+  });
+  it("plano de IA ou pessoal não é semente", () => {
+    expect(isSeedPlanId("ciclo-mu-2026-10")).toBe(false);
+    expect(isSeedPlanId("plan-calistenia-ago-2026")).toBe(false);
   });
 });

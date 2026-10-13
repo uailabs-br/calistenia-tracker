@@ -136,7 +136,7 @@ campo extra é erro de validação e o app recusa o plano inteiro.
     "unit": "reps",              // "reps" | "seconds" | "attempts"
     "per_side": false            // true se o alvo é POR LADO (unilateral)
   },
-  "obs": "instrução técnica de execução — o que prestar atenção",
+  "obs": "segure o corpo em linha reta",  // UMA frase, até ~100 caracteres: o detalhe de execução que decide a série
   "rest": "descanso 120s",       // ver REGRAS DE DESCANSO abaixo
   "flags": ["chegou no esterno", "parou no queixo", "kip apareceu"],
   // ↑ tags que o atleta marca no fim da série. 2 a 4, curtas, na voz dele, e
@@ -179,6 +179,13 @@ pura, não markdown. NÃO escape caractere de markdown dentro delas: \`\\~\`, \`
 \`\\_\`, \`\\#\` não são escapes válidos em JSON e fazem o app recusar o plano
 inteiro. Escreva \`"~38 min"\`, não \`"\\~38 min"\`. Só os escapes do JSON valem
 (\`\\"\`, \`\\\\\`, \`\\n\`).
+
+## REGRAS DE TAMANHO DO TEXTO
+O atleta lê isso no meio do treino, no celular, e a \`obs\` fica recolhida num
+"como executar". Curto vale mais que completo:
+- \`obs\`: UMA frase, até ~100 caracteres. O único detalhe que decide a série.
+  Sem teoria, sem repetir o nome do exercício nem o alvo, sem lista de dicas.
+- \`tip\`: até 2 frases. \`warmup\`: uma linha. \`criteria\`: uma frase.
 
 ## REGRAS DE DESCANSO (\`rest\`)
 O app extrai o maior número do texto e trata como SEGUNDOS, pro cronômetro.

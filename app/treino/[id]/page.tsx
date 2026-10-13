@@ -19,6 +19,7 @@ import { WorkoutHeader } from "@/components/session/WorkoutHeader";
 import { WorkoutPills } from "@/components/session/WorkoutPills";
 import { SessionRunner } from "@/components/session/SessionRunner";
 import { CollapsibleTip } from "@/components/session/CollapsibleTip";
+import { getExerciseMedia } from "@/lib/plan/media";
 import { WarmupCard } from "@/components/session/WarmupCard";
 import { ChevronRightIcon } from "@/components/ui/icons";
 
@@ -193,11 +194,13 @@ export default function TreinoPage() {
                       {ex.target}
                     </span>
                   </div>
-                  {ex.obs && (
-                    <p className="mt-1 text-xs leading-snug text-muted">
-                      {ex.obs}
-                    </p>
-                  )}
+                  <CollapsibleTip
+                    tip={ex.obs}
+                    accent={workout.accent}
+                    label="como executar"
+                    media={getExerciseMedia(ex.id)}
+                    mediaName={ex.name}
+                  />
                 </li>
               ))}
             </ul>

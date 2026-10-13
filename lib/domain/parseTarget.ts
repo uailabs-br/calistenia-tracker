@@ -43,6 +43,27 @@ export function adjustSets(parsed: Parsed | null, target = ""): number[] {
   return t.length > 0 ? t : [1];
 }
 
+export type TargetUnit = "reps" | "seconds" | "attempts";
+
+/**
+ * Unidade do alvo. `parsed` é null em todo alvo com intervalo ("3 × 8-10"), que é
+ * o formato que a IA é obrigada a usar — então o texto é o fallback, não a exceção.
+ * Sem `parsed` e sem número no texto, devolve null (não dá pra saber).
+ */
+export function unitOf(parsed: Parsed | null, target = ""): TargetUnit | null {
+  if (parsed) return parsed.unit;
+  if (/tentativa/i.test(target)) return "attempts";
+  if (!/\d/.test(target)) return null;
+  if (/\d\s*(s|seg\w*)\b/i.test(target)) return "seconds";
+  return "reps";
+}
+
+/** Alvo por lado? `parsed` manda; sem ele, lê "/lado" do texto. */
+export function perSideOf(parsed: Parsed | null, target = ""): boolean {
+  if (parsed) return parsed.per_side;
+  return /\/\s*lado/i.test(target);
+}
+
 /** Rótulo curto de unidade para exibição junto ao stepper. */
 export function unitLabel(parsed: Parsed | null): string {
   if (!parsed) return "";

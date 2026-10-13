@@ -15,12 +15,17 @@ import { UpNext } from "@/components/home/UpNext";
 import { WeekReviewCard } from "@/components/home/WeekReviewCard";
 import { ConsistencyCard } from "@/components/home/ConsistencyCard";
 import { FreeformLogCard } from "@/components/home/FreeformLogCard";
+import { PlanBuilderCard } from "@/components/home/PlanBuilderCard";
 import { InstallPrompt } from "@/components/ui/InstallPrompt";
+import { isSeedPlanId } from "@/lib/plan/seeds";
+import { usePlanReady } from "@/lib/utils/usePlanReady";
 
 const PAST_LABELS = ["Ontem", "Anteontem"];
 
 export default function HomePage() {
   const todayKey = localDateKey();
+  // `plan` vem do localStorage: nada derivado dele antes do mount (regra 10).
+  const planReady = usePlanReady();
 
   const active = useLiveQuery(async () => (await getActiveSession()) ?? null, []);
   const overview = useLiveQuery(() => getOverview(), []);
@@ -75,6 +80,12 @@ export default function HomePage() {
   const showFreeformCard =
     !active && ((loggableDays?.length ?? 0) > 0 || freeformToday !== null);
 
+  // Criador com IA: só com plano pronto e fora de sessão. Sem nenhum treino
+  // feito é a primeira ação (sobe acima do próximo treino); depois, desce.
+  const showPlanBuilder =
+    planReady && !active && overview !== undefined && isSeedPlanId(plan.id);
+  const firstWorkout = overview?.totalWorkouts === 0;
+
   return (
     <div className="flex flex-col gap-6 px-4 pb-8">
       <HomeGreeting />
@@ -94,11 +105,15 @@ export default function HomePage() {
         />
       )}
 
+      {showPlanBuilder && firstWorkout && <PlanBuilderCard first />}
+
       <NextWorkoutCard
         workout={next}
         activeHere={active?.workout_id === next?.id}
         doneToday={doneTodayLabels}
       />
+
+      {showPlanBuilder && !firstWorkout && <PlanBuilderCard first={false} />}
 
       {showFreeformCard && (
         <FreeformLogCard
