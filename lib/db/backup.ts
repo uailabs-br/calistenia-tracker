@@ -265,12 +265,15 @@ export async function resetAll(): Promise<void> {
 const RESET_KEYS = [
   LAST_EXPORT_KEY,
   "calistenia:onboarding",
+  "calistenia:landing-seen",
   "calistenia:plan-override",
   "calistenia:plan-recovery-off",
   "calistenia:plan-lost",
   "calistenia:coach-marks",
   "calistenia:skill-levels",
   "calistenia:week-goal",
+  "calistenia:plan-applied-at",
+  "calistenia:plan-swap-ack",
 ];
 
 export function sessionsSinceExport(currentCompleted: number): number {

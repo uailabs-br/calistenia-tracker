@@ -42,3 +42,14 @@ export function ackProgression(key: string, at: number = Date.now()): void {
     /* storage cheio/bloqueado: o aviso volta, sem quebrar nada */
   }
 }
+
+/** Reativa um aviso dispensado (o mapa de progressão mostra e permite desfazer). */
+export function clearAck(key: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    const { [key]: _removed, ...rest } = read();
+    localStorage.setItem(KEY, JSON.stringify(rest));
+  } catch {
+    /* storage bloqueado: nada a desfazer */
+  }
+}

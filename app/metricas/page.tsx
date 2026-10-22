@@ -62,10 +62,17 @@ export default function MetricasPage() {
             />
           </div>
 
-          {/* Trilhas de progressão */}
+          {/* Progressão: o que está pronto no treino de hoje, e as escadas */}
+          <Link
+            href="/progressao"
+            className="tap mt-4 flex items-center justify-between rounded-card border border-border bg-surface px-4 py-3 active:scale-[0.99]"
+          >
+            <span className="text-sm font-medium">Progressão · o que está pronto</span>
+            <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted" />
+          </Link>
           <Link
             href="/skills"
-            className="tap mt-4 flex items-center justify-between rounded-card border border-border bg-surface px-4 py-3 active:scale-[0.99]"
+            className="tap mt-2 flex items-center justify-between rounded-card border border-border bg-surface px-4 py-3 active:scale-[0.99]"
           >
             <span className="text-sm font-medium">Skills · progressões</span>
             <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted" />

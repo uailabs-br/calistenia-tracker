@@ -1,6 +1,7 @@
 import { db } from "@/lib/db/schema";
 import { negFlagsOf } from "@/lib/plan/loader";
 import { resolveLogExercise } from "@/lib/plan/resolve";
+import { targetValue } from "@/lib/domain/parseTarget";
 import { hitTarget, isClean } from "./progressionReady";
 
 /**
@@ -23,7 +24,8 @@ export async function getFirstCleanSuccess(
     ).filter((l) => !l.deleted_at && !l.skipped && ids.has(l.exercise_id));
     for (const log of logs) {
       if (result.has(log.exercise_id)) continue;
-      const target = resolveLogExercise(log, session.workout_id).parsed?.target ?? null;
+      const resolved = resolveLogExercise(log, session.workout_id);
+      const target = targetValue(resolved.parsed, resolved.target);
       if (hitTarget(log, target) && isClean(log, negFlagsOf(log.exercise_id))) {
         result.set(log.exercise_id, session.date);
       }

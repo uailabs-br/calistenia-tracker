@@ -6,11 +6,14 @@ import type { Plan } from "@/lib/plan/schema";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { BackLink } from "@/components/ui/BackLink";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { PlanPreview } from "@/components/plan/PlanPreview";
 import { SettingsGroup } from "@/components/ui/SettingsGroup";
 import { SettingsRow } from "@/components/ui/SettingsRow";
 import { useToast } from "@/components/ui/Toast";
 import { FlagIcon, ListIcon, SparkleIcon, UploadIcon, HistoryIcon } from "@/components/ui/icons";
 import { buildAiPrompt } from "@/lib/plan/aiPrompt";
+import { buildConvertPrompt } from "@/lib/plan/aiConvertPrompt";
+import { localDateKey } from "@/lib/utils/date";
 import { exportForAI } from "@/lib/plan/exportForAI";
 import { getSkillById } from "@/lib/plan/skills";
 import { seeds } from "@/lib/plan/seeds";
@@ -48,6 +51,8 @@ export default function PlanoPage() {
   const [pendingPlan, setPendingPlan] = useState<{ plan: Plan; summary: PlanSummary } | null>(null);
   const [showRestorePlan, setShowRestorePlan] = useState(false);
   const [copying, setCopying] = useState(false);
+  const [copyingConvert, setCopyingConvert] = useState(false);
+  const [ownWorkout, setOwnWorkout] = useState("");
   // null até o mount: `plan` vem do override do localStorage, que não existe no
   // HTML estático. Renderizar qualquer coisa derivada dele direto quebra a hidratação.
   const [activePlan, setActivePlan] = useState<Plan | null>(null);
@@ -75,6 +80,19 @@ export default function PlanoPage() {
       toast({ message: "Não deu pra copiar", variant: "error" });
     } finally {
       setCopying(false);
+    }
+  };
+
+  const handleCopyConvert = async () => {
+    setCopyingConvert(true);
+    try {
+      await copyText(buildConvertPrompt(ownWorkout, localDateKey()));
+      haptic();
+      toast({ message: "Pedido copiado — cola na IA", variant: "success" });
+    } catch {
+      toast({ message: "Não deu pra copiar", variant: "error" });
+    } finally {
+      setCopyingConvert(false);
     }
   };
 
@@ -128,6 +146,33 @@ export default function PlanoPage() {
           busy={copying}
         />
       </SettingsGroup>
+
+      <section className="mb-6">
+        <h2 className="mb-2 px-1 font-mono text-xs uppercase tracking-wide text-muted">
+          Ou: já tenho um treino
+        </h2>
+        <p className="mb-2 px-1 text-xs text-muted">
+          Escreva ou cole o treino que você já faz. A IA só passa pro formato do app, sem
+          mudar nada, e você confere o resultado antes de aplicar.
+        </p>
+        <textarea
+          value={ownWorkout}
+          onChange={(e) => setOwnWorkout(e.target.value)}
+          placeholder={"Treino A\nBarra fixa 4x6\nFlexão 3x12…"}
+          rows={5}
+          aria-label="Seu treino atual"
+          className="w-full rounded-card border border-border bg-surface px-4 py-3 text-base outline-none placeholder:text-muted focus:border-muted"
+        />
+        <div className="mt-2 overflow-hidden rounded-card border border-border bg-surface">
+          <SettingsRow
+            icon={SparkleIcon}
+            label="Copiar pedido de conversão"
+            onClick={handleCopyConvert}
+            busy={copyingConvert}
+            disabled={!ownWorkout.trim()}
+          />
+        </div>
+      </section>
 
       <section className="mb-6">
         <h2 className="mb-2 px-1 font-mono text-xs uppercase tracking-wide text-muted">
@@ -192,11 +237,10 @@ export default function PlanoPage() {
       )}
       <div className="h-4" />
 
-      {pendingPlan && (
-        <ConfirmDialog
-          title="Trocar de treino?"
-          message={`O treino atual vira "${pendingPlan.summary.name}" — ${pendingPlan.summary.workouts} treinos, ${pendingPlan.summary.exercises} exercícios (v${pendingPlan.summary.version}). O app recarrega pra aplicar.`}
-          confirmLabel="Trocar"
+      {pendingPlan && activePlan && (
+        <PlanPreview
+          current={activePlan}
+          next={pendingPlan.plan}
           onConfirm={handleApplyPlan}
           onCancel={() => setPendingPlan(null)}
         />

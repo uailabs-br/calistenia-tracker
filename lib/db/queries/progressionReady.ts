@@ -1,10 +1,9 @@
 import { db, type ExerciseLog, type Session } from "@/lib/db/schema";
 import { negFlagsOf } from "@/lib/plan/loader";
 import { resolveLogExercise } from "@/lib/plan/resolve";
+import { targetValue } from "@/lib/domain/parseTarget";
 import { plannedSets } from "@/lib/domain/volume";
-
-/** Nº de sessões consecutivas no alvo (e limpas) para sugerir subir de nível. */
-export const READY_STREAK = 2;
+import { READY_STREAK, positiveStreak, type Vote } from "@/lib/domain/progressionState";
 
 /**
  * Um log "bateu" o alvo: marcado como previsto, ou todas as séries PLANEJADAS
@@ -30,37 +29,48 @@ export function isClean(
 }
 
 /**
+ * Votos do motor genérico de um movimento, do mais recente pro mais antigo,
+ * sobre dados JÁ carregados: cada sessão em que ele foi feito (ignorando pulos)
+ * vota "bateu o alvo de forma limpa" ou não. Conta a sessão em andamento (o aviso
+ * aparece ao fim dela) mas não as abandonadas/apagadas. `since` ignora registros
+ * até a última dispensa do aviso.
+ */
+export function genericVotes(
+  exerciseId: string,
+  logs: ExerciseLog[],
+  sessions: Map<string, Session>,
+  since?: number
+): (Vote & { date: string })[] {
+  const negFlags = negFlagsOf(exerciseId);
+  const entries: { log: ExerciseLog; session: Session }[] = [];
+  for (const log of logs) {
+    if (log.exercise_id !== exerciseId || log.deleted_at || log.skipped) continue;
+    if (since !== undefined && log.logged_at <= since) continue;
+    const session = sessions.get(log.session_id);
+    if (!session || session.deleted_at) continue;
+    if (session.status !== "completed" && session.status !== "in_progress") continue;
+    entries.push({ log, session });
+  }
+  entries.sort((a, b) => (b.session.started_at ?? 0) - (a.session.started_at ?? 0));
+
+  return entries.map(({ log, session }) => {
+    const resolved = resolveLogExercise(log, session.workout_id);
+    const target = targetValue(resolved.parsed, resolved.target);
+    const met = hitTarget(log, target) && isClean(log, negFlags);
+    return { met, realFailure: !met, date: session.date };
+  });
+}
+
+/**
  * "Pronto pra subir de nível": as últimas READY_STREAK sessões do movimento
- * (ignorando pulos) bateram o alvo de forma limpa. Prima de lastPerformance —
- * segue o MOVIMENTO, não o dia. Conta a sessão em andamento (o aviso aparece ao
- * fim dela) mas não as abandonadas/apagadas. `since` ignora registros até a
- * última dispensa do aviso.
+ * bateram o alvo de forma limpa. Prima de lastPerformance — segue o MOVIMENTO,
+ * não o dia.
  */
 export async function getProgressionReady(
   exerciseId: string,
   since?: number
 ): Promise<boolean> {
-  const sessions: Session[] = (await db.sessions.toArray())
-    .filter(
-      (s) => !s.deleted_at && (s.status === "completed" || s.status === "in_progress")
-    )
-    .sort((a, b) => (b.started_at ?? 0) - (a.started_at ?? 0));
-
-  const negFlags = negFlagsOf(exerciseId);
-  let checked = 0;
-
-  for (const session of sessions) {
-    const log = (
-      await db.exerciseLogs.where("session_id").equals(session.id).toArray()
-    ).find((l) => l.exercise_id === exerciseId && !l.deleted_at);
-    if (!log || log.skipped) continue; // não feito nessa sessão
-    if (since !== undefined && log.logged_at <= since) continue;
-
-    const target = resolveLogExercise(log, session.workout_id).parsed?.target ?? null;
-    if (!hitTarget(log, target) || !isClean(log, negFlags)) return false;
-
-    if (++checked >= READY_STREAK) return true;
-  }
-
-  return false; // menos de READY_STREAK sessões válidas
+  const logs = await db.exerciseLogs.where("exercise_id").equals(exerciseId).toArray();
+  const sessions = new Map((await db.sessions.toArray()).map((s) => [s.id, s]));
+  return positiveStreak(genericVotes(exerciseId, logs, sessions, since)) >= READY_STREAK;
 }

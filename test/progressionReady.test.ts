@@ -51,3 +51,33 @@ describe("getProgressionReady", () => {
     expect(await getProgressionReady(EX)).toBe(false);
   });
 });
+
+describe("alvo em intervalo (parsed null)", () => {
+  // O prompt manda parsed null em todo intervalo: antes o alvo virava null e
+  // nenhum registro ajustado contava, só o "fiz como previsto".
+  async function logRange(values: number[]) {
+    const s = await createSession("A");
+    await upsertLog({
+      session_id: s.id,
+      exercise_id: EX,
+      snapshot: { name: "Negativa", target: "3 × 6-8", parsed: null },
+      as_target: false,
+      sets: values.map((value, index) => ({ index, value })),
+      flags_selected: [],
+      skipped: false,
+    });
+    await completeSession(s.id, 3, null);
+  }
+
+  it("séries ajustadas dentro do piso do texto → pronto", async () => {
+    await logRange([8, 7, 6]);
+    await logRange([8, 8, 8]);
+    expect(await getProgressionReady(EX)).toBe(true);
+  });
+
+  it("série abaixo do piso → não pronto", async () => {
+    await logRange([8, 8, 8]);
+    await logRange([8, 8, 5]);
+    expect(await getProgressionReady(EX)).toBe(false);
+  });
+});

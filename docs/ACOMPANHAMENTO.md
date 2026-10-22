@@ -20,6 +20,41 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-10-22, progressão visível e troca de treino — 482 testes):**
+> sete itens do backlog em seis fases, sem migração (Dexie segue na v5). **Mapa de
+> progressão** (`/progressao`, entrada em Evolução): estado de cada exercício do plano
+> vigente, com a máquina de estados extraída pra `lib/domain/progressionState.ts` — aviso de
+> fim de sessão e mapa usam a mesma função, então não discordam. **Aviso na home** quando
+> há degraus prontos e um ciclo inteiro desde a última troca (`calistenia:plan-applied-at`),
+> com dispensa por conjunto de ids. **Preview da troca** (`diffPlans`): entra/sai/continua por
+> treino e avisos que o schema não pega (alvo abaixo do critério do degrau, `skill_ref` sem
+> `parsed`, descanso em minutos, id novo pra movimento que já existe). **Conversor**: pedido à
+> IA que transcreve o treino que a pessoa já faz (`aiConvertPrompt.ts`), em Ajustes > Montar
+> treino. **Faixa alta**: o stepper de "Ajustar" abre no teto do intervalo; `targetSets` segue no
+> piso (reescreveria o passado), e `hitTarget` passou a ler o piso do texto quando `parsed` é
+> `null` — antes nenhum registro ajustado contava como "bateu o alvo". **Ilustrações** com
+> duotone na cor do treino (`DuotoneImage`). **Política de privacidade** colapsada no fim da
+> `/sobre` (`<details>`, página segue estática). Decisão e o que mudou em relação ao proposto:
+> [PLAN-progressao-e-troca-de-treino.md](PLAN-progressao-e-troca-de-treino.md).
+
+> **Atualização (pós-v1.8, 2026-10-22, página de boas-vindas — 445 testes):** o app ganhou
+> primeiro contato. Antes, quem chegava sem rastro de uso caía direto no `/onboarding` e
+> respondia equipamento, nível e objetivo sem saber o que o app é. Agora `PlanBoot` manda o
+> estreante pra `/sobre` e só depois pro onboarding, decidindo pela marca
+> `calistenia:landing-seen` (`lib/utils/landing.ts`, apagada pelo `resetAll`). A página é a
+> única do projeto que não deriva do plano nem do Dexie, e por isso a única prerenderizada
+> de verdade (110 kB de first load contra 182 kB da home). O herói é o cartão de sessão
+> tocável (`components/landing/OneTapDemo.tsx`) e a progressão aparece como um trecho da
+> escada do pull-up com a posição marcada (`LadderPreview`). `isChromeless`
+> (`lib/utils/routes.ts`) passou a ser o único lugar que decide onde a nav não aparece —
+> antes `AppMain` e `BottomNav` repetiam a regra. Texto editável em `docs/landing-copy.md`,
+> decisão e alternativas descartadas em [PLAN-landing.md](PLAN-landing.md). Na revisão do
+> mesmo dia o texto caiu quase pela metade e o argumento passou pra interface — tiles de
+> promessa, escada, sinal de progressão e grid de features, em bandas alternadas; herói
+> gerado por IA foi testado e descartado (clichê neon, retorno em 199px). Pendentes por
+> decisão do autor: canal de contato (`CONTACT_URL`) e o nome definitivo do app, ambos
+> centralizados em `lib/appInfo.ts`.
+
 > **Atualização (pós-v1.8, 2026-10-12, ajustes de uso real — 439 testes):** seis ajustes
 > vindos do primeiro treino completo com o app. **(1) Contagem de reps** — o tile "reps
 > totais" do fechamento descartava em silêncio todo exercício com `parsed: null`, que é

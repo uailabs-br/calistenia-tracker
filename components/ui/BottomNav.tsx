@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { isChromeless } from "@/lib/utils/routes";
 import {
   HomeIcon,
   HistoryIcon,
@@ -18,8 +19,8 @@ const items = [
 
 export function BottomNav() {
   const pathname = usePathname();
-  // O onboarding é tela cheia: sem navegação até a pessoa ter um plano.
-  if (pathname.startsWith("/onboarding")) return null;
+  // Onboarding e landing são tela cheia: sem navegação até a pessoa ter um plano.
+  if (isChromeless(pathname)) return null;
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface/95 backdrop-blur"

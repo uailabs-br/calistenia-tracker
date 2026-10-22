@@ -128,6 +128,34 @@ export function HomeIcon({ className }: IconProps) {
   );
 }
 
+export function OfflineIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <path
+        d="M3 3l18 18M8.5 16.5a4 4 0 0 1 .9-7.4M12 5a7 7 0 0 1 6.9 5.8A3.5 3.5 0 0 1 18 17.5h-6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function ResumeIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <path
+        d="M3 12a9 9 0 1 0 2.6-6.3M3 4v5h5M12 8v4.5l3 1.8"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function TimerIcon({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">

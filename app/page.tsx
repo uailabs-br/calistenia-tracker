@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/db/schema";
 import { getWorkoutById, plan } from "@/lib/plan/loader";
@@ -15,9 +16,12 @@ import { UpNext } from "@/components/home/UpNext";
 import { WeekReviewCard } from "@/components/home/WeekReviewCard";
 import { ConsistencyCard } from "@/components/home/ConsistencyCard";
 import { FreeformLogCard } from "@/components/home/FreeformLogCard";
+import { PlanSwapCard } from "@/components/home/PlanSwapCard";
 import { PlanBuilderCard } from "@/components/home/PlanBuilderCard";
 import { InstallPrompt } from "@/components/ui/InstallPrompt";
 import { isSeedPlanId } from "@/lib/plan/seeds";
+import { getPlanSwapSignal } from "@/lib/db/queries/planSwap";
+import { ackSwap } from "@/lib/utils/planSwap";
 import { usePlanReady } from "@/lib/utils/usePlanReady";
 
 const PAST_LABELS = ["Ontem", "Anteontem"];
@@ -82,8 +86,23 @@ export default function HomePage() {
 
   // Criador com IA: só com plano pronto e fora de sessão. Sem nenhum treino
   // feito é a primeira ação (sobe acima do próximo treino); depois, desce.
+  // Se o aviso de troca está na tela, ele já leva ao criador: o card genérico sai.
+  const [swapAckVersion, setSwapAckVersion] = useState(0);
+  const swap = useLiveQuery(
+    // Fora de sessão só: o mapa varre o histórico inteiro e re-roda a cada escrita
+    // em sessions/logs, e com sessão ativa o aviso nem aparece.
+    () => (planReady && active === null ? getPlanSwapSignal() : undefined),
+    [planReady, active === null, swapAckVersion]
+  );
+  const showSwap = planReady && !active && !!swap?.show;
+  // Espera o sinal resolver: sem isso o card genérico pisca e some quando o aviso chega.
   const showPlanBuilder =
-    planReady && !active && overview !== undefined && isSeedPlanId(plan.id);
+    planReady &&
+    !active &&
+    overview !== undefined &&
+    isSeedPlanId(plan.id) &&
+    swap !== undefined &&
+    !showSwap;
   const firstWorkout = overview?.totalWorkouts === 0;
 
   return (
@@ -112,6 +131,16 @@ export default function HomePage() {
         activeHere={active?.workout_id === next?.id}
         doneToday={doneTodayLabels}
       />
+
+      {showSwap && swap && (
+        <PlanSwapCard
+          ready={swap.ready}
+          onDismiss={() => {
+            ackSwap(swap.readyIds);
+            setSwapAckVersion((v) => v + 1);
+          }}
+        />
+      )}
 
       {showPlanBuilder && !firstWorkout && <PlanBuilderCard first={false} />}
 

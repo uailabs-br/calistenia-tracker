@@ -1,6 +1,7 @@
 import { planSchema, type Plan } from "./schema";
 import { PLAN_OVERRIDE_KEY } from "./loader";
 import { convertLegacyPlan, isLegacyPlan } from "./legacyPlan";
+import { markPlanApplied } from "@/lib/utils/planSwap";
 
 export interface PlanSummary {
   name: string;
@@ -158,14 +159,21 @@ export function parsePlanInput(raw: string): ParsePlanResult {
  */
 const RECOVERY_OPT_OUT_KEY = "calistenia:plan-recovery-off";
 
-export function applyPlan(plan: Plan): void {
+/**
+ * `recovered`: o PlanBoot reaplicando o plano do histórico num aparelho que o
+ * perdeu. Não é uma troca — se carimbasse, o aviso de "já deu um ciclo desde a
+ * última troca" reiniciaria a cada recuperação.
+ */
+export function applyPlan(plan: Plan, opts: { recovered?: boolean } = {}): void {
   localStorage.setItem(PLAN_OVERRIDE_KEY, JSON.stringify(plan));
   localStorage.removeItem(RECOVERY_OPT_OUT_KEY);
+  if (!opts.recovered) markPlanApplied();
 }
 
 export function clearPlanOverride(): void {
   localStorage.removeItem(PLAN_OVERRIDE_KEY);
   localStorage.setItem(RECOVERY_OPT_OUT_KEY, "1");
+  markPlanApplied();
 }
 
 export function hasRecoveryOptOut(): boolean {

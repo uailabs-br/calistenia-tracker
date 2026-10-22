@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import type { PlanExercise } from "@/lib/plan/schema";
 import type { ExerciseLog, SetPerformed, SetValue } from "@/lib/db/schema";
-import { adjustSets, formatExtras, parseRestSeconds } from "@/lib/domain/parseTarget";
+import { adjustSets, formatExtras, parseRestSeconds, targetSets } from "@/lib/domain/parseTarget";
 import { extraSets, plannedSets } from "@/lib/domain/volume";
 import { exerciseSkillMapping } from "@/lib/plan/skills";
 import { isClean } from "@/lib/db/queries/progressionReady";
@@ -586,7 +586,8 @@ export function ExerciseCard({
 }
 
 /** Semente dos steppers ao ajustar: usa a última performance se ficou
- *  abaixo do alvo (torna a progressão visível), senão o alvo. */
+ *  abaixo do alvo (torna a progressão visível), senão o teto da faixa.
+ *  "Abaixo" é contra o PISO: é ele que conta como alvo batido na progressão. */
 function seedAdjustValues(
   parsed: PlanExercise["parsed"],
   targetText: string,
@@ -595,8 +596,8 @@ function seedAdjustValues(
   const target = adjustSets(parsed, targetText);
   if (!lastPerf || lastPerf.kind !== "sets") return target;
   const lastSum = lastPerf.values.reduce((a, b) => a + b, 0);
-  const targetSum = target.reduce((a, b) => a + b, 0);
-  if (lastSum >= targetSum) return target;
+  const floorSum = targetSets(parsed, targetText).reduce((a, b) => a + b, 0);
+  if (lastSum >= floorSum) return target;
   const last = lastPerf.values;
   return Array.from(
     { length: target.length },

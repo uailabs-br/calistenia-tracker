@@ -2,7 +2,15 @@ import { db, type ExerciseLog, type Session, type SetPerformed } from "@/lib/db/
 import { exerciseSkillMapping, getCriteria, type Criteria } from "@/lib/plan/skills";
 import { negFlagsOf } from "@/lib/plan/loader";
 import { resolveLogExercise } from "@/lib/plan/resolve";
+import { targetValue } from "@/lib/domain/parseTarget";
+import {
+  skillStateFromVotes,
+  type SkillState,
+  type Vote,
+} from "@/lib/domain/progressionState";
 import { hitTarget, isClean } from "./progressionReady";
+
+export type { SkillState };
 
 /**
  * Avalia se uma performance declarada bate o critério estruturado do nível.
@@ -44,33 +52,29 @@ export function evaluateCriterion(performed: SetPerformed, criteria: Criteria): 
   return false;
 }
 
-export type SkillState = "ready" | "regress" | "stale" | "tracking";
-
-const REGRESS_STREAK = 3; // schema_notes.advancement_logic: "falha em 3 sessões consecutivas sugere regressão"
-const STALE_SESSIONS = 8; // definição fixada na proposta original
-
 export interface SkillLogEntry {
   log: ExerciseLog;
   session: Session;
 }
 
 /**
- * Logs "vivos" de uma skill, do mais recente pro mais antigo. Só conta o que
- * ainda faz sentido HOJE:
+ * Logs "vivos" de uma skill, do mais recente pro mais antigo, sobre dados JÁ
+ * carregados (o mapa de progressão carrega o banco uma vez e consulta N skills).
+ * Só conta o que ainda faz sentido HOJE:
  * - sessão existente, não apagada, concluída ou em andamento (abandonada não);
  * - exercício que o plano vigente ainda vincula àquela skill/nível (log de um
  *   exercício que saiu do plano, ou foi re-vinculado, não pesa mais);
  * - opcionalmente só o que veio depois de `since` (dispensa do aviso).
  */
-export async function getSkillLogs(
+export function skillLogsFrom(
+  logs: ExerciseLog[],
+  sessions: Map<string, Session>,
   skillId: string,
   opts: { level?: number; since?: number } = {}
-): Promise<SkillLogEntry[]> {
-  const logs = await db.exerciseLogs.where("skill_id").equals(skillId).toArray();
-  const sessions = new Map((await db.sessions.toArray()).map((s) => [s.id, s]));
-
+): SkillLogEntry[] {
   const out: SkillLogEntry[] = [];
   for (const log of logs) {
+    if (log.skill_id !== skillId) continue;
     if (log.deleted_at || log.skipped) continue;
     if (opts.level !== undefined && log.level_at_time !== opts.level) continue;
     if (opts.since !== undefined && log.logged_at <= opts.since) continue;
@@ -89,22 +93,46 @@ export async function getSkillLogs(
   );
 }
 
+export async function getSkillLogs(
+  skillId: string,
+  opts: { level?: number; since?: number } = {}
+): Promise<SkillLogEntry[]> {
+  const logs = await db.exerciseLogs.where("skill_id").equals(skillId).toArray();
+  const sessions = new Map((await db.sessions.toArray()).map((s) => [s.id, s]));
+  return skillLogsFrom(logs, sessions, skillId, opts);
+}
+
 /**
  * Falha "de verdade": não cumpriu o que o PLANO pediu (alvo do dia do registro)
  * ou executou sujo. Ficar abaixo do critério da escada mas dentro do plano é só
  * "ainda não é hora de subir" — não conta como sinal de regressão.
  */
-function isRealFailure({ log, session }: SkillLogEntry): boolean {
-  const target = resolveLogExercise(log, session.workout_id).parsed?.target ?? null;
+export function isRealFailure({ log, session }: SkillLogEntry): boolean {
+  const resolved = resolveLogExercise(log, session.workout_id);
+  const target = targetValue(resolved.parsed, resolved.target);
   return !(hitTarget(log, target) && isClean(log, negFlagsOf(log.exercise_id)));
 }
 
 /**
+ * Votos de um skill num nível, do mais recente pro mais antigo. Log sem
+ * `criterion_met` (sem sets_performed) não vota nem a favor nem contra.
+ */
+export function skillVotes(entries: SkillLogEntry[]): Vote[] {
+  return entries
+    .filter((e) => e.log.criterion_met !== null)
+    .map((e) => ({ met: !!e.log.criterion_met, realFailure: isRealFailure(e) }));
+}
+
+/** Sessões que o nível exige pra subir (critério do próprio nível; 2 se não houver). */
+export function sessionsRequiredFor(skillId: string, level: number): number {
+  return getCriteria(skillId, level)?.sessions_required ?? 2;
+}
+
+/**
  * Estado de progressão de um skill num nível: lê os logs mapeados a esse
- * skill+nível, ordena por sessão mais recente e aplica a máquina de estados.
- * "ready"/"regress" seguem o critério do próprio nível (sessions_required);
- * "stale" é um teto de sessões sem decisão, pra não ficar preso pra sempre
- * em "tracking". `since` ignora tudo até a última dispensa do aviso.
+ * skill+nível, ordena por sessão mais recente e aplica a máquina de estados
+ * (`lib/domain/progressionState.ts`). `since` ignora tudo até a última dispensa
+ * do aviso.
  */
 export async function getSkillState(
   skillId: string,
@@ -112,30 +140,7 @@ export async function getSkillState(
   sessionsRequired?: number,
   since?: number
 ): Promise<SkillState> {
-  const criteria = getCriteria(skillId, level);
-  const required = sessionsRequired ?? criteria?.sessions_required ?? 2;
-
-  // sem `criterion_met` (sem sets_performed) o log não vota nem a favor nem contra
-  const ordered = (await getSkillLogs(skillId, { level, since })).filter(
-    (e) => e.log.criterion_met !== null
-  );
-  if (ordered.length === 0) return "tracking";
-
-  let positiveStreak = 0;
-  for (const e of ordered) {
-    if (!e.log.criterion_met) break;
-    positiveStreak++;
-  }
-  if (positiveStreak >= required) return "ready";
-
-  let negativeStreak = 0;
-  for (const e of ordered) {
-    if (e.log.criterion_met || !isRealFailure(e)) break;
-    negativeStreak++;
-  }
-  if (negativeStreak >= REGRESS_STREAK) return "regress";
-
-  if (ordered.length >= STALE_SESSIONS) return "stale";
-
-  return "tracking";
+  const required = sessionsRequired ?? sessionsRequiredFor(skillId, level);
+  const votes = skillVotes(await getSkillLogs(skillId, { level, since }));
+  return skillStateFromVotes(votes, required);
 }

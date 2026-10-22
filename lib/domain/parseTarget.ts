@@ -1,20 +1,40 @@
 import type { Parsed } from "@/lib/plan/schema";
 
 /**
- * Extrai { sets, low } direto do texto livre `target`. Serve de fallback
+ * Extrai { sets, low, high } direto do texto livre `target`. Serve de fallback
  * quando `parsed` é null (alvo é um intervalo, ex: "6-8", que a IA não
  * consegue reduzir a um número único) e também como fonte de verdade pro
  * valor baixo do alvo — mesmo quando `parsed` existe, `parsed.target` pode
  * ter capturado o teto do intervalo em vez do piso.
- * Ex: "3 × 6-8/lado" → { sets: 3, low: 6 } · "4 rep" → { sets: 1, low: 4 }
+ * Ex: "3 × 6-8/lado" → { sets: 3, low: 6, high: 8 } · "4 rep" → { sets: 1, low: 4, high: 4 }
  * Retorna null quando não há nenhum número reconhecível no texto.
  */
-function parseTargetText(target: string): { sets: number; low: number } | null {
-  const withSets = target.match(/^\s*(\d+)\s*[×xX]\s*(\d+)/);
-  if (withSets) return { sets: Number(withSets[1]), low: Number(withSets[2]) };
-  const single = target.match(/(\d+)/);
-  if (single) return { sets: 1, low: Number(single[1]) };
+function parseTargetText(
+  target: string
+): { sets: number; low: number; high: number } | null {
+  const range = String.raw`(\d+)(?:\s*[-–]\s*(\d+))?`;
+  const withSets = target.match(new RegExp(String.raw`^\s*(\d+)\s*[×xX]\s*` + range));
+  if (withSets) {
+    const low = Number(withSets[2]);
+    return { sets: Number(withSets[1]), low, high: Math.max(low, Number(withSets[3] ?? low)) };
+  }
+  const single = target.match(new RegExp(range));
+  if (single) {
+    const low = Number(single[1]);
+    return { sets: 1, low, high: Math.max(low, Number(single[2] ?? low)) };
+  }
   return null;
+}
+
+/**
+ * Número que a progressão compara com as séries feitas. `parsed` manda quando
+ * existe; sem ele (todo alvo com intervalo, pelo contrato do prompt) cai no piso
+ * do texto. Antes devolvia null e nenhum registro ajustado contava como "bateu o
+ * alvo" — só o "fiz como previsto" —, o que esconderia o sinal de progressão de
+ * quem ajusta as reps.
+ */
+export function targetValue(parsed: Parsed | null, target = ""): number | null {
+  return parsed?.target ?? parseTargetText(target)?.low ?? null;
 }
 
 /**
@@ -34,13 +54,19 @@ export function targetSets(parsed: Parsed | null, target = ""): number[] {
 }
 
 /**
- * Valores iniciais dos steppers ao ajustar. Diferente de `targetSets`,
- * sempre devolve ao menos uma série - mesmo sem número reconhecível - para
- * que qualquer exercício possa ter as reps realizadas ajustadas.
+ * Valores iniciais dos steppers ao ajustar. Abre no TETO do intervalo ("3 × 6-8"
+ * → 8): quem ajusta quase sempre fez o topo da faixa e só tira reps se ficou
+ * aquém. `targetSets` segue no piso de propósito — é o que reconstitui "fiz como
+ * previsto" na leitura do passado, e mexer nele reescreveria volume e recorde.
+ * Sempre devolve ao menos uma série, mesmo sem número reconhecível, para que
+ * qualquer exercício possa ter as reps realizadas ajustadas.
  */
 export function adjustSets(parsed: Parsed | null, target = ""): number[] {
-  const t = targetSets(parsed, target);
-  return t.length > 0 ? t : [1];
+  const spec = parseTargetText(target);
+  const sets = spec?.sets ?? parsed?.sets;
+  const high = spec?.high ?? parsed?.target;
+  if (!sets || high === undefined) return [1];
+  return Array.from({ length: sets }, () => high);
 }
 
 export type TargetUnit = "reps" | "seconds" | "attempts";

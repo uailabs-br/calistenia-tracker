@@ -7,6 +7,7 @@ import { PageTransition } from "@/components/ui/PageTransition";
 import { ToastProvider } from "@/components/ui/Toast";
 import { PlanBoot } from "@/components/ui/PlanBoot";
 import { AppMain } from "@/components/ui/AppMain";
+import { APP_NAME } from "@/lib/appInfo";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -31,11 +32,9 @@ const barlow = Barlow_Condensed({
   display: "swap",
 });
 
-const APP_NAME = "Calistenia Tracker";
-
 export const metadata: Metadata = {
   title: APP_NAME,
-  description: "Registro de treino de calistenia (MU + HS)",
+  description: "Registro de treino de calistenia, com plano e progressão.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,

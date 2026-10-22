@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { DuotoneImage } from "@/components/ui/DuotoneImage";
 
 const LABELS = ["início", "topo"];
 
@@ -9,7 +10,16 @@ const LABELS = ["início", "topo"];
  * "como executar" aberto, então nada é baixado antes disso. Offline na primeira
  * vez: a imagem falha e some, sem quebrar o resto do cartão.
  */
-export function ExerciseMedia({ urls, name }: { urls: string[]; name: string }) {
+export function ExerciseMedia({
+  urls,
+  name,
+  accent,
+}: {
+  urls: string[];
+  name: string;
+  /** Cor do treino; a figura é tingida com ela. */
+  accent?: string;
+}) {
   const [failed, setFailed] = useState<Set<string>>(new Set());
   const shown = urls.filter((u) => !failed.has(u));
 
@@ -26,17 +36,11 @@ export function ExerciseMedia({ urls, name }: { urls: string[]; name: string }) 
       <div className="flex gap-2">
         {shown.map((url, i) => (
           <div key={url} className="min-w-0 flex-1">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <DuotoneImage
               src={url}
               alt={`${name} — ${urls.length > 1 ? LABELS[urls.indexOf(url)] : "posição"}`}
-              width={512}
-              height={512}
-              crossOrigin="anonymous"
-              referrerPolicy="no-referrer"
-              decoding="async"
+              accent={accent}
               onError={() => setFailed((prev) => new Set(prev).add(url))}
-              className="aspect-square w-full rounded-card bg-surface2 object-cover"
             />
             {urls.length > 1 && (
               <p className="mt-1 text-center font-mono text-[11px] text-muted">

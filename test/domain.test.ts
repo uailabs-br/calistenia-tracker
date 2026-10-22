@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   targetSets,
   adjustSets,
+  targetValue,
   unitLabel,
   formatValue,
   unitOf,
@@ -26,11 +27,22 @@ describe("parseTarget", () => {
   });
   it("com parsed null, extrai sets do texto em vez de zerar tudo", () => {
     // regressão: "3 × 6-8/lado" com parsed: null tinha só 1 marcador
-    expect(adjustSets(null, "3 × 6-8/lado")).toEqual([6, 6, 6]);
+    expect(adjustSets(null, "3 × 6-8/lado")).toEqual([8, 8, 8]);
     expect(targetSets(null, "4 × 2")).toEqual([2, 2, 2, 2]);
     expect(targetSets(null, "3 × 2-3")).toEqual([2, 2, 2]);
   });
-  it("sempre pré-preenche pelo piso do intervalo, mesmo com parsed presente", () => {
+  it("ajustar abre no teto do intervalo; fixo e sem intervalo seguem iguais", () => {
+    expect(adjustSets(null, "4 × 6-8s")).toEqual([8, 8, 8, 8]);
+    expect(adjustSets(null, "3 × 5–6")).toEqual([6, 6, 6]); // travessão
+    expect(adjustSets(null, "4 × 2")).toEqual([2, 2, 2, 2]);
+    expect(adjustSets(reps)).toEqual([4, 4, 4, 4]); // sem texto, cai no parsed
+  });
+  it("targetValue: parsed manda; sem ele, o piso do texto", () => {
+    expect(targetValue(reps, "4 × 4")).toBe(4);
+    expect(targetValue(null, "3 × 6-8/lado")).toBe(6);
+    expect(targetValue(null, "")).toBeNull();
+  });
+  it("targetSets pré-preenche pelo piso do intervalo, mesmo com parsed presente", () => {
     // parsed.target pode ter capturado o teto ("6-8" → 8); o texto manda
     const highCaptured: Parsed = {
       sets: 3,

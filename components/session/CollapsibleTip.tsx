@@ -39,7 +39,7 @@ export function CollapsibleTip({
         />
         {label}
       </button>
-      {open && media && <ExerciseMedia urls={media} name={mediaName} />}
+      {open && media && <ExerciseMedia urls={media} name={mediaName} accent={accent} />}
       {open && tip && (
         <p
           className="mt-2 rounded-card border-l-2 bg-surface px-3 py-2 text-sm leading-relaxed text-muted"
