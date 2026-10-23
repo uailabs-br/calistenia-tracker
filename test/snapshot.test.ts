@@ -174,7 +174,7 @@ describe("métricas leem o alvo do momento, não o do plano de hoje", () => {
       },
       parsed(3, 3)
     );
-    expect(pr).toEqual({ value: 6, unit: "reps" });
+    expect(pr).toEqual({ value: 6, unit: "reps", previous: 4 });
   });
 
   it("getLoggedExercises inclui exercício fora do plano, com nome e unidade do snapshot", async () => {

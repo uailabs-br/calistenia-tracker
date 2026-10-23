@@ -206,7 +206,7 @@ describe("exercício adicionado entra nas métricas", () => {
       { as_target: false, sets: [{ index: 0, value: 10 }], skipped: false, flags_selected: [] },
       templateToPlanExercise(catalog.find((c) => c.id === CAT)!).parsed
     );
-    expect(pr).toEqual({ value: 10, unit: "reps" });
+    expect(pr).toEqual({ value: 10, unit: "reps", previous: 8 });
   });
 
   it("'última performance' funciona entre sessões", async () => {

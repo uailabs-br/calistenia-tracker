@@ -225,7 +225,7 @@ describe("repositório", () => {
       },
       reps4x4
     );
-    expect(pr).toEqual({ value: 7, unit: "reps" });
+    expect(pr).toEqual({ value: 7, unit: "reps", previous: 4 });
   });
 
   it("não mexe em logged_at nem em sets_performed (extra não entra na progressão)", async () => {
@@ -273,7 +273,7 @@ describe("métricas contam a série extra normalmente", () => {
       },
       reps4x4
     );
-    expect(pr).toEqual({ value: 6, unit: "reps" });
+    expect(pr).toEqual({ value: 6, unit: "reps", previous: 4 });
   });
 
   it("recorde: extra de sessão passada entra no melhor histórico", async () => {

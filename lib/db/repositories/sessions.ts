@@ -166,6 +166,30 @@ export async function removeAddedExercise(
 }
 
 /**
+ * Grava as séries já feitas de um exercício ainda sem log (série a série).
+ * `values` vazio ou null limpa a entrada. Só sessão `in_progress`: depois de
+ * concluída, série parcial não tem mais pra onde ir. Devolve a sessão atualizada.
+ */
+export async function setPartialSets(
+  session_id: string,
+  exercise_id: string,
+  values: number[] | null
+): Promise<Session | null> {
+  const s = await db.sessions.get(session_id);
+  if (!s || s.deleted_at || s.status !== "in_progress") return null;
+  const map = { ...(s.partial_sets ?? {}) };
+  if (values && values.length > 0) map[exercise_id] = values;
+  else delete map[exercise_id];
+  const updated: Session = {
+    ...s,
+    partial_sets: Object.keys(map).length > 0 ? map : null,
+    updated_at: now(),
+  };
+  await db.sessions.put(updated);
+  return updated;
+}
+
+/**
  * Descarta uma sessão em andamento sem salvar o progresso: soft-delete da
  * sessão e de todos os seus registros de exercício. Some do "ativo",
  * do histórico e das métricas.

@@ -25,8 +25,8 @@ interface Signal {
 }
 
 const TEXT: Record<Signal["state"], string> = {
-  ready: "critério batido, pronto pra subir 💪",
-  "generic-ready": "bateu o alvo nas últimas sessões, pronto pra subir 💪",
+  ready: "critério batido, pronto pra subir de nível 💪",
+  "generic-ready": "bateu o alvo nas últimas sessões, pronto pra subir de nível 💪",
   regress: "abaixo do alvo várias sessões seguidas, considere um passo atrás",
 };
 

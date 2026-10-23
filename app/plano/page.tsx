@@ -77,7 +77,7 @@ export default function PlanoPage() {
         <SettingsRow
           icon={TrophyIcon}
           label="Exercícios"
-          description="Quem já pode subir e quem pede cuidado"
+          description="Quem já pode subir de nível e quem pede cuidado"
           href="/progressao"
         />
         <SettingsRow

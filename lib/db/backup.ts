@@ -60,6 +60,8 @@ const sessionSchema = z.object({
   source: z.enum(["plan", "freeform"]).optional().default("plan"),
   // backups anteriores aos exercícios adicionados no treino não têm — default null.
   added_exercises: z.array(z.string()).nullable().optional().default(null),
+  // séries parciais (registro série a série) só existem em sessão em andamento
+  partial_sets: z.record(z.string(), z.array(z.number())).nullable().optional().default(null),
   updated_at: z.number(),
   deleted_at: z.number().nullable(),
 });
@@ -130,7 +132,11 @@ export async function exportAll(): Promise<Backup> {
     version: BACKUP_VERSION,
     exported_at: new Date().toISOString(),
     plan: { id: plan.id, version: plan.version },
-    sessions: sessions.map((s) => ({ ...s, added_exercises: s.added_exercises ?? null })),
+    sessions: sessions.map((s) => ({
+      ...s,
+      added_exercises: s.added_exercises ?? null,
+      partial_sets: s.partial_sets ?? null,
+    })),
     // logs anteriores ao snapshot/extras vêm sem os campos — normaliza pra null
     exerciseLogs: exerciseLogs.map((l) => ({
       ...l,

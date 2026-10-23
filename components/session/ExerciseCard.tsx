@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import type { PlanExercise } from "@/lib/plan/schema";
 import type { ExerciseLog, SetPerformed, SetValue } from "@/lib/db/schema";
-import { adjustSets, formatExtras, parseRestSeconds, targetSets } from "@/lib/domain/parseTarget";
+import { adjustSets, formatExtras, parseRestSeconds, targetSets, unitOf } from "@/lib/domain/parseTarget";
 import { extraSets, plannedSets } from "@/lib/domain/volume";
 import { exerciseSkillMapping } from "@/lib/plan/skills";
 import { isClean } from "@/lib/db/queries/progressionReady";
@@ -15,11 +15,14 @@ import {
 } from "@/lib/db/queries/lastPerformance";
 import { CheckIcon, PlusIcon, TimerIcon, TrashIcon, TrophyIcon } from "@/components/ui/icons";
 import { Stepper } from "./Stepper";
+import { SetBySetPanel } from "./SetBySetPanel";
+import { recordFromSets } from "@/lib/domain/setBySet";
 import { FlagChips } from "./FlagChips";
 import { ExerciseNote } from "./ExerciseNote";
 import { AttemptsCounter } from "./AttemptsCounter";
 import { CollapsibleTip } from "./CollapsibleTip";
 import { getExerciseMedia } from "@/lib/plan/media";
+import { haptic } from "@/lib/utils/haptics";
 
 export interface RecordInput {
   as_target: boolean;
@@ -56,6 +59,12 @@ interface Props {
   added?: boolean;
   /** Tira do treino um exercício adicionado ainda sem registro. */
   onRemove?: () => void;
+  /** Séries já feitas deste exercício, ainda sem log (registro série a série). */
+  partial?: number[];
+  /** Série registrada que não fecha o exercício: grava a parcial e abre o descanso. */
+  onLogSet?: (next: number[], flags: string[]) => void;
+  /** Correção silenciosa da parcial (editar ou apagar uma série). */
+  onSetPartial?: (values: number[]) => void;
 }
 
 export function ExerciseCard({
@@ -74,6 +83,9 @@ export function ExerciseCard({
   onSetExtras,
   added = false,
   onRemove,
+  partial = [],
+  onLogSet,
+  onSetPartial,
 }: Props) {
   const parsed = exercise.parsed;
   const restSeconds = parseRestSeconds(exercise.rest) ?? 90;
@@ -88,6 +100,19 @@ export function ExerciseCard({
   const [attemptsTotal, setAttemptsTotal] = useState(0);
   const [attemptsGood, setAttemptsGood] = useState(0);
   const cardRef = useRef<HTMLDivElement>(null);
+  // Tranco ao registrar. Fica em estado (não no elemento) porque registrar
+  // normalmente fecha o card: quem anima é a versão colapsada que aparece.
+  // "done" existe pra o card que segue aberto não reprisar a entrada quando o
+  // tranco acaba; reabrir o card zera e a entrada volta.
+  const [kick, setKick] = useState<"" | "on" | "done">("");
+  useEffect(() => {
+    if (active) setKick((k) => (k === "done" ? "" : k));
+  }, [active]);
+  const kickProps = {
+    onAnimationEnd: (e: React.AnimationEvent) => {
+      if (e.target === e.currentTarget && e.animationName === "kick") setKick("done");
+    },
+  };
 
   // Séries extras: estado local (edição fluida com press-and-hold), gravado com
   // debounce. `extrasSeen` guarda o último valor já em sincronia com o banco —
@@ -148,15 +173,15 @@ export function ExerciseCard({
 
   /** Performance declarada pro motor de progressão — null se o exercício
    *  não estiver mapeado a um nível de skill. */
-  const skillPerformed = (): SetPerformed | null => {
+  const skillPerformed = (performed: number[] = plannedValues): SetPerformed | null => {
     if (!mapping) return null;
     const formOk = isClean({ flags_selected: flags }, exercise.neg_flags ?? []);
     if (mapping.criteria_type === "reps_rir") {
       // RIR não é mais coletado: o critério de reps avalia só reps e execução limpa
-      return { type: "reps_rir", reps: plannedValues, rir: null, form_ok: formOk };
+      return { type: "reps_rir", reps: performed, rir: null, form_ok: formOk };
     }
     if (mapping.criteria_type === "hold_clean") {
-      return { type: "hold_clean", durations_seconds: plannedValues, form_ok: formOk };
+      return { type: "hold_clean", durations_seconds: performed, form_ok: formOk };
     }
     return { type: "skill_consistency", attempts_total: attemptsTotal, attempts_good: attemptsGood };
   };
@@ -195,8 +220,14 @@ export function ExerciseCard({
     note: note.trim() ? note.trim() : null,
   });
 
+  const record = (input: RecordInput) => {
+    setKick("on");
+    haptic(12);
+    onRecord(input);
+  };
+
   const recordAsTarget = () =>
-    onRecord({
+    record({
       as_target: true,
       sets: null,
       skipped: false,
@@ -207,7 +238,7 @@ export function ExerciseCard({
   const recordAdjusted = () => {
     // séries novas além do plano viram extras (somadas às que já existiam)
     const newExtras = values.slice(plannedCount);
-    onRecord({
+    record({
       as_target: false,
       sets: plannedValues.map((value, index) => ({ index, value })),
       ...(newExtras.length > 0
@@ -220,13 +251,41 @@ export function ExerciseCard({
   };
 
   const recordAttempts = () =>
-    onRecord({
+    record({
       as_target: false,
       sets: null,
       skipped: false,
       sets_performed: skillPerformed(),
       ...baseInput(),
     });
+
+  // ── Série a série ───────────────────────────────────────────────────
+  // Fechar o exercício grava o mesmo log que o fluxo de exercício inteiro.
+  const finishSets = (all: number[], asPlanned = false) =>
+    record({
+      ...(asPlanned ? { as_target: true, sets: null } : recordFromSets(all, parsed, exercise.target)),
+      skipped: false,
+      sets_performed: skillPerformed(all),
+      ...baseInput(),
+    });
+
+  const logSet = (next: number[]) => {
+    setKick("on");
+    haptic(12);
+    onLogSet?.(next, flags);
+  };
+
+  // Corrigir série: antes do fechamento mexe na parcial; depois, no log (silencioso).
+  const editDone = (next: number[]) => {
+    if (log && !log.skipped) {
+      onPersist({
+        ...recordFromSets(next, parsed, exercise.target),
+        skipped: false,
+        sets_performed: skillPerformed(next),
+        ...baseInput(),
+      });
+    } else onSetPartial?.(next);
+  };
 
   const recordSkipped = () =>
     onRecord({
@@ -291,13 +350,20 @@ export function ExerciseCard({
     mapping?.criteria_type !== "skill_consistency" &&
     !/tentativa/i.test(exercise.target);
   const loggedPlannedCount = log ? plannedSets(log, parsed, exercise.target).length : 0;
+  // Tudo que tem série registra série a série; tentativas seguem no contador.
+  const setBySet = supportsExtra;
+  const doneSets = done ? plannedSets(log, parsed, exercise.target) : partial;
+  const inProgress = !done && !skipped && partial.length > 0;
+  const setUnit = unitOf(parsed, exercise.target) === "seconds" ? "seconds" : "reps";
+  const unitSuffix = setUnit === "seconds" ? "s" : "";
 
   // ── Card colapsado ─────────────────────────────────────────────────
   if (!active) {
     return (
       <div
-        className="flex items-stretch rounded-card border border-border bg-surface transition-colors duration-200"
+        className={`flex items-stretch rounded-card border border-border bg-surface transition-colors duration-200 ${kick === "on" ? "anim-kick" : ""}`}
         style={done ? { borderColor: accent } : undefined}
+        {...kickProps}
       >
         <button
           type="button"
@@ -325,7 +391,9 @@ export function ExerciseCard({
               <p className="tnum text-xs text-muted">
                 {skipped
                   ? "pulado"
-                  : summarize(log, parsed, exercise.target) ?? exercise.target}
+                  : inProgress
+                    ? partial.map((v) => `${v}${unitSuffix}`).join("/")
+                    : summarize(log, parsed, exercise.target) ?? exercise.target}
               </p>
             </div>
             {done ? (
@@ -338,7 +406,7 @@ export function ExerciseCard({
               </span>
             ) : (
               <span className="tnum shrink-0 text-xs text-muted">
-                {exercise.target}
+                {inProgress ? `${partial.length}/${values.length} séries` : exercise.target}
               </span>
             )}
           </div>
@@ -363,8 +431,9 @@ export function ExerciseCard({
   return (
     <div
       ref={cardRef}
-      className="anim-fade-in-up scroll-mt-20 rounded-card border bg-surface px-4 py-4"
+      className={`scroll-mt-20 rounded-card border bg-surface px-4 py-4 ${kick === "on" ? "anim-kick" : kick === "done" ? "" : "anim-fade-in-up"}`}
       style={{ borderColor: accent }}
+      {...kickProps}
     >
       <div className="flex items-baseline justify-between gap-2">
         <div className="flex min-w-0 items-center gap-1.5">
@@ -377,7 +446,7 @@ export function ExerciseCard({
             </span>
           )}
           <h3
-            className="truncate font-semibold"
+            className="display truncate text-[1.625rem] leading-tight"
             style={isSkill ? { color: accent } : undefined}
           >
             {exercise.name}
@@ -419,6 +488,20 @@ export function ExerciseCard({
               Confirmar
             </button>
           </div>
+        ) : setBySet ? (
+          <SetBySetPanel
+            accent={accent}
+            unit={setUnit}
+            targets={values}
+            done={doneSets}
+            logged={done}
+            canAddSet={added}
+            onTargetChange={(i, v) => setValues((prev) => prev.map((x, j) => (j === i ? v : x)))}
+            onLogSet={logSet}
+            onFinish={finishSets}
+            onEditDone={editDone}
+            onAddSet={addRow}
+          />
         ) : !adjusting ? (
           <div className="flex gap-2">
             <button

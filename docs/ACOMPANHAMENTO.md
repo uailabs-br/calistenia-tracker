@@ -20,6 +20,17 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-10-23, treino série a série e card novo — 515 testes):**
+> o card de exercício registra **série a série**: quadradinhos com o alvo, stepper grande, e
+> "Registrar série N" já abre o descanso. A série parcial fica em `Session.partial_sets`
+> (opcional, sem índice, sem migração) e o log só nasce quando o exercício fecha, no mesmo
+> formato de antes (`recordFromSets`). Recorde aparece na própria série, numa tela cheia
+> brutalista (`PRMoment`, preto e branco, 7s na tela). O cronômetro virou um disco que enche
+> de líquido e fica verde com check no fim. Botões − e + afundam como tecla e o número rola
+> (`btn-key`, `RollingNumber`); o card dá um tranco ao registrar. "Etapa" virou **nível** e
+> "pronto pra subir" virou "pronto pra subir de nível" nos textos. Ver
+> [PLAN-serie-a-serie.md](PLAN-serie-a-serie.md).
+
 > **Atualização (pós-v1.8, 2026-10-23, navegação, Ajustes e feedback — 505 testes):**
 > nav nova: **Início · Treino · Evolução · Ajustes**. O Histórico deixou de ser aba e virou
 > atalho em Evolução (que perdeu o card de RPE médio). A aba **Treino** (`/plano`) abre no

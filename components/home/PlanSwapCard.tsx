@@ -38,8 +38,8 @@ export function PlanSwapCard({
           <p className="text-sm font-semibold">Seu treino pede uma revisão</p>
           <p className="mt-1 text-sm leading-snug text-muted">
             {ready.length === 1
-              ? "Um exercício está pronto pra subir"
-              : `${ready.length} exercícios estão prontos pra subir`}
+              ? "Um exercício está pronto pra subir de nível"
+              : `${ready.length} exercícios estão prontos pra subir de nível`}
             : {names.join(", ")}
             {rest > 0 ? ` e mais ${rest}` : ""}. Você já passou por um ciclo inteiro, então
             vale pedir o próximo treino à IA.

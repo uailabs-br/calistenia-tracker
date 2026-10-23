@@ -1,6 +1,7 @@
 "use client";
 
 import { MinusIcon, PlusIcon } from "@/components/ui/icons";
+import { RollingNumber } from "@/components/ui/RollingNumber";
 
 function CounterRow({
   label,
@@ -19,16 +20,18 @@ function CounterRow({
           type="button"
           aria-label={`Diminuir ${label}`}
           onClick={() => onChange(Math.max(0, value - 1))}
-          className="tap flex items-center justify-center rounded-lg border border-border bg-surface2 text-text active:scale-95"
+          className="btn-key tap flex items-center justify-center rounded-lg text-text"
         >
           <MinusIcon className="h-5 w-5" />
         </button>
-        <span className="tnum w-8 text-center text-lg tabular-nums">{value}</span>
+        <span className="tnum w-8 overflow-hidden text-center text-lg tabular-nums">
+          <RollingNumber value={value} />
+        </span>
         <button
           type="button"
           aria-label={`Aumentar ${label}`}
           onClick={() => onChange(value + 1)}
-          className="tap flex items-center justify-center rounded-lg border border-border bg-surface2 text-text active:scale-95"
+          className="btn-key tap flex items-center justify-center rounded-lg text-text"
         >
           <PlusIcon className="h-5 w-5" />
         </button>

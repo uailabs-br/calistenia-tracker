@@ -26,6 +26,13 @@ export interface Session {
   source: SessionSource;
   /** Exercícios acrescentados durante o treino (ids do catálogo ou de `customExercises`), na ordem. */
   added_exercises?: string[] | null;
+  /**
+   * Séries já feitas de exercícios ainda sem log (registro série a série),
+   * por exercise_id. O ExerciseLog só nasce quando o exercício fecha: até lá a
+   * série parcial mora aqui, pra retomada voltar na série certa sem que
+   * progressão, recorde e volume leiam um exercício pela metade.
+   */
+  partial_sets?: Record<string, number[]> | null;
   updated_at: number;
   deleted_at: number | null;
 }

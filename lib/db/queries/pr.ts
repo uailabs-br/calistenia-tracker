@@ -9,6 +9,8 @@ import { isClean } from "./progressionReady";
 export interface PRResult {
   value: number;
   unit: "reps" | "seconds";
+  /** Melhor série limpa antes desta: a tela de recorde mostra o salto. */
+  previous: number;
 }
 
 type LogLike = Pick<ExerciseLog, "as_target" | "sets" | "skipped" | "flags_selected"> &
@@ -61,5 +63,5 @@ export async function computePR(
   if (prevBest === null) return null; // 1ª vez limpa não é recorde
   if (candidate <= prevBest) return null; // empate ou abaixo
 
-  return { value: candidate, unit: parsed.unit };
+  return { value: candidate, unit: parsed.unit, previous: prevBest };
 }

@@ -286,6 +286,132 @@ a {
   }
 }
 
+/* ── Sensação ao tocar ──────────────────────────────────────────────── */
+/* Tecla física: a sombra sólida embaixo é a "altura"; pressionar desce o
+   botão até a base. Dá peso ao toque no meio da série sem depender de olhar. */
+@utility btn-key {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface2);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.05),
+    0 3px 0 #0a0a0b;
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.08s ease;
+  &:active {
+    transform: translateY(3px);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.05),
+      0 0 0 #0a0a0b;
+  }
+}
+
+/* Número que rola como odômetro: o novo entra pelo lado da direção. */
+@keyframes roll-up {
+  from {
+    transform: translateY(65%);
+    opacity: 0;
+  }
+}
+@keyframes roll-down {
+  from {
+    transform: translateY(-65%);
+    opacity: 0;
+  }
+}
+.anim-roll-up {
+  animation: roll-up 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+.anim-roll-down {
+  animation: roll-down 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+/* Tranco do card ao registrar: amassa e volta, ancorado embaixo. */
+@keyframes kick {
+  30% {
+    transform: translateY(3px) scale(0.985, 0.97);
+  }
+  70% {
+    transform: translateY(-2px) scale(1.005, 1.01);
+  }
+}
+.anim-kick {
+  transform-origin: 50% 100%;
+  animation: kick 0.38s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+/* Tela de recorde: entradas em corte seco, sem easing (steps). `--d` é o
+   atraso de cada bloco, definido inline pra eles entrarem em sequência. */
+/* Corte = 1ms linear, não steps(1): com atraso de 2,3s o ponto flutuante
+   fecha o progresso em 0,99999… e o steps(1) arredondava pra invisível. Pelo
+   mesmo motivo os degraus usam jump-none: o último degrau é o valor final. */
+@keyframes pr-cut {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes pr-slam {
+  from {
+    transform: translateY(-14%);
+  }
+}
+@keyframes pr-wipe {
+  from {
+    transform: scaleX(0);
+  }
+}
+.pr-cut {
+  animation: pr-cut 1ms linear both;
+  animation-delay: var(--d, 0ms);
+}
+.pr-slam {
+  animation:
+    pr-cut 1ms linear both,
+    pr-slam 0.2s steps(3, jump-none) both;
+  animation-delay: var(--d, 0ms);
+}
+.pr-wipe {
+  transform-origin: left;
+  animation:
+    pr-cut 1ms linear both,
+    pr-wipe 0.3s steps(6, jump-none) both;
+  animation-delay: var(--d, 0ms);
+}
+
+/* Timer de descanso: onda do líquido. Desliza exatamente um comprimento de
+   onda (--wave-shift, definido inline) pra o loop não ter emenda. */
+@keyframes rest-wave {
+  to {
+    transform: translateX(var(--wave-shift));
+  }
+}
+@keyframes check-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.rest-wave {
+  animation: rest-wave 3.2s linear infinite;
+}
+.rest-wave-back {
+  animation: rest-wave 5s linear infinite reverse;
+}
+.check-draw {
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: check-draw 0.35s 0.1s ease-out forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  /* o reset global só encurta a duração; loop infinito de 0.01ms vira tremor */
+  .rest-wave,
+  .rest-wave-back {
+    animation: none !important;
+  }
+}
+
 /* Scroll horizontal sem barra visível (mantém o gesto de scroll). */
 .no-scrollbar {
   scrollbar-width: none; /* Firefox */

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { formatClock } from "@/lib/domain/parseTarget";
 import { MinusIcon, PlusIcon } from "@/components/ui/icons";
 import { useModalA11y } from "@/lib/utils/useModalA11y";
@@ -65,12 +65,22 @@ export function RestTimer({
   // reta final: pulsa nos últimos 5s para avisar sem depender do olhar no número
   const ending = !finished && remaining <= 5;
 
-  // Anel de progresso (SVG), centralizado sobre o overlay escurecido.
+  // Anel fino por fora + disco que enche de líquido conforme o descanso passa.
+  // Cheio = descansado: o líquido vira verde e o número dá lugar a um check.
   const size = 176;
-  const stroke = 10;
-  const radius = (size - stroke) / 2;
+  const stroke = 3;
+  const radius = (size - stroke) / 2 - 1;
   const circ = 2 * Math.PI * radius;
+  const disc = size / 2 - 9;
   const color = finished ? "var(--color-success)" : accent;
+  const elapsed = finished ? 1 : 1 - pct / 100;
+  // y da superfície: começa abaixo do disco e termina acima dele, pra a crista
+  // da onda não deixar fresta no topo quando enche.
+  const level = size - elapsed * (size + WAVE_AMP * 2);
+  // Líquido translúcido durante a contagem: o número em --color-text continua
+  // legível com qualquer accent por baixo. No fim, cor cheia sob o check escuro.
+  const liquidFront = finished ? color : `color-mix(in oklab, ${color} 55%, transparent)`;
+  const liquidBack = `color-mix(in oklab, ${color} 28%, transparent)`;
 
   if (minimized) {
     return (
@@ -111,12 +121,33 @@ export function RestTimer({
         style={{ borderColor: color }}
       >
         <div className="relative" style={{ width: size, height: size }}>
-          <svg
-            width={size}
-            height={size}
-            className="-rotate-90 overflow-visible"
-            aria-hidden="true"
-          >
+          <svg width={size} height={size} className="overflow-visible" aria-hidden="true">
+            <defs>
+              <clipPath id={CLIP_ID}>
+                <circle cx={size / 2} cy={size / 2} r={disc} />
+              </clipPath>
+            </defs>
+            <circle cx={size / 2} cy={size / 2} r={disc} fill="var(--color-bg)" />
+            <g clipPath={`url(#${CLIP_ID})`}>
+              <g
+                className="transition-transform duration-150 ease-linear"
+                style={{ transform: `translateY(${level}px)` }}
+              >
+                <path
+                  d={WAVE_PATH}
+                  className="rest-wave-back transition-[fill] duration-500"
+                  style={{ fill: liquidBack, "--wave-shift": `-${WAVE_LEN}px` } as CSSProperties}
+                />
+                {/* defasagem no <g>: a animação CSS sobrescreve o transform do próprio path */}
+                <g transform={`translate(${-WAVE_LEN / 2} ${WAVE_AMP})`}>
+                  <path
+                    d={WAVE_PATH}
+                    className="rest-wave transition-[fill] duration-500"
+                    style={{ fill: liquidFront, "--wave-shift": `-${WAVE_LEN}px` } as CSSProperties}
+                  />
+                </g>
+              </g>
+            </g>
             <circle
               cx={size / 2}
               cy={size / 2}
@@ -135,6 +166,7 @@ export function RestTimer({
               strokeLinecap="round"
               strokeDasharray={circ}
               strokeDashoffset={finished ? 0 : circ * (1 - pct / 100)}
+              transform={`rotate(-90 ${size / 2} ${size / 2})`}
               className="transition-[stroke-dashoffset] duration-150 ease-linear"
               style={{
                 // overflow-visible no svg: o arco encosta na borda e cortaria o brilho.
@@ -143,15 +175,33 @@ export function RestTimer({
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span
-              className={`display text-[3.75rem] leading-none ${ending ? "anim-pulse" : ""}`}
-              style={{ color }}
-            >
-              {finished ? "✓" : formatClock(remaining)}
-            </span>
-            <span className="mt-1.5 font-mono text-xs uppercase tracking-wide text-muted">
-              {finished ? "concluído" : "descanso"}
-            </span>
+            {finished ? (
+              <svg
+                viewBox="0 0 24 24"
+                className="h-[72px] w-[72px]"
+                fill="none"
+                stroke="var(--color-on-accent)"
+                strokeWidth={3}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                role="img"
+                aria-label="Descanso concluído"
+              >
+                <path d="M5 12.5l4.5 4.5L19 7.5" className="check-draw" />
+              </svg>
+            ) : (
+              <>
+                <span
+                  className={`display text-[3.75rem] leading-none ${ending ? "anim-pulse" : ""}`}
+                  style={{ textShadow: "0 2px 12px rgb(0 0 0 / 0.5)" }}
+                >
+                  {formatClock(remaining)}
+                </span>
+                <span className="mt-1.5 font-mono text-xs uppercase tracking-wide text-muted">
+                  descanso
+                </span>
+              </>
+            )}
           </div>
         </div>
 
@@ -196,6 +246,18 @@ export function RestTimer({
     </Portal>
   );
 }
+
+// Só existe um timer montado por vez, então o id do clip pode ser fixo.
+const CLIP_ID = "rest-timer-disc";
+/** Onda do líquido: comprimento e amplitude em px (o svg não tem viewBox). */
+const WAVE_LEN = 88;
+const WAVE_AMP = 6;
+// Largura de 3 ondas além do disco: o path desliza um comprimento sem expor a ponta.
+const WAVE_PATH = (() => {
+  let d = `M0 0`;
+  for (let i = 0; i < 5; i++) d += ` q ${WAVE_LEN / 4} ${-WAVE_AMP} ${WAVE_LEN / 2} 0 t ${WAVE_LEN / 2} 0`;
+  return `${d} V 400 H 0 Z`;
+})();
 
 /** Bip curto via Web Audio (sem asset). Silencioso se indisponível. */
 function beep() {

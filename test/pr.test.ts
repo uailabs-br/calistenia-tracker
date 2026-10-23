@@ -45,7 +45,7 @@ describe("computePR", () => {
       { ...clean, sets: [{ index: 0, value: 22 }] },
       secs
     );
-    expect(pr).toEqual({ value: 22, unit: "seconds" });
+    expect(pr).toEqual({ value: 22, unit: "seconds", previous: 20 });
   });
 
   it("empate não é recorde", async () => {
@@ -76,7 +76,7 @@ describe("computePR", () => {
       { ...clean, sets: [{ index: 0, value: 20 }] },
       secs
     );
-    expect(pr).toEqual({ value: 20, unit: "seconds" });
+    expect(pr).toEqual({ value: 20, unit: "seconds", previous: 18 });
   });
 
   it("attempts / sem parsed não têm PR", async () => {

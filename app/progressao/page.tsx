@@ -17,7 +17,7 @@ import { ChevronRightIcon } from "@/components/ui/icons";
 const GROUPS: { id: string; title: string; hint?: string; pick: (r: ProgressionRow) => boolean }[] = [
   {
     id: "ready",
-    title: "Prontos pra subir",
+    title: "Prontos pra subir de nível",
     pick: (r) => r.state === "ready" && !r.dismissed,
   },
   {
@@ -45,12 +45,12 @@ function statusLine(r: ProgressionRow): string {
   switch (r.state) {
     case "ready":
       return r.skill
-        ? "critério batido, pronto pra subir"
-        : `bateu o alvo nas últimas ${r.streak} sessões, pronto pra subir`;
+        ? "critério batido, pronto pra subir de nível"
+        : `bateu o alvo nas últimas ${r.streak} sessões, pronto pra subir de nível`;
     case "regress":
       return "abaixo do alvo várias sessões seguidas, considere um passo atrás";
     case "stale":
-      return `${r.sessions} sessões na mesma etapa sem decisão, troque o estímulo`;
+      return `${r.sessions} sessões no mesmo nível sem decisão, troque o estímulo`;
     case "tracking":
       return `${r.streak}/${r.required} sessões seguidas · ${r.sessions} registradas`;
     case "new":
@@ -100,7 +100,7 @@ function Row({ row, onReactivate }: { row: ProgressionRow; onReactivate: () => v
           )}
           {row.state === "ready" && row.skill.next && (
             <span className="mt-0.5 block" style={{ color }}>
-              próxima etapa: {row.skill.next}
+              próximo nível: {row.skill.next}
             </span>
           )}
         </p>
@@ -142,7 +142,7 @@ export default function ProgressaoPage() {
       <BackLink href="/plano" label="Treino" />
       <PageHeader title="Progressão" />
       <p className="-mt-2 mb-5 text-sm text-muted">
-        Onde cada exercício do seu treino está: quem já pode subir, quem pede cuidado e
+        Onde cada exercício do seu treino está: quem já pode subir de nível, quem pede cuidado e
         quem ainda está juntando sessões.
       </p>
 

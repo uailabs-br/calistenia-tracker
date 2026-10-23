@@ -94,7 +94,7 @@ export default function SobrePage() {
       <section className="border-y border-border bg-surface/40">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
           <h2 className="display max-w-lg text-2xl leading-tight sm:text-3xl">
-            A evolução vem em etapas, e o app sabe em qual você está
+            A evolução vem em níveis, e o app sabe em qual você está
           </h2>
 
           <div className="mt-8 grid gap-8 sm:grid-cols-2 sm:gap-10">
@@ -111,7 +111,7 @@ export default function SobrePage() {
             <div>
               <p className="leading-relaxed text-muted">
                 Bateu o alvo duas sessões seguidas, com execução limpa? Ele avisa que dá
-                pra subir. O que trava a maioria não é força, é técnica e progressão.
+                pra subir de nível. O que trava a maioria não é força, é técnica e progressão.
               </p>
               <div className="mt-5">
                 <SignalCard />

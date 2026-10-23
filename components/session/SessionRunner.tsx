@@ -16,6 +16,7 @@ import {
   completeSession,
   discardSession,
   removeAddedExercise,
+  setPartialSets,
 } from "@/lib/db/repositories/sessions";
 import {
   createCustomExercise,
@@ -27,6 +28,7 @@ import { getRecentExerciseIds } from "@/lib/db/queries/recentExercises";
 import { resolveAddedExercise } from "@/lib/plan/addedExercises";
 import { formatValue, parseRestSeconds } from "@/lib/domain/parseTarget";
 import { resolveLogExercise, snapshotOf } from "@/lib/plan/resolve";
+import { recordFromSets } from "@/lib/domain/setBySet";
 import { extraSeed, extraSets, repsVolume as sumRepsVolume } from "@/lib/domain/volume";
 import { computePR, formatPR, type PRResult } from "@/lib/db/queries/pr";
 import { useWakeLock } from "@/lib/utils/useWakeLock";
@@ -37,6 +39,7 @@ import { ExerciseCard, type RecordInput } from "./ExerciseCard";
 import { AddExerciseSheet } from "./AddExerciseSheet";
 import { RpeSheet } from "./RpeSheet";
 import { RestTimer } from "./RestTimer";
+import { PRMoment } from "./PRMoment";
 import { SessionSummary } from "./SessionSummary";
 import { CollapsibleTip } from "./CollapsibleTip";
 import { WarmupCard } from "./WarmupCard";
@@ -146,6 +149,8 @@ export function SessionRunner({
   // Recordes desta sessão — troféu fixo no card (toast some, o card fica) e
   // lista na tela de fechamento do treino.
   const [prResults, setPrResults] = useState<Map<string, PRResult>>(new Map());
+  // Recorde acabado de bater: abre a tela cheia por cima do descanso.
+  const [prMoment, setPrMoment] = useState<{ name: string; pr: PRResult } | null>(null);
   // Descanso manual entre séries, disparado pelo card ativo.
   const startRest = (seconds: number) => setRest({ seconds, key: Date.now() });
 
@@ -175,8 +180,14 @@ export function SessionRunner({
     setManualActive(nextUnlogged === -1 ? -1 : nextUnlogged);
   };
 
-  const undoRecord = async (exerciseId: string, prev: ExerciseLog | undefined) => {
+  const undoRecord = async (
+    exerciseId: string,
+    prev: ExerciseLog | undefined,
+    prevPartial: number[] | null
+  ) => {
     try {
+      // série a série: desfazer o fechamento devolve as séries de antes pra parcial
+      if (prevPartial) await setPartialSets(session.id, exerciseId, prevPartial);
       if (prev) {
         await upsertLog({
           session_id: session.id,
@@ -215,6 +226,7 @@ export function SessionRunner({
   // Ação de registro: persiste, avança, oferece undo e inicia o descanso.
   const handleRecord = async (exerciseId: string, input: RecordInput) => {
     const prev = logByExercise.get(exerciseId);
+    const prevPartial = session.partial_sets?.[exerciseId] ?? null;
     try {
       await upsertLog({
         session_id: session.id,
@@ -222,6 +234,8 @@ export function SessionRunner({
         snapshot: snapshotFor(exerciseId),
         ...input,
       });
+      // fechou: a parcial virou log e não pode sobrar pra ser lida duas vezes
+      if (prevPartial) await setPartialSets(session.id, exerciseId, null);
     } catch {
       toast({
         message: "Não foi possível registrar. Tente de novo.",
@@ -242,7 +256,13 @@ export function SessionRunner({
       }
     }
 
-    if (pr) setPrResults((m) => new Map(m).set(exerciseId, pr));
+    // Série a série: o recorde pode já ter sido festejado na própria série.
+    const prPrev = prResults.get(exerciseId);
+    if (pr && prPrev && pr.value <= prPrev.value) pr = null;
+    if (pr) {
+      setPrResults((m) => new Map(m).set(exerciseId, pr));
+      setPrMoment({ name: item?.exercise.name ?? "", pr });
+    }
 
     toast({
       message: pr
@@ -253,7 +273,7 @@ export function SessionRunner({
       variant: pr ? "success" : undefined,
       // PR fica mais tempo na tela — mensagem mais longa, lida ofegante no meio do treino.
       duration: pr ? 6500 : undefined,
-      action: { label: "Desfazer", onClick: () => undoRecord(exerciseId, prev) },
+      action: { label: "Desfazer", onClick: () => undoRecord(exerciseId, prev, prevPartial) },
     });
 
     // Descanso automático (não para exercícios pulados)
@@ -263,6 +283,48 @@ export function SessionRunner({
       );
       if (secs) setRest({ seconds: secs, key: Date.now() });
       else setRest(null);
+    }
+  };
+
+  // Série a série: série que não fecha o exercício. Grava a parcial no banco
+  // (retomada), festeja recorde na hora e abre o descanso. Sem toast: corrigir
+  // é tocar na série, e um aviso por série seria ruído no meio do treino.
+  const handleLogSet = async (exerciseId: string, values: number[], flags: string[]) => {
+    const item = flat.find((f) => f.exercise.id === exerciseId);
+    try {
+      await setPartialSets(session.id, exerciseId, values);
+    } catch {
+      toast({ message: "Não foi possível registrar a série. Tente de novo.", variant: "error" });
+      return;
+    }
+
+    const secs = parseRestSeconds(item?.exercise.rest ?? "");
+    if (secs) setRest({ seconds: secs, key: Date.now() });
+
+    const value = values[values.length - 1];
+    let pr: PRResult | null = null;
+    try {
+      pr = await computePR(
+        exerciseId,
+        { as_target: false, sets: [{ index: 0, value }], skipped: false, flags_selected: flags },
+        item?.exercise.parsed ?? null
+      );
+    } catch {
+      /* PR é enfeite: nunca bloqueia o registro */
+    }
+    const prPrev = prResults.get(exerciseId);
+    if (pr && prPrev && pr.value <= prPrev.value) pr = null;
+    if (pr) {
+      setPrResults((m) => new Map(m).set(exerciseId, pr as PRResult));
+      setPrMoment({ name: item?.exercise.name ?? "", pr });
+    }
+  };
+
+  const handleSetPartial = async (exerciseId: string, values: number[]) => {
+    try {
+      await setPartialSets(session.id, exerciseId, values);
+    } catch {
+      toast({ message: "Não foi possível salvar a série.", variant: "error" });
     }
   };
 
@@ -316,7 +378,10 @@ export function SessionRunner({
       /* PR é enfeite: nunca bloqueia o registro */
     }
     if (pr && prPrev && pr.value <= prPrev.value) pr = null;
-    if (pr) setPrResults((m) => new Map(m).set(exerciseId, pr as PRResult));
+    if (pr) {
+      setPrResults((m) => new Map(m).set(exerciseId, pr as PRResult));
+      setPrMoment({ name, pr });
+    }
 
     toast({
       message: pr
@@ -407,6 +472,22 @@ export function SessionRunner({
     // pai ainda não sabe que precisa manter o runner montado.
     onCompleted?.();
     try {
+      // Exercício largado no meio: as séries feitas valem como registro, do jeito
+      // que o "terminar com N séries" gravaria. Sem flags (ficam só na tela do card).
+      for (const [exerciseId, values] of Object.entries(session.partial_sets ?? {})) {
+        const item = flat.find((f) => f.exercise.id === exerciseId);
+        if (!item || logByExercise.has(exerciseId) || values.length === 0) continue;
+        await upsertLog({
+          session_id: session.id,
+          exercise_id: exerciseId,
+          snapshot: snapshotFor(exerciseId),
+          ...recordFromSets(values, item.exercise.parsed, item.exercise.target),
+          flags_selected: [],
+          note: null,
+          skipped: false,
+        });
+        await setPartialSets(session.id, exerciseId, null);
+      }
       await completeSession(session.id, rpe, note);
       setShowRpe(false);
       setShowSummary(true);
@@ -486,6 +567,9 @@ export function SessionRunner({
                 onSetExtras={(values) => handleSetExtras(item.exercise.id, values)}
                 added={item.added}
                 onRemove={() => handleRemoveAdded(item.exercise.id)}
+                partial={session.partial_sets?.[item.exercise.id]}
+                onLogSet={(values, flags) => void handleLogSet(item.exercise.id, values, flags)}
+                onSetPartial={(values) => void handleSetPartial(item.exercise.id, values)}
               />
             </div>
           );
@@ -527,6 +611,14 @@ export function SessionRunner({
           seconds={rest.seconds}
           accent={workout.accent}
           onDone={() => setRest(null)}
+        />
+      )}
+
+      {prMoment && (
+        <PRMoment
+          exerciseName={prMoment.name}
+          pr={prMoment.pr}
+          onClose={() => setPrMoment(null)}
         />
       )}
 
