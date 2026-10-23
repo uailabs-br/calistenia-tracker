@@ -176,7 +176,7 @@ export default function ProgressaoPage() {
       )}
 
       <Link
-        href="/config/plano"
+        href="/config/plano?modo=novo"
         className="tap mb-8 mt-2 flex items-center justify-between rounded-card border border-border bg-surface px-4 py-3 active:scale-[0.99]"
       >
         <span className="text-sm font-medium">Pedir o próximo ciclo à IA</span>

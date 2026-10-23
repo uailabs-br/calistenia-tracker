@@ -295,6 +295,28 @@ export const DeviceIcon = ({ className }: IconProps) => (
   />
 );
 
+export const CopyIcon = ({ className }: IconProps) => (
+  <Stroke
+    className={className}
+    d="M9 9h9.5A1.5 1.5 0 0 1 20 10.5V19.5A1.5 1.5 0 0 1 18.5 21h-9A1.5 1.5 0 0 1 8 19.5V10a1 1 0 0 1 1-1ZM16 9V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"
+  />
+);
+
+export const PasteIcon = ({ className }: IconProps) => (
+  <Stroke
+    className={className}
+    d="M9 4.5h6M9 4.5a1 1 0 0 0-1 1V6a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-.5a1 1 0 0 0-1-1M9 4.5H7A1.5 1.5 0 0 0 5.5 6v13A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V6A1.5 1.5 0 0 0 17 4.5h-2M9 12h6M9 16h4"
+  />
+);
+
+export const PencilIcon = ({ className }: IconProps) => (
+  <Stroke className={className} d="M4.5 19.5l1-4L16 5a2.1 2.1 0 0 1 3 3L8.5 18.5l-4 1ZM14 7l3 3" />
+);
+
+export const ExternalIcon = ({ className }: IconProps) => (
+  <Stroke className={className} d="M14 4.5h5.5V10M19.5 4.5L11 13M17 14v4.5a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 4 18.5v-10A1.5 1.5 0 0 1 5.5 7H10" />
+);
+
 /** Arco girando — estado "trabalhando" de uma linha. Gira via `animate-spin`. */
 export function SpinnerIcon({ className }: IconProps) {
   return (

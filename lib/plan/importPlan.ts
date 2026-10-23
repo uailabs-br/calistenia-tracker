@@ -10,9 +10,16 @@ export interface PlanSummary {
   exercises: number;
 }
 
+/**
+ * Por que a resposta foi recusada. A tela usa pra dizer UMA frase em linguagem
+ * comum e montar o pedido de correção (`aiFixPrompt.ts`); `errors` segue sendo o
+ * detalhe técnico, que fica escondido.
+ */
+export type ParseFailReason = "no-json" | "cut" | "invalid-json" | "schema";
+
 export type ParsePlanResult =
   | { ok: true; plan: Plan; summary: PlanSummary }
-  | { ok: false; errors: string[] };
+  | { ok: false; reason: ParseFailReason; errors: string[] };
 
 /**
  * Isola o JSON no meio do que a IA respondeu. O prompt pede só o objeto, mas na
@@ -124,6 +131,7 @@ export function parsePlanInput(raw: string): ParsePlanResult {
   if (!extracted) {
     return {
       ok: false,
+      reason: "no-json",
       errors: [
         "Não achei nenhum JSON na resposta — copia a resposta da IA inteira, com as chaves { } incluídas.",
       ],
@@ -135,7 +143,11 @@ export function parsePlanInput(raw: string): ParsePlanResult {
   try {
     json = JSON.parse(text);
   } catch (err) {
-    return { ok: false, errors: [parseErrorMessage(text, unclosed, err)] };
+    return {
+      ok: false,
+      reason: unclosed > 0 ? "cut" : "invalid-json",
+      errors: [parseErrorMessage(text, unclosed, err)],
+    };
   }
 
   // Plano no formato antigo (agenda por dia da semana) é convertido, não recusado.
@@ -143,6 +155,7 @@ export function parsePlanInput(raw: string): ParsePlanResult {
   if (!result.success) {
     return {
       ok: false,
+      reason: "schema",
       errors: result.error.issues.map(
         (issue) => `${issue.path.join(".") || "(raiz)"}: ${issue.message}`
       ),

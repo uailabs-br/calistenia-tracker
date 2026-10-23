@@ -47,6 +47,17 @@ function Group({
   );
 }
 
+function Count({ value, label, color }: { value: number; label: string; color: string }) {
+  return (
+    <div className="rounded-xl bg-surface2 px-2 py-2 text-center">
+      <p className="tnum text-xl font-semibold" style={{ color: value > 0 ? color : "var(--color-muted)" }}>
+        {value}
+      </p>
+      <p className="text-[11px] text-muted">{label}</p>
+    </div>
+  );
+}
+
 /**
  * Preview da troca de plano: o que entra, o que sai e o que muda de alvo, por
  * treino, mais os avisos que a validação não pega. É leitura — nada se edita aqui
@@ -90,23 +101,20 @@ export function PlanPreview({
               Trocar de treino?
             </h2>
             <p className="mt-1 text-sm text-muted">
-              &ldquo;{summary.name}&rdquo; · {summary.workouts} treinos ·{" "}
-              {summary.exercises} exercícios · v{summary.version}
+              &ldquo;{summary.name}&rdquo; · {summary.workouts} treinos · {summary.exercises}{" "}
+              exercícios
             </p>
-            <p className="mt-2 text-xs text-muted">
-              {unchanged ? (
-                "Nenhum exercício muda em relação ao treino atual."
-              ) : (
-                <>
-                  <span style={{ color: "var(--ac)" }}>+{totals.entering} entram</span>
-                  {" · "}
-                  <span>−{totals.leaving} saem</span>
-                  {" · "}
-                  {totals.retargeted} com alvo novo
-                  {totals.newMovements > 0 && ` · ${totals.newMovements} movimentos inéditos`}
-                </>
-              )}
-            </p>
+            {unchanged ? (
+              <p className="mt-2 text-xs text-muted">
+                Nenhum exercício muda em relação ao treino atual.
+              </p>
+            ) : (
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <Count value={totals.entering} label="entram" color="var(--ac)" />
+                <Count value={totals.leaving} label="saem" color="var(--color-danger)" />
+                <Count value={totals.retargeted} label="mudam o alvo" color="var(--color-text)" />
+              </div>
+            )}
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
@@ -116,23 +124,26 @@ export function PlanPreview({
                 style={{ borderColor: "var(--color-gold)", color: "var(--color-gold)" }}
                 role="note"
               >
-                <p className="font-medium">
-                  {diff.warnings.length === 1
-                    ? "1 ponto pra conferir antes de aplicar:"
-                    : `${diff.warnings.length} pontos pra conferir antes de aplicar:`}
-                </p>
-                <ul className="mt-1 list-disc pl-4">
-                  {diff.warnings.map((w, i) => (
-                    <li key={i}>{w.message}</li>
-                  ))}
-                </ul>
+                <p className="font-medium">Confira antes de trocar:</p>
+                <p className="mt-1">{diff.warnings[0].message}</p>
+                {diff.warnings.length > 1 && (
+                  <details className="mt-1">
+                    <summary className="tap cursor-pointer leading-[44px]">
+                      mais {diff.warnings.length - 1}
+                    </summary>
+                    <ul className="list-disc pl-4">
+                      {diff.warnings.slice(1).map((w, i) => (
+                        <li key={i}>{w.message}</li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
               </div>
             )}
 
             {!diff.samePlan && (
               <p className="mb-4 text-xs text-muted">
-                É um plano diferente do atual. Seu histórico fica intacto e os movimentos com o
-                mesmo id seguem de onde pararam.
+                Seu histórico continua. Exercício que já existia segue de onde parou.
               </p>
             )}
 
@@ -156,12 +167,18 @@ export function PlanPreview({
                   </div>
                   <Group title="Entram" sign="+" color="var(--ac)" items={w.entering} />
                   <Group title="Saem" sign="−" color="var(--color-danger)" items={w.leaving} />
-                  <Group
-                    title={w.status === "kept" ? "Continuam" : ""}
-                    sign="·"
-                    color="var(--color-muted)"
-                    items={w.kept}
-                  />
+                  {w.kept.length > 0 &&
+                    (w.status === "kept" ? (
+                      // O que interessa é o que muda: o que continua igual fica fechado.
+                      <details>
+                        <summary className="tap cursor-pointer font-mono leading-[44px] text-[11px] uppercase tracking-wide text-muted">
+                          Continuam iguais ({w.kept.length})
+                        </summary>
+                        <Group title="" sign="·" color="var(--color-muted)" items={w.kept} />
+                      </details>
+                    ) : (
+                      <Group title="" sign="·" color="var(--color-muted)" items={w.kept} />
+                    ))}
                 </li>
               ))}
             </ul>

@@ -20,6 +20,17 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-10-23, fluxo de treino com IA em passos — 490 testes):**
+> `/config/plano` deixou de mostrar os cinco caminhos de uma vez. Agora é escolha (criar
+> novo · trazer o meu · pronto) e três passos com um botão principal cada: objetivos ou
+> texto do treino → copiar pedido, com atalhos pra ChatGPT/Claude/Gemini → colar resposta
+> (lê a área de transferência e valida sozinho). Erro vira uma frase e um **pedido de
+> correção** pra colar na mesma conversa (`aiFixPrompt.ts`); o detalhe técnico fica
+> fechado. Passo na URL com `pushState` (o voltar do celular recua um passo) e retomada
+> por 24h (`lib/utils/aiFlow.ts`): voltando da IA, abre no colar. "Voltar ao treino
+> original" foi pra Ajustes. Preview sem jargão, com contadores e o que continua igual
+> fechado. Ver [PLAN-fluxo-ia.md](PLAN-fluxo-ia.md).
+
 > **Atualização (pós-v1.8, 2026-10-22, progressão visível e troca de treino — 482 testes):**
 > sete itens do backlog em seis fases, sem migração (Dexie segue na v5). **Mapa de
 > progressão** (`/progressao`, entrada em Evolução): estado de cada exercício do plano

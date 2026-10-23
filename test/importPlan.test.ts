@@ -76,6 +76,7 @@ describe("parsePlanInput", () => {
     const result = parsePlanInput('{ "id": "x" "version": 1 }');
     expect(result.ok).toBe(false);
     if (result.ok) return;
+    expect(result.reason).toBe("invalid-json");
     expect(result.errors[0]).toMatch(/não parece ser um JSON válido/i);
     expect(result.errors[0]).toMatch(/Perto de/);
   });
@@ -84,6 +85,7 @@ describe("parsePlanInput", () => {
     const result = parsePlanInput("não consegui gerar o plano agora");
     expect(result.ok).toBe(false);
     if (result.ok) return;
+    expect(result.reason).toBe("no-json");
     expect(result.errors[0]).toMatch(/não achei nenhum JSON/i);
   });
 
@@ -92,6 +94,7 @@ describe("parsePlanInput", () => {
     const result = parsePlanInput(truncated);
     expect(result.ok).toBe(false);
     if (result.ok) return;
+    expect(result.reason).toBe("cut");
     expect(result.errors[0]).toMatch(/cortada no meio/i);
   });
 
@@ -200,6 +203,7 @@ describe("parsePlanInput", () => {
     const result = parsePlanInput(JSON.stringify(plan));
     expect(result.ok).toBe(false);
     if (result.ok) return;
+    expect(result.reason).toBe("schema");
     expect(result.errors.length).toBeGreaterThan(0);
   });
 });

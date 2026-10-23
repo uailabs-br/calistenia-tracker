@@ -49,7 +49,7 @@ export function PlanSwapCard({
 
       <div className="mt-3 flex flex-col gap-2">
         <Link
-          href="/config/plano"
+          href="/config/plano?modo=novo"
           className="btn-primary tap flex items-center justify-center gap-2 rounded-xl py-3 font-medium"
         >
           Pedir o próximo treino à IA

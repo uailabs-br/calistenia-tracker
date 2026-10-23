@@ -9,7 +9,7 @@ Serwist (PWA), Zod. Visão geral em [README.md](README.md); documentação em [d
 
 ```bash
 npm run dev            # http://localhost:3000
-npm test               # Vitest (482 testes) — o gate principal
+npm test               # Vitest (490 testes) — o gate principal
 npx tsc --noEmit       # typecheck (strict)
 npm run validate:plan  # valida plan.json + catalog.json contra o schema Zod
 npm run build          # valida o plano e depois builda (o build falha se o plano estiver inválido)

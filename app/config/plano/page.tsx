@@ -1,32 +1,44 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { plan } from "@/lib/plan/loader";
 import type { Plan } from "@/lib/plan/schema";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { BackLink } from "@/components/ui/BackLink";
-import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { PlanPreview } from "@/components/plan/PlanPreview";
+import { GoalPicker } from "@/components/plan/GoalPicker";
+import {
+  BackButton,
+  ChoiceStep,
+  CopyStep,
+  PasteStep,
+  StepHeader,
+  WriteStep,
+  type PasteFailure,
+} from "@/components/plan/AiFlowSteps";
 import { SettingsGroup } from "@/components/ui/SettingsGroup";
 import { SettingsRow } from "@/components/ui/SettingsRow";
 import { useToast } from "@/components/ui/Toast";
-import { FlagIcon, ListIcon, SparkleIcon, UploadIcon, HistoryIcon } from "@/components/ui/icons";
+import { ListIcon } from "@/components/ui/icons";
 import { buildAiPrompt } from "@/lib/plan/aiPrompt";
 import { buildConvertPrompt } from "@/lib/plan/aiConvertPrompt";
+import { buildFixPrompt } from "@/lib/plan/aiFixPrompt";
 import { localDateKey } from "@/lib/utils/date";
 import { exportForAI } from "@/lib/plan/exportForAI";
 import { getSkillById } from "@/lib/plan/skills";
 import { seeds } from "@/lib/plan/seeds";
 import { getAiGoals, getAiNotes, buildPersonaText } from "@/lib/utils/aiPersona";
 import { haptic } from "@/lib/utils/haptics";
+import { parsePlanInput, applyPlan, summarize, type PlanSummary } from "@/lib/plan/importPlan";
 import {
-  parsePlanInput,
-  applyPlan,
-  clearPlanOverride,
-  hasPlanOverride,
-  summarize,
-  type PlanSummary,
-} from "@/lib/plan/importPlan";
+  FLOW_STEPS,
+  clearAiFlow,
+  getAiFlow,
+  isAiFlowMode,
+  saveAiFlow,
+  type AiFlowMode,
+  type AiFlowStep,
+} from "@/lib/utils/aiFlow";
 
 async function copyText(text: string) {
   if (navigator.clipboard?.writeText) {
@@ -43,39 +55,168 @@ async function copyText(text: string) {
   document.body.removeChild(textarea);
 }
 
-/** Troca de treino: pedir à IA, aplicar a resposta, ou partir de um treino pronto. */
+interface View {
+  mode: AiFlowMode | null;
+  step: AiFlowStep;
+}
+
+const BASE = "/config/plano";
+const ESCOLHA: View = { mode: null, step: "escolha" };
+
+/**
+ * O passo mora na URL (`?modo=novo&passo=colar`) e cada avanço é um `pushState`:
+ * assim o voltar do Android/navegador recua um passo em vez de sair do fluxo, e
+ * o aviso da home entra direto em `?modo=novo`.
+ */
+function viewFromUrl(): View {
+  const params = new URLSearchParams(window.location.search);
+  const modo = params.get("modo");
+  if (modo === "pronto") return { mode: null, step: "pronto" };
+  if (!isAiFlowMode(modo)) return ESCOLHA;
+  const steps = FLOW_STEPS[modo];
+  const passo = params.get("passo") as AiFlowStep | null;
+  return { mode: modo, step: passo && steps.includes(passo) ? passo : steps[0] };
+}
+
+function urlFor(v: View): string {
+  if (v.step === "pronto") return `${BASE}?modo=pronto`;
+  if (!v.mode) return BASE;
+  return v.step === FLOW_STEPS[v.mode][0]
+    ? `${BASE}?modo=${v.mode}`
+    : `${BASE}?modo=${v.mode}&passo=${v.step}`;
+}
+
+/**
+ * Empilha/substitui uma entrada do fluxo SEM descartar o estado que o Next guarda
+ * no histórico (`__NA` e a árvore): entrada sem ele faz o roteador recarregar a
+ * página inteira no voltar.
+ */
+function writeHistory(kind: "push" | "replace", depth: number, url: string) {
+  const state = { ...(window.history.state ?? {}), aiFlowDepth: depth };
+  if (kind === "push") window.history.pushState(state, "", url);
+  else window.history.replaceState(state, "", url);
+}
+
+/** Quantos passos deste fluxo estão empilhados no histórico, pro "Voltar" da tela. */
+function historyDepth(): number {
+  const d = (window.history.state as { aiFlowDepth?: unknown } | null)?.aiFlowDepth;
+  return typeof d === "number" ? d : 0;
+}
+
+const TITLES: Record<AiFlowStep, string> = {
+  escolha: "Montar treino com IA",
+  pronto: "Treinos prontos",
+  objetivos: "O que treinar agora?",
+  escrever: "Seu treino atual",
+  copiar: "Copie o pedido",
+  colar: "Cole a resposta",
+};
+
+/** Troca de treino em passos: criar com IA, trazer o próprio, ou partir de um pronto. */
 export default function PlanoPage() {
   const { toast } = useToast();
-  const [planText, setPlanText] = useState("");
-  const [planErrors, setPlanErrors] = useState<string[] | null>(null);
-  const [pendingPlan, setPendingPlan] = useState<{ plan: Plan; summary: PlanSummary } | null>(null);
-  const [showRestorePlan, setShowRestorePlan] = useState(false);
-  const [copying, setCopying] = useState(false);
-  const [copyingConvert, setCopyingConvert] = useState(false);
-  const [ownWorkout, setOwnWorkout] = useState("");
-  // null até o mount: `plan` vem do override do localStorage, que não existe no
-  // HTML estático. Renderizar qualquer coisa derivada dele direto quebra a hidratação.
+  // null até o mount: a URL e o `plan` (override do localStorage) não existem no
+  // HTML estático. Renderizar o passo ou o plano direto quebra a hidratação.
+  const [view, setView] = useState<View | null>(null);
   const [activePlan, setActivePlan] = useState<Plan | null>(null);
-  const [hasOverride, setHasOverride] = useState(false);
+  const [ownWorkout, setOwnWorkout] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [copying, setCopying] = useState(false);
   const [goalsCount, setGoalsCount] = useState(0);
+  const [pasteText, setPasteText] = useState("");
+  const [failure, setFailure] = useState<PasteFailure | null>(null);
+  const [pendingPlan, setPendingPlan] = useState<{ plan: Plan; summary: PlanSummary } | null>(null);
 
   useEffect(() => {
     setActivePlan(plan);
-    setHasOverride(hasPlanOverride());
-    setGoalsCount(getAiGoals().length);
+    let v = viewFromUrl();
+    let resume: number | undefined;
+    const saved = getAiFlow();
+    if (saved && (v.step === "escolha" || v.mode === saved.mode)) {
+      if (saved.mode === "meu") setOwnWorkout(saved.ownWorkout);
+      setCopied(saved.copied);
+      // Pedido já copiado = a pessoa está voltando da IA. Cai no colar, com a
+      // escolha embaixo no histórico pra o voltar ter pra onde ir.
+      if (saved.copied && v.step !== "colar") {
+        const target: View = { mode: saved.mode, step: "colar" };
+        v = target;
+        // Fora do mount: o effect do filho roda antes do roteador do Next
+        // assumir o histórico, e um pushState aqui ficaria fora do estado dele.
+        resume = window.setTimeout(() => {
+          writeHistory("replace", 0, BASE);
+          writeHistory("push", 1, urlFor(target));
+        }, 0);
+      }
+    }
+    setView(v);
+
+    const onPop = () => setView(viewFromUrl());
+    window.addEventListener("popstate", onPop);
+    return () => {
+      window.clearTimeout(resume);
+      window.removeEventListener("popstate", onPop);
+    };
   }, []);
 
-  const handleCopyAll = async () => {
+  const go = useCallback((next: View) => {
+    writeHistory("push", historyDepth() + 1, urlFor(next));
+    setView(next);
+    window.scrollTo(0, 0);
+  }, []);
+
+  const back = () => {
+    if (historyDepth() > 0) {
+      window.history.back();
+      return;
+    }
+    // Entrou direto num passo (ex.: aviso da home): não há passo anterior no
+    // histórico, então o voltar da tela recua sem empilhar.
+    if (!view) return;
+    let prev = ESCOLHA;
+    if (view.mode) {
+      const steps = FLOW_STEPS[view.mode];
+      const i = steps.indexOf(view.step);
+      if (i > 0) prev = { mode: view.mode, step: steps[i - 1] };
+    }
+    writeHistory("replace", 0, urlFor(prev));
+    setView(prev);
+  };
+
+  const pick = (choice: "novo" | "meu" | "pronto") => {
+    if (choice === "pronto") {
+      go({ mode: null, step: "pronto" });
+      return;
+    }
+    setCopied(false);
+    setFailure(null);
+    setPasteText("");
+    saveAiFlow({ mode: choice, copied: false, ownWorkout: choice === "meu" ? ownWorkout : "" });
+    go({ mode: choice, step: FLOW_STEPS[choice][0] });
+  };
+
+  const changeOwnWorkout = (text: string) => {
+    setOwnWorkout(text);
+    // O pedido copiado leva o texto de antes; mudou o treino, tem que copiar de novo.
+    setCopied(false);
+    saveAiFlow({ mode: "meu", copied: false, ownWorkout: text });
+  };
+
+  const handleCopy = async () => {
+    if (!view?.mode) return;
     setCopying(true);
     try {
-      const goalNames = getAiGoals()
-        .map((id) => getSkillById(id)?.name)
-        .filter((n): n is string => Boolean(n));
-      const persona = buildPersonaText(goalNames, getAiNotes());
-      const historico = await exportForAI();
-      await copyText(buildAiPrompt(persona, historico));
+      if (view.mode === "novo") {
+        const goalNames = getAiGoals()
+          .map((id) => getSkillById(id)?.name)
+          .filter((n): n is string => Boolean(n));
+        const persona = buildPersonaText(goalNames, getAiNotes());
+        await copyText(buildAiPrompt(persona, await exportForAI()));
+      } else {
+        await copyText(buildConvertPrompt(ownWorkout, localDateKey()));
+      }
       haptic();
-      toast({ message: "Pedido copiado — cola na IA", variant: "success" });
+      setCopied(true);
+      saveAiFlow({ mode: view.mode, copied: true, ownWorkout: view.mode === "meu" ? ownWorkout : "" });
     } catch {
       toast({ message: "Não deu pra copiar", variant: "error" });
     } finally {
@@ -83,159 +224,148 @@ export default function PlanoPage() {
     }
   };
 
-  const handleCopyConvert = async () => {
-    setCopyingConvert(true);
+  const submit = (text: string) => {
+    setPasteText(text);
+    const result = parsePlanInput(text);
+    if (!result.ok) {
+      setFailure({ reason: result.reason, errors: result.errors });
+      return;
+    }
+    setFailure(null);
+    setPendingPlan(result);
+  };
+
+  const pasteFromClipboard = async (): Promise<boolean> => {
     try {
-      await copyText(buildConvertPrompt(ownWorkout, localDateKey()));
-      haptic();
-      toast({ message: "Pedido copiado — cola na IA", variant: "success" });
+      const text = await navigator.clipboard.readText();
+      if (!text.trim()) {
+        toast({ message: "A área de transferência está vazia", variant: "error" });
+        return true;
+      }
+      submit(text);
+      return true;
     } catch {
-      toast({ message: "Não deu pra copiar", variant: "error" });
-    } finally {
-      setCopyingConvert(false);
+      toast({ message: "Toque e segure na caixa abaixo pra colar" });
+      return false;
     }
   };
 
-  const handleValidatePlan = () => {
-    setPlanErrors(null);
-    const result = parsePlanInput(planText);
-    if (!result.ok) {
-      setPlanErrors(result.errors);
-      return;
+  const handleCopyFix = async () => {
+    if (!failure) return;
+    try {
+      await copyText(buildFixPrompt(failure.reason, failure.errors));
+      haptic();
+      toast({ message: "Copiado. Cole na mesma conversa", variant: "success" });
+    } catch {
+      toast({ message: "Não deu pra copiar", variant: "error" });
     }
-    setPendingPlan(result);
   };
 
   const handleApplyPlan = () => {
     if (!pendingPlan) return;
     haptic();
     applyPlan(pendingPlan.plan);
+    clearAiFlow();
     // O plano é lido uma vez no boot (lib/plan/loader), então recarregar é o que
     // garante que nenhuma tela fique com o treino antigo em memória.
     toast({ message: "Treino aplicado", variant: "success" });
-    setTimeout(() => window.location.assign("/config"), 450);
+    setTimeout(() => window.location.assign("/"), 450);
   };
 
-  const handleRestoreDefaultPlan = () => {
-    setShowRestorePlan(false);
-    clearPlanOverride();
-    toast({ message: "Voltando ao treino original", variant: "success" });
-    setTimeout(() => window.location.assign("/config"), 450);
-  };
+  if (!view) return <div className="px-4" />;
+
+  const steps = view.mode ? FLOW_STEPS[view.mode] : null;
 
   return (
     <div className="px-4">
-      <BackLink />
-      <PageHeader title="Montar treino com IA" />
-      <p className="-mt-2 mb-5 text-sm text-muted">
-        Você copia um pedido pronto, cola na IA (Claude, ChatGPT…) e traz a resposta
-        de volta pra cá. Só os exercícios do treino mudam — seu histórico fica intacto.
-      </p>
-
-      <SettingsGroup title="1 · Pedir à IA">
-        <SettingsRow
-          icon={FlagIcon}
-          label="Meus objetivos"
-          value={goalsCount > 0 ? `${goalsCount} escolhidos` : "nenhum ainda"}
-          href="/config/persona"
+      {steps ? (
+        <StepHeader
+          step={steps.indexOf(view.step) + 1}
+          total={steps.length}
+          title={TITLES[view.step]}
+          onBack={back}
         />
-        <SettingsRow
-          icon={SparkleIcon}
-          label="Copiar pedido pra IA"
-          onClick={handleCopyAll}
-          busy={copying}
-        />
-      </SettingsGroup>
-
-      <section className="mb-6">
-        <h2 className="mb-2 px-1 font-mono text-xs uppercase tracking-wide text-muted">
-          Ou: já tenho um treino
-        </h2>
-        <p className="mb-2 px-1 text-xs text-muted">
-          Escreva ou cole o treino que você já faz. A IA só passa pro formato do app, sem
-          mudar nada, e você confere o resultado antes de aplicar.
-        </p>
-        <textarea
-          value={ownWorkout}
-          onChange={(e) => setOwnWorkout(e.target.value)}
-          placeholder={"Treino A\nBarra fixa 4x6\nFlexão 3x12…"}
-          rows={5}
-          aria-label="Seu treino atual"
-          className="w-full rounded-card border border-border bg-surface px-4 py-3 text-base outline-none placeholder:text-muted focus:border-muted"
-        />
-        <div className="mt-2 overflow-hidden rounded-card border border-border bg-surface">
-          <SettingsRow
-            icon={SparkleIcon}
-            label="Copiar pedido de conversão"
-            onClick={handleCopyConvert}
-            busy={copyingConvert}
-            disabled={!ownWorkout.trim()}
-          />
-        </div>
-      </section>
-
-      <section className="mb-6">
-        <h2 className="mb-2 px-1 font-mono text-xs uppercase tracking-wide text-muted">
-          2 · Aplicar a resposta
-        </h2>
-        <textarea
-          value={planText}
-          onChange={(e) => {
-            setPlanText(e.target.value);
-            setPlanErrors(null);
-          }}
-          placeholder="Cola aqui a resposta da IA…"
-          rows={5}
-          aria-label="Resposta da IA com o treino"
-          className="w-full rounded-card border border-border bg-surface px-4 py-3 text-base outline-none placeholder:text-muted focus:border-muted"
-        />
-        {planErrors && (
-          <div
-            className="mt-2 rounded-card border px-3 py-2 text-xs"
-            style={{ borderColor: "var(--color-danger)", color: "var(--color-danger)" }}
-            role="alert"
-          >
-            <p className="font-medium">Não deu pra aplicar essa resposta:</p>
-            <ul className="mt-1 list-disc pl-4">
-              {planErrors.map((err, i) => (
-                <li key={i}>{err}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-        <div className="mt-2 overflow-hidden rounded-card border border-border bg-surface">
-          <SettingsRow
-            icon={UploadIcon}
-            label="Aplicar treino da IA"
-            onClick={handleValidatePlan}
-            disabled={!planText.trim()}
-          />
-        </div>
-      </section>
-
-      <SettingsGroup title="Ou comece de um treino pronto">
-        {seeds.map((seed) => (
-          <SettingsRow
-            key={seed.id}
-            icon={ListIcon}
-            label={seed.name}
-            description={seed.summary}
-            value={seed.plan.id === activePlan?.id ? "em uso" : undefined}
-            onClick={() => setPendingPlan({ plan: seed.plan, summary: summarize(seed.plan) })}
-          />
-        ))}
-      </SettingsGroup>
-
-      {hasOverride && (
-        <SettingsGroup>
-          <SettingsRow
-            icon={HistoryIcon}
-            label="Voltar ao treino original do app"
-            onClick={() => setShowRestorePlan(true)}
-          />
-        </SettingsGroup>
+      ) : view.step === "pronto" ? (
+        <>
+          <BackButton onBack={back} />
+          <PageHeader title={TITLES.pronto} />
+        </>
+      ) : (
+        <>
+          <BackLink />
+          <PageHeader title={TITLES.escolha} />
+        </>
       )}
-      <div className="h-4" />
+
+      <div key={view.step} className="anim-fade-in">
+        {view.step === "escolha" && <ChoiceStep onPick={pick} />}
+
+        {view.step === "objetivos" && (
+          <>
+            <p className="-mt-2 mb-4 text-sm text-muted">Marque o que é prioridade. Pode pular.</p>
+            <GoalPicker notesCollapsed onGoalsChange={setGoalsCount} />
+            <button
+              type="button"
+              onClick={() => go({ mode: "novo", step: "copiar" })}
+              className="btn-primary tap mt-6 flex min-h-[48px] w-full items-center justify-center rounded-xl py-3 font-medium"
+            >
+              {goalsCount > 0 ? "Continuar" : "Pular"}
+            </button>
+          </>
+        )}
+
+        {view.step === "escrever" && (
+          <WriteStep
+            value={ownWorkout}
+            onChange={changeOwnWorkout}
+            onNext={() => go({ mode: "meu", step: "copiar" })}
+          />
+        )}
+
+        {view.step === "copiar" && view.mode && (
+          <CopyStep
+            context={
+              view.mode === "novo"
+                ? "O pedido leva seu treino atual, seu histórico e seus objetivos."
+                : "O pedido leva o treino que você escreveu."
+            }
+            copied={copied}
+            busy={copying}
+            onCopy={handleCopy}
+            onNext={() => view.mode && go({ mode: view.mode, step: "colar" })}
+          />
+        )}
+
+        {view.step === "colar" && (
+          <PasteStep
+            value={pasteText}
+            failure={failure}
+            onChange={(text) => {
+              setPasteText(text);
+              setFailure(null);
+            }}
+            onSubmit={submit}
+            onPasteFromClipboard={pasteFromClipboard}
+            onCopyFix={handleCopyFix}
+          />
+        )}
+
+        {view.step === "pronto" && (
+          <SettingsGroup>
+            {seeds.map((seed) => (
+              <SettingsRow
+                key={seed.id}
+                icon={ListIcon}
+                label={seed.name}
+                description={seed.summary}
+                value={seed.plan.id === activePlan?.id ? "em uso" : undefined}
+                onClick={() => setPendingPlan({ plan: seed.plan, summary: summarize(seed.plan) })}
+              />
+            ))}
+          </SettingsGroup>
+        )}
+      </div>
+      <div className="h-8" />
 
       {pendingPlan && activePlan && (
         <PlanPreview
@@ -243,16 +373,6 @@ export default function PlanoPage() {
           next={pendingPlan.plan}
           onConfirm={handleApplyPlan}
           onCancel={() => setPendingPlan(null)}
-        />
-      )}
-
-      {showRestorePlan && (
-        <ConfirmDialog
-          title="Voltar ao treino original?"
-          message="Descarta o treino que você aplicou neste aparelho e volta pro que vem no app. Seu histórico de sessões não é afetado."
-          confirmLabel="Voltar"
-          onConfirm={handleRestoreDefaultPlan}
-          onCancel={() => setShowRestorePlan(false)}
         />
       )}
     </div>

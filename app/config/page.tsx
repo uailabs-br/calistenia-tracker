@@ -15,6 +15,7 @@ import {
   DeviceIcon,
   DownloadIcon,
   FlagIcon,
+  HistoryIcon,
   ListIcon,
   MinusIcon,
   PlusIcon,
@@ -27,6 +28,7 @@ import {
 } from "@/components/ui/icons";
 import { getCustomExercises } from "@/lib/db/repositories/customExercises";
 import { getAiGoals } from "@/lib/utils/aiPersona";
+import { clearPlanOverride, hasPlanOverride } from "@/lib/plan/importPlan";
 import { haptic } from "@/lib/utils/haptics";
 import {
   getProfileName,
@@ -68,6 +70,8 @@ export default function ConfigPage() {
   /** Plano em vigor. Só depois do mount — ver o comentário de `goal`. */
   const [activePlan, setActivePlan] = useState<Plan | null>(null);
   const [aiGoalsCount, setAiGoalsCount] = useState(0);
+  const [hasOverride, setHasOverride] = useState(false);
+  const [showRestorePlan, setShowRestorePlan] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
   // Erro de restauração fica à vista junto das linhas de backup (o toast some e
@@ -80,6 +84,7 @@ export default function ConfigPage() {
     setGoal(getWeekGoal() ?? plan.workouts.length);
     setActivePlan(plan);
     setAiGoalsCount(getAiGoals().length);
+    setHasOverride(hasPlanOverride());
     if (isStandalone()) {
       setInstall("standalone");
       return;
@@ -92,6 +97,14 @@ export default function ConfigPage() {
     // se o beforeinstallprompt chegar depois do mount, habilita o botão
     return subscribeInstall(() => setInstall("prompt"));
   }, []);
+
+  const handleRestoreDefaultPlan = () => {
+    setShowRestorePlan(false);
+    clearPlanOverride();
+    toast({ message: "Voltando ao treino original", variant: "success" });
+    // Mesmo motivo do aplicar: o plano é lido uma vez no boot.
+    setTimeout(() => window.location.assign("/config"), 450);
+  };
 
   const handleInstall = async () => {
     const accepted = await promptInstall();
@@ -276,6 +289,13 @@ export default function ConfigPage() {
           value={customCount ? String(customCount) : undefined}
           href="/config/exercicios"
         />
+        {hasOverride && (
+          <SettingsRow
+            icon={HistoryIcon}
+            label="Voltar ao treino original do app"
+            onClick={() => setShowRestorePlan(true)}
+          />
+        )}
       </SettingsGroup>
 
       <ReminderSettings />
@@ -365,6 +385,16 @@ export default function ConfigPage() {
           onSecondary={handleExport}
           onConfirm={handleReset}
           onCancel={() => setShowReset(false)}
+        />
+      )}
+
+      {showRestorePlan && (
+        <ConfirmDialog
+          title="Voltar ao treino original?"
+          message="Descarta o treino que você aplicou neste aparelho e volta pro que vem no app. Seu histórico de sessões não é afetado."
+          confirmLabel="Voltar"
+          onConfirm={handleRestoreDefaultPlan}
+          onCancel={() => setShowRestorePlan(false)}
         />
       )}
     </div>
