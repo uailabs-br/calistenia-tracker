@@ -18,6 +18,7 @@ import { ConsistencyCard } from "@/components/home/ConsistencyCard";
 import { FreeformLogCard } from "@/components/home/FreeformLogCard";
 import { PlanSwapCard } from "@/components/home/PlanSwapCard";
 import { PlanBuilderCard } from "@/components/home/PlanBuilderCard";
+import { FeedbackCard } from "@/components/home/FeedbackCard";
 import { InstallPrompt } from "@/components/ui/InstallPrompt";
 import { isSeedPlanId } from "@/lib/plan/seeds";
 import { getPlanSwapSignal } from "@/lib/db/queries/planSwap";
@@ -152,6 +153,15 @@ export default function HomePage() {
       )}
 
       <UpNext queue={upNext} />
+
+      {/* Por último de propósito: convite raro, nunca acima do treino */}
+      {planReady && active !== undefined && overview !== undefined && (
+        <FeedbackCard
+          completed={overview.totalWorkouts}
+          planId={plan.id}
+          sessionActive={active !== null}
+        />
+      )}
     </div>
   );
 }

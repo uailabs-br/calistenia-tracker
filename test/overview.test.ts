@@ -152,3 +152,20 @@ describe("meta semanal por quantidade de treinos", () => {
     expect(week.days.find((d) => d.weekday === 1)?.source).toBe("plan");
   });
 });
+
+describe("último treino (atalho do histórico)", () => {
+  it("null sem nenhum treino", async () => {
+    expect((await getOverview()).lastWorkoutDate).toBeNull();
+  });
+
+  it("pega o dia mais recente, avulso incluído", async () => {
+    await doneOn("A", "2026-07-06");
+    const f = await createFreeformSession(20);
+    await db.sessions.update(f.id, { date: "2026-07-09" });
+    await doneOn("B", "2026-07-08");
+
+    const o = await getOverview();
+    expect(o.totalWorkouts).toBe(3);
+    expect(o.lastWorkoutDate).toBe("2026-07-09");
+  });
+});

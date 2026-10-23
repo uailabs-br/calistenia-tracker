@@ -57,7 +57,7 @@ export function PlanBoot() {
         markPlanLostNotified(decision.planId);
         toast({
           message:
-            "Não achei o plano que você vinha usando neste aparelho. Seu histórico está intacto; aplique o treino de novo em Ajustes → Montar treino com IA.",
+            "Não achei o plano que você vinha usando neste aparelho. Seu histórico está intacto; aplique o treino de novo em Treino → Montar treino com IA.",
           duration: 9000,
         });
       } else if (decision.action === "onboarding") {

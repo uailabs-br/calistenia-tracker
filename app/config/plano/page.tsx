@@ -292,7 +292,7 @@ export default function PlanoPage() {
         </>
       ) : (
         <>
-          <BackLink />
+          <BackLink href="/plano" label="Treino" />
           <PageHeader title={TITLES.escolha} />
         </>
       )}

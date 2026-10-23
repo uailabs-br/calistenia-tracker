@@ -9,8 +9,10 @@ import { Badges } from "@/components/metrics/Badges";
 import { FlagIncidenceRow } from "@/components/metrics/FlagIncidenceRow";
 import { Sparkline } from "@/components/metrics/Sparkline";
 import { ConsistencyHeatmap } from "@/components/metrics/ConsistencyHeatmap";
-import Link from "next/link";
-import { ChevronDownIcon, ChevronRightIcon } from "@/components/ui/icons";
+import { SettingsGroup } from "@/components/ui/SettingsGroup";
+import { SettingsRow } from "@/components/ui/SettingsRow";
+import { ChevronDownIcon, HistoryIcon } from "@/components/ui/icons";
+import { shortDate } from "@/lib/utils/date";
 import {
   getOverview,
   getFlagIncidence,
@@ -56,27 +58,19 @@ export default function MetricasPage() {
             <StatTile value={overview.last30Workouts} label="treinos em 30 dias" />
             <StatTile value={overview.currentStreak} label="semanas seguidas" accent={AC} />
             <StatTile value={overview.longestStreak} label="recorde de semanas" />
-            <StatTile
-              value={overview.avgRpe4w ?? "-"}
-              label="RPE médio (4 sem)"
-            />
           </div>
 
-          {/* Progressão: o que está pronto no treino de hoje, e as escadas */}
-          <Link
-            href="/progressao"
-            className="tap mt-4 flex items-center justify-between rounded-card border border-border bg-surface px-4 py-3 active:scale-[0.99]"
-          >
-            <span className="text-sm font-medium">Progressão · o que está pronto</span>
-            <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted" />
-          </Link>
-          <Link
-            href="/skills"
-            className="tap mt-2 flex items-center justify-between rounded-card border border-border bg-surface px-4 py-3 active:scale-[0.99]"
-          >
-            <span className="text-sm font-medium">Skills · progressões</span>
-            <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted" />
-          </Link>
+          {/* Histórico não tem aba: é consulta, e mora aqui */}
+          <SettingsGroup className="mt-4">
+            <SettingsRow
+              icon={HistoryIcon}
+              label="Histórico"
+              description={`${overview.totalWorkouts} ${
+                overview.totalWorkouts === 1 ? "treino" : "treinos"
+              }${overview.lastWorkoutDate ? ` · último em ${shortDate(overview.lastWorkoutDate)}` : ""}`}
+              href="/historico"
+            />
+          </SettingsGroup>
 
           {/* Conquistas */}
           <Badges accent={AC} />

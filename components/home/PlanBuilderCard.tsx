@@ -6,7 +6,7 @@ import { SparkleIcon, ChevronRightIcon } from "@/components/ui/icons";
 /**
  * Porta de entrada pro criador de treino com IA. Aparece só enquanto o plano é
  * um dos prontos (ver `isSeedPlanId`): quem já tem plano próprio acha a entrada
- * em Ajustes, e a home não vira painel de avisos.
+ * na aba Treino, e a home não vira painel de avisos.
  */
 export function PlanBuilderCard({ first }: { first: boolean }) {
   return (

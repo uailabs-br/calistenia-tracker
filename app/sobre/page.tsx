@@ -22,7 +22,7 @@ import { LandingCta } from "@/components/landing/LandingCta";
 export const metadata: Metadata = {
   title: `${APP_NAME} — treino de calistenia com plano e registro`,
   description:
-    "Registre seus treinos de calistenia com um toque por série, acompanhe as escadas de progressão dos movimentos e veja sua evolução. Funciona sem internet.",
+    "Registre seus treinos de calistenia com um toque por série, acompanhe as progressões de cada movimento e veja sua evolução. Funciona sem internet.",
 };
 
 const ACCENT = "#8174e8";
@@ -100,7 +100,7 @@ export default function SobrePage() {
           <div className="mt-8 grid gap-8 sm:grid-cols-2 sm:gap-10">
             <div>
               <p className="leading-relaxed text-muted">
-                Cada movimento é uma escada de etapas. O app traz 16 delas e marca onde
+                Cada movimento tem uma sequência de progressões. O app traz 16 delas e marca onde
                 você está em cada uma, conforme você registra.
               </p>
               <div className="mt-5">

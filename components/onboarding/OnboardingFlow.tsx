@@ -231,7 +231,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
     setError(null);
     try {
       commitOnboarding({ answers, name, plan: chosen?.plan ?? null });
-      window.location.assign(dest ?? (redo ? "/config" : "/"));
+      window.location.assign(dest ?? (redo ? "/plano" : "/"));
     } catch {
       setFinishing(false);
       setError("Não consegui salvar neste navegador. Confira se o armazenamento do site está liberado.");
@@ -241,7 +241,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
   /** "Pular" só existe na primeira vez; aplica a semente padrão. Ao refazer, cancela. */
   const skip = () => {
     if (redo) {
-      router.push("/config");
+      router.push("/plano");
       return;
     }
     setFinishing(true);
@@ -460,7 +460,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
             <h1 className="display text-[2.125rem] leading-[1.1]">Qual seu foco principal?</h1>
             <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-muted">
               Pra onde você quer evoluir primeiro. Guia a IA no próximo ciclo e não
-              muda o plano de agora — skills específicas você escolhe em Ajustes.
+              muda o plano de agora — skills específicas você escolhe em Treino.
             </p>
             <div
               role="radiogroup"
@@ -581,7 +581,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
                   <button
                     type="button"
                     disabled={finishing}
-                    onClick={() => finish("/config")}
+                    onClick={() => finish("/config/plano?modo=meu")}
                     className="tap text-sm font-medium underline underline-offset-4 active:opacity-70"
                     style={{ color: "var(--ac)" }}
                   >

@@ -20,6 +20,11 @@ async function completedSessions(): Promise<Session[]> {
     .sort((a, b) => (a.started_at ?? 0) - (b.started_at ?? 0));
 }
 
+/** Treinos concluídos (plano + avulso), sem os apagados. */
+export async function countCompletedSessions(): Promise<number> {
+  return (await completedSessions()).length;
+}
+
 async function activeLogs(): Promise<ExerciseLog[]> {
   const rows = await db.exerciseLogs.toArray();
   return rows.filter((l) => !l.deleted_at);
@@ -27,6 +32,8 @@ async function activeLogs(): Promise<ExerciseLog[]> {
 
 export interface Overview {
   totalWorkouts: number;
+  /** Dia (dateKey) do treino mais recente, plano ou avulso; null sem nenhum. */
+  lastWorkoutDate: string | null;
   last30Workouts: number;
   /** Semanas consecutivas batendo a meta semanal, com freeze (ver streak.ts). */
   currentStreak: number;
@@ -130,6 +137,7 @@ export async function getOverview(): Promise<Overview> {
 
   return {
     totalWorkouts,
+    lastWorkoutDate: dates.length > 0 ? dates[dates.length - 1] : null,
     last30Workouts,
     currentStreak,
     longestStreak,

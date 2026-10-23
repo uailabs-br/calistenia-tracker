@@ -2,7 +2,7 @@ import { ChevronDownIcon } from "@/components/ui/icons";
 import { CONTACT_LABEL, CONTACT_URL } from "@/lib/appInfo";
 
 /** Data da última revisão do texto. Mexeu no conteúdo, mexe aqui. */
-const UPDATED_AT = "22/10/2026";
+const UPDATED_AT = "23/10/2026";
 
 /**
  * Cada item é uma pergunta que esse tipo de documento precisa responder, em uma
@@ -34,6 +34,15 @@ const ITEMS: { title: string; body: string }[] = [
     title: "Quando você usa uma IA",
     body: "O pedido que o app copia leva o seu histórico de treino. Ele só sai do aparelho se você colar numa IA, e o que ela faz com isso segue a política dela, não esta. Você decide onde colar, ou não colar.",
   },
+  // Só existe com canal de contato: o texto descreve o que o app faz hoje.
+  ...(CONTACT_URL
+    ? [
+        {
+          title: "Quando você manda feedback",
+          body: "A mensagem já vem com a versão do app, o treino em uso, quantos treinos você registrou e o tipo de aparelho. Ela só sai quando você envia, e dá pra apagar qualquer parte antes.",
+        },
+      ]
+    : []),
   {
     title: "Backup",
     body: "É um arquivo que você baixa e guarda onde quiser. O app não envia a lugar nenhum.",

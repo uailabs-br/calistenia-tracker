@@ -8,7 +8,7 @@ import { GoalPicker } from "@/components/plan/GoalPicker";
 export default function PersonaPage() {
   return (
     <div className="px-4">
-      <BackLink />
+      <BackLink href="/plano" label="Treino" />
       <PageHeader title="Meus objetivos" />
       <p className="-mt-2 mb-4 text-sm text-muted">
         Marca as skills que são prioridade agora. O app monta o pedido

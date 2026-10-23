@@ -185,7 +185,7 @@ export function planWarnings(current: Plan, next: Plan): PlanWarning[] {
         if (value === null) {
           once(
             "parsed",
-            `${e.name}: degrau de skill sem número no alvo — o app não reconhece o alvo batido.`
+            `${e.name}: etapa de skill sem número no alvo — o app não reconhece o alvo batido.`
           );
         }
         const criteria = getCriteria(e.skill_ref.skill_id, e.skill_ref.level);
@@ -198,7 +198,7 @@ export function planWarnings(current: Plan, next: Plan): PlanWarning[] {
         if (criteria && needed !== null && value !== null && value < needed) {
           once(
             "criteria",
-            `${e.name}: o alvo (${value}) fica abaixo do critério do degrau (${needed}) — você cumpre o plano e nunca fica pronto pra subir.`
+            `${e.name}: o alvo (${value}) fica abaixo do critério da etapa (${needed}) — você cumpre o plano e nunca fica pronto pra subir.`
           );
         }
       }

@@ -39,7 +39,7 @@ pra formatação, e indentar um plano inteiro quase dobra o tamanho da resposta 
 Ponto de partida; onde \`progressao\` discordar, \`progressao\` ganha.
 - \`equipamento\`: \`chao\` (chão e parede) · \`casa_barra\` (+ barra fixa) ·
   \`praca\` (+ paralelas) · \`academia\` (+ paralelas e peso).
-- \`nivel\`: iniciante | intermediario | avancado — pela escada do app (ter skill,
+- \`nivel\`: iniciante | intermediario | avancado — pela sequência de progressões do app (ter skill,
   não contar repetição). Grava a faixa BAIXA do nível: pode estar subestimado.
 - \`dias_por_semana\`: sessões por semana que ele pretende fazer.
 - \`skills[].etapa_em_foco\`: degrau que ele diz estar trabalhando (os anteriores
@@ -82,7 +82,7 @@ progresso nela.
 1. UM DEGRAU POR VEZ. Só sobe quem está \`ready\`. Nunca pule nível, nunca suba
    duas skills do mesmo padrão de movimento no mesmo ciclo.
 2. PRÉ-REQUISITO VALE MAIS QUE VONTADE. Skill prioritária sem o pré-requisito da
-   escada entra como o degrau que falta: front lever pra quem não tem pull-up
+   sequência entra como o degrau que falta: front lever pra quem não tem pull-up
    nível 4 é pull-up e hollow, não tuck hold.
 3. EQUIPAMENTO É LIMITE RÍGIDO. Nada que o \`equipamento\` não ofereça. Na dúvida,
    versão do chão.
@@ -138,7 +138,7 @@ const AI_CHECKLIST = `# ANTES DE RESPONDER, CONFIRA
 - Todo \`target\` no formato "N × M". Todo \`rest\` em segundos.
 - \`parsed\` null em todo alvo com intervalo; preenchido em todo exercício com
   \`skill_ref\`.
-- Todo \`skill_ref\` existe nas escadas, e o alvo alcança o critério do degrau.
+- Todo \`skill_ref\` existe nas sequências de progressão, e o alvo alcança o critério do degrau.
 - \`neg_flags\` é subconjunto exato de \`flags\`; nenhum id de exercício repetido
   dentro do mesmo treino.
 - Nada que o equipamento não permita; cada limitação declarada endereçada.

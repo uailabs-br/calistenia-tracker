@@ -20,6 +20,22 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-10-23, navegação, Ajustes e feedback — 505 testes):**
+> nav nova: **Início · Treino · Evolução · Ajustes**. O Histórico deixou de ser aba e virou
+> atalho em Evolução (que perdeu o card de RPE médio). A aba **Treino** (`/plano`) abre no
+> plano em vigor, com os treinos em sequência e o próximo marcado, e reúne Progressão,
+> Skills e tudo que muda o treino (IA, objetivos, nível, meus exercícios). Skills chegou a
+> ser aba e saiu no mesmo dia: consulta rara. A aba acesa vem de `activeTab()` em
+> `lib/utils/routes.ts` (prefixo mais longo), e Histórico, Progressão e Skills passaram a
+> acender a aba certa (antes não acendiam nenhuma). Ajustes ficou com Você, Seus dados, App
+> e apagar tudo no fim, como composição de `components/config/*`. **O lembrete
+> saiu da tela**: nunca disparou notificação (5.1); `ReminderSettings` fica no código.
+> Feedback por link pro `CONTACT_URL`, com a mensagem já começada e o contexto visível
+> (`lib/domain/feedback.ts`), numa linha em Ajustes e num card raro no pé da home (a partir
+> do 5º treino, volta a cada 20). **Ainda sem canal**: com `CONTACT_URL` em `null`, os dois
+> ficam escondidos. Na mesma leva, "escada" virou "sequência de progressões" nos textos do
+> app. Ver [PLAN-navegacao-ajustes-feedback.md](PLAN-navegacao-ajustes-feedback.md).
+
 > **Atualização (pós-v1.8, 2026-10-23, fluxo de treino com IA em passos — 490 testes):**
 > `/config/plano` deixou de mostrar os cinco caminhos de uma vez. Agora é escolha (criar
 > novo · trazer o meu · pronto) e três passos com um botão principal cada: objetivos ou

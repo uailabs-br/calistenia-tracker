@@ -318,6 +318,21 @@ export const ExternalIcon = ({ className }: IconProps) => (
 );
 
 /** Arco girando — estado "trabalhando" de uma linha. Gira via `animate-spin`. */
+/** Etapas ligadas subindo: o mapa de progressões (aba Skills). */
+export const ProgressionIcon = ({ className }: IconProps) => (
+  <Stroke
+    className={className}
+    d="M5 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM19 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM6.6 16.6l3.8-3.2M13.6 10.6l3.8-3.2"
+  />
+);
+
+export const MessageIcon = ({ className }: IconProps) => (
+  <Stroke
+    className={className}
+    d="M5.5 4.5h13a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2H11l-4.5 3.5V17h-1a2 2 0 0 1-2-2V6.5a2 2 0 0 1 2-2ZM8 9h8M8 12.5h5"
+  />
+);
+
 export function SpinnerIcon({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">

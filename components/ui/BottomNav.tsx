@@ -2,17 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { isChromeless } from "@/lib/utils/routes";
+import { activeTab, isChromeless } from "@/lib/utils/routes";
 import {
   HomeIcon,
-  HistoryIcon,
+  DumbbellIcon,
   ChartIcon,
   CogIcon,
 } from "./icons";
 
+// Histórico não é aba: é consulta, não uso do dia a dia. Mora em Evolução.
+// Treino abre em /plano porque /treino/[id] é a sessão em andamento.
 const items = [
   { href: "/", label: "Início", Icon: HomeIcon },
-  { href: "/historico", label: "Histórico", Icon: HistoryIcon },
+  { href: "/plano", label: "Treino", Icon: DumbbellIcon },
   { href: "/metricas", label: "Evolução", Icon: ChartIcon },
   { href: "/config", label: "Ajustes", Icon: CogIcon },
 ];
@@ -21,6 +23,7 @@ export function BottomNav() {
   const pathname = usePathname();
   // Onboarding e landing são tela cheia: sem navegação até a pessoa ter um plano.
   if (isChromeless(pathname)) return null;
+  const current = activeTab(pathname);
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface/95 backdrop-blur"
@@ -28,8 +31,7 @@ export function BottomNav() {
     >
       <ul className="mx-auto flex max-w-md">
         {items.map(({ href, label, Icon }) => {
-          const active =
-            href === "/" ? pathname === "/" : pathname.startsWith(href);
+          const active = current === href;
           return (
             <li key={href} className="flex-1">
               <Link

@@ -65,7 +65,7 @@ export function LadderPreview() {
         ))}
       </ol>
       <p className="mt-3 text-xs text-muted">
-        Escada do pull-up. O app traz 16 delas, até planche e manna.
+        Progressões do pull-up. O app traz 16 sequências, até planche e manna.
       </p>
     </div>
   );

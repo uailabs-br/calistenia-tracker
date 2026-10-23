@@ -17,6 +17,7 @@ import {
   buildWeekReviewTexts,
   type WeekReview,
 } from "@/lib/db/queries/weekReview";
+import { BackLink } from "@/components/ui/BackLink";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { HistorySkeleton } from "@/components/ui/Skeleton";
 import { ChevronRightIcon, ChevronDownIcon } from "@/components/ui/icons";
@@ -166,6 +167,7 @@ export default function HistoricoPage() {
 
   return (
     <div className="px-4">
+      <BackLink href="/metricas" label="Evolução" />
       <PageHeader title="Histórico" subtitle={planReady ? plan.name : undefined} />
       {groups === undefined ? (
         <HistorySkeleton />

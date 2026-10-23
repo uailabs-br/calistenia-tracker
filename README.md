@@ -132,7 +132,7 @@ npm run validate:plan  # valida o plano contra o schema Zod
 ## Estrutura
 
 ```
-app/                  # rotas: / (início), treino/[id], historico, metricas, skills, config
+app/                  # rotas: / (início), plano (aba Treino), treino/[id] (sessão), historico, metricas, progressao, skills, config
 components/home/      # NextWorkoutCard, ConsistencyCard, WeekReviewCard, ResumeBanner, FreeformLog*
 components/session/   # ExerciseCard, Stepper, FlagChips, RpeSheet, WorkoutPills, SessionRunner, AddExerciseSheet
 components/metrics/   # StatTile, Sparkline, FlagIncidenceRow, Badges

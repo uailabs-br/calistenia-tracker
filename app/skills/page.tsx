@@ -7,6 +7,7 @@ import { skills, skillStepExerciseIds } from "@/lib/plan/skills";
 import { getFirstCleanSuccess } from "@/lib/db/queries/skillProgress";
 import { skillPosition } from "@/lib/domain/skillMap";
 import { getSkillLevels } from "@/lib/utils/skillLevel";
+import { BackLink } from "@/components/ui/BackLink";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ChevronRightIcon } from "@/components/ui/icons";
 
@@ -17,7 +18,7 @@ const CAT_ACCENT: Record<string, string> = {
   Pernas: "#e88fb0",
 };
 
-/** Índice das skills de calistenia: escada de cada uma + onde você está. */
+/** Mapa de progressões (em Treino): a sequência de cada skill e onde você está. */
 export default function SkillsIndexPage() {
   const firstSuccess = useLiveQuery(
     () => getFirstCleanSuccess(skillStepExerciseIds()),
@@ -30,7 +31,11 @@ export default function SkillsIndexPage() {
 
   return (
     <div className="px-4">
+      <BackLink href="/plano" label="Treino" />
       <PageHeader title="Skills" />
+      <p className="-mt-2 mb-5 text-sm text-muted">
+        Onde você está em cada skill. Toque numa pra ver a sequência de progressões.
+      </p>
 
       <ul className="flex flex-col gap-2">
         {skills.map((skill) => {
@@ -57,7 +62,7 @@ export default function SkillsIndexPage() {
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-medium">{skill.name}</span>
                   <span className="block truncate text-xs text-muted">
-                    {done ? "escada concluída 🎉" : `agora: ${focus?.label}`}
+                    {done ? "sequência concluída 🎉" : `agora: ${focus?.label}`}
                   </span>
                 </span>
                 <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted" />

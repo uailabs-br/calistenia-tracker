@@ -7,7 +7,7 @@ import { CustomExercisesCard } from "@/components/config/CustomExercisesCard";
 export default function ExerciciosPage() {
   return (
     <div className="px-4">
-      <BackLink />
+      <BackLink href="/plano" label="Treino" />
       <PageHeader title="Meus exercícios" />
       <CustomExercisesCard />
       <div className="h-8" />

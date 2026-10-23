@@ -146,9 +146,9 @@ campo extra é erro de validação e o app recusa o plano inteiro.
   // ↑ OPCIONAL — subconjunto EXATO de \`flags\` (string idêntica) que conta como
   //   execução suja. É o que o motor usa pra não promover técnica ruim.
   "skill_ref": { "skill_id": "muscle_up", "level": 3 }
-  // ↑ OPCIONAL — só se este exercício FOR o degrau da escada de uma skill.
+  // ↑ OPCIONAL — só se este exercício FOR o degrau da sequência de progressão de uma skill.
   //   Use null quando NÃO for degrau nenhum (evita atrelar ao degrau errado).
-  //   Omita se não tiver certeza. Só vale skill_id/level que existam nas escadas.
+  //   Omita se não tiver certeza. Só vale skill_id/level que existam nas sequências de progressão.
 }
 
 ## Progression (fim do treino — o que evolui e quando)
@@ -170,7 +170,7 @@ monta os contadores da tela de treino. Então:
   motor não consegue dizer que o alvo foi batido, e 3 sessões assim viram sinal
   falso de regressão.
 - O alvo de um exercício com \`skill_ref\` tem que ALCANÇAR o critério do degrau
-  (lista de escadas abaixo). Alvo menor que o critério trava o atleta: ele cumpre
+  (lista de sequências de progressão abaixo). Alvo menor que o critério trava o atleta: ele cumpre
   o plano pra sempre e nunca fica "pronto pra subir".
 
 ## REGRAS DE TEXTO DENTRO DO JSON
@@ -201,7 +201,7 @@ O app extrai o maior número do texto e trata como SEGUNDOS, pro cronômetro.
 - Movimento novo que já existe na lista de ids conhecidos abaixo: use o id dela.
 - \`exercise_id\` duplicado dentro do MESMO treino é erro de validação.
 - Se \`neg_flags\` existir, cada item TEM que estar também em \`flags\`.
-- \`skill_ref\` não-null: skill_id e level TÊM que existir nas escadas abaixo.
+- \`skill_ref\` não-null: skill_id e level TÊM que existir nas sequências de progressão abaixo.
 - Cores accent/accent_bg sempre hex de 6 dígitos com #.
 
 ## SEM DIA DA SEMANA
@@ -210,7 +210,7 @@ Não existe weekday, nem "Seg/Ter/…", nem "dia" como estrutura. A ORDEM do arr
 concluído, em ciclo (A → B → C → A…). Não há limite de treinos — 2, 3, 5 ou 8, o
 que fizer sentido pro objetivo.
 
-## ESCADAS DE SKILL — ids, níveis e o critério que o app verifica
+## SEQUÊNCIAS DE PROGRESSÃO DE SKILL — ids, níveis e o critério que o app verifica
 Formato: \`nível=nome do degrau → critério que o motor checa\`.
 ${SKILL_LADDERS}
 

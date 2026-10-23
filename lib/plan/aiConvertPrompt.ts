@@ -38,7 +38,7 @@ da resposta e é o que faz o modelo cortar a saída no meio.
    \`flags\` de execução (2 a 4, curtas e verificáveis), \`obs\` de uma frase e
    \`warmup\`/\`tip\` de uma linha. Isso é preenchimento de formato, não opinião
    sobre o treino.
-6. \`skill_ref\` SÓ quando o exercício É o degrau de uma escada do app e você tem
+6. \`skill_ref\` SÓ quando o exercício É o degrau de uma sequência de progressão do app e você tem
    certeza. Na dúvida, omita o campo. Um \`skill_ref\` errado faz o app avaliar o
    exercício pelo critério de outro movimento.
 7. \`workout.skill\`: use um dos rótulos listados no contrato se o treino gira em

@@ -50,7 +50,7 @@ function statusLine(r: ProgressionRow): string {
     case "regress":
       return "abaixo do alvo várias sessões seguidas, considere um passo atrás";
     case "stale":
-      return `${r.sessions} sessões no mesmo degrau sem decisão, troque o estímulo`;
+      return `${r.sessions} sessões na mesma etapa sem decisão, troque o estímulo`;
     case "tracking":
       return `${r.streak}/${r.required} sessões seguidas · ${r.sessions} registradas`;
     case "new":
@@ -100,7 +100,7 @@ function Row({ row, onReactivate }: { row: ProgressionRow; onReactivate: () => v
           )}
           {row.state === "ready" && row.skill.next && (
             <span className="mt-0.5 block" style={{ color }}>
-              próximo degrau: {row.skill.next}
+              próxima etapa: {row.skill.next}
             </span>
           )}
         </p>
@@ -139,7 +139,7 @@ export default function ProgressaoPage() {
 
   return (
     <div className="px-4">
-      <BackLink href="/metricas" label="Evolução" />
+      <BackLink href="/plano" label="Treino" />
       <PageHeader title="Progressão" />
       <p className="-mt-2 mb-5 text-sm text-muted">
         Onde cada exercício do seu treino está: quem já pode subir, quem pede cuidado e
