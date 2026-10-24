@@ -441,7 +441,7 @@ function CreateForm({
         type="button"
         disabled={busy || name.trim() === ""}
         onClick={() => void submit()}
-        className="btn-solid tap mt-5 w-full rounded-xl py-3 font-medium transition-opacity disabled:opacity-40"
+        className="btn-primary tap mt-5 w-full rounded-xl py-3 font-medium transition-opacity disabled:opacity-40"
       >
         Criar e adicionar ao treino
       </button>

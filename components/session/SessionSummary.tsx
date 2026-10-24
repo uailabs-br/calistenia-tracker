@@ -137,7 +137,7 @@ export function SessionSummary({
               </span>
               <h2
                 id={titleId}
-                className="display-caps text-[2.375rem] leading-none"
+                className="display-caps text-display leading-none"
                 style={reveal(t, T.title)}
               >
                 Treino concluído
@@ -149,7 +149,7 @@ export function SessionSummary({
             <div className="card flex items-end justify-between gap-3 p-4">
               <div>
                 <p
-                  className="display text-[5.25rem] leading-[0.9] text-ac"
+                  className="display text-display-hero leading-[0.9] text-ac"
                   aria-label={`${hero.value} ${hero.label}`}
                 >
                   {countAt(t, hero.value, T.hero, 950)}
@@ -180,7 +180,7 @@ export function SessionSummary({
               {tiles.map((tile, i) => (
                 <div key={tile.key} className="card p-3">
                   <p
-                    className="display text-[2.125rem] leading-none"
+                    className="display text-display leading-none"
                     aria-label={`${tile.value} ${tile.label}`}
                   >
                     {countAt(t, tile.value, T.tiles[i] ?? T.tiles[0], 800)}

@@ -48,7 +48,7 @@ export function ExerciseFeedbackSheet({
       style={accentVars(accent)}
     >
       <p className="eyebrow">Registrado</p>
-      <h2 id={titleId} className="display mt-0.5 text-[1.625rem] leading-tight">
+      <h2 id={titleId} className="display mt-0.5 text-display-sm leading-tight">
         {exerciseName}
       </h2>
 

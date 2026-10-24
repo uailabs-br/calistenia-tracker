@@ -141,7 +141,7 @@ export function SetBySetPanel({
             <MinusIcon className="h-6 w-6" />
           </button>
           <div className="flex flex-col items-center" aria-live="polite">
-            <span className="display h-[4.5rem] overflow-hidden text-[4.5rem] leading-none">
+            <span className="display h-[4.5rem] overflow-hidden text-display-xl leading-none">
               <RollingNumber value={stepperValue} />
             </span>
             <span className="mt-1 font-mono text-2xs text-muted">

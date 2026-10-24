@@ -68,7 +68,7 @@ const SAVE_ERROR =
 function StepHeading({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <>
-      <h1 className="display text-[2.125rem] leading-[1.1]">{title}</h1>
+      <h1 className="display text-display leading-[1.1]">{title}</h1>
       <p className="mt-2.5 text-md leading-relaxed text-muted">{children}</p>
     </>
   );
@@ -581,7 +581,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
           <button
             type="button"
             onClick={() => setView("step")}
-            className="btn-solid tap flex-1 rounded-xl py-3.5 font-semibold active:scale-[0.99]"
+            className="btn-primary tap flex-1 rounded-xl py-3.5 font-semibold active:scale-[0.99]"
           >
             Usar este plano
           </button>
@@ -601,7 +601,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
               type="button"
               onClick={next}
               disabled={finishing}
-              className="btn-solid tap flex-1 rounded-xl py-3.5 font-semibold active:scale-[0.99] disabled:opacity-60"
+              className="btn-primary tap flex-1 rounded-xl py-3.5 font-semibold active:scale-[0.99] disabled:opacity-60"
             >
               {isLast ? (finishing ? "Salvando..." : redo ? "Salvar" : "Começar") : "Continuar"}
             </button>

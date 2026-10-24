@@ -46,6 +46,8 @@ utilitários de botão. Componente filho **não recebe `accent` por prop** só p
   abre passa `style={accentVars(accent)}` pro painel (`Sheet` aceita `style`).
 - Fora de um treino (landing, métricas, histórico sem plano), a cor é `DEFAULT_ACCENT`, o mesmo
   valor do `--ac` padrão do `:root`.
+- Tint (fundo claro de bolinha, pílula) é `bg-ac/14`, que vira `color-mix` com a cor. Hex com
+  alfa (`${accent}22`) não.
 - Categoria de skill (Puxar, Empurrar, Core, Pernas) usa `CATEGORY_ACCENT`. A lista das
   categorias é `SKILL_CATEGORIES` em `lib/plan/skills.ts`, a mesma que valida catálogo e backup.
 - Hex literal em componente não: as cores vêm do plano, de `accent.ts` ou dos tokens.
@@ -60,7 +62,18 @@ utilitários de botão. Componente filho **não recebe `accent` por prop** só p
 
 Escala: a do Tailwind mais três degraus que o app usa muito, `text-3xs` (10px), `text-2xs`
 (11px) e `text-md` (15px). Os três herdam a altura de linha, como o valor arbitrário fazia.
-Títulos de tela e números de destaque ainda usam tamanho arbitrário (ver pendências).
+
+A fonte display tem escala própria, com a altura de linha sempre explícita (`leading-*`):
+
+| Classe | Tamanho | Onde |
+|---|---|---|
+| `text-display-sm` | 26px | nome do exercício (card, sheet) |
+| `text-display` | 34px | pergunta do onboarding, título e números do fim de treino |
+| `text-display-lg` | 60px | cronômetro de descanso |
+| `text-display-xl` | 72px | número do stepper |
+| `text-display-hero` | 84px | número herói do fim de treino |
+
+Título de página usa a escala comum (`text-3xl`).
 
 ### Forma e toque
 
@@ -75,7 +88,6 @@ Títulos de tela e números de destaque ainda usam tamanho arbitrário (ver pend
 | Classe | O que é |
 |---|---|
 | `btn-primary` | ação principal, **uma por tela**: gradiente leve na cor do treino |
-| `btn-solid` | cor do treino chapada |
 | `btn-secondary` | tint + borda na cor; preenche ao pressionar |
 | `btn-outline` | só contorno na cor (finalizar, adicionar; `border-dashed` pra "adicionar") |
 | `btn-neutral` | cancelar, voltar |
@@ -150,20 +162,15 @@ Animação: `anim-*` (entrada), `pr-*` (tela de recorde), `rest-wave` (cronômet
 
 ---
 
-## Pendências visuais
+## Inconsistências corrigidas (2026-10-24)
 
-Inconsistências que a migração encontrou e **manteve** de propósito, porque mudar é mudança
-visual e precisa de protótipo:
+Achadas na migração, mantidas até ele aprovar o protótipo, e aplicadas depois:
 
-- **Primário com e sem gradiente.** "Continuar" e "Usar este plano" do onboarding, "Começar"
-  do treino, "Finalizar" da sessão, "Confirmar" do ajuste manual e "Criar e adicionar" usam
-  `btn-solid`; o resto usa `btn-primary`. Provavelmente deveriam ser todos `btn-primary`.
-- **Títulos sem escala.** Os títulos e números grandes usam seis tamanhos arbitrários
-  (`1.625rem`, `2.125rem`, `2.375rem`, `3.75rem`, `4.5rem`, `5.25rem`). Dá pra reduzir a três
-  ou quatro degraus de `display`.
-- **Campo sobre superfície.** Os dois textareas do fluxo com IA usam `card` como fundo, e
-  não `field` (superfície mais clara). Os outros campos do app usam `field`.
-- **Heatmap com paleta própria.** O quadrado de dia treinado é um gradiente em hex
-  (`#ada5f0 → #8174e8 → #6e63c5`) ajustado à mão, não derivado do `DEFAULT_ACCENT`.
-- **Tint por hex.** O mapa de skills pinta o fundo com `${accent}22` (hex com alfa); o resto do
-  app usa `color-mix`. O resultado é parecido, mas não igual.
+- Os seis botões principais de cor chapada (onboarding, "Começar", "Finalizar", "Confirmar"
+  do ajuste, "Criar e adicionar") passaram a `btn-primary`. O `btn-solid` deixou de existir.
+- Os seis tamanhos soltos de display viraram a escala acima; só o título do fim de treino
+  mudou na tela (38 → 34px).
+- Os textareas do fluxo com IA passaram a `field`.
+- O tint do mapa de skills passou de hex com alfa pra `bg-ac/14`.
+- O heatmap deixou o gradiente em hex e passou a derivar do `DEFAULT_ACCENT` e do
+  `--color-surface2`.

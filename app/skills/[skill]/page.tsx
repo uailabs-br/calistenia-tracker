@@ -126,8 +126,7 @@ export default function SkillMapPage() {
                   </span>
                   {status === "focus" && (
                     <span
-                      className="rounded-full px-2 py-0.5 font-mono text-3xs uppercase"
-                      style={{ background: `${accent}22`, color: accent }}
+                      className="rounded-full bg-ac/14 px-2 py-0.5 font-mono text-3xs uppercase text-ac"
                     >
                       você está aqui
                     </span>

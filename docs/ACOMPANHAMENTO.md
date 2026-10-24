@@ -20,6 +20,13 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-10-24, inconsistências visuais — 536 testes):**
+> as cinco inconsistências que a migração do design system tinha deixado de lado, aprovadas
+> em protótipo clicável: botão principal sempre com gradiente (`btn-solid` saiu), escala de
+> display com nome (`text-display-sm` … `text-display-hero`; só o título do fim de treino
+> mudou, 38 → 34px), campo do fluxo com IA no padrão `field`, tint do mapa de skills por
+> `color-mix` e heatmap derivado do `DEFAULT_ACCENT`. Ver [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md).
+
 > **Atualização (pós-v1.8, 2026-10-24, design system e limpeza — 536 testes):**
 > revisão do código inteiro, sem mudança visual (screenshot antes/depois de 37 telas e
 > estados, idêntico pixel a pixel). **Design system** documentado em

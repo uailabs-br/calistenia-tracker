@@ -129,7 +129,7 @@ export default function TreinoPage() {
         type="button"
         onClick={start}
         disabled={starting}
-        className="btn-solid tap w-full rounded-xl py-3.5 text-center font-semibold shadow-lg transition-transform active:scale-[0.99] disabled:opacity-60"
+        className="btn-primary tap w-full rounded-xl py-3.5 text-center font-semibold transition-transform active:scale-[0.99] disabled:opacity-60"
       >
         {starting
           ? "Abrindo…"

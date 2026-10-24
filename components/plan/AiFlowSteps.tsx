@@ -158,7 +158,7 @@ export function WriteStep({
         onChange={(e) => onChange(e.target.value)}
         placeholder={"Treino A\nBarra fixa 4x6\nFlexão 3x12…"}
         rows={8}
-        className="card mt-2 w-full px-4 py-3 text-base outline-none placeholder:text-muted focus:border-muted"
+        className="field mt-2 py-3"
       />
       <button type="button" onClick={onNext} disabled={!value.trim()} className={`${PRIMARY} mt-4`}>
         Continuar
@@ -329,7 +329,7 @@ export function PasteStep({
         }}
         placeholder="Toque e segure pra colar"
         rows={4}
-        className="card mt-2 w-full px-4 py-3 text-base outline-none placeholder:text-muted focus:border-muted"
+        className="field mt-2 py-3"
       />
       {value.trim() && !failure && (
         <button type="button" onClick={() => onSubmit(value)} className={`${SECONDARY} mt-3`}>

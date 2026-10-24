@@ -3,32 +3,37 @@
 import type { HeatmapDay } from "@/lib/db/queries/metrics";
 import { heatLevel, type HeatLevel } from "@/lib/domain/heatLevel";
 import { shortDate } from "@/lib/utils/date";
+import { DEFAULT_ACCENT } from "@/components/ui/accent";
 
 const DAY_LETTERS = ["S", "T", "Q", "Q", "S", "S", "D"]; // Seg→Dom
 
 /** Rótulos acessíveis: a letra sozinha ("S", "Q") é ambígua para leitor de tela. */
 const DAY_NAMES = ["segunda", "terça", "quarta", "quinta", "sexta", "sábado", "domingo"];
 
-/** Azul-violeta do accent das métricas, em rgb pra montar as sombras com transparência. */
-const RGB = "129, 116, 232";
+/** Dia treinado: a cor das métricas clareando em cima e escurecendo embaixo. */
+const TRAINED = `linear-gradient(145deg, color-mix(in oklab, ${DEFAULT_ACCENT} 60%, white) 0%, ${DEFAULT_ACCENT} 55%, color-mix(in oklab, ${DEFAULT_ACCENT} 85%, black) 100%)`;
+/** Dia vazio: rebaixo da superfície de campo. */
+const EMPTY =
+  "linear-gradient(180deg, color-mix(in oklab, var(--color-surface2) 80%, black) 0%, var(--color-surface2) 100%)";
+const TODAY_RING = `0 0 0 1.5px color-mix(in oklab, ${DEFAULT_ACCENT} 90%, transparent), `;
 
 /**
  * Treinou = gradiente com luz vindo de cima (sem sombra colorida: glow saiu do app);
  * não treinou = rebaixo sutil, como um slot vazio. Futuro = invisível.
  */
 function heatStyle(level: HeatLevel, isToday: boolean): React.CSSProperties {
-  const ring = isToday ? `0 0 0 1.5px rgba(${RGB}, 0.9), ` : "";
+  const ring = isToday ? TODAY_RING : "";
   switch (level) {
     case "future":
       return { background: "transparent" };
     case "empty":
       return {
-        background: "linear-gradient(180deg, #1c1c1e 0%, var(--color-surface2) 100%)",
+        background: EMPTY,
         boxShadow: `${ring}inset 0 1px 2px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.03)`,
       };
     case "trained":
       return {
-        background: `linear-gradient(145deg, #ada5f0 0%, #8174e8 55%, #6e63c5 100%)`,
+        background: TRAINED,
         boxShadow: `${ring}inset 0 1px 0 rgba(255, 255, 255, 0.3)`,
       };
   }

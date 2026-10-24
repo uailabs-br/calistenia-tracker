@@ -450,7 +450,7 @@ export function ExerciseCard({
               <TrophyIcon className="h-4 w-4" />
             </span>
           )}
-          <h3 className={`display truncate text-[1.625rem] leading-tight ${isSkill ? "text-ac" : ""}`}>
+          <h3 className={`display truncate text-display-sm leading-tight ${isSkill ? "text-ac" : ""}`}>
             {exercise.name}
           </h3>
         </div>
@@ -547,7 +547,7 @@ export function ExerciseCard({
             <button
               type="button"
               onClick={recordAdjusted}
-              className="btn-solid tap mt-1 flex items-center justify-center gap-2 rounded-xl py-3 font-medium active:scale-[0.99]"
+              className="btn-primary tap mt-1 flex items-center justify-center gap-2 rounded-xl py-3 font-medium active:scale-[0.99]"
             >
               <CheckIcon className="h-5 w-5" />
               Confirmar

@@ -119,7 +119,7 @@ export function RpeSheet({
           type="button"
           disabled={rpe === null}
           onClick={() => rpe !== null && onConfirm(rpe, note)}
-          className="btn-solid tap flex-1 rounded-xl py-3 font-medium transition-opacity disabled:opacity-40"
+          className="btn-primary tap flex-1 rounded-xl py-3 font-medium transition-opacity disabled:opacity-40"
         >
           Finalizar
         </button>

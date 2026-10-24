@@ -192,7 +192,7 @@ export function RestTimer({
             ) : (
               <>
                 <span
-                  className={`display text-[3.75rem] leading-none ${ending ? "anim-pulse" : ""}`}
+                  className={`display text-display-lg leading-none ${ending ? "anim-pulse" : ""}`}
                   style={{ textShadow: "0 2px 12px rgb(0 0 0 / 0.5)" }}
                 >
                   {formatClock(remaining)}

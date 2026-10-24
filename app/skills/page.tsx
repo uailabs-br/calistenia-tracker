@@ -10,7 +10,7 @@ import { getSkillLevels } from "@/lib/utils/skillLevel";
 import { BackLink } from "@/components/ui/BackLink";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ChevronRightIcon } from "@/components/ui/icons";
-import { CATEGORY_ACCENT } from "@/components/ui/accent";
+import { accentVars, CATEGORY_ACCENT } from "@/components/ui/accent";
 
 /** Mapa de progressões (em Treino): a sequência de cada skill e onde você está. */
 export default function SkillsIndexPage() {
@@ -48,8 +48,8 @@ export default function SkillsIndexPage() {
                 className="card tap flex items-center gap-3 px-4 py-3 active:scale-[0.99]"
               >
                 <span
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-mono text-xs font-semibold"
-                  style={{ background: `${accent}22`, color: accent }}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ac/14 font-mono text-xs font-semibold text-ac"
+                  style={accentVars(accent)}
                 >
                   {position}/{total}
                 </span>
