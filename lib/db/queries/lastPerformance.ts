@@ -1,7 +1,7 @@
 import { db } from "@/lib/db/schema";
 import type { Parsed } from "@/lib/plan/schema";
 import { extraSets, plannedSets } from "@/lib/domain/volume";
-import { formatExtras } from "@/lib/domain/parseTarget";
+import { formatExtras, formatSets } from "@/lib/domain/parseTarget";
 import { shortDate } from "@/lib/utils/date";
 
 export type LastPerf =
@@ -55,12 +55,7 @@ export function formatLastPerf(perf: LastPerf, parsed: Parsed | null): string {
       return `como previsto${formatExtras(perf.extra, parsed)} · ${shortDate(perf.date)}`;
     case "skipped":
       return `pulado · ${shortDate(perf.date)}`;
-    case "sets": {
-      const unit = parsed?.unit === "seconds" ? "s" : "";
-      return `${perf.values.map((v) => `${v}${unit}`).join("/")}${formatExtras(
-        perf.extra,
-        parsed
-      )} · ${shortDate(perf.date)}`;
-    }
+    case "sets":
+      return `${formatSets(perf.values, parsed)}${formatExtras(perf.extra, parsed)} · ${shortDate(perf.date)}`;
   }
 }

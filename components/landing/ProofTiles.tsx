@@ -14,8 +14,8 @@ export function ProofTiles() {
   return (
     <ul className="grid gap-3 sm:grid-cols-3">
       {TILES.map(({ Icon, title, line }) => (
-        <li key={title} className="rounded-card border border-border bg-surface p-4">
-          <Icon className="h-5 w-5 text-[var(--ac)]" />
+        <li key={title} className="card p-4">
+          <Icon className="h-5 w-5 text-ac" />
           <p className="mt-3 font-semibold">{title}</p>
           <p className="mt-1 text-sm leading-relaxed text-muted">{line}</p>
         </li>

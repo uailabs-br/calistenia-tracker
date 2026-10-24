@@ -23,13 +23,11 @@ export function PlanSwapCard({
 
   return (
     <section
-      className="anim-fade-in rounded-card border px-4 py-4"
-      style={{ borderColor: "var(--ac)" }}
+      className="anim-fade-in rounded-card border border-ac px-4 py-4"
     >
       <div className="flex items-start gap-3">
         <span
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-          style={{ background: "var(--color-surface2)", color: "var(--ac)" }}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface2 text-ac"
           aria-hidden="true"
         >
           <SparkleIcon className="h-5 w-5" />
@@ -65,7 +63,7 @@ export function PlanSwapCard({
           <button
             type="button"
             onClick={onDismiss}
-            className="tap -mr-1 rounded-lg px-2 py-1 font-mono text-[11px] text-muted"
+            className="tap -mr-1 rounded-lg px-2 py-1 font-mono text-2xs text-muted"
           >
             dispensar
           </button>

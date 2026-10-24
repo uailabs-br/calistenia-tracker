@@ -47,7 +47,7 @@ export function DataSettings() {
         title="Seus dados"
         footer={
           importError ? (
-            <span role="alert" style={{ color: "var(--color-danger)" }}>
+            <span role="alert" className="text-danger">
               {importError}
             </span>
           ) : (

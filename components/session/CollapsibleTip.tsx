@@ -5,16 +5,15 @@ import { ChevronDownIcon } from "@/components/ui/icons";
 import { ExerciseMedia } from "./ExerciseMedia";
 
 /** Texto explicativo colapsado por padrão para não ocupar a tela: "por que esse
- *  treino?" no treino e "como executar" na instrução de cada exercício. */
+ *  treino?" no treino e "como executar" na instrução de cada exercício.
+ *  Cor: `--ac` do container. */
 export function CollapsibleTip({
   tip,
-  accent,
   label = "por que esse treino?",
   media,
   mediaName = "",
 }: {
   tip: string;
-  accent: string;
   label?: string;
   /** URLs da demonstração visual; aparece junto do texto, só com o bloco aberto. */
   media?: string[] | null;
@@ -28,8 +27,7 @@ export function CollapsibleTip({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="tap flex items-center gap-1 font-mono text-xs"
-        style={{ color: accent }}
+        className="tap flex items-center gap-1 font-mono text-xs text-ac"
         aria-expanded={open}
       >
         <ChevronDownIcon
@@ -39,12 +37,9 @@ export function CollapsibleTip({
         />
         {label}
       </button>
-      {open && media && <ExerciseMedia urls={media} name={mediaName} accent={accent} />}
+      {open && media && <ExerciseMedia urls={media} name={mediaName} />}
       {open && tip && (
-        <p
-          className="mt-2 rounded-card border-l-2 bg-surface px-3 py-2 text-sm leading-relaxed text-muted"
-          style={{ borderColor: accent }}
-        >
+        <p className="mt-2 rounded-card border-l-2 border-ac bg-surface px-3 py-2 text-sm leading-relaxed text-muted">
           {tip}
         </p>
       )}

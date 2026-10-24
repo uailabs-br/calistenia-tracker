@@ -10,9 +10,9 @@ import { useHoldRepeat } from "@/lib/utils/useHoldRepeat";
  * uma série já abre o descanso (quem decide é o pai), então custa o mesmo toque
  * de quem usava o cronômetro entre as séries, e o registro fica feito na hora.
  * Só estado de tela aqui (série selecionada); séries feitas vêm de fora.
+ * Cor: `--ac` do card.
  */
 export function SetBySetPanel({
-  accent,
   unit,
   targets,
   done,
@@ -24,7 +24,6 @@ export function SetBySetPanel({
   onEditDone,
   onAddSet,
 }: {
-  accent: string;
   unit: "reps" | "seconds";
   /** Valor sugerido de cada série (o tamanho é o nº de séries). */
   targets: number[];
@@ -105,13 +104,13 @@ export function SetBySetPanel({
               onClick={() => pick(i)}
               aria-label={`Série ${i + 1}: ${value}${suffix}${isDone ? ", feita" : ""}`}
               className={`tnum flex h-11 min-w-11 items-center justify-center rounded-[10px] px-2 font-mono text-sm ${
-                isDone ? "font-medium" : isCur ? "border text-text" : "border border-dashed border-border text-muted"
+                isDone
+                  ? "bg-ac font-medium text-on-accent"
+                  : isCur
+                    ? "border border-ac/60 text-text"
+                    : "border border-dashed border-border text-muted"
               } ${popped === i ? "anim-pop" : ""}`}
-              style={{
-                ...(isDone ? { background: accent, color: "var(--color-on-accent)" } : {}),
-                ...(isCur ? { borderColor: `color-mix(in oklab, ${accent} 60%, transparent)` } : {}),
-                ...(sel === i ? { outline: "2px solid var(--color-text)", outlineOffset: 2 } : {}),
-              }}
+              style={sel === i ? { outline: "2px solid var(--color-text)", outlineOffset: 2 } : undefined}
               onAnimationEnd={() => setPopped(null)}
             >
               {value}
@@ -145,7 +144,7 @@ export function SetBySetPanel({
             <span className="display h-[4.5rem] overflow-hidden text-[4.5rem] leading-none">
               <RollingNumber value={stepperValue} />
             </span>
-            <span className="mt-1 font-mono text-[11px] text-muted">
+            <span className="mt-1 font-mono text-2xs text-muted">
               {unitLabel} · série {stepperIndex + 1}
             </span>
           </div>
@@ -166,7 +165,6 @@ export function SetBySetPanel({
             type="button"
             onClick={saveEdit}
             className="btn-primary tap flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-medium"
-            style={{ "--ac": accent } as React.CSSProperties}
           >
             <CheckIcon className="h-5 w-5" />
             Salvar série {sel + 1}
@@ -188,7 +186,6 @@ export function SetBySetPanel({
             type="button"
             onClick={logCurrent}
             className="btn-primary tap flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-medium"
-            style={{ "--ac": accent } as React.CSSProperties}
           >
             <CheckIcon className="h-5 w-5" />
             Registrar série {cur + 1}

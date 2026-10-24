@@ -1,4 +1,5 @@
-import { db, type ExerciseLog, type Session } from "@/lib/db/schema";
+import type { ExerciseLog, Session } from "@/lib/db/schema";
+import { getCompletedSessions, getLiveLogs, groupBySession } from "@/lib/db/queries/sessions";
 import { getWorkoutById, negFlagsOf, plan } from "@/lib/plan/loader";
 import { resolveLogExercise } from "@/lib/plan/resolve";
 import type { Plan } from "@/lib/plan/schema";
@@ -219,17 +220,13 @@ function buildExercises(session: Session, logs: ExerciseLog[]): AiHistoryExercis
 async function buildHistory(
   windowSessions: number
 ): Promise<{ sessions: AiHistorySession[]; anterior: AiHistorySummary[] }> {
-  const sessions = (await db.sessions.toArray())
-    .filter((s) => s.status === "completed" && !s.deleted_at)
-    .sort((a, b) => (a.started_at ?? 0) - (b.started_at ?? 0));
+  const sessions = await getCompletedSessions();
+  const logsBySession = groupBySession(await getLiveLogs());
 
   const entries: { session: Session; logs: ExerciseLog[] }[] = [];
   for (const session of sessions) {
-    const logs = (
-      await db.exerciseLogs.where("session_id").equals(session.id).toArray()
-    ).filter((l) => !l.deleted_at);
-    if (logs.length === 0) continue;
-    entries.push({ session, logs });
+    const logs = logsBySession.get(session.id);
+    if (logs) entries.push({ session, logs });
   }
 
   const planned = entries.filter((e) => e.session.workout_id);

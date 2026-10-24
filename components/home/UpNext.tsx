@@ -25,7 +25,7 @@ export function UpNext({ queue }: { queue: Workout[] }) {
           <li key={w.id}>
             <Link
               href={`/treino/${w.id}`}
-              className="tap flex items-center gap-3 rounded-card border border-border bg-surface px-4 py-3 active:scale-[0.99]"
+              className="card tap flex items-center gap-3 px-4 py-3 active:scale-[0.99]"
             >
               <span
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-mono text-xs"

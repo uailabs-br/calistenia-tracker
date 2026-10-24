@@ -10,16 +10,8 @@ const LABELS = ["início", "topo"];
  * "como executar" aberto, então nada é baixado antes disso. Offline na primeira
  * vez: a imagem falha e some, sem quebrar o resto do cartão.
  */
-export function ExerciseMedia({
-  urls,
-  name,
-  accent,
-}: {
-  urls: string[];
-  name: string;
-  /** Cor do treino; a figura é tingida com ela. */
-  accent?: string;
-}) {
+/** A figura é tingida com o `--ac` do container (a cor do treino). */
+export function ExerciseMedia({ urls, name }: { urls: string[]; name: string }) {
   const [failed, setFailed] = useState<Set<string>>(new Set());
   const shown = urls.filter((u) => !failed.has(u));
 
@@ -39,11 +31,10 @@ export function ExerciseMedia({
             <DuotoneImage
               src={url}
               alt={`${name} — ${urls.length > 1 ? LABELS[urls.indexOf(url)] : "posição"}`}
-              accent={accent}
               onError={() => setFailed((prev) => new Set(prev).add(url))}
             />
             {urls.length > 1 && (
-              <p className="mt-1 text-center font-mono text-[11px] text-muted">
+              <p className="mt-1 text-center font-mono text-2xs text-muted">
                 {LABELS[urls.indexOf(url)] ?? ""}
                 {i < shown.length - 1 ? " →" : ""}
               </p>

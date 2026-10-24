@@ -6,7 +6,6 @@
  * permanecem intactos — só a renderização falhou.
  */
 export default function Error({
-  error,
   reset,
 }: {
   error: Error & { digest?: string };
@@ -32,7 +31,7 @@ export default function Error({
       <button
         type="button"
         onClick={reset}
-        className="tap mt-5 rounded-xl bg-text px-5 py-3 font-medium text-bg"
+        className="btn-inverse tap mt-5 rounded-xl px-5 py-3 font-medium"
       >
         Tentar de novo
       </button>

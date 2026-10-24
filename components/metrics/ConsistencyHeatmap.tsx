@@ -13,10 +13,10 @@ const DAY_NAMES = ["segunda", "terça", "quarta", "quinta", "sexta", "sábado", 
 const RGB = "129, 116, 232";
 
 /**
- * Treinou = gradiente com brilho (luz vindo de cima, sombra colorida embaixo);
+ * Treinou = gradiente com luz vindo de cima (sem sombra colorida: glow saiu do app);
  * não treinou = rebaixo sutil, como um slot vazio. Futuro = invisível.
  */
-export function heatStyle(level: HeatLevel, isToday: boolean): React.CSSProperties {
+function heatStyle(level: HeatLevel, isToday: boolean): React.CSSProperties {
   const ring = isToday ? `0 0 0 1.5px rgba(${RGB}, 0.9), ` : "";
   switch (level) {
     case "future":
@@ -29,7 +29,7 @@ export function heatStyle(level: HeatLevel, isToday: boolean): React.CSSProperti
     case "trained":
       return {
         background: `linear-gradient(145deg, #ada5f0 0%, #8174e8 55%, #6e63c5 100%)`,
-        boxShadow: `${ring}inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 8px -2px rgba(${RGB}, 0.3)`,
+        boxShadow: `${ring}inset 0 1px 0 rgba(255, 255, 255, 0.3)`,
       };
   }
 }
@@ -63,7 +63,7 @@ export function ConsistencyHeatmap({ weeks }: { weeks: HeatmapDay[][] }) {
           <span
             key={`l${row}`}
             title={DAY_NAMES[row]}
-            className={`flex items-center pr-1 font-mono text-[10px] leading-none ${
+            className={`flex items-center pr-1 font-mono text-3xs leading-none ${
               row === todayRow ? "text-text" : "text-muted"
             }`}
           >
@@ -86,7 +86,7 @@ export function ConsistencyHeatmap({ weeks }: { weeks: HeatmapDay[][] }) {
         )}
       </div>
 
-      <div className="mt-3 flex items-center justify-end gap-2 text-[10px] text-muted">
+      <div className="mt-3 flex items-center justify-end gap-2 text-3xs text-muted">
         {(
           [
             ["empty", "não treinou"],

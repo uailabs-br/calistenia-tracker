@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { skillPosition, stepStatus } from "@/lib/domain/skillMap";
+import { displayedPosition, skillPosition, stepStatus } from "@/lib/domain/skillMap";
 
 // escada com etapas mapeadas (a,b,c) e marcos sem exercício (labels) + goal
 const steps = [
@@ -34,5 +34,17 @@ describe("stepStatus", () => {
     expect(stepStatus(0, 2)).toBe("done");
     expect(stepStatus(2, 2)).toBe("focus");
     expect(stepStatus(3, 2)).toBe("locked");
+  });
+});
+
+describe("displayedPosition", () => {
+  it("sem ajuste manual, vale o que os logs provam", () => {
+    expect(displayedPosition(2, undefined)).toBe(2);
+    expect(displayedPosition(2, null)).toBe(2);
+  });
+
+  it("o manual só puxa pra cima (palpite alto não se corrige sozinho)", () => {
+    expect(displayedPosition(1, 3)).toBe(3);
+    expect(displayedPosition(4, 0)).toBe(4);
   });
 });

@@ -32,7 +32,7 @@ export function LevelShowcase() {
         <figure key={level.name} className="min-w-0">
           <DuotoneImage src={`${HOST}${level.file}`} alt={level.name} lazy />
           <figcaption className="mt-2">
-            <p className="font-mono text-[11px] text-muted">{level.tag}</p>
+            <p className="font-mono text-2xs text-muted">{level.tag}</p>
             <p className="text-sm font-medium">{level.name}</p>
           </figcaption>
         </figure>

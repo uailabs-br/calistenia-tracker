@@ -76,7 +76,7 @@ function Row({ row, onReactivate }: { row: ProgressionRow; onReactivate: () => v
           {row.workouts.map((w) => (
             <span
               key={w}
-              className="rounded-full border border-border px-2 py-0.5 font-mono text-[10px] text-muted"
+              className="rounded-full border border-border px-2 py-0.5 font-mono text-3xs text-muted"
             >
               {w}
             </span>
@@ -94,7 +94,7 @@ function Row({ row, onReactivate }: { row: ProgressionRow; onReactivate: () => v
             <ChevronRightIcon className="h-3.5 w-3.5" />
           </Link>
           {row.skill.criteria && (
-            <span className="mt-0.5 block font-mono text-[11px]">
+            <span className="mt-0.5 block font-mono text-2xs">
               critério: {row.skill.criteria}
             </span>
           )}
@@ -106,7 +106,7 @@ function Row({ row, onReactivate }: { row: ProgressionRow; onReactivate: () => v
         </p>
       )}
 
-      <div className="mt-2 flex items-center justify-between gap-3 font-mono text-[11px] text-muted">
+      <div className="mt-2 flex items-center justify-between gap-3 font-mono text-2xs text-muted">
         <span>
           alvo {row.target}
           {row.lastDate ? ` · último ${shortDate(row.lastDate)}` : ""}
@@ -177,7 +177,7 @@ export default function ProgressaoPage() {
 
       <Link
         href="/config/plano?modo=novo"
-        className="tap mb-8 mt-2 flex items-center justify-between rounded-card border border-border bg-surface px-4 py-3 active:scale-[0.99]"
+        className="card tap mb-8 mt-2 flex items-center justify-between px-4 py-3 active:scale-[0.99]"
       >
         <span className="text-sm font-medium">Pedir o próximo ciclo à IA</span>
         <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted" />

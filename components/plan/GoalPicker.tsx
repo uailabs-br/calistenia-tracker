@@ -1,18 +1,10 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
-import { skills, type SkillCategory } from "@/lib/plan/skills";
+import { skills, SKILL_CATEGORIES } from "@/lib/plan/skills";
 import { getAiGoals, setAiGoals, getAiNotes, setAiNotes } from "@/lib/utils/aiPersona";
 import { CheckIcon, PlusIcon } from "@/components/ui/icons";
-
-const CAT_ACCENT: Record<SkillCategory, string> = {
-  Puxar: "#8174e8",
-  Empurrar: "#7fd1ae",
-  Core: "#f2b366",
-  Pernas: "#e88fb0",
-};
-
-const CATEGORIES: SkillCategory[] = ["Puxar", "Empurrar", "Core", "Pernas"];
+import { accentVars, CATEGORY_ACCENT } from "@/components/ui/accent";
 
 /**
  * Objetivos (skills prioritárias) + notas livres pra persona da IA. Mora em dois
@@ -53,13 +45,12 @@ export function GoalPicker({
 
   return (
     <>
-      {CATEGORIES.map((cat) => {
+      {SKILL_CATEGORIES.map((cat) => {
         const items = skills.filter((s) => s.category === cat);
         if (items.length === 0) return null;
-        const accent = CAT_ACCENT[cat];
         return (
-          <div key={cat} className="mb-5">
-            <p className="mb-2 font-mono text-xs uppercase tracking-wide text-muted">{cat}</p>
+          <div key={cat} className="mb-5" style={accentVars(CATEGORY_ACCENT[cat])}>
+            <p className="eyebrow-lg mb-2">{cat}</p>
             <div className="flex flex-wrap gap-2">
               {items.map((skill) => {
                 const active = goals.includes(skill.id);
@@ -69,12 +60,7 @@ export function GoalPicker({
                     type="button"
                     onClick={() => toggle(skill.id)}
                     aria-pressed={active}
-                    className="tap flex min-h-[44px] items-center gap-1.5 rounded-full border px-3 py-2 text-sm font-medium active:scale-[0.97]"
-                    style={
-                      active
-                        ? { background: accent, borderColor: accent, color: "var(--color-on-accent)" }
-                        : { borderColor: "var(--color-border)", color: "var(--color-text)" }
-                    }
+                    className="toggle tap flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-text active:scale-[0.97]"
                   >
                     {active && <CheckIcon className="h-3.5 w-3.5" />}
                     {skill.name}
@@ -104,14 +90,14 @@ export function GoalPicker({
             placeholder="ex: ombro direito sensível, sem acesso a paralelas essa semana…"
             rows={3}
             autoFocus={notesCollapsed}
-            className="mt-2 w-full rounded-xl border border-border bg-surface2 px-3 py-2.5 text-base outline-none placeholder:text-muted focus:border-muted"
+            className="field mt-2 py-2.5"
           />
         </>
       ) : (
         <button
           type="button"
           onClick={() => setNotesOpen(true)}
-          className="tap -ml-1 flex min-h-[44px] items-center gap-1.5 rounded-lg px-1 text-sm text-muted"
+          className="tap -ml-1 flex items-center gap-1.5 rounded-lg px-1 text-sm text-muted"
         >
           <PlusIcon className="h-4 w-4" />
           Lesão, equipamento ou outra coisa

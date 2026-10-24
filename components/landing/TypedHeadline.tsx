@@ -64,8 +64,7 @@ export function TypedHeadline() {
       <span aria-hidden className="block min-h-[1.05em]">
         {text}
         <span
-          className="anim-caret ml-1 inline-block w-[0.07em] self-stretch align-baseline"
-          style={{ background: "var(--ac)", height: "0.78em" }}
+          className="anim-caret ml-1 inline-block h-[0.78em] w-[0.07em] self-stretch bg-ac align-baseline"
         />
       </span>
       <span aria-hidden className="block">

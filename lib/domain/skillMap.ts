@@ -17,6 +17,15 @@ export function skillPosition(
   return maxAchieved + 1;
 }
 
+/**
+ * Posição exibida: o maior entre o que os logs provam e o nível marcado à mão.
+ * O manual só puxa pra cima, então um palpite alto não se corrige sozinho
+ * (regra 9 do CLAUDE.md).
+ */
+export function displayedPosition(logPosition: number, manual?: number | null): number {
+  return manual == null ? logPosition : Math.max(logPosition, manual);
+}
+
 export function stepStatus(index: number, position: number): StepStatus {
   if (index < position) return "done";
   if (index === position) return "focus";

@@ -8,7 +8,7 @@ import {
   unitOf,
   perSideOf,
 } from "@/lib/domain/parseTarget";
-import { effectiveSets, totalVolume, repsVolume } from "@/lib/domain/volume";
+import { effectiveSets, totalVolume, repsVolume, summarizeLog } from "@/lib/domain/volume";
 import type { Parsed } from "@/lib/plan/schema";
 
 const reps: Parsed = { sets: 4, target: 4, unit: "reps", per_side: false };
@@ -131,5 +131,32 @@ describe("repsVolume — total de reps da sessão", () => {
   it("inclui série extra", () => {
     const log = { ...asTarget, extra_sets: [5] };
     expect(repsVolume([{ log, parsed: reps, target: "4 × 4" }])).toBe(21);
+  });
+});
+
+describe("summarizeLog — o registro numa linha", () => {
+  const base = { as_target: false, sets: null, skipped: false, extra_sets: null };
+
+  it("séries ajustadas, com unidade e extras", () => {
+    const log = { ...base, sets: [{ index: 1, value: 18 }, { index: 0, value: 20 }], extra_sets: [15] };
+    expect(summarizeLog(log, secs)).toBe("20s/18s + extra 15s");
+  });
+
+  it("como previsto vira as séries do alvo", () => {
+    expect(summarizeLog({ ...base, as_target: true }, reps)).toBe("4/4/4/4");
+  });
+
+  it("sem parsed e sem séries cai no texto", () => {
+    expect(summarizeLog({ ...base, as_target: true }, null)).toBe("como previsto");
+    expect(summarizeLog(base, null)).toBe("feito");
+  });
+
+  it("tentativas mostram o placar; pulado é pulado", () => {
+    const attempts = {
+      ...base,
+      sets_performed: { type: "skill_consistency" as const, attempts_total: 5, attempts_good: 3 },
+    };
+    expect(summarizeLog(attempts, null)).toBe("3/5 tentativas");
+    expect(summarizeLog({ ...base, skipped: true }, reps)).toBe("pulado");
   });
 });

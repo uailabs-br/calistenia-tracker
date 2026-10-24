@@ -1,30 +1,15 @@
 "use client";
 
+import { useId } from "react";
+import type { Workout } from "@/lib/plan/schema";
 import { useModalA11y } from "@/lib/utils/useModalA11y";
+import { useTimeline } from "@/lib/utils/useTimeline";
+import { countAt, easeOutCubic, progressAt } from "@/lib/domain/timeline";
 import { Portal } from "@/components/ui/Portal";
 import { CheckIcon, TrophyIcon } from "@/components/ui/icons";
-import { StatTile } from "@/components/metrics/StatTile";
-import { formatPR, type PRResult } from "@/lib/db/queries/pr";
-
-// Leve encorajamento, sem hype vazio — uma por sessão, escolhida pelo id
-// (determinístico: não pisca entre re-renders, mas varia entre sessões).
-const ENCOURAGEMENT = [
-  "💪 mais um treino na conta",
-  "✅ consistência vencendo novamente",
-  "🔥 disciplina bateu a preguiça hoje",
-  "🎯 missão cumprida, sem desculpas",
-  "📈 evolução acontece um treino de cada vez",
-  "🚀 um treino mais perto do objetivo",
-];
-
-// Recorde é a própria celebração — substitui a frase genérica, não soma a ela.
-const PR_HEADLINE = "você se superou de novo 💪";
-
-function pickPhrase(seed: string): string {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
-  return ENCOURAGEMENT[hash % ENCOURAGEMENT.length];
-}
+import { accentVars } from "@/components/ui/accent";
+import type { PRResult } from "@/lib/db/queries/pr";
+import { ProgressionNudge } from "./ProgressionNudge";
 
 export interface SessionPR {
   id: string;
@@ -32,95 +17,254 @@ export interface SessionPR {
   pr: PRResult;
 }
 
-/** Tela de fechamento do treino: recordes da sessão + frase curta. Centralizada,
- *  fecha só por ação do usuário (botão ou toque fora) — aí sim volta pra home. */
+// Linha do tempo da entrada (ms desde a abertura). Os números sobem rápido e
+// assentam; recorde e progressão entram depois, nessa ordem.
+const T = {
+  check: 0,
+  title: 120,
+  hero: 300,
+  delta: 1250,
+  tiles: [450, 550, 650],
+  extra: 1450,
+  pr: 1350,
+  prCount: 1500,
+};
+const PR_COUNT_MS = 450;
+
+/** Entrada de bloco: sobe 10px e aparece. */
+function reveal(t: number, start: number): React.CSSProperties {
+  const r = easeOutCubic(progressAt(t, start, 320));
+  return { opacity: r, transform: `translateY(${((1 - r) * 10).toFixed(1)}px)` };
+}
+
+/**
+ * Tela de fim de treino, em tela cheia: os números do treino contando, recordes
+ * da sessão e, por último, os sinais de progressão. Sem frase motivacional: o
+ * número já diz como foi. Fecha só pelo botão (ou Esc) e volta pra home.
+ */
 export function SessionSummary({
-  accent,
+  workout,
   prs,
   exercisesDone,
+  exercisesTotal,
   repsVolume,
+  prevRepsVolume,
+  setsCount,
   extraSets = 0,
-  seed,
+  minutes,
   onClose,
 }: {
-  accent: string;
+  workout: Workout;
   prs: SessionPR[];
   /** Exercícios registrados (não pulados) nesta sessão. */
   exercisesDone: number;
+  exercisesTotal: number;
   /** Soma das reps efetivas dos exercícios em unidade "reps" (ignora holds/tentativas). */
   repsVolume: number;
+  /** Reps da última vez que este treino foi feito; null sem comparação. */
+  prevRepsVolume: number | null;
+  /** Séries planejadas feitas (as extras vêm à parte). */
+  setsCount: number;
   /** Séries feitas além do plano nesta sessão. */
   extraSets?: number;
-  seed: string;
+  minutes: number;
   onClose: () => void;
 }) {
   const ref = useModalA11y<HTMLDivElement>(onClose);
-  const hasPR = prs.length > 0;
-  const phrase = hasPR ? PR_HEADLINE : pickPhrase(seed);
+  const titleId = useId();
+  const accent = workout.accent;
+
+  // Sem recorde, a progressão sobe pro lugar dele em vez de esperar à toa.
+  const signalsAt = prs.length > 0 ? T.prCount + (prs.length - 1) * 150 + 500 : T.pr + 100;
+  const buttonAt = signalsAt + 400;
+  const t = useTimeline(buttonAt + 400);
+
+  const pop = easeOutCubic(progressAt(t, T.check, 320));
+
+  // Treino só de isometria/tentativas não tem reps: o tempo vira o número grande.
+  const hasReps = repsVolume > 0;
+  const minutesLabel = minutes === 1 ? "minuto" : "minutos";
+  const hero = hasReps
+    ? { value: repsVolume, label: "reps no treino" }
+    : { value: minutes, label: `${minutesLabel} de treino` };
+  const tiles = [
+    ...(hasReps ? [{ key: "min", value: minutes, total: null, label: minutesLabel }] : []),
+    { key: "ex", value: exercisesDone, total: exercisesTotal, label: "exercícios" },
+    { key: "sets", value: setsCount, total: null, label: setsCount === 1 ? "série" : "séries" },
+  ];
+
+  const delta = hasReps && prevRepsVolume !== null ? repsVolume - prevRepsVolume : null;
+  const deltaText =
+    delta === null
+      ? null
+      : delta > 0
+        ? `+${delta} vs. último ${workout.label}`
+        : delta < 0
+          ? `−${-delta} vs. último ${workout.label}`
+          : `igual ao último ${workout.label}`;
 
   return (
     <Portal>
       <div
-        className="anim-fade-in fixed inset-0 z-40 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
+        className="anim-fade-in fixed inset-0 z-40 overflow-y-auto bg-bg"
         role="dialog"
         aria-modal="true"
-        onClick={onClose}
+        aria-labelledby={titleId}
       >
         <div
           ref={ref}
           tabIndex={-1}
-          onClick={(e) => e.stopPropagation()}
-          className="anim-scale-in glow w-full max-w-sm rounded-2xl bg-surface2 px-6 py-7 text-center outline-none"
-          style={{ "--ac": accent } as React.CSSProperties}
+          className="mx-auto flex max-w-md flex-col gap-[22px] px-4 pb-8 outline-none"
+          style={{ ...accentVars(accent), paddingTop: "calc(env(safe-area-inset-top) + 2rem)" }}
         >
-          <span
-            className="mx-auto flex h-14 w-14 items-center justify-center rounded-full"
-            style={{ background: accent, color: "var(--color-on-accent)" }}
-            aria-hidden="true"
-          >
-            <CheckIcon className="h-7 w-7" />
-          </span>
-          <h2 className="display-caps mt-4 text-2xl">Treino concluído</h2>
-
-          <div className="mt-4 grid grid-cols-2 gap-2 text-left">
-            <StatTile value={exercisesDone} label="exercícios" accent={accent} />
-            <StatTile value={repsVolume} label="reps totais" accent={accent} />
-          </div>
-
-          {extraSets > 0 && (
-            <p className="tnum mt-3 text-sm font-medium" style={{ color: accent }}>
-              +{extraSets} {extraSets === 1 ? "série extra" : "séries extras"} além do plano
+          <header>
+            <p
+              className="eyebrow-lg"
+              style={reveal(t, T.title)}
+            >
+              Treino {workout.label} · {workout.title}
             </p>
-          )}
+            <div className="mt-1.5 flex items-center gap-2.5">
+              <span
+                className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-ac text-on-accent"
+                style={{
+                  opacity: Math.min(1, pop * 2),
+                  transform: `scale(${pop < 1 ? 0.4 + pop * 0.75 : 1})`,
+                }}
+                aria-hidden="true"
+              >
+                <CheckIcon className="h-5 w-5" />
+              </span>
+              <h2
+                id={titleId}
+                className="display-caps text-[2.375rem] leading-none"
+                style={reveal(t, T.title)}
+              >
+                Treino concluído
+              </h2>
+            </div>
+          </header>
 
-          <p className="mt-4 text-sm text-muted">{phrase}</p>
+          <section aria-label="Números do treino" className="flex flex-col gap-2.5">
+            <div className="card flex items-end justify-between gap-3 p-4">
+              <div>
+                <p
+                  className="display text-[5.25rem] leading-[0.9] text-ac"
+                  aria-label={`${hero.value} ${hero.label}`}
+                >
+                  {countAt(t, hero.value, T.hero, 950)}
+                </p>
+                <p className="mt-1.5 font-mono text-xs text-muted">{hero.label}</p>
+              </div>
+              {deltaText && (
+                <span
+                  className="tnum mb-1 shrink-0 rounded-full px-2.5 py-1 text-xs"
+                  style={{
+                    ...reveal(t, T.delta),
+                    ...(delta! > 0
+                      ? {
+                          background: "color-mix(in oklab, var(--color-success) 14%, transparent)",
+                          color: "var(--color-success)",
+                        }
+                      : { border: "1px solid var(--color-border)", color: "var(--color-muted)" }),
+                  }}
+                >
+                  {deltaText}
+                </span>
+              )}
+            </div>
 
-          {hasPR && (
-            <div className="mt-3 flex flex-col gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-left">
-              {prs.map((p) => (
-                <div key={p.id} className="flex items-center gap-2">
-                  <span className="shrink-0 text-[var(--color-gold)]" aria-hidden="true">
-                    <TrophyIcon className="h-4 w-4" />
-                  </span>
-                  <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                    {p.name}
-                  </span>
-                  <span className="tnum shrink-0 text-sm text-muted">
-                    {formatPR(p.pr)}
-                  </span>
+            <div
+              className={`grid gap-2.5 ${tiles.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}
+            >
+              {tiles.map((tile, i) => (
+                <div key={tile.key} className="card p-3">
+                  <p
+                    className="display text-[2.125rem] leading-none"
+                    aria-label={`${tile.value} ${tile.label}`}
+                  >
+                    {countAt(t, tile.value, T.tiles[i] ?? T.tiles[0], 800)}
+                    {tile.total !== null && (
+                      <span className="text-xl text-muted">/{tile.total}</span>
+                    )}
+                  </p>
+                  <p className="mt-1 font-mono text-2xs text-muted">
+                    {tile.label}
+                    {tile.key === "sets" && extraSets > 0 && (
+                      <span className="text-ac" style={{ opacity: progressAt(t, T.extra, 300) }}>
+                        {" "}+{extraSets} extra
+                      </span>
+                    )}
+                  </p>
                 </div>
               ))}
             </div>
+          </section>
+
+          {prs.length > 0 && (
+            <section aria-label="Recordes" style={reveal(t, T.pr)}>
+              <p className="eyebrow mb-2">
+                {prs.length === 1 ? "Recorde" : "Recordes"}
+              </p>
+              <ul
+                className="rounded-card border"
+                style={{
+                  borderColor: "color-mix(in oklab, var(--color-gold) 25%, var(--color-border))",
+                  background: "color-mix(in oklab, var(--color-gold) 5%, var(--color-surface))",
+                }}
+              >
+                {prs.map((p, i) => {
+                  const start = T.prCount + i * 150;
+                  const done = t >= start + PR_COUNT_MS;
+                  // tranco curto quando o número chega no recorde
+                  const bump = done && t < start + PR_COUNT_MS + 250;
+                  const u = p.pr.unit === "seconds" ? "s" : "";
+                  return (
+                    <li
+                      key={p.id}
+                      className={`flex items-center gap-3 px-4 py-3 ${i > 0 ? "border-t border-border" : ""}`}
+                    >
+                      <span className="shrink-0 text-gold" aria-hidden="true">
+                        <TrophyIcon className="h-5 w-5" />
+                      </span>
+                      <span className="min-w-0 flex-1 truncate font-medium">{p.name}</span>
+                      <span
+                        className="tnum shrink-0 text-sm text-muted"
+                        aria-label={`de ${p.pr.previous} para ${p.pr.value}${p.pr.unit === "seconds" ? " segundos" : " reps"}`}
+                      >
+                        {p.pr.previous}
+                        {u} →{" "}
+                        <span
+                          className="display inline-block text-2xl text-gold"
+                          style={{
+                            transform: `scale(${bump ? 1.25 : 1})`,
+                            transition: "transform 0.18s cubic-bezier(0.3, 1.6, 0.5, 1)",
+                          }}
+                        >
+                          {countAt(t, p.pr.value, start, PR_COUNT_MS, p.pr.previous)}
+                          {u}
+                        </span>
+                        {u ? "" : " reps"}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
           )}
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="btn-primary tap mt-6 w-full rounded-xl py-3 font-medium"
-            style={{ "--ac": accent } as React.CSSProperties}
-          >
-            Voltar pro início
-          </button>
+          <ProgressionNudge workout={workout} accent={accent} style={reveal(t, signalsAt)} />
+
+          {/* entrada no invólucro: transform inline no botão mataria o :active */}
+          <div style={reveal(t, buttonAt)}>
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn-primary tap w-full rounded-xl py-3.5 font-medium"
+            >
+              Voltar pro início
+            </button>
+          </div>
         </div>
       </div>
     </Portal>

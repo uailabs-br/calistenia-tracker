@@ -55,7 +55,7 @@ export function StepHeader({
     <>
       <BackButton onBack={onBack} />
       <header className="pt-2 pb-5">
-        <p className="font-mono text-xs uppercase tracking-wide text-muted">
+        <p className="eyebrow-lg">
           Passo {step} de {total}
         </p>
         <h1 className="display-caps text-3xl">{title}</h1>
@@ -63,8 +63,7 @@ export function StepHeader({
           {Array.from({ length: total }, (_, i) => (
             <span
               key={i}
-              className="h-1 flex-1 rounded-full"
-              style={{ background: i < step ? "var(--ac)" : "var(--color-surface2)" }}
+              className={`h-1 flex-1 rounded-full ${i < step ? "bg-ac" : "bg-surface2"}`}
             />
           ))}
         </div>
@@ -88,11 +87,10 @@ function ChoiceCard({
     <button
       type="button"
       onClick={onClick}
-      className="tap flex w-full items-center gap-3 rounded-card border border-border bg-surface px-4 py-4 text-left active:scale-[0.99]"
+      className="card tap flex w-full items-center gap-3 px-4 py-4 text-left active:scale-[0.99]"
     >
       <span
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
-        style={{ background: "var(--color-surface2)", color: "var(--ac)" }}
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface2 text-ac"
         aria-hidden="true"
       >
         <Icon className="h-5 w-5" />
@@ -160,7 +158,7 @@ export function WriteStep({
         onChange={(e) => onChange(e.target.value)}
         placeholder={"Treino A\nBarra fixa 4x6\nFlexão 3x12…"}
         rows={8}
-        className="mt-2 w-full rounded-card border border-border bg-surface px-4 py-3 text-base outline-none placeholder:text-muted focus:border-muted"
+        className="card mt-2 w-full px-4 py-3 text-base outline-none placeholder:text-muted focus:border-muted"
       />
       <button type="button" onClick={onNext} disabled={!value.trim()} className={`${PRIMARY} mt-4`}>
         Continuar
@@ -287,11 +285,10 @@ export function PasteStep({
 
       {failure && (
         <div
-          className="anim-fade-in mt-4 rounded-card border px-4 py-3"
-          style={{ borderColor: "var(--color-danger)" }}
+          className="anim-fade-in mt-4 rounded-card border border-danger px-4 py-3"
           role="alert"
         >
-          <p className="text-sm font-medium" style={{ color: "var(--color-danger)" }}>
+          <p className="text-sm font-medium text-danger">
             {FAIL_TITLE[failure.reason]}
           </p>
           <p className="mt-1 text-sm text-muted">
@@ -332,7 +329,7 @@ export function PasteStep({
         }}
         placeholder="Toque e segure pra colar"
         rows={4}
-        className="mt-2 w-full rounded-card border border-border bg-surface px-4 py-3 text-base outline-none placeholder:text-muted focus:border-muted"
+        className="card mt-2 w-full px-4 py-3 text-base outline-none placeholder:text-muted focus:border-muted"
       />
       {value.trim() && !failure && (
         <button type="button" onClick={() => onSubmit(value)} className={`${SECONDARY} mt-3`}>

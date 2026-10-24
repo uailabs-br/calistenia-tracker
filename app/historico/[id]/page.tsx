@@ -1,17 +1,18 @@
 "use client";
 
 import { use } from "react";
-import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
-import { db, type ExerciseLog } from "@/lib/db/schema";
+import type { ExerciseLog } from "@/lib/db/schema";
+import { getSessionDetail } from "@/lib/db/queries/sessions";
 import { getWorkoutById } from "@/lib/plan/loader";
 import { getCatalogExercise } from "@/lib/plan/catalog";
 import { resolveLogExercise } from "@/lib/plan/resolve";
 import type { PlanExercise } from "@/lib/plan/schema";
-import { extraSets, plannedSets } from "@/lib/domain/volume";
-import { formatExtras } from "@/lib/domain/parseTarget";
+import { summarizeLog } from "@/lib/domain/volume";
 import { longDate, formatDuration } from "@/lib/utils/date";
-import { ChevronLeftIcon, CheckIcon } from "@/components/ui/icons";
+import { BackLink } from "@/components/ui/BackLink";
+import { CheckIcon } from "@/components/ui/icons";
+import { DEFAULT_ACCENT } from "@/components/ui/accent";
 
 export default function SessionDetailPage({
   params,
@@ -20,24 +21,9 @@ export default function SessionDetailPage({
 }) {
   const { id } = use(params);
 
-  const data = useLiveQuery(async () => {
-    const session = await db.sessions.get(id);
-    if (!session || session.deleted_at) return null;
-    const logs = (
-      await db.exerciseLogs.where("session_id").equals(id).toArray()
-    ).filter((l) => !l.deleted_at);
-    return { session, logs };
-  }, [id]);
+  const data = useLiveQuery(() => getSessionDetail(id), [id]);
 
-  const backLink = (
-    <Link
-      href="/historico"
-      className="tap -ml-2 mb-2 inline-flex items-center gap-1 pt-6 text-sm text-muted"
-    >
-      <ChevronLeftIcon className="h-4 w-4" />
-      Histórico
-    </Link>
-  );
+  const backLink = <BackLink href="/historico" label="Histórico" />;
 
   if (data === undefined) {
     return <div className="px-4">{backLink}</div>;
@@ -55,7 +41,7 @@ export default function SessionDetailPage({
   const { session, logs } = data;
   const isFreeform = session.source === "freeform";
   const day = isFreeform ? undefined : (session.workout_id ? getWorkoutById(session.workout_id) : undefined);
-  const accent = day?.accent ?? "#8174e8";
+  const accent = day?.accent ?? DEFAULT_ACCENT;
   const duration =
     session.started_at && session.ended_at
       ? formatDuration(session.started_at, session.ended_at)
@@ -134,14 +120,14 @@ export default function SessionDetailPage({
             <div className="flex flex-col gap-2">
               {day.blocks.map((block) => (
                 <div key={block.label}>
-                  <p className="mb-1 mt-3 font-mono text-[11px] uppercase tracking-wide text-muted">
+                  <p className="eyebrow mb-1 mt-3">
                     {block.label}
                   </p>
                   <ul className="flex flex-col gap-2">
                     {block.exercises.map((ex) => (
                       <li
                         key={ex.id}
-                        className="rounded-card border border-border bg-surface px-4 py-3"
+                        className="card px-4 py-3"
                       >
                         <ExerciseRow
                           exercise={withSnapshotTarget(ex, logByExercise.get(ex.id))}
@@ -195,14 +181,14 @@ function OutsideSection({
   if (rows.length === 0) return null;
   return (
     <div>
-      <p className="mb-1 mt-4 font-mono text-[11px] uppercase tracking-wide text-muted">
+      <p className="eyebrow mb-1 mt-4">
         {title}
       </p>
       <ul className="flex flex-col gap-2">
         {rows.map(({ log, exercise }) => (
           <li
             key={log.id}
-            className="rounded-card border border-border bg-surface px-4 py-3"
+            className="card px-4 py-3"
           >
             <ExerciseRow exercise={exercise} isSkill={false} accent={accent} log={log} />
           </li>
@@ -235,7 +221,7 @@ function ExerciseRow({
         </span>
         <span className="flex shrink-0 items-center gap-2">
           <span className="tnum text-sm text-muted">
-            {log ? summarize(log, exercise.parsed, exercise.target) : "sem registro"}
+            {log ? summarizeLog(log, exercise.parsed, exercise.target) : "sem registro"}
           </span>
           {done && (
             <span
@@ -266,21 +252,4 @@ function ExerciseRow({
       )}
     </>
   );
-}
-
-function summarize(
-  log: ExerciseLog,
-  parsed: PlanExercise["parsed"],
-  target: string
-): string {
-  if (log.skipped) return "pulado";
-  if (log.sets_performed?.type === "skill_consistency") {
-    const { attempts_good, attempts_total } = log.sets_performed;
-    return `${attempts_good}/${attempts_total} tentativas`;
-  }
-  const extra = formatExtras(extraSets(log), parsed);
-  const s = plannedSets(log, parsed, target);
-  if (s.length === 0) return `${log.as_target ? "como previsto" : "feito"}${extra}`;
-  const unit = parsed?.unit === "seconds" ? "s" : "";
-  return `${s.map((v) => `${v}${unit}`).join("/")}${extra}`;
 }

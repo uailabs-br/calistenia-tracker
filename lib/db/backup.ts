@@ -2,6 +2,7 @@ import { z } from "zod";
 import { db, type Session, type ExerciseLog, type CustomExercise } from "@/lib/db/schema";
 import { plan, PLAN_OVERRIDE_KEY } from "@/lib/plan/loader";
 import { legacyWeekdayMapFromStorage } from "@/lib/plan/legacyPlan";
+import { SKILL_CATEGORIES } from "@/lib/plan/skills";
 
 const BACKUP_FORMAT = "calistenia-tracker-backup";
 const BACKUP_VERSION = 2;
@@ -98,7 +99,7 @@ const logSchema = z.object({
 const customExerciseSchema = z.object({
   id: z.string(),
   name: z.string(),
-  category: z.enum(["Puxar", "Empurrar", "Core", "Pernas"]),
+  category: z.enum(SKILL_CATEGORIES),
   unit: z.enum(["reps", "seconds"]),
   per_side: z.boolean(),
   sets: z.number(),

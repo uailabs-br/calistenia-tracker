@@ -1,3 +1,5 @@
+import { accentVars } from "./accent";
+
 /**
  * Ilustração do RepDB na paleta do app. O dataset só tem arquivo opaco, com
  * fundo azul claro, que briga com a UI escura. A correção é duotone em CSS puro:
@@ -27,7 +29,7 @@ export function DuotoneImage({
   return (
     <div
       className={`relative isolate overflow-hidden rounded-card bg-black ${className}`}
-      style={accent ? ({ "--ac": accent } as React.CSSProperties) : undefined}
+      style={accent ? accentVars(accent) : undefined}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -42,7 +44,7 @@ export function DuotoneImage({
         onError={onError}
         className="aspect-square w-full object-cover [filter:grayscale(1)_invert(1)_brightness(1.08)]"
       />
-      <span aria-hidden className="absolute inset-0 bg-[var(--ac)] mix-blend-multiply" />
+      <span aria-hidden className="absolute inset-0 bg-ac mix-blend-multiply" />
     </div>
   );
 }

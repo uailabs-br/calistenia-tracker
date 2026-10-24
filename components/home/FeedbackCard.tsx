@@ -50,8 +50,7 @@ export function FeedbackCard({
           <button
             type="button"
             onClick={send}
-            className="tap text-sm font-medium"
-            style={{ color: "var(--ac)" }}
+            className="tap text-sm font-medium text-ac"
           >
             Mandar mensagem
           </button>

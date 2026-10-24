@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { CheckIcon } from "@/components/ui/icons";
+import { accentVars, DEFAULT_ACCENT as ACCENT } from "@/components/ui/accent";
 
 /**
  * O cartão de sessão de verdade, tocável, no topo da página. É o herói porque a
@@ -11,7 +12,6 @@ import { CheckIcon } from "@/components/ui/icons";
  * Conteúdo fixo de propósito: nada aqui sai de `plan.json`, que vem do
  * localStorage e quebraria a hidratação desta página estática (regra 10).
  */
-const ACCENT = "#8174e8";
 
 const EXERCISES = [
   { name: "Muscle-up negativa", target: "3 × 3", last: "3, 3, 2" },
@@ -51,7 +51,7 @@ export function OneTapDemo() {
   return (
     <div
       className="flex flex-col gap-2"
-      style={{ "--ac": ACCENT } as React.CSSProperties}
+      style={accentVars(ACCENT)}
       aria-label="Demonstração: registrar uma série com um toque"
     >
       {EXERCISES.map((ex, i) => {
@@ -81,7 +81,7 @@ export function OneTapDemo() {
           return (
             <div
               key={ex.name}
-              className="flex items-center justify-between gap-3 rounded-card border border-border bg-surface px-4 py-3"
+              className="card flex items-center justify-between gap-3 px-4 py-3"
             >
               <p className="truncate font-medium text-muted">{ex.name}</p>
               <span className="tnum shrink-0 text-xs text-muted">{ex.target}</span>

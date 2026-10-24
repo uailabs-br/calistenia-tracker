@@ -1,4 +1,5 @@
-import { db, type Session, type ExerciseLog } from "@/lib/db/schema";
+import type { Session } from "@/lib/db/schema";
+import { getCompletedSessions, getLiveLogs, groupBySession } from "./sessions";
 import { plan } from "@/lib/plan/loader";
 import { resolveLogExercise } from "@/lib/plan/resolve";
 import { totalVolume } from "@/lib/domain/volume";
@@ -39,9 +40,7 @@ export async function getWeekReview(monday?: string): Promise<WeekReview | null>
   const reviewMonday = monday ?? shiftDays(weekStartKey(localDateKey()), -7);
   const prevMonday = shiftDays(reviewMonday, -7);
 
-  const sessions = (await db.sessions.toArray()).filter(
-    (s) => s.status === "completed" && !s.deleted_at
-  );
+  const sessions = await getCompletedSessions();
   const inWeek = (s: Session, mon: string) => {
     const diff = daysBetween(mon, s.date);
     return diff >= 0 && diff <= 6;
@@ -51,13 +50,7 @@ export async function getWeekReview(monday?: string): Promise<WeekReview | null>
   if (lastWeek.length === 0) return null;
   const prevWeek = sessions.filter((s) => inWeek(s, prevMonday));
 
-  const logs = (await db.exerciseLogs.toArray()).filter((l) => !l.deleted_at);
-  const logsBySession = new Map<string, ExerciseLog[]>();
-  for (const l of logs) {
-    const arr = logsBySession.get(l.session_id) ?? [];
-    arr.push(l);
-    logsBySession.set(l.session_id, arr);
-  }
+  const logsBySession = groupBySession(await getLiveLogs());
 
   // Volume da semana: soma dos volumes por log, com o parsed do dia da sessão
   const volumeOf = (weekSessions: Session[]) => {
@@ -108,9 +101,7 @@ export async function getWeekReview(monday?: string): Promise<WeekReview | null>
 /** Segundas (mais recente → antiga) de semanas passadas com treino, para consulta. */
 export async function getReviewableWeeks(): Promise<string[]> {
   const currentMonday = weekStartKey(localDateKey());
-  const sessions = (await db.sessions.toArray()).filter(
-    (s) => s.status === "completed" && !s.deleted_at
-  );
+  const sessions = await getCompletedSessions();
   const weeks = new Set<string>();
   for (const s of sessions) {
     const wk = weekStartKey(s.date);

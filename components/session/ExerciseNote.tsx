@@ -9,11 +9,9 @@ import { ChevronDownIcon } from "@/components/ui/icons";
  */
 export function ExerciseNote({
   value,
-  accent,
   onCommit,
 }: {
   value: string;
-  accent: string;
   onCommit: (value: string) => void;
 }) {
   const [open, setOpen] = useState(value.trim().length > 0);
@@ -40,7 +38,7 @@ export function ExerciseNote({
         />
         nota{" "}
         {!open && value.trim().length > 0 && (
-          <span style={{ color: accent }}>· 1</span>
+          <span className="text-ac">· 1</span>
         )}
       </button>
       {open && (
@@ -53,7 +51,7 @@ export function ExerciseNote({
           placeholder="Ex: punho doeu no 3º set"
           rows={2}
           aria-label="Nota do exercício"
-          className="mt-1 w-full resize-none rounded-xl border border-border bg-surface2 px-3 py-2 text-base outline-none placeholder:text-muted focus:border-muted"
+          className="field mt-1 resize-none py-2"
         />
       )}
     </div>

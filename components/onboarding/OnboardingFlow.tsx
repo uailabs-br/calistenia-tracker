@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { db } from "@/lib/db/schema";
+import { hasLiveSessions } from "@/lib/db/queries/sessions";
 import {
   aboveTopSeed,
   GOALS,
@@ -48,8 +48,31 @@ type Step =
   | "frequencia"
   | "resumo";
 
+const STEPS: Step[] = [
+  "nome",
+  "equipamento",
+  "nivel",
+  "limitacoes",
+  "objetivo",
+  "frequencia",
+  "resumo",
+];
+
 /** "plano" é desvio a partir do resumo, não um passo da sequência. */
 type View = "step" | "plano";
+
+const SAVE_ERROR =
+  "Não consegui salvar neste navegador. Confira se o armazenamento do site está liberado.";
+
+/** Pergunta do passo e a explicação embaixo. */
+function StepHeading({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <>
+      <h1 className="display text-[2.125rem] leading-[1.1]">{title}</h1>
+      <p className="mt-2.5 text-md leading-relaxed text-muted">{children}</p>
+    </>
+  );
+}
 
 function OptionButton({
   selected,
@@ -68,11 +91,7 @@ function OptionButton({
       role="radio"
       aria-checked={selected}
       onClick={onClick}
-      className="tap w-full rounded-card border px-4 py-3 text-left active:scale-[0.99]"
-      style={{
-        borderColor: selected ? "var(--ac)" : "var(--color-border)",
-        background: selected ? "var(--ac-bg)" : "var(--color-surface)",
-      }}
+      className="option tap w-full rounded-card px-4 py-3 text-left active:scale-[0.99]"
     >
       <span className="block font-medium">{label}</span>
       {hint && <span className="mt-0.5 block text-sm text-muted">{hint}</span>}
@@ -152,11 +171,9 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
     if (!redo) {
       // Só sessões VIVAS, igual ao decidePlanBoot: contar as apagadas faria o
       // usuário que deletou tudo pingar entre "/" e "/onboarding" pra sempre.
-      db.sessions
-        .toArray()
-        .then((rows) => {
-          if (rows.some((r) => !r.deleted_at)) router.replace("/");
-        });
+      void hasLiveSessions().then((used) => {
+        if (used) router.replace("/");
+      });
       return;
     }
     setName(getProfileName());
@@ -170,19 +187,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
     if (prev.limitations) setLimitations(prev.limitations);
   }, [redo, router]);
 
-  const steps: Step[] = useMemo(
-    () => [
-      "nome",
-      "equipamento",
-      "nivel",
-      "limitacoes",
-      "objetivo",
-      "frequencia",
-      "resumo",
-    ],
-    [equipment]
-  );
-  const step = steps[Math.min(index, steps.length - 1)];
+  const step = STEPS[Math.min(index, STEPS.length - 1)];
   const isLast = step === "resumo" && view === "step";
 
   // Toda troca de tela começa do topo. O miolo é remontado (key), o que já
@@ -193,13 +198,10 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
     window.scrollTo({ top: 0 });
   }, [index, view]);
 
-  const answers: OnboardingAnswers = {
-    equipment,
-    level,
-    goal,
-    limitations,
-    days_per_week: days,
-  };
+  const answers: OnboardingAnswers = useMemo(
+    () => ({ equipment, level, goal, limitations, days_per_week: days }),
+    [equipment, level, goal, limitations, days]
+  );
   const suggested = suggestSeed(answers);
   const acimaDasSementes = aboveTopSeed(answers);
   const seedId: SeedId | "current" = chosenSeed ?? (redo ? "current" : suggested);
@@ -234,7 +236,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
       window.location.assign(dest ?? (redo ? "/plano" : "/"));
     } catch {
       setFinishing(false);
-      setError("Não consegui salvar neste navegador. Confira se o armazenamento do site está liberado.");
+      setError(SAVE_ERROR);
     }
   };
 
@@ -250,14 +252,14 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
       // Pular não grava respostas, mas o equipamento já respondido manda na
       // escolha da semente — ver skipSeed.
       const id = skipSeed({
-        equipmentAnswered: index > steps.indexOf("equipamento"),
+        equipmentAnswered: index > STEPS.indexOf("equipamento"),
         equipment,
       });
       applyPlan(getSeed(id)!.plan);
       window.location.assign("/");
     } catch {
       setFinishing(false);
-      setError("Não consegui salvar neste navegador. Confira se o armazenamento do site está liberado.");
+      setError(SAVE_ERROR);
     }
   };
 
@@ -273,13 +275,13 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
         className="h-1 shrink-0 overflow-hidden rounded-full bg-surface2"
         role="progressbar"
         aria-valuemin={1}
-        aria-valuemax={steps.length}
+        aria-valuemax={STEPS.length}
         aria-valuenow={index + 1}
         aria-label="Progresso do onboarding"
       >
         <div
-          className="h-full rounded-full transition-all duration-500"
-          style={{ width: `${((index + 1) / steps.length) * 100}%`, background: "var(--ac)" }}
+          className="h-full rounded-full bg-ac transition-all duration-500"
+          style={{ width: `${((index + 1) / STEPS.length) * 100}%` }}
         />
       </div>
 
@@ -314,12 +316,11 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
         <div className="my-auto w-full py-1">
         {view === "plano" && (
           <>
-            <h1 className="display text-[2.125rem] leading-[1.1]">Escolher o plano</h1>
-            <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-muted">
+            <StepHeading title="Escolher o plano">
               {redo
                 ? "Trocar de plano não apaga nada do histórico, mas muda os treinos daqui pra frente."
                 : "São planos escritos à mão. O sugerido combina com o que você respondeu."}
-            </p>
+            </StepHeading>
             <div role="radiogroup" aria-label="Plano" className="mt-4 flex flex-col gap-2">
               {redo && (
                 <OptionButton
@@ -351,12 +352,11 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
 
         {view === "step" && step === "nome" && (
           <>
-            <h1 className="display text-[2.125rem] leading-[1.1]">{redo ? "Refazer suas respostas" : "Como te chamo?"}</h1>
-            <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-muted">
+            <StepHeading title={redo ? "Refazer suas respostas" : "Como te chamo?"}>
               {redo
                 ? "Seu histórico fica intacto — vamos só reconferir seu nível e seu equipamento."
                 : "Aparece só na sua saudação. Pode deixar em branco."}
-            </p>
+            </StepHeading>
             <input
               type="text"
               value={name}
@@ -365,17 +365,16 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
               aria-label="Seu nome"
               maxLength={30}
               autoComplete="given-name"
-              className="mt-5 w-full rounded-xl border border-border bg-surface2 px-3 py-3 text-base outline-none placeholder:text-muted focus:border-muted"
+              className="field mt-5 py-3"
             />
           </>
         )}
 
         {view === "step" && step === "equipamento" && (
           <>
-            <h1 className="display text-[2.125rem] leading-[1.1]">Onde você treina?</h1>
-            <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-muted">
+            <StepHeading title="Onde você treina?">
               Montamos seu treino com o que você tem à mão.
-            </p>
+            </StepHeading>
             <div className="mt-4">
               <Choices
                 label="Onde você treina"
@@ -389,10 +388,9 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
 
         {view === "step" && step === "nivel" && (
           <>
-            <h1 className="display text-[2.125rem] leading-[1.1]">Qual seu nível atual?</h1>
-            <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-muted">
+            <StepHeading title="Qual seu nível atual?">
               Na dúvida, fique com o menor — seu treino sobe de nível sozinho conforme você evolui.
-            </p>
+            </StepHeading>
             <div className="mt-4">
               <Choices
                 label="Seu nível"
@@ -406,21 +404,16 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
 
         {view === "step" && step === "limitacoes" && (
           <>
-            <h1 className="display text-[2.125rem] leading-[1.1]">Alguma dor ou limitação hoje?</h1>
-            <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-muted">
+            <StepHeading title="Alguma dor ou limitação hoje?">
               Pode marcar mais de uma. Nada sai do seu treino — serve pra você, e
               pra IA do próximo ciclo, pegar leve na região.
-            </p>
+            </StepHeading>
             <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Dor ou limitação">
               <button
                 type="button"
                 aria-pressed={limitations.length === 0}
                 onClick={() => setLimitations([])}
-                className="tap rounded-full border px-4 py-2.5 text-sm font-medium active:scale-[0.98]"
-                style={{
-                  borderColor: limitations.length === 0 ? "var(--ac)" : "var(--color-border)",
-                  background: limitations.length === 0 ? "var(--ac-bg)" : "var(--color-surface)",
-                }}
+                className="option tap rounded-full px-4 py-2.5 text-sm font-medium active:scale-[0.98]"
               >
                 Nada por enquanto
               </button>
@@ -436,11 +429,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
                         on ? l.filter((v) => v !== o.value) : [...l, o.value]
                       )
                     }
-                    className="tap rounded-full border px-4 py-2.5 text-sm font-medium active:scale-[0.98]"
-                    style={{
-                      borderColor: on ? "var(--ac)" : "var(--color-border)",
-                      background: on ? "var(--ac-bg)" : "var(--color-surface)",
-                    }}
+                    className="option tap rounded-full px-4 py-2.5 text-sm font-medium active:scale-[0.98]"
                   >
                     {o.label}
                   </button>
@@ -457,11 +446,10 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
 
         {view === "step" && step === "objetivo" && (
           <>
-            <h1 className="display text-[2.125rem] leading-[1.1]">Qual seu foco principal?</h1>
-            <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-muted">
+            <StepHeading title="Qual seu foco principal?">
               Pra onde você quer evoluir primeiro. Guia a IA no próximo ciclo e não
               muda o plano de agora — skills específicas você escolhe em Treino.
-            </p>
+            </StepHeading>
             <div
               role="radiogroup"
               aria-label="Seu foco principal"
@@ -474,11 +462,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
                   role="radio"
                   aria-checked={o.value === goal}
                   onClick={() => setGoal(o.value)}
-                  className="tap flex min-h-[7rem] flex-col items-center justify-center gap-1 rounded-card border px-4 py-5 text-center active:scale-[0.99]"
-                  style={{
-                    borderColor: o.value === goal ? "var(--ac)" : "var(--color-border)",
-                    background: o.value === goal ? "var(--ac-bg)" : "var(--color-surface)",
-                  }}
+                  className="option tap flex min-h-[7rem] flex-col items-center justify-center gap-1 rounded-card px-4 py-5 text-center active:scale-[0.99]"
                 >
                   <span className="block text-lg font-semibold">{o.label}</span>
                   <span className="block text-sm leading-snug text-muted">{o.hint}</span>
@@ -490,8 +474,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
 
         {view === "step" && step === "frequencia" && (
           <>
-            <h1 className="display text-[2.125rem] leading-[1.1]">Quantos dias por semana?</h1>
-            <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-muted">Escolha o que cabe na sua rotina de verdade.</p>
+            <StepHeading title="Quantos dias por semana?">Escolha o que cabe na sua rotina de verdade.</StepHeading>
             <div className="mt-6 flex justify-center gap-3" role="radiogroup" aria-label="Dias por semana">
               {DAYS_OPTIONS.map((d) => (
                 <button
@@ -500,11 +483,9 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
                   role="radio"
                   aria-checked={d === days}
                   onClick={() => setDays(d)}
-                  className="tap h-14 w-14 rounded-2xl text-xl font-semibold tnum active:scale-95"
-                  style={{
-                    background: d === days ? "var(--ac)" : "var(--color-surface2)",
-                    color: d === days ? "var(--color-on-accent)" : "var(--color-text)",
-                  }}
+                  className={`tap h-14 w-14 rounded-2xl text-xl font-semibold tnum active:scale-95 ${
+                    d === days ? "bg-ac text-on-accent" : "bg-surface2 text-text"
+                  }`}
                 >
                   {d}
                 </button>
@@ -516,15 +497,14 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
 
         {view === "step" && step === "resumo" && (
           <>
-            <h1 className="display text-[2.125rem] leading-[1.1]">{redo ? "Tudo certo" : "Seu ponto de partida"}</h1>
-            <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-muted">
+            <StepHeading title={redo ? "Tudo certo" : "Seu ponto de partida"}>
               {redo
                 ? "É assim que o app passa a te ver. Seu histórico não muda."
                 : "Pronto — é daqui que você começa."}
-            </p>
+            </StepHeading>
 
-            <div className="mt-3 rounded-card border border-border bg-surface p-3.5">
-              <p className="font-mono text-xs uppercase tracking-wide text-muted">Onde você começa</p>
+            <div className="card mt-3 p-3.5">
+              <p className="eyebrow-lg">Onde você começa</p>
               <ul className="mt-2 flex flex-col gap-0.5">
                 {ladder.map((r) => (
                   <SummaryRow key={r.key} label={SKILL_SHORT_LABEL[r.key]} value={r.label} />
@@ -544,7 +524,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
               </ul>
             </div>
 
-            <div className="mt-2 rounded-card border border-border bg-surface p-3.5">
+            <div className="card mt-2 p-3.5">
               <p className="font-medium">{chosen ? chosen.name : currentPlanName}</p>
               <p className="mt-0.5 line-clamp-2 text-sm text-muted">
                 {chosen ? chosen.summary : "Seus treinos continuam os mesmos."}
@@ -560,10 +540,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
                   (escrever um é curadoria), então o app aponta a saída que ele já
                   tem: o plano vem de fora, escrito pela IA, e entra pelo import. */}
               {acimaDasSementes && (
-                <p
-                  className="mt-1.5 rounded-xl px-3 py-1.5 text-sm"
-                  style={{ background: "var(--ac-bg)" }}
-                >
+                <p className="mt-1.5 rounded-xl bg-ac-bg px-3 py-1.5 text-sm">
                   Estes planos param no intermediário — pelo que você respondeu,
                   vão te ficar fáceis.
                 </p>
@@ -572,8 +549,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
                 <button
                   type="button"
                   onClick={() => setView("plano")}
-                  className="tap text-sm font-medium underline underline-offset-4 active:opacity-70"
-                  style={{ color: "var(--ac)" }}
+                  className="tap text-sm font-medium text-ac underline underline-offset-4 active:opacity-70"
                 >
                   Trocar de plano
                 </button>
@@ -582,8 +558,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
                     type="button"
                     disabled={finishing}
                     onClick={() => finish("/config/plano?modo=meu")}
-                    className="tap text-sm font-medium underline underline-offset-4 active:opacity-70"
-                    style={{ color: "var(--ac)" }}
+                    className="tap text-sm font-medium text-ac underline underline-offset-4 active:opacity-70"
                   >
                     Trazer meu plano
                   </button>
@@ -596,7 +571,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
       </div>
 
       {error && (
-        <p role="alert" className="mt-3 shrink-0 text-sm" style={{ color: "var(--color-danger)" }}>
+        <p role="alert" className="mt-3 shrink-0 text-sm text-danger">
           {error}
         </p>
       )}
@@ -606,8 +581,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
           <button
             type="button"
             onClick={() => setView("step")}
-            className="tap flex-1 rounded-xl py-3.5 font-semibold active:scale-[0.99]"
-            style={{ background: "var(--ac)", color: "var(--color-on-accent)" }}
+            className="btn-solid tap flex-1 rounded-xl py-3.5 font-semibold active:scale-[0.99]"
           >
             Usar este plano
           </button>
@@ -627,8 +601,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
               type="button"
               onClick={next}
               disabled={finishing}
-              className="tap flex-1 rounded-xl py-3.5 font-semibold active:scale-[0.99] disabled:opacity-60"
-              style={{ background: "var(--ac)", color: "var(--color-on-accent)" }}
+              className="btn-solid tap flex-1 rounded-xl py-3.5 font-semibold active:scale-[0.99] disabled:opacity-60"
             >
               {isLast ? (finishing ? "Salvando..." : redo ? "Salvar" : "Começar") : "Continuar"}
             </button>

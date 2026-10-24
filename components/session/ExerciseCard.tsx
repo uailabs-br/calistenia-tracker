@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import type { PlanExercise } from "@/lib/plan/schema";
 import type { ExerciseLog, SetPerformed, SetValue } from "@/lib/db/schema";
-import { adjustSets, formatExtras, parseRestSeconds, targetSets, unitOf } from "@/lib/domain/parseTarget";
-import { extraSets, plannedSets } from "@/lib/domain/volume";
+import { adjustSets, parseRestSeconds, targetSets, unitOf } from "@/lib/domain/parseTarget";
+import { plannedSets, summarizeLog } from "@/lib/domain/volume";
 import { exerciseSkillMapping } from "@/lib/plan/skills";
 import { isClean } from "@/lib/db/queries/progressionReady";
 import {
@@ -23,6 +23,7 @@ import { AttemptsCounter } from "./AttemptsCounter";
 import { CollapsibleTip } from "./CollapsibleTip";
 import { getExerciseMedia } from "@/lib/plan/media";
 import { haptic } from "@/lib/utils/haptics";
+import { accentVars } from "@/components/ui/accent";
 
 export interface RecordInput {
   as_target: boolean;
@@ -166,6 +167,17 @@ export function ExerciseCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [log?.id]);
 
+  // Flags e nota também são gravadas fora do card (sheet do "como foi?", que
+  // abre ao fechar o exercício): segue o banco, senão o card reaberto mostraria
+  // a cópia antiga e o próximo toque sobrescreveria o que foi marcado.
+  const logFlagsKey = log?.flags_selected.join("|");
+  useEffect(() => {
+    if (!log) return;
+    setFlags(log.flags_selected);
+    setNote(log.note ?? "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [logFlagsKey, log?.note]);
+
   // Quantas séries o plano pede. Séries além disso, criadas no "Ajustar", viram
   // séries EXTRAS. Exercício adicionado não tem plano: toda série é "planejada".
   const plannedCount = added ? Infinity : adjustSets(parsed, exercise.target).length;
@@ -217,7 +229,7 @@ export function ExerciseCard({
 
   const baseInput = () => ({
     flags_selected: flags,
-    note: note.trim() ? note.trim() : null,
+    note: note.trim() || null,
   });
 
   const record = (input: RecordInput) => {
@@ -235,20 +247,14 @@ export function ExerciseCard({
       ...baseInput(),
     });
 
-  const recordAdjusted = () => {
-    // séries novas além do plano viram extras (somadas às que já existiam)
-    const newExtras = values.slice(plannedCount);
+  const recordAdjusted = () =>
     record({
       as_target: false,
       sets: plannedValues.map((value, index) => ({ index, value })),
-      ...(newExtras.length > 0
-        ? { extra_sets: [...(log?.extra_sets ?? []), ...newExtras] }
-        : {}),
       skipped: false,
       sets_performed: skillPerformed(),
       ...baseInput(),
     });
-  };
 
   const recordAttempts = () =>
     record({
@@ -318,7 +324,7 @@ export function ExerciseCard({
         as_target: log.as_target,
         sets: log.sets,
         flags_selected: next,
-        note: note.trim() ? note.trim() : null,
+        note: note.trim() || null,
         skipped: false,
         sets_performed:
           log.sets_performed && log.sets_performed.type !== "skill_consistency"
@@ -335,7 +341,7 @@ export function ExerciseCard({
         as_target: log.as_target,
         sets: log.sets,
         flags_selected: flags,
-        note: value.trim() ? value.trim() : null,
+        note: value.trim() || null,
         skipped: false,
         sets_performed: log.sets_performed,
       });
@@ -356,13 +362,16 @@ export function ExerciseCard({
   const inProgress = !done && !skipped && partial.length > 0;
   const setUnit = unitOf(parsed, exercise.target) === "seconds" ? "seconds" : "reps";
   const unitSuffix = setUnit === "seconds" ? "s" : "";
+  const stepperUnit = parsed?.unit === "seconds" ? "s" : "";
 
   // ── Card colapsado ─────────────────────────────────────────────────
   if (!active) {
     return (
       <div
-        className={`flex items-stretch rounded-card border border-border bg-surface transition-colors duration-200 ${kick === "on" ? "anim-kick" : ""}`}
-        style={done ? { borderColor: accent } : undefined}
+        className={`flex items-stretch rounded-card border bg-surface transition-colors duration-200 ${
+          done ? "border-ac" : "border-border"
+        } ${kick === "on" ? "anim-kick" : ""}`}
+        style={accentVars(accent)}
         {...kickProps}
       >
         <button
@@ -376,30 +385,27 @@ export function ExerciseCard({
                 {hasPR && (
                   <span
                     aria-label="novo recorde nesta sessão"
-                    className="shrink-0 text-[var(--color-gold)]"
+                    className="shrink-0 text-gold"
                   >
                     <TrophyIcon className="h-3.5 w-3.5" />
                   </span>
                 )}
-                <p
-                  className="truncate font-medium"
-                  style={isSkill ? { color: accent } : undefined}
-                >
+                <p className={`truncate font-medium ${isSkill ? "text-ac" : ""}`}>
                   {exercise.name}
                 </p>
               </div>
-              <p className="tnum text-xs text-muted">
-                {skipped
-                  ? "pulado"
-                  : inProgress
+              {/* Pendente fica numa linha só: o alvo já está à direita. */}
+              {(skipped || inProgress || done) && (
+                <p className="tnum text-xs text-muted">
+                  {inProgress
                     ? partial.map((v) => `${v}${unitSuffix}`).join("/")
-                    : summarize(log, parsed, exercise.target) ?? exercise.target}
-              </p>
+                    : log && summarizeLog(log, parsed, exercise.target)}
+                </p>
+              )}
             </div>
             {done ? (
               <span
-                className="anim-pop flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
-                style={{ background: accent, color: "var(--color-on-accent)" }}
+                className="anim-pop flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ac text-on-accent"
                 aria-label="concluído"
               >
                 <CheckIcon className="h-4 w-4" />
@@ -416,8 +422,7 @@ export function ExerciseCard({
             type="button"
             onClick={onAddExtra}
             aria-label={`Adicionar série extra de ${exercise.name}`}
-            className="tap flex shrink-0 items-center gap-1 border-l border-border px-3 font-mono text-[11px] active:scale-[0.98]"
-            style={{ color: accent }}
+            className="tap flex shrink-0 items-center gap-1 border-l border-border px-3 font-mono text-2xs text-ac active:scale-[0.98]"
           >
             <PlusIcon className="h-3.5 w-3.5" />
             extra
@@ -431,8 +436,8 @@ export function ExerciseCard({
   return (
     <div
       ref={cardRef}
-      className={`scroll-mt-20 rounded-card border bg-surface px-4 py-4 ${kick === "on" ? "anim-kick" : kick === "done" ? "" : "anim-fade-in-up"}`}
-      style={{ borderColor: accent }}
+      className={`scroll-mt-20 rounded-card border border-ac bg-surface px-4 py-4 ${kick === "on" ? "anim-kick" : kick === "done" ? "" : "anim-fade-in-up"}`}
+      style={accentVars(accent)}
       {...kickProps}
     >
       <div className="flex items-baseline justify-between gap-2">
@@ -440,15 +445,12 @@ export function ExerciseCard({
           {hasPR && (
             <span
               aria-label="novo recorde nesta sessão"
-              className="shrink-0 text-[var(--color-gold)]"
+              className="shrink-0 text-gold"
             >
               <TrophyIcon className="h-4 w-4" />
             </span>
           )}
-          <h3
-            className="display truncate text-[1.625rem] leading-tight"
-            style={isSkill ? { color: accent } : undefined}
-          >
+          <h3 className={`display truncate text-[1.625rem] leading-tight ${isSkill ? "text-ac" : ""}`}>
             {exercise.name}
           </h3>
         </div>
@@ -461,7 +463,6 @@ export function ExerciseCard({
       </p>
       <CollapsibleTip
         tip={exercise.obs}
-        accent={accent}
         label="como executar"
         media={getExerciseMedia(exercise.id)}
         mediaName={exercise.name}
@@ -482,7 +483,6 @@ export function ExerciseCard({
               type="button"
               onClick={recordAttempts}
               className="btn-primary tap flex items-center justify-center gap-2 rounded-xl py-3 font-medium"
-              style={{ "--ac": accent } as React.CSSProperties}
             >
               <CheckIcon className="h-5 w-5" />
               Confirmar
@@ -490,7 +490,6 @@ export function ExerciseCard({
           </div>
         ) : setBySet ? (
           <SetBySetPanel
-            accent={accent}
             unit={setUnit}
             targets={values}
             done={doneSets}
@@ -508,7 +507,6 @@ export function ExerciseCard({
               type="button"
               onClick={recordAsTarget}
               className="btn-primary tap flex flex-1 items-center justify-center gap-2 rounded-xl py-3 font-medium"
-              style={{ "--ac": accent } as React.CSSProperties}
             >
               <CheckIcon className="h-5 w-5" />
               Fiz como previsto
@@ -517,58 +515,39 @@ export function ExerciseCard({
               type="button"
               onClick={startAdjust}
               className="btn-secondary tap rounded-xl px-4 font-medium"
-              style={{ "--ac": accent } as React.CSSProperties}
             >
               Ajustar
             </button>
           </div>
         ) : (
+          // Ajustar à mão: só tentativas sem placar chegam aqui (o resto é série a série).
           <div className="anim-fade-in flex flex-col gap-2">
             {values.map((v, i) => (
-              <div key={i}>
-                {i === plannedCount && (
-                  <p className="mb-1 mt-1 font-mono text-[11px] uppercase tracking-wide text-muted">
-                    Séries extras
-                  </p>
+              <div key={i} className="flex items-center gap-2">
+                <Stepper
+                  index={i}
+                  value={v}
+                  unit={stepperUnit}
+                  onChange={(next) =>
+                    setValues((prev) => prev.map((x, j) => (j === i ? next : x)))
+                  }
+                />
+                {values.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeRow(i)}
+                    aria-label={`Remover série ${i + 1}`}
+                    className="tap ml-auto flex shrink-0 items-center justify-center rounded-lg text-muted active:scale-95 active:text-danger"
+                  >
+                    <TrashIcon className="h-5 w-5" />
+                  </button>
                 )}
-                <div className="flex items-center gap-2">
-                  <Stepper
-                    index={i}
-                    value={v}
-                    unit={parsed?.unit === "seconds" ? "s" : ""}
-                    onChange={(next) =>
-                      setValues((prev) => prev.map((x, j) => (j === i ? next : x)))
-                    }
-                  />
-                  {values.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeRow(i)}
-                      aria-label={`Remover série ${i + 1}`}
-                      className="tap ml-auto flex shrink-0 items-center justify-center rounded-lg text-muted active:scale-95 active:text-danger"
-                    >
-                      <TrashIcon className="h-5 w-5" />
-                    </button>
-                  )}
-                </div>
               </div>
             ))}
-            {supportsExtra && (
-              <button
-                type="button"
-                onClick={addRow}
-                className="tap flex items-center justify-center gap-2 rounded-xl border border-dashed border-border py-2.5 text-sm font-medium active:scale-[0.99]"
-                style={{ color: accent }}
-              >
-                <PlusIcon className="h-4 w-4" />
-                {added || values.length < plannedCount ? "Série" : "Série extra"}
-              </button>
-            )}
             <button
               type="button"
               onClick={recordAdjusted}
-              className="tap mt-1 flex items-center justify-center gap-2 rounded-xl py-3 font-medium active:scale-[0.99]"
-              style={{ background: accent, color: "var(--color-on-accent)" }}
+              className="btn-solid tap mt-1 flex items-center justify-center gap-2 rounded-xl py-3 font-medium active:scale-[0.99]"
             >
               <CheckIcon className="h-5 w-5" />
               Confirmar
@@ -581,7 +560,7 @@ export function ExerciseCard({
         <div className="anim-fade-in mt-3 border-t border-border pt-3">
           {extraVals.length > 0 && (
             <>
-              <p className="mb-2 font-mono text-[11px] uppercase tracking-wide text-muted">
+              <p className="eyebrow mb-2">
                 Séries extras
               </p>
               <div className="flex flex-col gap-2">
@@ -590,7 +569,7 @@ export function ExerciseCard({
                     <Stepper
                       index={loggedPlannedCount + i}
                       value={v}
-                      unit={parsed?.unit === "seconds" ? "s" : ""}
+                      unit={stepperUnit}
                       onChange={(next) =>
                         editExtras(
                           extraVals.map((x, j) => (j === i ? Math.max(1, next) : x))
@@ -613,8 +592,7 @@ export function ExerciseCard({
           <button
             type="button"
             onClick={() => void addExtra()}
-            className="tap mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border py-2.5 text-sm font-medium active:scale-[0.99]"
-            style={{ color: accent }}
+            className="tap mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border py-2.5 text-sm font-medium text-ac active:scale-[0.99]"
           >
             <PlusIcon className="h-4 w-4" />
             Série extra
@@ -622,14 +600,14 @@ export function ExerciseCard({
         </div>
       )}
 
-      <FlagChips
-        flags={exercise.flags}
-        selected={flags}
-        accent={accent}
-        onToggle={toggleFlag}
-      />
-
-      <ExerciseNote value={note} accent={accent} onCommit={commitNote} />
+      {/* "Como foi?" e nota são marcados no sheet que abre ao fechar o exercício;
+          aqui só aparecem pra corrigir, com o card de um exercício já feito. */}
+      {done && (
+        <>
+          <FlagChips flags={exercise.flags} selected={flags} onToggle={toggleFlag} />
+          <ExerciseNote value={note} onCommit={commitNote} />
+        </>
+      )}
 
       <div className="mt-3 flex items-center justify-between gap-2">
         {onRest ? (
@@ -637,20 +615,19 @@ export function ExerciseCard({
             type="button"
             onClick={() => onRest(restSeconds)}
             aria-label={`Iniciar descanso de ${restSeconds}s`}
-            className="tap flex items-center gap-1.5 rounded-lg border border-border bg-surface2 px-2.5 py-1.5 font-mono text-[11px] text-muted active:scale-[0.98]"
-            style={{ color: accent }}
+            className="tap flex items-center gap-1.5 rounded-lg border border-border bg-surface2 px-2.5 py-1.5 font-mono text-2xs text-ac active:scale-[0.98]"
           >
             <TimerIcon className="h-3.5 w-3.5" />
             {exercise.rest || `descanso ${restSeconds}s`}
           </button>
         ) : (
-          <p className="font-mono text-[11px] text-muted">{exercise.rest}</p>
+          <p className="font-mono text-2xs text-muted">{exercise.rest}</p>
         )}
         {added && !log ? (
           <button
             type="button"
             onClick={onRemove}
-            className="tap -mr-1 rounded-lg px-2 py-1 font-mono text-[11px] text-muted"
+            className="tap -mr-1 rounded-lg px-2 py-1 font-mono text-2xs text-muted"
           >
             remover do treino
           </button>
@@ -658,7 +635,7 @@ export function ExerciseCard({
           <button
             type="button"
             onClick={recordSkipped}
-            className="tap -mr-1 rounded-lg px-2 py-1 font-mono text-[11px] text-muted"
+            className="tap -mr-1 rounded-lg px-2 py-1 font-mono text-2xs text-muted"
           >
             pular exercício
           </button>
@@ -686,21 +663,4 @@ function seedAdjustValues(
     { length: target.length },
     (_, i) => last[i] ?? last[last.length - 1] ?? target[i]
   );
-}
-
-function summarize(
-  log: ExerciseLog | undefined,
-  parsed: PlanExercise["parsed"],
-  targetText: string
-): string | null {
-  if (!log || log.skipped) return null;
-  if (log.sets_performed?.type === "skill_consistency") {
-    const { attempts_good, attempts_total } = log.sets_performed;
-    return `${attempts_good}/${attempts_total} tentativas`;
-  }
-  const extra = formatExtras(extraSets(log), parsed);
-  const s = plannedSets(log, parsed, targetText);
-  if (s.length === 0) return `${log.as_target ? "como previsto" : "feito"}${extra}`;
-  const unit = parsed?.unit === "seconds" ? "s" : "";
-  return `${s.map((v) => `${v}${unit}`).join("/")}${extra}`;
 }

@@ -8,7 +8,7 @@ export function PageHeader({
   return (
     <header className="pt-8 pb-5">
       {subtitle && (
-        <p className="font-mono text-xs uppercase tracking-wide text-muted">
+        <p className="eyebrow-lg">
           {subtitle}
         </p>
       )}

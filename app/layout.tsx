@@ -48,7 +48,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0e0e0f",
+  themeColor: "#0e0e0f", // = --color-bg (metadata não lê variável CSS)
   width: "device-width",
   initialScale: 1,
   // zoom liberado (WCAG 1.4.4). Inputs usam 16px p/ evitar auto-zoom do iOS.

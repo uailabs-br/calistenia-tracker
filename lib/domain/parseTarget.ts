@@ -109,10 +109,15 @@ export function formatValue(value: number, parsed: Parsed | null): string {
   return parsed.unit === "seconds" ? `${value}s` : String(value);
 }
 
+/** Séries em sequência com a unidade (ex: "8/8/6", "20s/20s"). */
+export function formatSets(values: number[], parsed: Parsed | null): string {
+  return values.map((v) => formatValue(v, parsed)).join("/");
+}
+
 /** " + extra 6/5" a partir das séries extras (vazio sem extras). */
 export function formatExtras(extra: number[], parsed: Parsed | null): string {
   if (extra.length === 0) return "";
-  return ` + extra ${extra.map((v) => formatValue(v, parsed)).join("/")}`;
+  return ` + extra ${formatSets(extra, parsed)}`;
 }
 
 /**

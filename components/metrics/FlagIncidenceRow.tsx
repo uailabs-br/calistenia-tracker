@@ -15,7 +15,7 @@ export function FlagIncidenceRow({
   const occ = item.series.filter((p) => p.occurred).length;
   const total = item.series.length;
   return (
-    <div className="rounded-card border border-border bg-surface px-4 py-3">
+    <div className="card px-4 py-3">
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-sm font-medium">{item.flag}</span>
         <span className="tnum text-xs text-muted">

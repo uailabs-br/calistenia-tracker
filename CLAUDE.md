@@ -9,7 +9,7 @@ Serwist (PWA), Zod. Visão geral em [README.md](README.md); documentação em [d
 
 ```bash
 npm run dev            # http://localhost:3000
-npm test               # Vitest (515 testes) — o gate principal
+npm test               # Vitest (536 testes) — o gate principal
 npx tsc --noEmit       # typecheck (strict)
 npm run validate:plan  # valida plan.json + catalog.json contra o schema Zod
 npm run build          # valida o plano e depois builda (o build falha se o plano estiver inválido)
@@ -89,6 +89,10 @@ de exercícios. Lista completa com os porquês em [docs/IDEAS.md](docs/IDEAS.md)
   (sobretudo a decisão que não é óbvia), não o quê.
 - `lib/domain/` é puro e testável: sem React e sem Dexie em runtime (tipo de
   `lib/db/schema` entra como `import type`, nunca o `db`).
+- UI segue o [design system](docs/DESIGN-SYSTEM.md): cor e tamanho saem de token (nada de
+  hex ou `text-[11px]` em componente), a cor do treino entra por `accentVars()` no container
+  e é herdada (portal não herda), seleção visual vem do `aria-pressed`/`aria-checked`, e todo
+  overlay usa `Dialog`/`Sheet` de `components/ui/Modal.tsx`.
 - Teste novo junto da feature, em `test/`. Fixtures em `test/fixtures/`.
 
 ## Documentação

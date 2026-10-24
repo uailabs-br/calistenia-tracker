@@ -20,7 +20,7 @@ export function FeatureGrid() {
     <ul className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
       {FEATURES.map(({ Icon, text }) => (
         <li key={text} className="flex items-start gap-3">
-          <Icon className="mt-0.5 h-5 w-5 shrink-0 text-[var(--ac)]" />
+          <Icon className="mt-0.5 h-5 w-5 shrink-0 text-ac" />
           <span className="text-sm leading-relaxed">{text}</span>
         </li>
       ))}

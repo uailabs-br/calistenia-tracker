@@ -12,11 +12,10 @@ export function PlanBuilderCard({ first }: { first: boolean }) {
   return (
     <Link
       href="/config/plano"
-      className="anim-fade-in tap flex items-center gap-3 rounded-card border border-border bg-surface px-4 py-3 active:scale-[0.99]"
+      className="card anim-fade-in tap flex items-center gap-3 px-4 py-3 active:scale-[0.99]"
     >
       <span
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-        style={{ background: "var(--color-surface2)", color: "var(--ac)" }}
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface2 text-ac"
         aria-hidden="true"
       >
         <SparkleIcon className="h-5 w-5" />

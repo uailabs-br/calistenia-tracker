@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "@/lib/db/schema";
+import { getCompletedSessionsOn, hadCompletedSession } from "@/lib/db/queries/sessions";
 import { getWorkoutById, plan } from "@/lib/plan/loader";
 import { getActiveSession, getLastPlanWorkoutId } from "@/lib/db/repositories/sessions";
 import { getOverview, getWeekStatus } from "@/lib/db/queries/metrics";
@@ -43,10 +43,7 @@ export default function HomePage() {
   const next = queue[0] ?? null;
   const upNext = queue.slice(1);
 
-  const todayRows = useLiveQuery(async () => {
-    const rows = await db.sessions.where("date").equals(todayKey).toArray();
-    return rows.filter((s) => s.status === "completed" && !s.deleted_at);
-  }, [todayKey]);
+  const todayRows = useLiveQuery(() => getCompletedSessionsOn(todayKey), [todayKey]);
   const donePlanToday = (todayRows ?? []).filter((s) => s.source === "plan");
   const freeformToday = (todayRows ?? []).find((s) => s.source === "freeform") ?? null;
   const completedToday = donePlanToday.length > 0;
@@ -57,14 +54,10 @@ export default function HomePage() {
   // Ontem/anteontem tiveram ALGUM treino (plano ou avulso)? Cobre "esqueci de
   // registrar" — o CTA de avulso continua aparecendo pra esses dias mesmo
   // depois de hoje já estar concluído.
-  const pastDaysDone = useLiveQuery(async () => {
-    const dates = PAST_LABELS.map((_, i) => shiftDays(todayKey, -(i + 1)));
-    const rows = await db.sessions.where("date").anyOf(dates).toArray();
-    const done = new Set(
-      rows.filter((s) => s.status === "completed" && !s.deleted_at).map((s) => s.date)
-    );
-    return dates.map((date) => done.has(date));
-  }, [todayKey]);
+  const pastDaysDone = useLiveQuery(
+    () => hadCompletedSession(PAST_LABELS.map((_, i) => shiftDays(todayKey, -(i + 1)))),
+    [todayKey]
+  );
 
   const activeWorkout = active?.workout_id ? getWorkoutById(active.workout_id) : undefined;
 

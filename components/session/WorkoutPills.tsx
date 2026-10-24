@@ -42,8 +42,7 @@ export function WorkoutPills({
                 {isNext && " · próximo"}
               </span>
               <span
-                className="mt-0.5 max-w-[7rem] truncate text-sm font-medium"
-                style={{ color: active ? "var(--color-text)" : "var(--color-muted)" }}
+                className={`mt-0.5 max-w-[7rem] truncate text-sm font-medium ${active ? "text-text" : "text-muted"}`}
               >
                 {w.title}
               </span>

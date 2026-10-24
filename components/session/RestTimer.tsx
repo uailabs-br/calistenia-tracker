@@ -98,7 +98,7 @@ export function RestTimer({
           >
             {finished ? "✓" : formatClock(remaining)}
           </span>
-          <span className="font-mono text-xs uppercase tracking-wide text-muted">
+          <span className="eyebrow-lg">
             descanso
           </span>
         </button>
@@ -197,7 +197,7 @@ export function RestTimer({
                 >
                   {formatClock(remaining)}
                 </span>
-                <span className="mt-1.5 font-mono text-xs uppercase tracking-wide text-muted">
+                <span className="eyebrow-lg mt-1.5">
                   descanso
                 </span>
               </>

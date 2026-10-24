@@ -96,7 +96,7 @@ export function PRMoment({
         <button
           type="button"
           onClick={onClose}
-          className="pr-cut tap mx-auto w-full max-w-md text-left font-mono text-[11px] uppercase tracking-[0.1em] text-muted"
+          className="pr-cut tap mx-auto w-full max-w-md text-left font-mono text-2xs uppercase tracking-[0.1em] text-muted"
           style={at(1250)}
         >
           toque pra fechar

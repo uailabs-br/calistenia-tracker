@@ -9,6 +9,7 @@ import {
   PlayIcon,
   CheckIcon,
 } from "@/components/ui/icons";
+import { accentVars } from "@/components/ui/accent";
 
 /** Hero do painel: o próximo treino da sequência, com CTA de 1 toque e exercícios. */
 export function NextWorkoutCard({
@@ -34,7 +35,7 @@ export function NextWorkoutCard({
   return (
     <section
       className="anim-fade-in-up glow rounded-card p-5"
-      style={{ "--ac": workout.accent, background: workout.accent_bg } as React.CSSProperties}
+      style={{ ...accentVars(workout.accent), background: workout.accent_bg }}
     >
       <div className="flex items-center gap-2">
         <span
@@ -61,7 +62,7 @@ export function NextWorkoutCard({
       <Link
         href={`/treino/${workout.id}`}
         className="btn-primary tap mt-4 flex w-full items-center justify-center rounded-xl py-3.5 text-center font-semibold"
-        style={{ "--ac": workout.accent } as React.CSSProperties}
+        style={accentVars(workout.accent)}
       >
         {activeHere ? "Continuar treino" : "Começar treino"}
       </Link>

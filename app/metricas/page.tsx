@@ -21,8 +21,7 @@ import {
   getBestHold,
   getActivityHeatmap,
 } from "@/lib/db/queries/metrics";
-
-const AC = "#8174e8"; // accent neutro das métricas (roxo MU)
+import { DEFAULT_ACCENT as AC } from "@/components/ui/accent";
 
 export default function MetricasPage() {
   const overview = useLiveQuery(() => getOverview(), []);
@@ -77,7 +76,7 @@ export default function MetricasPage() {
 
           {/* Equilíbrio entre treinos: quantas vezes cada um foi feito */}
           <h2 className="mb-2 mt-6 text-sm font-semibold">Equilíbrio entre treinos</h2>
-          <div className="flex flex-col gap-2 rounded-card border border-border bg-surface px-4 py-3">
+          <div className="card flex flex-col gap-2 px-4 py-3">
             {overview.balanceByWorkout.map((b) => (
               <div key={b.id} className="flex items-center gap-3">
                 <span className="w-8 font-mono text-xs text-muted">{b.label}</span>
@@ -96,7 +95,7 @@ export default function MetricasPage() {
 
           {/* Calendário de constância: cada quadrado é um dia */}
           <h2 className="mb-2 mt-6 text-sm font-semibold">Últimas 12 semanas</h2>
-          <div className="rounded-card border border-border bg-surface px-4 py-3">
+          <div className="card px-4 py-3">
             {heatmap && <ConsistencyHeatmap weeks={heatmap} />}
           </div>
 
@@ -124,7 +123,7 @@ export default function MetricasPage() {
           {/* Volume por exercício */}
           <h2 className="mb-2 mt-6 text-sm font-semibold">Volume por exercício</h2>
           {exercises && exercises.length > 0 ? (
-            <div className="rounded-card border border-border bg-surface px-4 py-3">
+            <div className="card px-4 py-3">
               <div className="relative">
                 <select
                   value={exId}

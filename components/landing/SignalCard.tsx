@@ -1,10 +1,10 @@
+import { DEFAULT_ACCENT as ACCENT } from "@/components/ui/accent";
+
 /**
  * O "Sinal de progressão" como o app mostra no fim do treino. Copiado do visual
  * de components/session/ProgressionNudge.tsx: ver o aviso vale mais que ler a
  * explicação do critério.
  */
-const ACCENT = "#8174e8";
-
 export function SignalCard() {
   return (
     <section

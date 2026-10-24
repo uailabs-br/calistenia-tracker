@@ -1,6 +1,6 @@
 import progressionsData from "./progressions.json";
 import catalogData from "./catalog.json";
-import { getCriteria, formatCriteria, WORKOUT_SKILL_LABELS } from "./skills";
+import { getCriteria, formatCriteria, SKILL_CATEGORIES, WORKOUT_SKILL_LABELS } from "./skills";
 
 /** Chaves técnicas de equipamento das escadas → pt-BR, pra IA ler sem decodificar. */
 const EQUIPMENT_PT: Record<string, string> = {
@@ -70,7 +70,7 @@ interface RawCatalogItem {
  * batizar o mesmo movimento com outro id, o passado do atleta nele desaparece da
  * leitura. Não é lista fechada — é a lista dos ids que já têm dono.
  */
-const CATALOG_IDS = ["Puxar", "Empurrar", "Core", "Pernas"]
+const CATALOG_IDS = SKILL_CATEGORIES
   .map((cat) => {
     const items = (catalogData as RawCatalogItem[]).filter((e) => e.category === cat);
     return `${cat}:\n${items.map((e) => `  ${e.id} = ${e.name}`).join("\n")}`;

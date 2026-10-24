@@ -45,7 +45,7 @@ export function CustomExercisesCard() {
               className="flex items-center justify-between gap-3 border-b border-border px-4 py-3 last:border-b-0"
             >
               <div className="min-w-0">
-                <p className="text-[15px] font-medium leading-snug">{c.name}</p>
+                <p className="text-md font-medium leading-snug">{c.name}</p>
                 <p className="text-xs text-muted">
                   {c.category} · {c.unit === "reps" ? "repetições" : "tempo"}
                   {c.per_side ? " · por lado" : ""}
@@ -55,8 +55,7 @@ export function CustomExercisesCard() {
                 type="button"
                 onClick={() => setToDelete(c)}
                 aria-label={`Apagar ${c.name}`}
-                className="tap shrink-0 rounded-lg px-3 text-sm"
-                style={{ color: "var(--color-danger)" }}
+                className="tap shrink-0 rounded-lg px-3 text-sm text-danger"
               >
                 Apagar
               </button>

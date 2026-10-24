@@ -30,6 +30,7 @@
 | Documento | O que é |
 |---|---|
 | [`ACOMPANHAMENTO.md`](ACOMPANHAMENTO.md) | Diário de execução, da v1 à atual. Status geral por etapa no topo, entradas datadas abaixo (mais recente primeiro). **Etapa 7 — validação com 1 semana de uso real — é a única aberta.** As entradas antigas são registro: não reescrever. |
+| [`DESIGN-SYSTEM.md`](DESIGN-SYSTEM.md) | Tokens, utilitários (`btn-*`, `card`, `field`, `toggle`…) e componentes de UI, com as regras de uso, as decisões e as inconsistências visuais que esperam protótipo. |
 | [`IDEAS.md`](IDEAS.md) | Backlog e decisões em aberto. **Só ideias — nada aqui está aprovado pra implementar.** Pendências hoje: lembrete por push (arquitetura desenhada, implementação adiada), referência técnica visual, e o checkpoint do mapa de skills. Inclui os guard-rails do produto — o que *não* copiar. |
 
 ### Registros — planos de execução

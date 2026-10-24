@@ -55,7 +55,7 @@ export function ReminderSettings() {
       title="Lembrete"
       footer={
         perm === "denied" ? (
-          <span style={{ color: "var(--color-warn)" }}>
+          <span className="text-warn">
             O navegador bloqueou as notificações. Libere nas configurações do
             navegador para ativar o lembrete.
           </span>

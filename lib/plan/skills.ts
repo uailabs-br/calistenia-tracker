@@ -13,7 +13,9 @@
 import progressionsData from "./progressions.json";
 import { plan } from "./loader";
 
-export type SkillCategory = "Puxar" | "Empurrar" | "Core" | "Pernas";
+/** As categorias na ordem de exibição (seletores, catálogo, backup). */
+export const SKILL_CATEGORIES = ["Puxar", "Empurrar", "Core", "Pernas"] as const;
+export type SkillCategory = (typeof SKILL_CATEGORIES)[number];
 
 export interface SkillStep {
   label: string;

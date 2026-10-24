@@ -3,15 +3,14 @@
 import { useState } from "react";
 import { ChevronDownIcon } from "@/components/ui/icons";
 
+/** Correção do "como foi?" no card já registrado. Cor: `--ac` do card. */
 export function FlagChips({
   flags,
   selected,
-  accent,
   onToggle,
 }: {
   flags: string[];
   selected: string[];
-  accent: string;
   onToggle: (flag: string) => void;
 }) {
   const [open, setOpen] = useState(selected.length > 0);
@@ -32,12 +31,12 @@ export function FlagChips({
         />
         como foi?{" "}
         {selected.length > 0 && !open && (
-          <span style={{ color: accent }}>· {selected.length}</span>
+          <span className="text-ac">· {selected.length}</span>
         )}
       </button>
       {open && (
         <>
-          <p className="mb-1.5 text-[11px] text-muted">se foi a maioria das reps</p>
+          <p className="mb-1.5 text-2xs text-muted">se foi a maioria das reps</p>
           <div className="flex flex-wrap gap-2">
             {flags.map((flag) => {
               const on = selected.includes(flag);
@@ -47,12 +46,7 @@ export function FlagChips({
                   type="button"
                   onClick={() => onToggle(flag)}
                   aria-pressed={on}
-                  className="tap rounded-full border px-3 text-sm transition-colors duration-200"
-                  style={
-                    on
-                      ? { background: accent, borderColor: accent, color: "var(--color-on-accent)" }
-                      : { borderColor: "var(--color-border)", color: "var(--color-muted)" }
-                  }
+                  className="toggle tap rounded-full px-3 text-sm text-muted transition-colors duration-200"
                 >
                   {flag}
                 </button>

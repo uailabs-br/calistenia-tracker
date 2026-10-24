@@ -5,18 +5,12 @@ import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
 import { skills, skillStepExerciseIds } from "@/lib/plan/skills";
 import { getFirstCleanSuccess } from "@/lib/db/queries/skillProgress";
-import { skillPosition } from "@/lib/domain/skillMap";
+import { displayedPosition, skillPosition } from "@/lib/domain/skillMap";
 import { getSkillLevels } from "@/lib/utils/skillLevel";
 import { BackLink } from "@/components/ui/BackLink";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ChevronRightIcon } from "@/components/ui/icons";
-
-const CAT_ACCENT: Record<string, string> = {
-  Puxar: "#8174e8",
-  Empurrar: "#7fd1ae",
-  Core: "#f2b366",
-  Pernas: "#e88fb0",
-};
+import { CATEGORY_ACCENT } from "@/components/ui/accent";
 
 /** Mapa de progressões (em Treino): a sequência de cada skill e onde você está. */
 export default function SkillsIndexPage() {
@@ -40,18 +34,18 @@ export default function SkillsIndexPage() {
       <ul className="flex flex-col gap-2">
         {skills.map((skill) => {
           const total = skill.steps.length;
-          const logPosition = skillPosition(skill.steps, achieved);
-          const override = manual[skill.id];
-          const position =
-            override !== undefined ? Math.max(logPosition, override) : logPosition;
+          const position = displayedPosition(
+            skillPosition(skill.steps, achieved),
+            manual[skill.id]
+          );
           const done = position >= total;
-          const accent = CAT_ACCENT[skill.category] ?? "var(--ac)";
+          const accent = CATEGORY_ACCENT[skill.category];
           const focus = done ? null : skill.steps[position];
           return (
             <li key={skill.id}>
               <Link
                 href={`/skills/${skill.id}`}
-                className="tap flex items-center gap-3 rounded-card border border-border bg-surface px-4 py-3 active:scale-[0.99]"
+                className="card tap flex items-center gap-3 px-4 py-3 active:scale-[0.99]"
               >
                 <span
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-mono text-xs font-semibold"

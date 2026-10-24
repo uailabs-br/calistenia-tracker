@@ -13,17 +13,12 @@ import {
   type CatalogExercise,
 } from "@/lib/plan/catalog";
 import { customToCatalogLike } from "@/lib/plan/addedExercises";
-import { useModalA11y } from "@/lib/utils/useModalA11y";
-import { Portal } from "@/components/ui/Portal";
+import { SKILL_CATEGORIES } from "@/lib/plan/skills";
+import { Sheet } from "@/components/ui/Modal";
+import { accentVars } from "@/components/ui/accent";
 import { ChevronDownIcon, PlusIcon } from "@/components/ui/icons";
 
-const CATEGORIES: CatalogCategory[] = ["Puxar", "Empurrar", "Core", "Pernas"];
 const SKILL_CHIPS = catalogSkillChips();
-
-const chipStyle = (on: boolean, accent: string) =>
-  on
-    ? { background: accent, borderColor: accent, color: "var(--color-on-accent)" }
-    : { borderColor: "var(--color-border)", color: "var(--color-muted)" };
 
 /**
  * Sheet "Adicionar exercício": busca + filtros (grupo e skill) + toque único
@@ -51,7 +46,6 @@ export function AddExerciseSheet({
   onCreate: (input: CustomExerciseInput) => Promise<void>;
   onClose: () => void;
 }) {
-  const ref = useModalA11y<HTMLDivElement>(onClose);
   const titleId = useId();
 
   const [query, setQuery] = useState("");
@@ -83,7 +77,7 @@ export function AddExerciseSheet({
     const mine = results.filter((e) => e.id.startsWith("custom-"));
     const out: { label: string; items: CatalogExercise[] }[] = [];
     if (mine.length > 0) out.push({ label: "Criados por você", items: mine });
-    for (const cat of CATEGORIES) {
+    for (const cat of SKILL_CATEGORIES) {
       out.push({
         label: cat,
         items: results.filter((e) => e.category === cat && !e.id.startsWith("custom-")),
@@ -102,16 +96,15 @@ export function AddExerciseSheet({
 
   if (creating) {
     return (
-      <Sheet sheetRef={ref} titleId={titleId} onClose={onClose}>
+      <ExerciseSheet titleId={titleId} accent={accent} onClose={onClose}>
         <CreateForm
-          accent={accent}
           titleId={titleId}
           initialName={query.trim()}
           initialCategory={category ?? "Puxar"}
           onBack={() => setCreating(false)}
           onCreate={onCreate}
         />
-      </Sheet>
+      </ExerciseSheet>
     );
   }
 
@@ -164,7 +157,7 @@ export function AddExerciseSheet({
   const altRow = (label: string, ids: string[]) =>
     ids.length === 0 ? null : (
       <div key={label} className="flex flex-wrap items-center gap-2">
-        <span className="font-mono text-[11px] text-muted">{label}</span>
+        <span className="font-mono text-2xs text-muted">{label}</span>
         {ids.map((id) => {
           const alt = byId.get(id);
           if (!alt) return null;
@@ -185,7 +178,7 @@ export function AddExerciseSheet({
     );
 
   return (
-    <Sheet sheetRef={ref} titleId={titleId} onClose={onClose} tall>
+    <ExerciseSheet titleId={titleId} accent={accent} onClose={onClose} tall>
       <div className="flex shrink-0 items-center justify-between gap-2">
         <h2 id={titleId} className="text-lg font-semibold">
           Adicionar exercício
@@ -194,15 +187,14 @@ export function AddExerciseSheet({
           <button
             type="button"
             onClick={() => setCreating(true)}
-            className="tap rounded-lg px-2 font-mono text-[11px]"
-            style={{ color: accent }}
+            className="tap rounded-lg px-2 font-mono text-2xs text-ac"
           >
             criar novo
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="tap rounded-lg px-2 font-mono text-[11px] text-muted"
+            className="tap rounded-lg px-2 font-mono text-2xs text-muted"
           >
             fechar
           </button>
@@ -217,26 +209,25 @@ export function AddExerciseSheet({
         aria-label="Buscar exercício"
         enterKeyHint="search"
         autoComplete="off"
-        className="mt-3 w-full shrink-0 rounded-xl border border-border bg-surface2 px-3 py-2.5 text-base outline-none placeholder:text-muted focus:border-muted"
+        className="field mt-3 shrink-0 py-2.5"
       />
 
-      <p className="mt-3 font-mono text-[11px] uppercase tracking-wide text-muted">Grupo</p>
+      <p className="eyebrow mt-3">Grupo</p>
       <div className="mt-1 grid shrink-0 grid-cols-4 gap-2" role="group" aria-label="Grupo">
-        {CATEGORIES.map((c) => (
+        {SKILL_CATEGORIES.map((c) => (
           <button
             key={c}
             type="button"
             aria-pressed={category === c}
             onClick={() => setCategory(category === c ? null : c)}
-            className="tap rounded-xl border px-1 py-2 text-sm font-medium transition-colors duration-200"
-            style={chipStyle(category === c, accent)}
+            className="toggle tap rounded-xl px-1 py-2 text-sm font-medium text-muted transition-colors duration-200"
           >
             {c}
           </button>
         ))}
       </div>
 
-      <p className="mt-3 font-mono text-[11px] uppercase tracking-wide text-muted">Skill</p>
+      <p className="eyebrow mt-3">Skill</p>
       <div className="relative -mx-5 mt-1 shrink-0">
         <div
           className="no-scrollbar flex gap-2 overflow-x-auto overscroll-x-contain px-5 pb-1"
@@ -249,8 +240,7 @@ export function AddExerciseSheet({
               type="button"
               aria-pressed={skill === s.id}
               onClick={() => setSkill(skill === s.id ? null : s.id)}
-              className="tap shrink-0 whitespace-nowrap rounded-full border px-4 text-sm font-medium transition-colors duration-200"
-              style={chipStyle(skill === s.id, accent)}
+              className="toggle tap shrink-0 whitespace-nowrap rounded-full px-4 text-sm font-medium text-muted transition-colors duration-200"
             >
               {s.name}
             </button>
@@ -277,7 +267,7 @@ export function AddExerciseSheet({
             ...groups,
           ].map((g) => (
             <section key={g.label} className="mb-3">
-              <h3 className="mb-1 mt-2 font-mono text-[11px] uppercase tracking-wide text-muted">
+              <h3 className="eyebrow mb-1 mt-2">
                 {g.label}
               </h3>
               <ul className="overflow-hidden rounded-card border border-border bg-surface2">
@@ -295,70 +285,54 @@ export function AddExerciseSheet({
           <button
             type="button"
             onClick={() => setCreating(true)}
-            className="tap mt-3 mb-2 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed py-3 text-sm font-medium"
-            style={{ borderColor: accent, color: accent }}
+            className="btn-outline tap mt-3 mb-2 flex w-full items-center justify-center gap-2 rounded-xl border-dashed py-3 text-sm font-medium"
           >
             <PlusIcon className="h-4 w-4" />
             Criar “{query.trim()}”
           </button>
         )}
       </div>
-    </Sheet>
+    </ExerciseSheet>
   );
 }
 
-/** Casca da sheet (overlay + painel). */
-function Sheet({
-  sheetRef,
+/** A sheet das duas telas (busca e criar): coluna que ocupa até 92% da altura. */
+function ExerciseSheet({
   titleId,
+  accent,
   onClose,
   tall = false,
   children,
 }: {
-  sheetRef: React.RefObject<HTMLDivElement | null>;
   titleId: string;
+  accent: string;
   onClose: () => void;
   /** Altura fixa (a lista precisa de espaço garantido pra rolar); senão só limita. */
   tall?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <Portal>
-      <div
-        className="anim-fade-in fixed inset-0 z-40 flex items-end justify-center bg-black/60"
-        onClick={onClose}
-      >
-        <div
-          ref={sheetRef}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby={titleId}
-          tabIndex={-1}
-          className={`anim-slide-up flex w-full max-w-md flex-col rounded-t-2xl border-t border-border bg-surface px-5 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))] outline-none ${
-            tall ? "h-[92dvh]" : "max-h-[92dvh]"
-          }`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="mb-2 flex justify-center" aria-hidden="true">
-            <div className="h-1 w-10 rounded-full bg-border" />
-          </div>
-          {children}
-        </div>
-      </div>
-    </Portal>
+    <Sheet
+      labelledBy={titleId}
+      onClose={onClose}
+      className={`flex flex-col px-5 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))] ${
+        tall ? "h-[92dvh]" : "max-h-[92dvh]"
+      }`}
+      style={accentVars(accent)}
+    >
+      {children}
+    </Sheet>
   );
 }
 
 /** Criar exercício: nome, tipo (reps/tempo), grupo, por lado. Mínimo de campos. */
 function CreateForm({
-  accent,
   titleId,
   initialName,
   initialCategory,
   onBack,
   onCreate,
 }: {
-  accent: string;
   titleId: string;
   initialName: string;
   initialCategory: CatalogCategory;
@@ -393,7 +367,7 @@ function CreateForm({
         <button
           type="button"
           onClick={onBack}
-          className="tap rounded-lg px-2 font-mono text-[11px] text-muted"
+          className="tap rounded-lg px-2 font-mono text-2xs text-muted"
         >
           voltar
         </button>
@@ -409,7 +383,7 @@ function CreateForm({
         maxLength={60}
         placeholder="Ex.: Remada no anel"
         autoComplete="off"
-        className="mt-1 w-full rounded-xl border border-border bg-surface2 px-3 py-2.5 text-base outline-none placeholder:text-muted focus:border-muted"
+        className="field mt-1 py-2.5"
       />
 
       <p className="mt-4 text-sm text-muted">Como se conta</p>
@@ -425,8 +399,7 @@ function CreateForm({
             type="button"
             aria-pressed={unit === v}
             onClick={() => setUnit(v)}
-            className="tap rounded-xl border py-2.5 text-sm font-medium transition-colors duration-200"
-            style={chipStyle(unit === v, accent)}
+            className="toggle tap rounded-xl py-2.5 text-sm font-medium text-muted transition-colors duration-200"
           >
             {label}
           </button>
@@ -435,14 +408,13 @@ function CreateForm({
 
       <p className="mt-4 text-sm text-muted">Grupo</p>
       <div className="mt-1 flex flex-wrap gap-2" role="group" aria-label="Grupo">
-        {CATEGORIES.map((c) => (
+        {SKILL_CATEGORIES.map((c) => (
           <button
             key={c}
             type="button"
             aria-pressed={category === c}
             onClick={() => setCategory(c)}
-            className="tap rounded-full border px-3 text-sm transition-colors duration-200"
-            style={chipStyle(category === c, accent)}
+            className="toggle tap rounded-full px-3 text-sm text-muted transition-colors duration-200"
           >
             {c}
           </button>
@@ -469,8 +441,7 @@ function CreateForm({
         type="button"
         disabled={busy || name.trim() === ""}
         onClick={() => void submit()}
-        className="tap mt-5 w-full rounded-xl py-3 font-medium transition-opacity disabled:opacity-40"
-        style={{ background: accent, color: "var(--color-on-accent)" }}
+        className="btn-solid tap mt-5 w-full rounded-xl py-3 font-medium transition-opacity disabled:opacity-40"
       >
         Criar e adicionar ao treino
       </button>

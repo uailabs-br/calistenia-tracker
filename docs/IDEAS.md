@@ -9,7 +9,10 @@
 ---
 
 ## Ideias
-- pensar um forma de incluir fase de deload no treino e como registrar de forma a nao impactar negativamente a analise das metricas: A cada 6 semanas de treino normal, a sétima é de deload: reduz 40% das séries no trabalho de suporte, mantém a frequência semanal e mantém o skill work intacto. O gatilho pode antecipar a semana de deload se houver queda de performance consistente por 2-3 sessões seguidas no mesmo exercício, sem causa óbvia externa. O objetivo é dissipar fadiga acumulada de tecido conjuntivo e do sistema nervoso sem perder frequência de prática nas habilidades
+- refatorar tela de ajuste focando em UX - tela tem muitas opçoes e acaba ficando confusa
+- transformar o menu histórico em um item do menu de evolução. o histórico nao precisa ser um menu, pois não é tão util no dia a dia.
+- avaliar um menu para substituir o histório: o que é mais prioritário e que faz sentido virar um menu? talvez a criaçao/ajuste de treino.
+- adicionar uma forma de o usuário dar feedback ou sugerir melhorias do app. Esse item pode ficar em ajustes e na home
 
 ---
 

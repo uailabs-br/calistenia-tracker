@@ -84,7 +84,7 @@ export function PrivacyPolicy({ accent }: { accent: string }) {
             </div>
           ))}
         </dl>
-        <p className="mt-5 font-mono text-[11px] text-muted">
+        <p className="mt-5 font-mono text-2xs text-muted">
           Atualizado em {UPDATED_AT}
           {CONTACT_URL && (
             <>

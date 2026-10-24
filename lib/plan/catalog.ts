@@ -1,6 +1,6 @@
 import { z } from "zod";
 import catalogData from "./catalog.json";
-import { getSkillById, type SkillCategory } from "./skills";
+import { getSkillById, SKILL_CATEGORIES, type SkillCategory } from "./skills";
 import type { PlanExercise } from "./schema";
 
 /**
@@ -34,7 +34,7 @@ export const catalogExerciseSchema = z
     name: z.string().min(1),
     /** termos de busca alternativos (PT/EN, apelidos) */
     aliases: z.array(z.string()),
-    category: z.enum(["Puxar", "Empurrar", "Core", "Pernas"]),
+    category: z.enum(SKILL_CATEGORIES),
     muscles: z.array(z.enum(MUSCLES)).min(1),
     /** id da skill (progressions.json) a que o movimento pertence, se for degrau de alguma */
     skill: z.string().nullable(),

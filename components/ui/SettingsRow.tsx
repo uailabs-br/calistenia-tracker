@@ -43,30 +43,27 @@ export function SettingsRow({
   disabled = false,
   danger = false,
 }: SettingsRowProps) {
-  const tone = danger ? { color: "var(--color-danger)" } : undefined;
-
   const content = (
     <>
       <span
         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
-          danger ? "" : "bg-surface2 text-text"
+          danger ? "text-danger" : "bg-surface2 text-text"
         }`}
         style={
           danger
-            ? { ...tone, background: "color-mix(in srgb, var(--color-danger) 14%, transparent)" }
+            ? { background: "color-mix(in srgb, var(--color-danger) 14%, transparent)" }
             : undefined
         }
       >
         <Icon className="h-[18px] w-[18px]" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[15px] font-medium leading-snug" style={tone}>
+        <span className={`block text-md font-medium leading-snug ${danger ? "text-danger" : ""}`}>
           {label}
         </span>
         {description && (
           <span
-            className="mt-0.5 block text-xs leading-snug text-muted"
-            style={attention ? { color: "var(--color-warn)" } : undefined}
+            className={`mt-0.5 block text-xs leading-snug ${attention ? "text-warn" : "text-muted"}`}
           >
             {description}
           </span>

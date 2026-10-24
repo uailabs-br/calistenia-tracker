@@ -8,7 +8,7 @@ export function StatTile({
   accent?: string;
 }) {
   return (
-    <div className="rounded-card border border-border bg-surface px-4 py-3">
+    <div className="card px-4 py-3">
       <p className="display text-3xl" style={accent ? { color: accent } : undefined}>
         {value}
       </p>

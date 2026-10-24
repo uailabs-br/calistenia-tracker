@@ -38,8 +38,8 @@ export function WeekReviewCard() {
       : String(review.volume);
 
   return (
-    <section className="anim-fade-in-up rounded-card border border-border bg-surface px-4 py-4">
-      <p className="font-mono text-xs uppercase tracking-wide text-muted">
+    <section className="card anim-fade-in-up px-4 py-4">
+      <p className="eyebrow-lg">
         Resumo da semana · {shortDate(review.weekStart)}–
         {shortDate(review.weekEnd)}
       </p>
@@ -49,7 +49,7 @@ export function WeekReviewCard() {
           <p className="tnum text-lg font-semibold leading-none">
             {review.sessionsDone}/{review.planTotal}
           </p>
-          <p className="mt-1 text-[10px] uppercase tracking-wide text-muted">
+          <p className="mt-1 text-3xs uppercase tracking-wide text-muted">
             treinos
           </p>
         </div>
@@ -57,7 +57,7 @@ export function WeekReviewCard() {
           <p className="tnum text-lg font-semibold leading-none">
             {volumeStat}
           </p>
-          <p className="mt-1 text-[10px] uppercase tracking-wide text-muted">
+          <p className="mt-1 text-3xs uppercase tracking-wide text-muted">
             {review.volumeDeltaPct !== null ? "volume vs. ant." : "volume"}
           </p>
         </div>
@@ -66,7 +66,7 @@ export function WeekReviewCard() {
             <p className="tnum text-lg font-semibold leading-none">
               {review.avgRpe}
             </p>
-            <p className="mt-1 text-[10px] uppercase tracking-wide text-muted">
+            <p className="mt-1 text-3xs uppercase tracking-wide text-muted">
               rpe médio
             </p>
           </div>
@@ -75,20 +75,14 @@ export function WeekReviewCard() {
 
       <ul className="mt-3 flex flex-col gap-1.5 text-sm">
         <li className="flex items-start gap-2">
-          <span
-            className="mt-0.5 shrink-0"
-            style={{ color: "var(--color-success)" }}
-          >
+          <span className="mt-0.5 shrink-0 text-success">
             <CheckIcon className="h-4 w-4" />
           </span>
           <span>{t.good}</span>
         </li>
         {t.improve && (
           <li className="flex items-start gap-2">
-            <span
-              className="mt-0.5 shrink-0"
-              style={{ color: "var(--color-warn)" }}
-            >
+            <span className="mt-0.5 shrink-0 text-warn">
               <ChevronRightIcon className="h-4 w-4" />
             </span>
             <span>{t.improve}</span>

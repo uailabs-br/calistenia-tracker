@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useLiveQuery } from "dexie-react-hooks";
-import { db, type Session } from "@/lib/db/schema";
+import type { Session } from "@/lib/db/schema";
+import { getCompletedSessionsOn } from "@/lib/db/queries/sessions";
 import { getWorkoutById, plan } from "@/lib/plan/loader";
 import { usePlanReady } from "@/lib/utils/usePlanReady";
 import { skillIdForWorkout } from "@/lib/plan/skills";
@@ -22,6 +23,7 @@ import { CollapsibleTip } from "@/components/session/CollapsibleTip";
 import { getExerciseMedia } from "@/lib/plan/media";
 import { WarmupCard } from "@/components/session/WarmupCard";
 import { ChevronRightIcon } from "@/components/ui/icons";
+import { accentVars } from "@/components/ui/accent";
 
 export default function TreinoPage() {
   const params = useParams<{ id: string }>();
@@ -62,16 +64,13 @@ export default function TreinoPage() {
     if (active === null) setStarting(false);
   }, [active]);
 
-  const completedForSelected = useLiveQuery(async () => {
-    const rows = await db.sessions.where("date").equals(todayKey).toArray();
-    return rows.find(
-      (s) =>
-        s.status === "completed" &&
-        !s.deleted_at &&
-        s.source === "plan" &&
-        s.workout_id === selected
-    );
-  }, [todayKey, selected]);
+  const completedForSelected = useLiveQuery(
+    async () =>
+      (await getCompletedSessionsOn(todayKey)).find(
+        (s) => s.source === "plan" && s.workout_id === selected
+      ),
+    [todayKey, selected]
+  );
 
   const start = async () => {
     setStarting(true);
@@ -96,7 +95,7 @@ export default function TreinoPage() {
     const activeWorkout =
       (session.workout_id && getWorkoutById(session.workout_id)) || workout;
     return (
-      <div style={{ ["--ac" as string]: activeWorkout.accent }}>
+      <div style={accentVars(activeWorkout.accent)}>
         <div className="px-4">
           <WorkoutHeader workout={activeWorkout} />
         </div>
@@ -119,7 +118,7 @@ export default function TreinoPage() {
   if (!planReady) return <div className="px-4 pt-6" aria-busy="true" />;
 
   return (
-    <div className="px-4">
+    <div className="px-4" style={accentVars(workout.accent, workout.accent_bg)}>
       <div className="pt-6">
         <WorkoutPills selectedId={selected} nextId={nextId} onSelect={setSelected} />
       </div>
@@ -130,8 +129,7 @@ export default function TreinoPage() {
         type="button"
         onClick={start}
         disabled={starting}
-        className="tap w-full rounded-xl py-3.5 text-center font-semibold shadow-lg transition-transform active:scale-[0.99] disabled:opacity-60"
-        style={{ background: workout.accent, color: "var(--color-on-accent)" }}
+        className="btn-solid tap w-full rounded-xl py-3.5 text-center font-semibold shadow-lg transition-transform active:scale-[0.99] disabled:opacity-60"
       >
         {starting
           ? "Abrindo…"
@@ -141,10 +139,7 @@ export default function TreinoPage() {
       </button>
 
       {completedForSelected && (
-        <div
-          className="mb-4 mt-4 rounded-card border px-4 py-3 text-sm"
-          style={{ borderColor: workout.accent, color: workout.accent }}
-        >
+        <div className="mb-4 mt-4 rounded-card border border-ac px-4 py-3 text-sm text-ac">
           Esse treino já foi registrado hoje. Começar de novo cria uma nova sessão.
         </div>
       )}
@@ -152,7 +147,7 @@ export default function TreinoPage() {
       {skillIdForWorkout(workout.skill) && (
         <Link
           href={`/skills/${skillIdForWorkout(workout.skill)}`}
-          className="tap mt-3 flex items-center justify-between rounded-card border border-border bg-surface px-4 py-3 active:scale-[0.99]"
+          className="card tap mt-3 flex items-center justify-between px-4 py-3 active:scale-[0.99]"
         >
           <span className="text-sm font-medium">Progressão · {workout.skill}</span>
           <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted" />
@@ -160,34 +155,22 @@ export default function TreinoPage() {
       )}
 
       {/* título → começar → por que → aquecimento → exercícios */}
-      <CollapsibleTip tip={workout.tip} accent={workout.accent} />
+      <CollapsibleTip tip={workout.tip} />
       {workout.warmup && (
         <div className="mt-3">
-          <WarmupCard
-            warmup={workout.warmup}
-            accent={workout.accent}
-            accentBg={workout.accent_bg}
-          />
+          <WarmupCard warmup={workout.warmup} />
         </div>
       )}
 
       <ul className="mt-5 flex flex-col gap-2">
         {workout.blocks.map((block) => (
           <li key={block.label}>
-            <p className="mb-1 mt-3 font-mono text-[11px] uppercase tracking-wide text-muted">
-              {block.label}
-            </p>
+            <p className="eyebrow mb-1 mt-3">{block.label}</p>
             <ul className="flex flex-col gap-2">
               {block.exercises.map((ex) => (
-                <li
-                  key={ex.id}
-                  className="rounded-card border border-border bg-surface px-4 py-3"
-                >
+                <li key={ex.id} className="card px-4 py-3">
                   <div className="flex items-baseline justify-between gap-2">
-                    <span
-                      className="font-medium"
-                      style={block.is_skill ? { color: workout.accent } : undefined}
-                    >
+                    <span className={`font-medium ${block.is_skill ? "text-ac" : ""}`}>
                       {ex.name}
                     </span>
                     <span className="tnum shrink-0 text-sm text-muted">
@@ -196,7 +179,6 @@ export default function TreinoPage() {
                   </div>
                   <CollapsibleTip
                     tip={ex.obs}
-                    accent={workout.accent}
                     label="como executar"
                     media={getExerciseMedia(ex.id)}
                     mediaName={ex.name}

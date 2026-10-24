@@ -7,7 +7,12 @@ import {
   completeSession,
   softDeleteSession,
 } from "@/lib/db/repositories/sessions";
-import { upsertLog, getLogsForSession, removeLog } from "@/lib/db/repositories/logs";
+import {
+  upsertLog,
+  getLogsForSession,
+  removeLog,
+  setLogFeedback,
+} from "@/lib/db/repositories/logs";
 import { getLastPerformance } from "@/lib/db/queries/lastPerformance";
 import { exportAll, importMerge } from "@/lib/db/backup";
 import { planDayId } from "@/lib/plan/loader";
@@ -207,6 +212,66 @@ describe("logs repository — motor de progressão v2", () => {
     expect(updated.criterion_met).toBe(true);
     const logs = await getLogsForSession(s.id);
     expect(logs).toHaveLength(1);
+  });
+});
+
+describe("logs repository — como foi depois do exercício", () => {
+  const reps = { type: "reps_rir" as const, reps: [8, 8, 8], rir: null, form_ok: true };
+
+  it("grava flags e nota sem mexer em séries, extras e snapshot", async () => {
+    const s = await createSession("A");
+    await upsertLog({
+      session_id: s.id,
+      exercise_id: "pull-up-peso-morto",
+      as_target: false,
+      sets: [{ index: 0, value: 8 }],
+      extra_sets: [6],
+      flags_selected: [],
+      skipped: false,
+      sets_performed: reps,
+      snapshot: { name: "Pull-up", target: "3 × 8", parsed: null },
+    });
+    const log = await setLogFeedback(s.id, "pull-up-peso-morto", ["simetria ok"], "  punho doeu  ", ["kip"]);
+    expect(log?.flags_selected).toEqual(["simetria ok"]);
+    expect(log?.note).toBe("punho doeu");
+    expect(log?.sets).toEqual([{ index: 0, value: 8 }]);
+    expect(log?.extra_sets).toEqual([6]);
+    expect(log?.snapshot?.name).toBe("Pull-up");
+    expect(log?.criterion_met).toBe(true);
+    expect(await getLogsForSession(s.id)).toHaveLength(1);
+  });
+
+  it("flag negativa tira o form_ok e reprova o critério do motor", async () => {
+    const s = await createSession("A");
+    await upsertLog({
+      session_id: s.id,
+      exercise_id: "pull-up-peso-morto",
+      as_target: false,
+      sets: [{ index: 0, value: 8 }],
+      flags_selected: [],
+      skipped: false,
+      sets_performed: reps,
+    });
+    const log = await setLogFeedback(s.id, "pull-up-peso-morto", ["kip"], "", ["kip"]);
+    expect(log?.sets_performed).toMatchObject({ form_ok: false });
+    expect(log?.criterion_met).toBe(false);
+    expect(log?.note).toBeNull();
+  });
+
+  it("sem log, ou pulado, não escreve nada", async () => {
+    const s = await createSession("A");
+    expect(await setLogFeedback(s.id, "pull-up-peso-morto", ["kip"], "x", [])).toBeNull();
+    await upsertLog({
+      session_id: s.id,
+      exercise_id: "pull-up-peso-morto",
+      as_target: false,
+      sets: null,
+      flags_selected: [],
+      skipped: true,
+    });
+    expect(await setLogFeedback(s.id, "pull-up-peso-morto", ["kip"], "x", [])).toBeNull();
+    const [log] = await getLogsForSession(s.id);
+    expect(log.flags_selected).toEqual([]);
   });
 });
 

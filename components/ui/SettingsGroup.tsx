@@ -17,11 +17,11 @@ export function SettingsGroup({
   return (
     <section className={`mb-6 ${className}`}>
       {title && (
-        <h2 className="mb-2 px-1 font-mono text-xs uppercase tracking-wide text-muted">
+        <h2 className="eyebrow-lg mb-2 px-1">
           {title}
         </h2>
       )}
-      <div className="overflow-hidden rounded-card border border-border bg-surface">
+      <div className="card overflow-hidden">
         {children}
       </div>
       {footer && <p className="mt-2 px-1 text-xs leading-snug text-muted">{footer}</p>}

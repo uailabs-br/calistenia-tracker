@@ -1,4 +1,5 @@
 import { CheckIcon } from "@/components/ui/icons";
+import { DEFAULT_ACCENT as ACCENT } from "@/components/ui/accent";
 
 /**
  * Um trecho da escada do pull-up com a posição marcada — o segundo elemento
@@ -15,11 +16,9 @@ const STEPS = [
   { name: "Pull-up pegada larga", state: "next" },
 ] as const;
 
-const ACCENT = "#8174e8";
-
 export function LadderPreview() {
   return (
-    <div className="rounded-card border border-border bg-surface p-4">
+    <div className="card p-4">
       <ol className="flex flex-col">
         {STEPS.map((step, i) => (
           <li key={step.name} className="flex items-center gap-3 py-1.5">
@@ -57,7 +56,7 @@ export function LadderPreview() {
             </span>
 
             {step.state === "here" && (
-              <span className="ml-auto shrink-0 font-mono text-[11px] text-muted">
+              <span className="ml-auto shrink-0 font-mono text-2xs text-muted">
                 você está aqui
               </span>
             )}

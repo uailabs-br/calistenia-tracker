@@ -11,7 +11,7 @@ function Bar({ className = "" }: { className?: string }) {
 
 function CardRow() {
   return (
-    <div className="rounded-card border border-border bg-surface px-4 py-3">
+    <div className="card px-4 py-3">
       <Bar className="h-4 w-2/5" />
       <Bar className="mt-2 h-3 w-1/4" />
     </div>
@@ -33,14 +33,14 @@ export function MetricsSkeleton() {
     <div aria-busy="true" aria-label="Carregando métricas">
       <div className="grid grid-cols-2 gap-2">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="rounded-card border border-border bg-surface px-4 py-3">
+          <div key={i} className="card px-4 py-3">
             <Bar className="h-7 w-1/2" />
             <Bar className="mt-2 h-3 w-3/4" />
           </div>
         ))}
       </div>
       <Bar className="mt-6 h-4 w-1/3" />
-      <div className="mt-2 rounded-card border border-border bg-surface px-4 py-4">
+      <div className="card mt-2 px-4 py-4">
         {Array.from({ length: 5 }).map((_, i) => (
           <Bar key={i} className="mb-2 h-2 w-full" />
         ))}

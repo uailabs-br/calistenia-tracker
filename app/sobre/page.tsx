@@ -9,6 +9,7 @@ import { SignalCard } from "@/components/landing/SignalCard";
 import { FeatureGrid } from "@/components/landing/FeatureGrid";
 import { PrivacyPolicy } from "@/components/landing/PrivacyPolicy";
 import { LandingCta } from "@/components/landing/LandingCta";
+import { accentVars, DEFAULT_ACCENT } from "@/components/ui/accent";
 
 /**
  * Primeiro contato de quem nunca abriu o app. É a única página do projeto que
@@ -25,11 +26,9 @@ export const metadata: Metadata = {
     "Registre seus treinos de calistenia com um toque por série, acompanhe as progressões de cada movimento e veja sua evolução. Funciona sem internet.",
 };
 
-const ACCENT = "#8174e8";
-
 export default function SobrePage() {
   return (
-    <div className="w-full" style={{ "--ac": ACCENT } as React.CSSProperties}>
+    <div className="w-full" style={accentVars(DEFAULT_ACCENT)}>
       {/* ── Abertura ─────────────────────────────────────────────────── */}
       <header className="relative overflow-hidden">
         <div
@@ -156,8 +155,7 @@ export default function SobrePage() {
                 {CONTACT_URL ? (
                   <a
                     href={CONTACT_URL}
-                    className="underline underline-offset-4"
-                    style={{ color: ACCENT }}
+                    className="text-ac underline underline-offset-4"
                   >
                     {CONTACT_LABEL}
                   </a>
@@ -173,9 +171,9 @@ export default function SobrePage() {
             <LandingCta />
           </div>
 
-          <PrivacyPolicy accent={ACCENT} />
+          <PrivacyPolicy accent={DEFAULT_ACCENT} />
 
-          <p className="mt-10 text-center font-mono text-[11px] text-muted">
+          <p className="mt-10 text-center font-mono text-2xs text-muted">
             Ilustrações dos exercícios por{" "}
             <a
               href="https://repdb.co"

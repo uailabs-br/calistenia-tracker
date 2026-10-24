@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
-import { db, type Session } from "@/lib/db/schema";
+import type { Session } from "@/lib/db/schema";
+import { getCompletedSessions } from "@/lib/db/queries/sessions";
 import { plan, getWorkoutById } from "@/lib/plan/loader";
 import { usePlanReady } from "@/lib/utils/usePlanReady";
 import {
@@ -42,7 +43,7 @@ function SessionRow({
         className={
           nested
             ? "flex items-center justify-between gap-3 rounded-lg bg-surface2 px-3 py-2.5"
-            : "flex items-center justify-between gap-3 rounded-card border border-border bg-surface px-4 py-3 transition-colors duration-200"
+            : "flex items-center justify-between gap-3 card px-4 py-3 transition-colors duration-200"
         }
         style={{
           borderLeftColor: isFreeform ? "var(--color-border)" : day?.accent,
@@ -76,7 +77,7 @@ function SessionRow({
 function PlainWeek({ label, rows }: { label: string; rows: Session[] }) {
   return (
     <section>
-      <p className="mb-2 font-mono text-[11px] uppercase tracking-wide text-muted">
+      <p className="eyebrow mb-2">
         {label} · {rows.length} {rows.length === 1 ? "treino" : "treinos"}
       </p>
       <ul className="flex flex-col gap-2">
@@ -94,9 +95,9 @@ function ClosedWeek({ review, rows }: { review: WeekReview; rows: Session[] }) {
   const texts = buildWeekReviewTexts(review);
   return (
     <section>
-      <div className="rounded-card border border-border bg-surface px-4 py-3">
+      <div className="card px-4 py-3">
         <div className="flex items-baseline justify-between gap-2">
-          <span className="font-mono text-[11px] uppercase tracking-wide text-muted">
+          <span className="eyebrow">
             Semana de {shortDate(review.weekStart)}
           </span>
           <span className="tnum text-sm font-semibold">
@@ -138,12 +139,8 @@ function ClosedWeek({ review, rows }: { review: WeekReview; rows: Session[] }) {
 }
 
 export default function HistoricoPage() {
-  const sessions = useLiveQuery(async () => {
-    const rows = await db.sessions.where("status").equals("completed").toArray();
-    return rows
-      .filter((s) => !s.deleted_at)
-      .sort((a, b) => (b.started_at ?? 0) - (a.started_at ?? 0));
-  }, []);
+  // mais recente primeiro
+  const sessions = useLiveQuery(async () => (await getCompletedSessions()).reverse(), []);
   const weekHistory = useLiveQuery(() => getWeekHistory(), []);
 
   // Agrupa por semana (segunda-feira), preservando a ordem decrescente.

@@ -20,6 +20,47 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-10-24, design system e limpeza — 536 testes):**
+> revisão do código inteiro, sem mudança visual (screenshot antes/depois de 37 telas e
+> estados, idêntico pixel a pixel). **Design system** documentado em
+> [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md): tokens novos (`text-2xs`/`3xs`/`md`, `text-ac`/`bg-ac`
+> /`border-ac`), utilitários (`card`, `eyebrow`, `field`, `toggle`, `option`, `btn-solid`,
+> `btn-outline`, `btn-neutral`, `btn-danger`, `btn-inverse`), `Dialog`/`Sheet` em
+> `components/ui/Modal.tsx` (os cinco overlays repetiam portal, foco e arrasto à mão) e
+> `accentVars`/`DEFAULT_ACCENT`/`CATEGORY_ACCENT` em `components/ui/accent.ts`. A cor do treino
+> passou a ser herdada pelo `--ac`; seis componentes de sessão deixaram de receber `accent`.
+> **Limpeza:** as telas pararam de ler o Dexie direto (regra 2; `lib/db/queries/sessions.ts`,
+> que também concentra o filtro de `deleted_at` usado por métricas, semana e exportação pra
+> IA); lógica de recorde triplicada no `SessionRunner` virou uma; `summarize` duplicado
+> (card e histórico) virou `summarizeLog`; posição de skill `max(logs, manual)` virou
+> `displayedPosition`; lista de categorias única (`SKILL_CATEGORIES`, também nos `z.enum`);
+> ramo morto no "Ajustar" do card removido; `CollapsibleCard` (sem uso) apagado; `icons.tsx`
+> de 357 pra 132 linhas.
+
+> **Atualização (pós-v1.8, 2026-10-24, tela de fim de treino — 524 testes):**
+> o fechamento do treino virou tela cheia (`SessionSummary`), com os números contando rápido
+> e assentando (`lib/domain/timeline.ts` + `useTimeline`; com "reduzir movimento" já nascem
+> prontos): reps do treino em destaque, comparação com a última vez da mesma letra
+> (`getPreviousRepsVolume`, lida pelo snapshot), minutos, exercícios e séries planejadas
+> (extras à parte, `plannedSetsCount`). Treino sem reps põe os minutos em destaque. Recorde
+> sobe do valor anterior ao novo. Os sinais de progressão saíram da lista do treino e entram
+> por último nessa tela, uma linha por sinal (status curto; motivo e "dispensar" no toque).
+> Saiu a frase motivacional sorteada. Decidido em protótipo clicável; a seção de semana do
+> protótipo foi descartada por ele.
+
+> **Atualização (pós-v1.8, 2026-10-24, "como foi?" depois do exercício e sem glow — 518 testes):**
+> "como foi?" e nota saíram do card durante as séries. Quando o exercício fecha pela
+> primeira vez, abre um sheet com as marcações, a nota, "Concluir exercício" e "desfazer
+> registro" (`ExerciseFeedbackSheet`); depois vem o descanso de sempre, já descontado o tempo
+> no sheet. Recorde passou a ser checado depois do sheet, porque só vale com execução limpa;
+> flag negativa ali tira também o troféu festejado numa série. Gravação em `setLogFeedback`
+> (repositório de logs), que reavalia o `form_ok` e o critério do motor. No card, as flags e a
+> nota só aparecem pra corrigir um exercício já feito, e o card acompanha o banco nelas. Isso
+> resolve as flags marcadas antes de fechar que se perdiam ao finalizar com exercício pela
+> metade. Card pendente fechado perdeu o alvo repetido embaixo do nome. O brilho (glow) saiu
+> dos botões e elementos (`btn-primary`, `btn-secondary`, `glow`, dias da semana, heatmap);
+> o anel do cronômetro ficou como estava. Decidido em protótipo clicável, sem PLAN próprio.
+
 > **Atualização (pós-v1.8, 2026-10-23, treino série a série e card novo — 515 testes):**
 > o card de exercício registra **série a série**: quadradinhos com o alvo, stepper grande, e
 > "Registrar série N" já abre o descanso. A série parcial fica em `Session.partial_sets`

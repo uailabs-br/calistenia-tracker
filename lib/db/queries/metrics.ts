@@ -1,4 +1,4 @@
-import { db, type Session, type ExerciseLog } from "@/lib/db/schema";
+import { getCompletedSessions, getLiveLogs, groupBySession } from "./sessions";
 import { getExerciseById, uniqueExercises, plan } from "@/lib/plan/loader";
 import { resolveLogExercise } from "@/lib/plan/resolve";
 import { totalVolume, effectiveSets } from "@/lib/domain/volume";
@@ -13,21 +13,9 @@ import {
   weekdayOf,
 } from "@/lib/utils/date";
 
-async function completedSessions(): Promise<Session[]> {
-  const rows = await db.sessions.toArray();
-  return rows
-    .filter((s) => s.status === "completed" && !s.deleted_at)
-    .sort((a, b) => (a.started_at ?? 0) - (b.started_at ?? 0));
-}
-
 /** Treinos concluídos (plano + avulso), sem os apagados. */
 export async function countCompletedSessions(): Promise<number> {
-  return (await completedSessions()).length;
-}
-
-async function activeLogs(): Promise<ExerciseLog[]> {
-  const rows = await db.exerciseLogs.toArray();
-  return rows.filter((l) => !l.deleted_at);
+  return (await getCompletedSessions()).length;
 }
 
 export interface Overview {
@@ -55,7 +43,7 @@ export interface WorkoutBalance {
 }
 
 export async function getOverview(): Promise<Overview> {
-  const sessions = await completedSessions();
+  const sessions = await getCompletedSessions();
   const dates = [...new Set(sessions.map((s) => s.date))].sort();
 
   const today = localDateKey();
@@ -158,14 +146,9 @@ export interface FlagIncidence {
  * Para cada (exercício, flag), a série temporal de ocorrência por sessão.
  */
 export async function getFlagIncidence(): Promise<FlagIncidence[]> {
-  const sessions = await completedSessions();
-  const logs = await activeLogs();
-  const logsBySession = new Map<string, ExerciseLog[]>();
-  for (const l of logs) {
-    const arr = logsBySession.get(l.session_id) ?? [];
-    arr.push(l);
-    logsBySession.set(l.session_id, arr);
-  }
+  const sessions = await getCompletedSessions();
+  const logs = await getLiveLogs();
+  const logsBySession = groupBySession(logs);
 
   const result: FlagIncidence[] = [];
   // percorre exercícios ÚNICOS (ID compartilhado entre dias conta uma vez)
@@ -206,8 +189,8 @@ export interface VolumePoint {
 export async function getExerciseVolume(
   exerciseId: string
 ): Promise<VolumePoint[]> {
-  const sessions = await completedSessions();
-  const logs = await activeLogs();
+  const sessions = await getCompletedSessions();
+  const logs = await getLiveLogs();
 
   const points: VolumePoint[] = [];
   for (const session of sessions) {
@@ -230,8 +213,8 @@ export async function getExerciseVolume(
  * Métrica-rainha das isometrias (unit "seconds"), separada do volume.
  */
 export async function getBestHold(exerciseId: string): Promise<VolumePoint[]> {
-  const sessions = await completedSessions();
-  const logs = await activeLogs();
+  const sessions = await getCompletedSessions();
+  const logs = await getLiveLogs();
 
   const points: VolumePoint[] = [];
   for (const session of sessions) {
@@ -260,7 +243,7 @@ export interface LoggedExercise {
  * foi adicionado fora dele) continua aparecendo, com o nome de quando foi feito.
  */
 export async function getLoggedExercises(): Promise<LoggedExercise[]> {
-  const logs = (await activeLogs())
+  const logs = (await getLiveLogs())
     .filter((l) => !l.skipped)
     .sort((a, b) => b.logged_at - a.logged_at);
   const out = new Map<string, LoggedExercise>();
@@ -307,7 +290,7 @@ export interface WeekStatus {
 
 /** Estado da semana corrente, para a home. */
 export async function getWeekStatus(): Promise<WeekStatus> {
-  const sessions = await completedSessions();
+  const sessions = await getCompletedSessions();
   const today = localDateKey();
   const monday = weekStartKey(today);
   const todayWeekday = weekdayOf();
@@ -358,7 +341,7 @@ export interface HeatmapDay {
  * uma com 7 dias Seg→Dom. Devolve semana → dias, na ordem do calendário.
  */
 export async function getActivityHeatmap(weeksBack = 12): Promise<HeatmapDay[][]> {
-  const sessions = await completedSessions();
+  const sessions = await getCompletedSessions();
   const counts = new Map<string, number>();
   for (const s of sessions) counts.set(s.date, (counts.get(s.date) ?? 0) + 1);
 

@@ -40,7 +40,7 @@ export function WorkoutCard({ workout, next }: { workout: Workout; next: boolean
         </span>
         {next && (
           <span
-            className="shrink-0 rounded-full px-2 py-0.5 font-mono text-[10px] uppercase tracking-wide"
+            className="shrink-0 rounded-full px-2 py-0.5 font-mono text-3xs uppercase tracking-wide"
             style={{ background: workout.accent_bg, color: workout.accent }}
           >
             próximo
@@ -55,7 +55,7 @@ export function WorkoutCard({ workout, next }: { workout: Workout; next: boolean
         <div className="anim-fade-in border-t border-border px-4 pb-3 pt-3">
           {workout.blocks.map((block, i) => (
             <section key={`${block.label}-${i}`} className={i > 0 ? "mt-3" : undefined}>
-              <p className="mb-1 font-mono text-[11px] uppercase tracking-wide text-muted">
+              <p className="eyebrow mb-1">
                 {block.label}
               </p>
               <ul>

@@ -28,7 +28,7 @@ export function FreeformLogCard({
   return (
     <div className="flex flex-col gap-2">
       {freeformSessionToday && (
-        <div className="anim-fade-in flex items-center justify-between rounded-card border border-border bg-surface px-4 py-3">
+        <div className="card anim-fade-in flex items-center justify-between px-4 py-3">
           <span className="flex items-center gap-2 text-sm">
             <CheckIcon className="h-4 w-4 text-muted" />
             Treino avulso registrado hoje

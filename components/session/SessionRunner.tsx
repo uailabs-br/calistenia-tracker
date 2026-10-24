@@ -10,7 +10,9 @@ import {
   setExtraSets,
   upsertLog,
   removeLog,
+  setLogFeedback,
 } from "@/lib/db/repositories/logs";
+import { isClean } from "@/lib/db/queries/progressionReady";
 import {
   addExerciseToSession,
   completeSession,
@@ -29,21 +31,28 @@ import { resolveAddedExercise } from "@/lib/plan/addedExercises";
 import { formatValue, parseRestSeconds } from "@/lib/domain/parseTarget";
 import { resolveLogExercise, snapshotOf } from "@/lib/plan/resolve";
 import { recordFromSets } from "@/lib/domain/setBySet";
-import { extraSeed, extraSets, repsVolume as sumRepsVolume } from "@/lib/domain/volume";
+import {
+  extraSeed,
+  extraSets,
+  plannedSetsCount,
+  repsVolume as sumRepsVolume,
+} from "@/lib/domain/volume";
+import { getPreviousRepsVolume } from "@/lib/db/queries/previousWorkout";
 import { computePR, formatPR, type PRResult } from "@/lib/db/queries/pr";
 import { useWakeLock } from "@/lib/utils/useWakeLock";
 import { useToast } from "@/components/ui/Toast";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { PlusIcon } from "@/components/ui/icons";
+import { accentVars } from "@/components/ui/accent";
 import { ExerciseCard, type RecordInput } from "./ExerciseCard";
 import { AddExerciseSheet } from "./AddExerciseSheet";
 import { RpeSheet } from "./RpeSheet";
 import { RestTimer } from "./RestTimer";
+import { ExerciseFeedbackSheet } from "./ExerciseFeedbackSheet";
 import { PRMoment } from "./PRMoment";
 import { SessionSummary } from "./SessionSummary";
 import { CollapsibleTip } from "./CollapsibleTip";
 import { WarmupCard } from "./WarmupCard";
-import { ProgressionNudge } from "./ProgressionNudge";
 
 export function SessionRunner({
   session,
@@ -109,12 +118,12 @@ export function SessionRunner({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [addedKey, planFlat, customs, logByExercise]);
   const flat = useMemo(() => [...planFlat, ...addedItems], [planFlat, addedItems]);
+  const itemOf = (exerciseId: string) => flat.find((f) => f.exercise.id === exerciseId);
 
   // Índice ativo: primeiro exercício sem log (retomada vem do banco)
   const firstUnlogged = flat.findIndex((f) => !logByExercise.has(f.exercise.id));
   const [manualActive, setManualActive] = useState<number | null>(null);
-  const activeIndex =
-    manualActive !== null ? manualActive : firstUnlogged === -1 ? -1 : firstUnlogged;
+  const activeIndex = manualActive ?? firstUnlogged;
 
   // Deep-link "play": foca e rola até o exercício pedido, uma única vez.
   const jumpedTo = useRef<string | null>(null);
@@ -153,21 +162,45 @@ export function SessionRunner({
   const [prMoment, setPrMoment] = useState<{ name: string; pr: PRResult } | null>(null);
   // Descanso manual entre séries, disparado pelo card ativo.
   const startRest = (seconds: number) => setRest({ seconds, key: Date.now() });
+  // Descanso do plano pro exercício; sem tempo no plano, não abre.
+  const restSecondsOf = (exerciseId: string) =>
+    parseRestSeconds(itemOf(exerciseId)?.exercise.rest ?? "");
+  const forgetPR = (exerciseId: string) =>
+    setPrResults((m) => {
+      if (!m.has(exerciseId)) return m;
+      const next = new Map(m);
+      next.delete(exerciseId);
+      return next;
+    });
+  // Exercício acabado de fechar: o "como foi?" aparece antes do descanso. `at`
+  // é a hora do registro (o tempo no sheet já conta como descanso).
+  const [feedback, setFeedback] = useState<{
+    exerciseId: string;
+    input: RecordInput;
+    at: number;
+    undo: () => Promise<void>;
+  } | null>(null);
 
   const pending = flat.filter((f) => !logByExercise.has(f.exercise.id)).length;
   const doneCount = flat.length - pending;
   const progressPct = flat.length > 0 ? (doneCount / flat.length) * 100 : 0;
   // Reps totais da sessão. Cada exercício é lido pelo resolver (snapshot do log),
   // não pelo plano vigente — ver regra 5 do CLAUDE.md.
-  const repsVolume = sumRepsVolume(
-    (logs ?? []).map((log) => {
-      const ex = resolveLogExercise(log, session.workout_id);
-      return { log, parsed: ex.parsed, target: ex.target };
-    })
-  );
+  const volumeEntries = (logs ?? []).map((log) => {
+    const ex = resolveLogExercise(log, session.workout_id);
+    return { log, parsed: ex.parsed, target: ex.target };
+  });
+  const repsVolume = sumRepsVolume(volumeEntries);
 
-  // Séries extras da sessão (para o fechamento do treino).
+  // Fechamento do treino: séries planejadas, extras à parte, e só exercício feito.
+  const setsCount = plannedSetsCount(volumeEntries);
   const extraSetsCount = (logs ?? []).reduce((n, l) => n + extraSets(l).length, 0);
+  const exercisesDone = (logs ?? []).filter((l) => !l.skipped).length;
+  // Gravado ao finalizar: duração e a comparação com a última vez deste treino.
+  const [summaryStats, setSummaryStats] = useState<{
+    minutes: number;
+    prevRepsVolume: number | null;
+  } | null>(null);
 
   const advanceFrom = (exerciseId: string) => {
     const idx = flat.findIndex((f) => f.exercise.id === exerciseId);
@@ -204,12 +237,8 @@ export function SessionRunner({
         await removeLog(session.id, exerciseId);
       }
       setRest(null);
-      setPrResults((prev) => {
-        if (!prev.has(exerciseId)) return prev;
-        const next = new Map(prev);
-        next.delete(exerciseId);
-        return next;
-      });
+      setFeedback(null);
+      forgetPR(exerciseId);
       const idx = flat.findIndex((f) => f.exercise.id === exerciseId);
       if (idx !== -1) setManualActive(idx);
     } catch {
@@ -219,7 +248,7 @@ export function SessionRunner({
 
   // Alvo/nome do exercício NESTE momento, gravado no log (ver ExerciseSnapshot).
   const snapshotFor = (exerciseId: string) => {
-    const ex = flat.find((f) => f.exercise.id === exerciseId)?.exercise;
+    const ex = itemOf(exerciseId)?.exercise;
     return ex ? snapshotOf(ex) : null;
   };
 
@@ -246,69 +275,53 @@ export function SessionRunner({
 
     advanceFrom(exerciseId);
 
-    const item = flat.find((f) => f.exercise.id === exerciseId);
-    let pr: Awaited<ReturnType<typeof computePR>> = null;
-    if (!input.skipped) {
-      try {
-        pr = await computePR(exerciseId, input, item?.exercise.parsed ?? null);
-      } catch {
-        /* PR é enfeite: nunca bloqueia o registro */
-      }
-    }
+    const undo = () => undoRecord(exerciseId, prev, prevPartial);
 
-    // Série a série: o recorde pode já ter sido festejado na própria série.
-    const prPrev = prResults.get(exerciseId);
-    if (pr && prPrev && pr.value <= prPrev.value) pr = null;
-    if (pr) {
-      setPrResults((m) => new Map(m).set(exerciseId, pr));
-      setPrMoment({ name: item?.exercise.name ?? "", pr });
-    }
-
-    toast({
-      message: pr
-        ? `🏆 Novo recorde — ${formatPR(pr)} de ${item?.exercise.name ?? ""}`
-        : input.skipped
-          ? "Exercício pulado"
-          : "Registrado",
-      variant: pr ? "success" : undefined,
-      // PR fica mais tempo na tela — mensagem mais longa, lida ofegante no meio do treino.
-      duration: pr ? 6500 : undefined,
-      action: { label: "Desfazer", onClick: () => undoRecord(exerciseId, prev, prevPartial) },
-    });
-
-    // Descanso automático (não para exercícios pulados)
-    if (!input.skipped) {
-      const secs = parseRestSeconds(
-        flat.find((f) => f.exercise.id === exerciseId)?.exercise.rest ?? ""
-      );
-      if (secs) setRest({ seconds: secs, key: Date.now() });
-      else setRest(null);
-    }
-  };
-
-  // Série a série: série que não fecha o exercício. Grava a parcial no banco
-  // (retomada), festeja recorde na hora e abre o descanso. Sem toast: corrigir
-  // é tocar na série, e um aviso por série seria ruído no meio do treino.
-  const handleLogSet = async (exerciseId: string, values: number[], flags: string[]) => {
-    const item = flat.find((f) => f.exercise.id === exerciseId);
-    try {
-      await setPartialSets(session.id, exerciseId, values);
-    } catch {
-      toast({ message: "Não foi possível registrar a série. Tente de novo.", variant: "error" });
+    // Primeiro fechamento: o "como foi?" vem antes do recorde e do descanso.
+    // Recorde só vale com execução limpa, então espera as marcações. O desfazer
+    // fica no próprio sheet: o toast, embaixo, cobriria o botão.
+    if (!input.skipped && !prev) {
+      setRest(null);
+      setFeedback({ exerciseId, input, at: Date.now(), undo });
       return;
     }
 
-    const secs = parseRestSeconds(item?.exercise.rest ?? "");
-    if (secs) setRest({ seconds: secs, key: Date.now() });
+    const pr = input.skipped ? null : await celebratePR(exerciseId, input);
 
-    const value = values[values.length - 1];
+    toast(
+      pr
+        ? prToast(pr, exerciseId, undo)
+        : {
+            message: input.skipped ? "Exercício pulado" : "Registrado",
+            action: { label: "Desfazer", onClick: undo },
+          }
+    );
+
+    // Descanso automático (não para exercícios pulados)
+    if (!input.skipped) {
+      const secs = restSecondsOf(exerciseId);
+      setRest(secs ? { seconds: secs, key: Date.now() } : null);
+    }
+  };
+
+  // PR fica mais tempo na tela — mensagem mais longa, lida ofegante no meio do treino.
+  const prToast = (pr: PRResult, exerciseId: string, onUndo: () => void) => ({
+    message: `🏆 Novo recorde — ${formatPR(pr)} de ${itemOf(exerciseId)?.exercise.name ?? ""}`,
+    variant: "success" as const,
+    duration: 6500,
+    action: { label: "Desfazer", onClick: onUndo },
+  });
+
+  // Recorde de um registro (exercício fechado, série ou série extra). Pode já ter
+  // sido festejado antes na mesma sessão, e aí só um valor maior festeja de novo.
+  const celebratePR = async (
+    exerciseId: string,
+    log: Parameters<typeof computePR>[1]
+  ): Promise<PRResult | null> => {
+    const item = itemOf(exerciseId);
     let pr: PRResult | null = null;
     try {
-      pr = await computePR(
-        exerciseId,
-        { as_target: false, sets: [{ index: 0, value }], skipped: false, flags_selected: flags },
-        item?.exercise.parsed ?? null
-      );
+      pr = await computePR(exerciseId, log, item?.exercise.parsed ?? null);
     } catch {
       /* PR é enfeite: nunca bloqueia o registro */
     }
@@ -318,6 +331,61 @@ export function SessionRunner({
       setPrResults((m) => new Map(m).set(exerciseId, pr as PRResult));
       setPrMoment({ name: item?.exercise.name ?? "", pr });
     }
+    return pr;
+  };
+
+  // "Concluir exercício" no sheet: grava o como foi, festeja o recorde (se a
+  // execução foi limpa) e abre o descanso com o tempo que sobrou.
+  const finishFeedback = async (flags: string[], note: string) => {
+    if (!feedback) return;
+    const { exerciseId, input, at, undo } = feedback;
+    setFeedback(null);
+    const negFlags = itemOf(exerciseId)?.exercise.neg_flags ?? [];
+
+    if (flags.length > 0 || note.trim()) {
+      try {
+        await setLogFeedback(session.id, exerciseId, flags, note, negFlags);
+      } catch {
+        toast({ message: "Não foi possível salvar como foi.", variant: "error" });
+      }
+    }
+
+    // Execução suja não é recorde: nem agora, nem o festejado numa série antes.
+    let pr: PRResult | null = null;
+    if (isClean({ flags_selected: flags }, negFlags)) {
+      pr = await celebratePR(exerciseId, { ...input, flags_selected: flags });
+    } else {
+      forgetPR(exerciseId);
+    }
+    if (pr) toast(prToast(pr, exerciseId, undo));
+
+    const secs = restSecondsOf(exerciseId);
+    const left = secs ? secs - Math.round((Date.now() - at) / 1000) : 0;
+    setRest(left > 0 ? { seconds: left, key: Date.now() } : null);
+  };
+  const feedbackItem = feedback ? itemOf(feedback.exerciseId) : undefined;
+
+  // Série a série: série que não fecha o exercício. Grava a parcial no banco
+  // (retomada), festeja recorde na hora e abre o descanso. Sem toast: corrigir
+  // é tocar na série, e um aviso por série seria ruído no meio do treino.
+  const handleLogSet = async (exerciseId: string, values: number[], flags: string[]) => {
+    try {
+      await setPartialSets(session.id, exerciseId, values);
+    } catch {
+      toast({ message: "Não foi possível registrar a série. Tente de novo.", variant: "error" });
+      return;
+    }
+
+    const secs = restSecondsOf(exerciseId);
+    if (secs) startRest(secs);
+
+    const value = values[values.length - 1];
+    await celebratePR(exerciseId, {
+      as_target: false,
+      sets: [{ index: 0, value }],
+      skipped: false,
+      flags_selected: flags,
+    });
   };
 
   const handleSetPartial = async (exerciseId: string, values: number[]) => {
@@ -346,9 +414,9 @@ export function SessionRunner({
   // dá descanso e oferece desfazer (volta ao que havia antes).
   const handleAddExtra = async (exerciseId: string) => {
     const log = logByExercise.get(exerciseId);
-    const item = flat.find((f) => f.exercise.id === exerciseId);
+    const item = itemOf(exerciseId);
     if (!log || log.skipped || !item) return;
-    const { parsed, target, rest: restText, name } = item.exercise;
+    const { parsed, target } = item.exercise;
     const prevExtras = log.extra_sets ?? [];
     const value = extraSeed(log, parsed, target);
 
@@ -362,54 +430,38 @@ export function SessionRunner({
     // A série extra pode ser recorde por si só — mas não repete o troféu que a
     // própria sessão já deu com valor igual ou maior.
     const prPrev = prResults.get(exerciseId);
-    let pr: PRResult | null = null;
-    try {
-      pr = await computePR(
-        exerciseId,
-        {
-          as_target: false,
-          sets: [{ index: 0, value }],
-          skipped: false,
-          flags_selected: log.flags_selected,
-        },
-        parsed
-      );
-    } catch {
-      /* PR é enfeite: nunca bloqueia o registro */
-    }
-    if (pr && prPrev && pr.value <= prPrev.value) pr = null;
-    if (pr) {
-      setPrResults((m) => new Map(m).set(exerciseId, pr as PRResult));
-      setPrMoment({ name, pr });
-    }
-
-    toast({
-      message: pr
-        ? `🏆 Novo recorde — ${formatPR(pr)} de ${name}`
-        : `Série extra: ${formatValue(value, parsed)}`,
-      variant: pr ? "success" : undefined,
-      duration: pr ? 6500 : undefined,
-      action: {
-        label: "Desfazer",
-        onClick: async () => {
-          try {
-            await setExtraSets(session.id, exerciseId, prevExtras);
-            setRest(null);
-            setPrResults((m) => {
-              const next = new Map(m);
-              if (prPrev) next.set(exerciseId, prPrev);
-              else next.delete(exerciseId);
-              return next;
-            });
-          } catch {
-            toast({ message: "Não foi possível desfazer.", variant: "error" });
-          }
-        },
-      },
+    const pr = await celebratePR(exerciseId, {
+      as_target: false,
+      sets: [{ index: 0, value }],
+      skipped: false,
+      flags_selected: log.flags_selected,
     });
 
-    const secs = parseRestSeconds(restText);
-    if (secs) setRest({ seconds: secs, key: Date.now() });
+    const undo = async () => {
+      try {
+        await setExtraSets(session.id, exerciseId, prevExtras);
+        setRest(null);
+        setPrResults((m) => {
+          const next = new Map(m);
+          if (prPrev) next.set(exerciseId, prPrev);
+          else next.delete(exerciseId);
+          return next;
+        });
+      } catch {
+        toast({ message: "Não foi possível desfazer.", variant: "error" });
+      }
+    };
+    toast(
+      pr
+        ? prToast(pr, exerciseId, undo)
+        : {
+            message: `Série extra: ${formatValue(value, parsed)}`,
+            action: { label: "Desfazer", onClick: undo },
+          }
+    );
+
+    const secs = restSecondsOf(exerciseId);
+    if (secs) startRest(secs);
   };
 
   // Edição das extras no card aberto: silenciosa (sem toast, sem descanso).
@@ -473,9 +525,10 @@ export function SessionRunner({
     onCompleted?.();
     try {
       // Exercício largado no meio: as séries feitas valem como registro, do jeito
-      // que o "terminar com N séries" gravaria. Sem flags (ficam só na tela do card).
+      // que o "terminar com N séries" gravaria. Sem flags: o "como foi?" só
+      // aparece ao fechar o exercício.
       for (const [exerciseId, values] of Object.entries(session.partial_sets ?? {})) {
-        const item = flat.find((f) => f.exercise.id === exerciseId);
+        const item = itemOf(exerciseId);
         if (!item || logByExercise.has(exerciseId) || values.length === 0) continue;
         await upsertLog({
           session_id: session.id,
@@ -489,6 +542,16 @@ export function SessionRunner({
         await setPartialSets(session.id, exerciseId, null);
       }
       await completeSession(session.id, rpe, note);
+      let prevRepsVolume: number | null = null;
+      try {
+        prevRepsVolume = await getPreviousRepsVolume(session.id, session.workout_id);
+      } catch {
+        /* comparação é enfeite: nunca bloqueia o fechamento */
+      }
+      setSummaryStats({
+        minutes: Math.max(1, Math.round((Date.now() - session.started_at) / 60000)),
+        prevRepsVolume,
+      });
       setShowRpe(false);
       setShowSummary(true);
     } catch {
@@ -512,14 +575,14 @@ export function SessionRunner({
   let lastBlock = "";
 
   return (
-    <div className="anim-fade-in px-4">
+    <div className="anim-fade-in px-4" style={accentVars(workout.accent, workout.accent_bg)}>
       {/* Barra de progresso da sessão */}
       <div className="sticky top-0 z-20 -mx-4 mb-2 bg-bg/85 px-4 py-2 backdrop-blur">
         <div className="flex items-center gap-3">
           <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface2">
             <div
-              className="h-full rounded-full transition-[width] duration-300"
-              style={{ width: `${progressPct}%`, background: workout.accent }}
+              className="h-full rounded-full bg-ac transition-[width] duration-300"
+              style={{ width: `${progressPct}%` }}
             />
           </div>
           <span className="tnum shrink-0 text-xs text-muted">
@@ -529,14 +592,10 @@ export function SessionRunner({
       </div>
 
       {/* Título → progresso (acima) → por que → aquecimento → exercícios */}
-      <CollapsibleTip tip={workout.tip} accent={workout.accent} />
+      <CollapsibleTip tip={workout.tip} />
       {workout.warmup && (
         <div className="mb-3 mt-3">
-          <WarmupCard
-            warmup={workout.warmup}
-            accent={workout.accent}
-            accentBg={workout.accent_bg}
-          />
+          <WarmupCard warmup={workout.warmup} />
         </div>
       )}
 
@@ -547,7 +606,7 @@ export function SessionRunner({
           return (
             <div key={item.exercise.id} id={`ex-${item.exercise.id}`}>
               {showBlock && (
-                <p className="mb-1 mt-3 font-mono text-[11px] uppercase tracking-wide text-muted">
+                <p className="eyebrow mb-1 mt-3">
                   {item.blockLabel}
                 </p>
               )}
@@ -579,20 +638,16 @@ export function SessionRunner({
       <button
         type="button"
         onClick={() => setShowAdd(true)}
-        className="tap mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed py-3 text-sm font-medium active:scale-[0.99]"
-        style={{ borderColor: workout.accent, color: workout.accent }}
+        className="btn-outline tap mt-3 flex w-full items-center justify-center gap-2 rounded-xl border-dashed py-3 text-sm font-medium active:scale-[0.99]"
       >
         <PlusIcon className="h-4 w-4" />
         Adicionar exercício
       </button>
 
-      {pending === 0 && <ProgressionNudge workout={workout} accent={workout.accent} />}
-
       <button
         type="button"
         onClick={() => setShowRpe(true)}
-        className="tap mt-6 w-full rounded-xl border py-3 font-medium"
-        style={{ borderColor: workout.accent, color: workout.accent }}
+        className="btn-outline tap mt-6 w-full rounded-xl py-3 font-medium"
       >
         Finalizar treino
       </button>
@@ -604,6 +659,17 @@ export function SessionRunner({
       >
         Sair sem salvar
       </button>
+
+      {feedback && feedbackItem && (
+        <ExerciseFeedbackSheet
+          key={feedback.exerciseId}
+          exerciseName={feedbackItem.exercise.name}
+          flags={feedbackItem.exercise.flags}
+          accent={workout.accent}
+          onDone={(flags, note) => void finishFeedback(flags, note)}
+          onUndo={() => void feedback.undo()}
+        />
+      )}
 
       {rest && (
         <RestTimer
@@ -645,14 +711,17 @@ export function SessionRunner({
 
       {showSummary && (
         <SessionSummary
-          accent={workout.accent}
-          seed={session.id}
-          exercisesDone={doneCount}
+          workout={workout}
+          exercisesDone={exercisesDone}
+          exercisesTotal={flat.length}
           repsVolume={repsVolume}
+          prevRepsVolume={summaryStats?.prevRepsVolume ?? null}
+          setsCount={setsCount}
           extraSets={extraSetsCount}
+          minutes={summaryStats?.minutes ?? 1}
           prs={Array.from(prResults.entries()).map(([id, pr]) => ({
             id,
-            name: flat.find((f) => f.exercise.id === id)?.exercise.name ?? id,
+            name: itemOf(id)?.exercise.name ?? id,
             pr,
           }))}
           onClose={() => {

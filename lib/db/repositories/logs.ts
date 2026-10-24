@@ -7,6 +7,7 @@ import {
 } from "@/lib/db/schema";
 import { exerciseSkillMapping, getCriteria } from "@/lib/plan/skills";
 import { evaluateCriterion } from "@/lib/db/queries/skillProgression";
+import { isClean } from "@/lib/db/queries/progressionReady";
 import { uuid, now } from "@/lib/utils/id";
 
 /** Toda escrita de ExerciseLog passa por aqui. */
@@ -24,6 +25,15 @@ interface LogInput {
   snapshot?: ExerciseSnapshot | null;
   /** Séries extras. `undefined` mantém as já gravadas; array substitui. */
   extra_sets?: number[] | null;
+}
+
+/** O log vivo de um exercício numa sessão (há no máximo um). */
+function findLiveLog(session_id: string, exercise_id: string): Promise<ExerciseLog | undefined> {
+  return db.exerciseLogs
+    .where("session_id")
+    .equals(session_id)
+    .filter((l) => l.exercise_id === exercise_id && !l.deleted_at)
+    .first();
 }
 
 /**
@@ -64,11 +74,7 @@ function resolveSkillFields(input: LogInput): Pick<
  */
 export async function upsertLog(input: LogInput): Promise<ExerciseLog> {
   const ts = now();
-  const existing = await db.exerciseLogs
-    .where("session_id")
-    .equals(input.session_id)
-    .filter((l) => l.exercise_id === input.exercise_id && !l.deleted_at)
-    .first();
+  const existing = await findLiveLog(input.session_id, input.exercise_id);
 
   const skillFields = resolveSkillFields(input);
 
@@ -123,11 +129,7 @@ export async function setExtraSets(
   exercise_id: string,
   values: number[]
 ): Promise<ExerciseLog | null> {
-  const existing = await db.exerciseLogs
-    .where("session_id")
-    .equals(session_id)
-    .filter((l) => l.exercise_id === exercise_id && !l.deleted_at)
-    .first();
+  const existing = await findLiveLog(session_id, exercise_id);
   if (!existing || existing.skipped) return null;
 
   const clean = values
@@ -149,13 +151,43 @@ export async function addExtraSet(
   exercise_id: string,
   value: number
 ): Promise<ExerciseLog | null> {
-  const existing = await db.exerciseLogs
-    .where("session_id")
-    .equals(session_id)
-    .filter((l) => l.exercise_id === exercise_id && !l.deleted_at)
-    .first();
+  const existing = await findLiveLog(session_id, exercise_id);
   if (!existing) return null;
   return setExtraSets(session_id, exercise_id, [...(existing.extra_sets ?? []), value]);
+}
+
+/**
+ * Grava o "como foi?" e a nota de um exercício já registrado: é o passo que
+ * aparece depois de fechar o exercício, antes do descanso. Flag negativa tira o
+ * `form_ok`, então o critério do motor é reavaliado (o upsert recalcula); séries,
+ * extras e snapshot ficam como estavam. Sem log, ou pulado, não escreve nada.
+ */
+export async function setLogFeedback(
+  session_id: string,
+  exercise_id: string,
+  flags: string[],
+  note: string | null,
+  negFlags: string[]
+): Promise<ExerciseLog | null> {
+  const existing = await findLiveLog(session_id, exercise_id);
+  if (!existing || existing.skipped) return null;
+
+  const performed = existing.sets_performed ?? null;
+  const formOk = isClean({ flags_selected: flags }, negFlags);
+  return upsertLog({
+    session_id,
+    exercise_id,
+    as_target: existing.as_target,
+    sets: existing.sets,
+    flags_selected: flags,
+    note: note?.trim() || null,
+    skipped: false,
+    // tentativas não têm execução declarada: o placar já é a medida
+    sets_performed:
+      performed && performed.type !== "skill_consistency"
+        ? { ...performed, form_ok: formOk }
+        : performed,
+  });
 }
 
 /** Remove (soft) o log de um exercício - usado ao desmarcar. */
@@ -164,11 +196,7 @@ export async function removeLog(
   exercise_id: string
 ): Promise<void> {
   const ts = now();
-  const existing = await db.exerciseLogs
-    .where("session_id")
-    .equals(session_id)
-    .filter((l) => l.exercise_id === exercise_id && !l.deleted_at)
-    .first();
+  const existing = await findLiveLog(session_id, exercise_id);
   if (existing) {
     await db.exerciseLogs.update(existing.id, {
       deleted_at: ts,
