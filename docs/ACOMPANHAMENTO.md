@@ -20,6 +20,26 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-10-26, loading e conquistas — 577 testes):**
+> aprovados em protótipo clicável. Card de conquistas na home, abaixo da constância: o selo
+> mais difícil já ganho e o último recorde, contando ao abrir. Home e tela de treino com
+> skeleton só depois de 200 ms (a de treino deixou de piscar da prévia pro runner); pedido pra
+> IA com a etapa em curso e o resumo do que foi copiado; "plano trocado" agora aparece na
+> home depois do recarregamento. Ver
+> [PLAN-revisao-motor-e-export.md](PLAN-revisao-motor-e-export.md).
+
+> **Atualização (pós-v1.8, 2026-10-26, motor, export e duração — 565 testes):**
+> revisão de uma lista de 12 problemas, conferida no código; decisões em
+> [PLAN-revisao-motor-e-export.md](PLAN-revisao-motor-e-export.md). Tentativas pararam de
+> gerar `regress` falso; sessão de manutenção virou voto neutro; front lever com One Leg
+> antes de Straddle. Importação avisa unidade errada, salto de nível e id reinventado
+> (inclusive o que já está no plano). Export ganhou degraus fora do equipamento,
+> frequência observada, acrescentados recorrentes e pulos seguidos. Duração passou a contar
+> alvo em intervalo, por lado, aquecimento e troca, calibrada pelo tempo real.
+> `scripts/merge-exercise-ids.mjs` junta ids duplicados num backup. **Pendente:** rodar o
+> script no backup real; scapular pull das sementes iniciante (alvo em reps num degrau de
+> hold) segue como está; loading e card de conquistas foram pro protótipo (entregues na entrada acima).
+
 > **Atualização (pós-v1.8, 2026-10-24, inconsistências visuais — 536 testes):**
 > as cinco inconsistências que a migração do design system tinha deixado de lado, aprovadas
 > em protótipo clicável: botão principal sempre com gradiente (`btn-solid` saiu), escala de

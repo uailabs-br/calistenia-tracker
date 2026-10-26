@@ -1,8 +1,18 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { db } from "@/lib/db/schema";
+import { db, type ExerciseLog, type Session } from "@/lib/db/schema";
 import { createSession, completeSession } from "@/lib/db/repositories/sessions";
 import { upsertLog } from "@/lib/db/repositories/logs";
-import { exportForAI, buildDeclaredProfile } from "@/lib/plan/exportForAI";
+import {
+  exportForAI,
+  exportSummary,
+  buildDeclaredProfile,
+  neighborSteps,
+  observedFrequency,
+  recurringAdded,
+  repeatedSkips,
+} from "@/lib/plan/exportForAI";
+import { getSkillById } from "@/lib/plan/skills";
+import { shiftDays } from "@/lib/utils/date";
 import { buildPersonaText } from "@/lib/utils/aiPersona";
 import { plan } from "@/lib/plan/loader";
 
@@ -194,5 +204,115 @@ describe("exportForAI — perfil_declarado", () => {
   it("sem onboarding feito, o campo não aparece no export", async () => {
     const out = await exportForAI();
     expect("perfil_declarado" in out).toBe(false);
+  });
+});
+
+describe("exportForAI — degraus fora do equipamento", () => {
+  const dips = getSkillById("dips")!;
+  const mu = getSkillById("muscle_up")!;
+  const at = (s: typeof dips, level: number) => s.steps.findIndex((st) => st.level === level);
+
+  it("na praça, o próximo do Dip Completo pula o Ring Dip", () => {
+    const n = neighborSteps(dips, at(dips, 3), "praca");
+    expect(n.proximo).toBe("Weighted / Korean Dip");
+    expect(n.fora).toEqual(["Ring Dip"]);
+  });
+
+  it("regredir do Weighted Dip na praça também pula o Ring Dip", () => {
+    expect(neighborSteps(dips, at(dips, 5), "praca").anterior).toBe("Dip Completo");
+  });
+
+  it("topo alcançável: MU estrito na praça não tem próximo, e diz por quê", () => {
+    const n = neighborSteps(mu, at(mu, 5), "praca");
+    expect(n.proximo).toBeNull();
+    expect(n.fora).toEqual(["Muscle-up em Argolas (Estrito)"]);
+  });
+
+  it("sem perfil declarado, a escada crua", () => {
+    const n = neighborSteps(dips, at(dips, 3), null);
+    expect(n.proximo).toBe("Ring Dip");
+    expect(n.fora).toEqual([]);
+  });
+});
+
+describe("exportForAI — frequência observada", () => {
+  it("dias distintos por semana nas últimas 4 semanas", () => {
+    // 5 dias por semana durante 4 semanas, com dois treinos num mesmo dia
+    const dates: string[] = [];
+    for (let w = 0; w < 4; w++) for (let d = 0; d < 5; d++) dates.push(shiftDays("2026-10-26", -(w * 7 + d)));
+    dates.push("2026-10-26", "2026-08-01"); // e um histórico mais antigo, fora da janela
+    const f = observedFrequency(dates, "2026-10-26");
+    expect(f).toEqual({ dias_por_semana: 5, dias_treinados: 20, periodo_dias: 28 });
+  });
+
+  it("quem começou há 2 semanas é medido desde o primeiro treino", () => {
+    const dates = ["2026-10-13", "2026-10-15", "2026-10-17", "2026-10-20", "2026-10-22", "2026-10-24"];
+    const f = observedFrequency(dates, "2026-10-26");
+    expect(f?.periodo_dias).toBe(14);
+    expect(f?.dias_por_semana).toBe(3);
+  });
+
+  it("nada nas últimas 4 semanas → sem campo", () => {
+    expect(observedFrequency(["2026-08-01"], "2026-10-26")).toBeUndefined();
+  });
+});
+
+describe("exportForAI — acrescentados e pulados", () => {
+  const session = (id: string, extra: Partial<Session> = {}) =>
+    ({ id, workout_id: "A", added_exercises: [], ...extra }) as unknown as Session;
+  const log = (exercise_id: string, skipped = false) =>
+    ({ exercise_id, skipped, snapshot: { name: exercise_id, target: "3 × 8", parsed: null } }) as unknown as ExerciseLog;
+
+  it("acrescentado em 3 sessões vira sinal; em 2, não", () => {
+    const entries = [1, 2, 3].map((i) => ({
+      session: session(`s${i}`, { added_exercises: i < 3 ? ["rosca", "afundo"] : ["rosca"] }),
+      logs: i < 3 ? [log("rosca"), log("afundo")] : [log("rosca")],
+    }));
+    expect(recurringAdded(entries)).toEqual([{ id: "rosca", exercicio: "rosca", sessoes: 3 }]);
+  });
+
+  it("pulado nas 3 últimas aparições seguidas; um feito no meio zera", () => {
+    const inPlan = "mu-completo"; // existe no plano dos testes
+    const seq = (flags: boolean[]) =>
+      flags.map((skipped, i) => ({ session: session(`s${i}`), logs: [log(inPlan, skipped)] }));
+    expect(repeatedSkips(seq([false, true, true, true]))).toEqual([
+      { id: inPlan, exercicio: inPlan, vezes: 3 },
+    ]);
+    expect(repeatedSkips(seq([true, true, false, true, true]))).toEqual([]);
+  });
+
+  it("exercício que já saiu do plano não entra", () => {
+    const entries = [0, 1, 2].map((i) => ({ session: session(`s${i}`), logs: [log("saiu-do-plano", true)] }));
+    expect(repeatedSkips(entries)).toEqual([]);
+  });
+});
+
+describe("exportForAI — etapas e resumo", () => {
+  it("avisa as etapas na ordem, com o número de treinos", async () => {
+    const s = await createSession("A");
+    await completeSession(s.id, 3, null);
+    const steps: string[] = [];
+    await exportForAI({
+      onStep: (e) => steps.push(e.step === "historico" ? `historico:${e.treinos}` : e.step),
+    });
+    expect(steps).toEqual(["historico:1", "progressao"]);
+  });
+
+  it("resume o que foi no pedido", () => {
+    const fake = {
+      sessions: [{}, {}, {}],
+      historico_anterior: [{}, {}],
+      progressao: [{ sinal: "ready" }, { sinal: "tracking" }],
+      frequencia_observada: { dias_por_semana: 4.5 },
+      perfil_declarado: { dias_por_semana: 3 },
+    } as unknown as Parameters<typeof exportSummary>[0];
+    expect(exportSummary(fake)).toEqual({
+      detalhe: 3,
+      resumidos: 2,
+      skills: 2,
+      prontas: 1,
+      frequencia: 4.5,
+      declarado: 3,
+    });
   });
 });

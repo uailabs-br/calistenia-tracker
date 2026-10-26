@@ -24,7 +24,10 @@ import { buildAiPrompt } from "@/lib/plan/aiPrompt";
 import { buildConvertPrompt } from "@/lib/plan/aiConvertPrompt";
 import { buildFixPrompt } from "@/lib/plan/aiFixPrompt";
 import { localDateKey } from "@/lib/utils/date";
-import { exportForAI } from "@/lib/plan/exportForAI";
+import { exportForAI, exportSummary, type ExportSummary } from "@/lib/plan/exportForAI";
+import { getLastPlanWorkoutId } from "@/lib/db/repositories/sessions";
+import { queueFrom } from "@/lib/domain/nextWorkout";
+import { setFlash } from "@/lib/utils/flash";
 import { getSkillById } from "@/lib/plan/skills";
 import { seeds } from "@/lib/plan/seeds";
 import { getAiGoals, getAiNotes, buildPersonaText } from "@/lib/utils/aiPersona";
@@ -122,6 +125,8 @@ export default function PlanoPage() {
   const [ownWorkout, setOwnWorkout] = useState("");
   const [copied, setCopied] = useState(false);
   const [copying, setCopying] = useState(false);
+  const [copyStep, setCopyStep] = useState<string | null>(null);
+  const [copySummary, setCopySummary] = useState<ExportSummary | null>(null);
   const [goalsCount, setGoalsCount] = useState(0);
   const [pasteText, setPasteText] = useState("");
   const [failure, setFailure] = useState<PasteFailure | null>(null);
@@ -210,9 +215,19 @@ export default function PlanoPage() {
           .map((id) => getSkillById(id)?.name)
           .filter((n): n is string => Boolean(n));
         const persona = buildPersonaText(goalNames, getAiNotes());
-        await copyText(buildAiPrompt(persona, await exportForAI()));
+        setCopyStep("lendo o histórico…");
+        const data = await exportForAI({
+          onStep: (s) =>
+            setCopyStep(
+              s.step === "historico" ? `lendo ${s.treinos} treinos…` : "calculando a progressão…"
+            ),
+        });
+        setCopyStep("montando o pedido…");
+        await copyText(buildAiPrompt(persona, data));
+        setCopySummary(exportSummary(data));
       } else {
         await copyText(buildConvertPrompt(ownWorkout, localDateKey()));
+        setCopySummary(null);
       }
       haptic();
       setCopied(true);
@@ -221,6 +236,7 @@ export default function PlanoPage() {
       toast({ message: "Não deu pra copiar", variant: "error" });
     } finally {
       setCopying(false);
+      setCopyStep(null);
     }
   };
 
@@ -261,15 +277,20 @@ export default function PlanoPage() {
     }
   };
 
-  const handleApplyPlan = () => {
+  const handleApplyPlan = async () => {
     if (!pendingPlan) return;
     haptic();
+    const next = queueFrom(await getLastPlanWorkoutId(), pendingPlan.plan.workouts)[0];
     applyPlan(pendingPlan.plan);
     clearAiFlow();
     // O plano é lido uma vez no boot (lib/plan/loader), então recarregar é o que
-    // garante que nenhuma tela fique com o treino antigo em memória.
-    toast({ message: "Treino aplicado", variant: "success" });
-    setTimeout(() => window.location.assign("/"), 450);
+    // garante que nenhuma tela fique com o treino antigo em memória. Toast aqui
+    // morreria no recarregamento: ele vai junto e aparece na home.
+    setFlash({
+      message: next ? `Plano trocado. O próximo é o treino ${next.label}.` : "Plano trocado.",
+      variant: "success",
+    });
+    window.location.assign("/");
   };
 
   if (!view) return <div className="px-4" />;
@@ -331,6 +352,8 @@ export default function PlanoPage() {
             }
             copied={copied}
             busy={copying}
+            busyLabel={copyStep}
+            summary={copySummary}
             onCopy={handleCopy}
             onNext={() => view.mode && go({ mode: view.mode, step: "colar" })}
           />

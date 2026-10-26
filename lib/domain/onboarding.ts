@@ -68,6 +68,26 @@ const TAGS: Record<Equipment, string[]> = {
   academia: ["chão", "parede", "barra", "paralelas"],
 };
 
+/**
+ * O mesmo setup nas chaves de equipamento das escadas (progressions.json). Só o
+ * que dá pra afirmar do setup: argola, parallettes e poste ninguém declara, então
+ * degrau que pede só isso fica fora pra todo mundo — melhor a IA saber que o
+ * degrau não cabe do que mandar subir pra um Ring Dip na praça.
+ */
+const LADDER_EQUIPMENT: Record<Equipment, string[]> = {
+  chao: [],
+  casa_barra: ["pull_up_bar"],
+  praca: ["pull_up_bar", "parallel_bars", "bench"],
+  academia: ["pull_up_bar", "parallel_bars", "bench"],
+};
+
+/** Degrau cabe no setup: não pede nada, ou pede algo (qualquer um da lista) que o setup tem. */
+export function stepFitsEquipment(stepEquipment: readonly string[], e: Equipment): boolean {
+  if (stepEquipment.length === 0) return true;
+  const have = LADDER_EQUIPMENT[e];
+  return stepEquipment.some((x) => have.includes(x));
+}
+
 export function availableTags(e: Equipment): string[] {
   return TAGS[e];
 }

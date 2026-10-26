@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { Workout } from "@/lib/plan/schema";
 import { durationLabel } from "@/lib/domain/estimateDuration";
+import { useDurationFactor } from "@/lib/utils/useDurationFactor";
 import { ChevronDownIcon, ChevronRightIcon } from "@/components/ui/icons";
 
 const VISIBLE = 2; // mostra os 2 seguintes; resto fica colapsado
@@ -11,6 +12,7 @@ const VISIBLE = 2; // mostra os 2 seguintes; resto fica colapsado
 /** "Depois": os treinos seguintes na sequência, a partir do que vem depois do próximo. */
 export function UpNext({ queue }: { queue: Workout[] }) {
   const [expanded, setExpanded] = useState(false);
+  const factor = useDurationFactor();
 
   if (queue.length === 0) return null;
 
@@ -36,7 +38,7 @@ export function UpNext({ queue }: { queue: Workout[] }) {
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-medium">{w.title}</span>
                 <span className="font-mono text-xs text-muted">
-                  {durationLabel(w)}
+                  {durationLabel(w, factor)}
                 </span>
               </span>
               <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted" />

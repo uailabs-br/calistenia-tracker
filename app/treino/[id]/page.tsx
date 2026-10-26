@@ -8,6 +8,8 @@ import type { Session } from "@/lib/db/schema";
 import { getCompletedSessionsOn } from "@/lib/db/queries/sessions";
 import { getWorkoutById, plan } from "@/lib/plan/loader";
 import { usePlanReady } from "@/lib/utils/usePlanReady";
+import { useDelayedFlag } from "@/lib/utils/useDelayedFlag";
+import { WorkoutSkeleton } from "@/components/ui/Skeleton";
 import { skillIdForWorkout } from "@/lib/plan/skills";
 import { queueFrom } from "@/lib/domain/nextWorkout";
 import {
@@ -46,6 +48,9 @@ export default function TreinoPage() {
   // null = carregado sem sessão; undefined = ainda carregando (distinção importa
   // para o auto-start do deep-link não disparar antes da hora).
   const active = useLiveQuery(async () => (await getActiveSession()) ?? null, []);
+  // Antes de saber se há sessão, a tela não sabe se é prévia ou runner: mostrar
+  // a prévia e trocar pelo runner era o "pisca" de quem volta pro treino.
+  const showSkeleton = useDelayedFlag(!planReady || active === undefined);
 
   // Próximo da sequência: só pra marcar na seleção. Não obriga a fazer esse.
   const lastPlanId = useLiveQuery(() => getLastPlanWorkoutId(), []);
@@ -115,7 +120,9 @@ export default function TreinoPage() {
 
   // Sem isto, o HTML estático traz o treino do plano embutido e o cliente, o do
   // override: a hidratação falha e a tela inteira é repintada.
-  if (!planReady) return <div className="px-4 pt-6" aria-busy="true" />;
+  if (!planReady || active === undefined) {
+    return showSkeleton ? <WorkoutSkeleton /> : <div className="px-4 pt-6" aria-busy="true" />;
+  }
 
   return (
     <div className="px-4" style={accentVars(workout.accent, workout.accent_bg)}>

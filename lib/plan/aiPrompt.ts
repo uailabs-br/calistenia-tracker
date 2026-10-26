@@ -41,7 +41,8 @@ Ponto de partida; onde \`progressao\` discordar, \`progressao\` ganha.
   \`praca\` (+ paralelas) · \`academia\` (+ paralelas e peso).
 - \`nivel\`: iniciante | intermediario | avancado — pela sequência de progressões do app (ter skill,
   não contar repetição). Grava a faixa BAIXA do nível: pode estar subestimado.
-- \`dias_por_semana\`: sessões por semana que ele pretende fazer.
+- \`dias_por_semana\`: sessões por semana que ele pretende fazer. Onde
+  \`frequencia_observada\` discordar, vale ela: é o que ele faz de fato.
 - \`skills[].etapa_em_foco\`: degrau que ele diz estar trabalhando (os anteriores
   ele já faz).
 - \`objetivo\`: forca | resistencia | skills | mobilidade. Todo o resto diz o que
@@ -66,6 +67,16 @@ apareceu, \`melhor_serie\` = melhor série limpa de lá. Serve pra uma leitura s
 estagnação longa pede mudar de abordagem, não de degrau. Ausente quando todo o
 histórico cabe na janela.
 
+\`frequencia_observada\` — dias com treino por semana nas últimas 4 semanas (ou
+desde o primeiro treino, se for mais recente), contado dos registros.
+
+\`acrescentados_recorrentes[]\` — exercício que ele acrescentou por conta própria
+em 3+ sessões da janela. É estímulo que falta no plano.
+
+\`pulados_seguidos[]\` — exercício do plano pulado nas últimas 3+ vezes em que
+apareceu. Não é degrau difícil (pulado não conta na progressão): é ele recusando o
+movimento. Troque o exercício por outro do mesmo padrão; não baixe o nível.
+
 \`progressao[]\` — saída do motor de progressão do app, por skill treinada nos
 últimos 60 dias. O campo \`sinal\` e o que cada um exige:
 - \`ready\` — bateu o critério do degrau nas sessões seguidas exigidas → suba pro
@@ -77,6 +88,10 @@ histórico cabe na janela.
 - \`tracking\` — ainda sem dado suficiente → mantenha e deixe acumular.
 Skill que não aparece em \`progressao\` não tem treino recente: não invente
 progresso nela.
+\`fora_do_equipamento\` lista os degraus acima que o equipamento declarado não
+comporta; \`proximo_degrau\` e \`degrau_anterior\` já pulam esses. \`proximo_degrau\`
+null com essa lista = ele chegou no topo possível com o que tem: siga com volume,
+variação e qualidade no degrau atual.
 
 # COMO DECIDIR
 1. UM DEGRAU POR VEZ. Só sobe quem está \`ready\`. Nunca pule nível, nunca suba
@@ -88,7 +103,8 @@ progresso nela.
    versão do chão.
 4. FREQUÊNCIA POR PADRÃO DE MOVIMENTO, 2× na semana: puxar vertical, puxar
    horizontal, empurrar vertical, empurrar horizontal, core, pernas. Monte o
-   ciclo pra isso fechar com \`dias_por_semana\`: 2-3 dias → 2 treinos alternados;
+   ciclo pra isso fechar com a frequência real (\`frequencia_observada\`; sem
+   ela, \`dias_por_semana\`): 2-3 dias → 2 treinos alternados;
    4 → 2 ou 4; 5-6 → 3. A ordem de \`workouts[]\` é o ciclo.
 5. SKILL COM SISTEMA NERVOSO FRESCO. Bloco \`is_skill: true\` primeiro, força
    depois, acessório e core no fim. Prática técnica em fadiga não ensina nada.
@@ -96,13 +112,15 @@ progresso nela.
    suja a técnica e atrasa o degrau. Acessório pode chegar perto. Isométrico:
    série em 60-70% do hold máximo, pra sobrar técnica na última série.
 7. VOLUME POR SESSÃO. 4 a 7 exercícios, 2 a 4 séries cada, 25-45 min. O app
-   estima a duração por séries × alvo × descanso: volume irreal aparece na tela.
+   estima a duração (séries × alvo × descanso, aquecimento e troca de exercício)
+   e corrige pelo tempo real dos treinos dele: volume irreal aparece na tela.
 8. DESCANSO. Skill e força 90-180s; acessório 45-90s; prática técnica 30-60s
    entre tentativas.
 9. SOBRECARGA DENTRO DO DEGRAU, ANTES DE TROCAR DE DEGRAU. Suba +1 rep por série
    ou +5s de hold por ciclo até o alvo alcançar o critério do degrau.
 10. LEIA O QUE ELE FEZ, NÃO SÓ O SINAL. \`extra_sets\` repetido = plano leve (suba
-    alvo ou série). \`added\` repetido = falta esse estímulo no plano (inclua).
+    alvo ou série). \`added\` repetido (\`acrescentados_recorrentes\`) = falta esse
+    estímulo no plano (inclua). \`pulados_seguidos\` = troque o movimento.
     \`performed\` abaixo do alvo sem flag negativa = alvo agressivo demais.
     Flag negativa repetida = degrau cedo demais. \`note\` é a voz dele: leia.
 11. LIMITAÇÃO É SUA, NÃO DELE. Pra cada item de \`limitacoes\`, troque o vetor que

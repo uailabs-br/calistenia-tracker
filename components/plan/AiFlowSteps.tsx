@@ -2,6 +2,8 @@
 
 import { useId, useRef } from "react";
 import type { ParseFailReason } from "@/lib/plan/importPlan";
+import type { ExportSummary } from "@/lib/plan/exportForAI";
+import { useDelayedFlag } from "@/lib/utils/useDelayedFlag";
 import {
   CheckIcon,
   ChevronLeftIcon,
@@ -178,15 +180,23 @@ export function CopyStep({
   context,
   copied,
   busy,
+  busyLabel,
+  summary,
   onCopy,
   onNext,
 }: {
   context: string;
   copied: boolean;
   busy: boolean;
+  /** o que o export está fazendo agora ("lendo 46 treinos…") */
+  busyLabel?: string | null;
+  /** o que foi no pedido; só no pedido com histórico */
+  summary?: ExportSummary | null;
   onCopy: () => void;
   onNext: () => void;
 }) {
+  // A etapa só aparece se demorar: em quem tem pouco histórico, o texto piscaria.
+  const slow = useDelayedFlag(busy && !!busyLabel, 300);
   return (
     <>
       <p className="mb-4 text-sm text-muted">{context}</p>
@@ -203,10 +213,11 @@ export function CopyStep({
         ) : (
           <CopyIcon className="h-5 w-5" />
         )}
-        {copied ? "Copiado · copiar de novo" : "Copiar pedido"}
+        {slow ? busyLabel : copied ? "Copiado · copiar de novo" : "Copiar pedido"}
       </button>
 
       <div aria-live="polite">
+        {copied && summary && <ExportSummaryCard summary={summary} />}
         {copied && (
           <div className="anim-fade-in mt-6">
             <p className="text-sm font-medium">Agora abra uma IA e cole lá:</p>
@@ -235,6 +246,59 @@ export function CopyStep({
         )}
       </div>
     </>
+  );
+}
+
+const perWeek = (n: number) =>
+  `${n.toLocaleString("pt-BR", { maximumFractionDigits: 1 })} ${n === 1 ? "dia" : "dias"}/sem.`;
+
+/** Depois de copiar: o que a IA vai receber, pra conferir antes de colar. */
+function ExportSummaryCard({ summary: s }: { summary: ExportSummary }) {
+  const rows: [string, React.ReactNode][] = [
+    ["Treinos em detalhe", s.detalhe],
+    ...(s.resumidos > 0 ? [["Antes disso, resumido", `${s.resumidos} movimentos`] as [string, string]] : []),
+    ...(s.skills > 0
+      ? [
+          [
+            "Skills com sinal",
+            <>
+              {s.skills}
+              {s.prontas > 0 && (
+                <span className="text-ac">
+                  {" "}
+                  · {s.prontas} {s.prontas === 1 ? "pronta" : "prontas"}
+                </span>
+              )}
+            </>,
+          ] as [string, React.ReactNode],
+        ]
+      : []),
+    ...(s.frequencia !== undefined
+      ? [["Frequência real", perWeek(s.frequencia)] as [string, string]]
+      : []),
+  ];
+  // Só vale avisar quando a diferença muda o formato do ciclo (≥ 1 dia).
+  const differs =
+    s.frequencia !== undefined && s.declarado !== undefined && Math.abs(s.frequencia - s.declarado) >= 1;
+
+  return (
+    <section aria-label="O que foi no pedido" className="card anim-fade-in mt-4 px-4 py-3">
+      <p className="eyebrow">Foi no pedido</p>
+      <ul className="mt-2 flex flex-col gap-2 text-sm">
+        {rows.map(([label, value]) => (
+          <li key={label} className="flex justify-between gap-3">
+            <span>{label}</span>
+            <span className="tnum text-muted">{value}</span>
+          </li>
+        ))}
+      </ul>
+      {differs && (
+        <p className="mt-2.5 text-xs text-muted">
+          Você declarou {s.declarado} {s.declarado === 1 ? "dia" : "dias"} por semana. A IA vai
+          usar o que você fez de fato.
+        </p>
+      )}
+    </section>
   );
 }
 

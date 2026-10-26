@@ -188,3 +188,79 @@ describe("getSkillState", () => {
     expect(await getSkillState("pull_up", 4)).toBe("stale");
   });
 });
+
+describe("getSkillState — tentativas (skill_consistency)", () => {
+  const HS = "hs-kickup-livre"; // handstand_hold L5: 5/10 boas, 2 sessões
+
+  async function logAttempts(good: number, total = 10) {
+    const s = await createSession("B");
+    await upsertLog({
+      session_id: s.id,
+      exercise_id: HS,
+      as_target: false,
+      sets: null,
+      flags_selected: [],
+      skipped: false,
+      sets_performed: { type: "skill_consistency", attempts_total: total, attempts_good: good },
+    });
+    await completeSession(s.id, 3, null);
+  }
+
+  it("abaixo da proporção 3× seguidas é só 'ainda não', não regressão", async () => {
+    await logAttempts(3);
+    await logAttempts(2);
+    await logAttempts(4);
+    expect(await getSkillState("handstand_hold", 5)).toBe("tracking");
+  });
+
+  it("nenhuma boa em 3 sessões seguidas → regress", async () => {
+    await logAttempts(0);
+    await logAttempts(0);
+    await logAttempts(0);
+    expect(await getSkillState("handstand_hold", 5)).toBe("regress");
+  });
+
+  it("2 sessões na proporção → ready", async () => {
+    await logAttempts(5);
+    await logAttempts(6);
+    expect(await getSkillState("handstand_hold", 5)).toBe("ready");
+  });
+});
+
+describe("getSkillState — sessão de manutenção", () => {
+  const EX = "pull-up-peso-morto"; // pull_up L4: 3×8
+
+  async function logDay(target: string, sets: number, reps: number) {
+    const s = await createSession("A");
+    const values = Array.from({ length: sets }, () => reps);
+    await upsertLog({
+      session_id: s.id,
+      exercise_id: EX,
+      as_target: false,
+      sets: values.map((value, index) => ({ index, value })),
+      flags_selected: [],
+      skipped: false,
+      sets_performed: { type: "reps_rir", reps: values, rir: null, form_ok: true },
+      snapshot: {
+        name: "Pull-up",
+        target,
+        parsed: { sets, target: Number(target.split("×")[1]), unit: "reps", per_side: false },
+      },
+    });
+    await completeSession(s.id, 3, null);
+  }
+
+  it("treino leve no meio (alvo abaixo do critério, cumprido) não quebra o ready", async () => {
+    await logDay("3 × 8", 3, 8);
+    await logDay("3 × 5", 3, 5); // manutenção: cumpriu o plano, não tinha como bater 3×8
+    await logDay("3 × 8", 3, 8);
+    expect(await getSkillState("pull_up", 4)).toBe("ready");
+  });
+
+  it("falhar até o alvo leve ainda conta como falha", async () => {
+    await logDay("3 × 5", 3, 3);
+    await logDay("3 × 5", 3, 3);
+    await logDay("3 × 5", 3, 3);
+    expect(await getSkillState("pull_up", 4)).toBe("regress");
+  });
+});

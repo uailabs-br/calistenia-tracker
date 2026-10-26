@@ -23,12 +23,20 @@ export interface Vote {
    * abaixo do critério da escada dentro do plano é só "ainda não é hora".
    */
   realFailure: boolean;
+  /**
+   * Sessão que não tinha como bater o critério (o alvo do dia fica abaixo dele,
+   * típico do treino de manutenção) e cumpriu o plano. Não conta nem quebra a
+   * sequência positiva: sem isso, o mesmo movimento em dois treinos com alvos
+   * diferentes nunca ficaria "pronto".
+   */
+  neutral?: boolean;
 }
 
-/** Quantos votos positivos seguidos, do mais recente pra trás. */
+/** Quantos votos positivos seguidos, do mais recente pra trás (neutros não contam nem quebram). */
 export function positiveStreak(votes: Vote[]): number {
   let n = 0;
   for (const v of votes) {
+    if (v.neutral) continue;
     if (!v.met) break;
     n++;
   }

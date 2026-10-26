@@ -3,7 +3,9 @@ import type { Parsed } from "@/lib/plan/schema";
 import { negFlagsOf } from "@/lib/plan/loader";
 import { resolveLogExercise } from "@/lib/plan/resolve";
 import { effectiveSets } from "@/lib/domain/volume";
+import { unitOf } from "@/lib/domain/parseTarget";
 import { isClean } from "./progressionReady";
+import { getCompletedSessions, getLiveLogs, groupBySession } from "./sessions";
 
 /** Métrica-rainha por unidade: maior série de reps ou maior hold único (segundos). */
 export interface PRResult {
@@ -64,4 +66,49 @@ export async function computePR(
   if (candidate <= prevBest) return null; // empate ou abaixo
 
   return { value: candidate, unit: parsed.unit, previous: prevBest };
+}
+
+export interface LatestRecord extends PRResult {
+  exerciseId: string;
+  name: string;
+  date: string;
+}
+
+/**
+ * O recorde mais recente do histórico, na mesma regra de `computePR` (só série
+ * limpa, 1ª vez não conta, empate não conta). Recorde não fica gravado — é
+ * calculado no registro —, então aqui o histórico é refeito em ordem: cada
+ * sessão compara com o melhor de antes dela.
+ */
+export async function getLatestRecord(): Promise<LatestRecord | null> {
+  const sessions = await getCompletedSessions();
+  const logsBySession = groupBySession(await getLiveLogs());
+  // Por exercício E unidade: um plano que troca reps por segundos não compara as duas.
+  const best = new Map<string, number>();
+  let latest: LatestRecord | null = null;
+
+  for (const session of sessions) {
+    for (const log of logsBySession.get(session.id) ?? []) {
+      if (log.skipped || !isClean(log, negFlagsOf(log.exercise_id))) continue;
+      const ex = resolveLogExercise(log, session.workout_id);
+      const unit = unitOf(ex.parsed, ex.target);
+      if (unit !== "reps" && unit !== "seconds") continue;
+      const value = maxSet(effectiveSets(log, ex.parsed, ex.target));
+      if (value === null) continue;
+      const key = `${log.exercise_id}|${unit}`;
+      const prev = best.get(key);
+      if (prev !== undefined && value > prev) {
+        latest = {
+          exerciseId: log.exercise_id,
+          name: ex.name ?? log.exercise_id,
+          value,
+          unit,
+          previous: prev,
+          date: session.date,
+        };
+      }
+      if (prev === undefined || value > prev) best.set(key, value);
+    }
+  }
+  return latest;
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { Workout } from "@/lib/plan/schema";
 import { durationLabel } from "@/lib/domain/estimateDuration";
+import { useDurationFactor } from "@/lib/utils/useDurationFactor";
 import {
   ChevronDownIcon,
   PlayIcon,
@@ -25,6 +26,7 @@ export function NextWorkoutCard({
   doneToday: string[];
 }) {
   const [open, setOpen] = useState(false);
+  const factor = useDurationFactor();
 
   if (!workout) return null;
 
@@ -44,7 +46,7 @@ export function NextWorkoutCard({
         >
           {workout.label}
         </span>
-        <span className="font-mono text-xs text-muted">{durationLabel(workout)}</span>
+        <span className="font-mono text-xs text-muted">{durationLabel(workout, factor)}</span>
         <span className="font-mono text-xs text-muted">
           · {exercises.length} exercícios
         </span>

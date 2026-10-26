@@ -1,5 +1,10 @@
 import { db, type ExerciseLog, type Session, type SetPerformed } from "@/lib/db/schema";
-import { exerciseSkillMapping, getCriteria, type Criteria } from "@/lib/plan/skills";
+import {
+  criterionThreshold,
+  exerciseSkillMapping,
+  getCriteria,
+  type Criteria,
+} from "@/lib/plan/skills";
 import { negFlagsOf } from "@/lib/plan/loader";
 import { resolveLogExercise } from "@/lib/plan/resolve";
 import { targetValue } from "@/lib/domain/parseTarget";
@@ -106,8 +111,16 @@ export async function getSkillLogs(
  * Falha "de verdade": não cumpriu o que o PLANO pediu (alvo do dia do registro)
  * ou executou sujo. Ficar abaixo do critério da escada mas dentro do plano é só
  * "ainda não é hora de subir" — não conta como sinal de regressão.
+ *
+ * Tentativas são à parte: o registro guarda o placar (boas/total), não séries,
+ * então `hitTarget` nunca bate e toda sessão abaixo da proporção virava falha —
+ * três dias aprendendo o kick-up já mandavam regredir. Ficar abaixo da proporção
+ * é o normal de quem está no degrau; falha é não sair nenhuma boa.
  */
 export function isRealFailure({ log, session }: SkillLogEntry): boolean {
+  if (log.sets_performed?.type === "skill_consistency") {
+    return log.sets_performed.attempts_good === 0;
+  }
   const resolved = resolveLogExercise(log, session.workout_id);
   const target = targetValue(resolved.parsed, resolved.target);
   return !(hitTarget(log, target) && isClean(log, negFlagsOf(log.exercise_id)));
@@ -120,7 +133,28 @@ export function isRealFailure({ log, session }: SkillLogEntry): boolean {
 export function skillVotes(entries: SkillLogEntry[]): Vote[] {
   return entries
     .filter((e) => e.log.criterion_met !== null)
-    .map((e) => ({ met: !!e.log.criterion_met, realFailure: isRealFailure(e) }));
+    .map((e) => {
+      const met = !!e.log.criterion_met;
+      const realFailure = isRealFailure(e);
+      return { met, realFailure, neutral: !met && !realFailure && belowCriterion(e) };
+    });
+}
+
+/**
+ * O alvo do dia nem alcança o critério do nível (menos séries ou número menor):
+ * a sessão não tinha como votar a favor. É o treino de manutenção — o mesmo
+ * movimento num segundo treino, mais leve — e o começo de um degrau, enquanto o
+ * plano ainda sobe o alvo até o critério.
+ */
+function belowCriterion({ log, session }: SkillLogEntry): boolean {
+  if (!log.skill_id || log.level_at_time === null) return false;
+  const criteria = getCriteria(log.skill_id, log.level_at_time);
+  if (!criteria) return false;
+  const resolved = resolveLogExercise(log, session.workout_id);
+  if (resolved.parsed && resolved.parsed.sets < criteria.sets) return true;
+  const needed = criterionThreshold(criteria);
+  const target = targetValue(resolved.parsed, resolved.target);
+  return needed !== null && target !== null && target < needed;
 }
 
 /** Sessões que o nível exige pra subir (critério do próprio nível; 2 se não houver). */

@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { db } from "@/lib/db/schema";
 import { createSession, completeSession } from "@/lib/db/repositories/sessions";
 import { upsertLog } from "@/lib/db/repositories/logs";
-import { computePR } from "@/lib/db/queries/pr";
+import { computePR, getLatestRecord } from "@/lib/db/queries/pr";
 import type { Parsed } from "@/lib/plan/schema";
 
 const HOLD = "fl-single-leg-hold"; // parsed seconds, neg_flags ["quadril caiu","perna dobrou"]
@@ -81,5 +81,47 @@ describe("computePR", () => {
 
   it("attempts / sem parsed não têm PR", async () => {
     expect(await computePR("x", { ...clean, sets: [{ index: 0, value: 5 }] }, null)).toBeNull();
+  });
+});
+
+describe("getLatestRecord", () => {
+  // started_at define a ordem do histórico: um treino por "dia" pra não empatar
+  let day = 0;
+  beforeEach(() => {
+    day = 0;
+    vi.useFakeTimers({ toFake: ["Date"] });
+  });
+  afterEach(() => vi.useRealTimers());
+  const at = async (values: number[], flags: string[] = []) => {
+    vi.setSystemTime(new Date(2026, 9, 1 + day++, 18));
+    await record(values, flags);
+  };
+
+  it("sem histórico ou só 1ª vez → null", async () => {
+    expect(await getLatestRecord()).toBeNull();
+    await at([20]);
+    expect(await getLatestRecord()).toBeNull();
+  });
+
+  it("o mais recente que superou o melhor de antes, com o valor anterior", async () => {
+    await at([20]);
+    await at([22]); // recorde 20 → 22
+    await at([21]); // abaixo
+    await at([25]); // recorde 22 → 25
+    await at([24]);
+    expect(await getLatestRecord()).toMatchObject({
+      exerciseId: HOLD,
+      value: 25,
+      previous: 22,
+      unit: "seconds",
+      date: "2026-10-04",
+    });
+  });
+
+  it("série suja não é recorde nem vira a base", async () => {
+    await at([20]);
+    await at([30], ["quadril caiu"]);
+    await at([22]);
+    expect(await getLatestRecord()).toMatchObject({ value: 22, previous: 20 });
   });
 });

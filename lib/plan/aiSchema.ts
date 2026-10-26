@@ -172,6 +172,15 @@ monta os contadores da tela de treino. Então:
 - O alvo de um exercício com \`skill_ref\` tem que ALCANÇAR o critério do degrau
   (lista de sequências de progressão abaixo). Alvo menor que o critério trava o atleta: ele cumpre
   o plano pra sempre e nunca fica "pronto pra subir".
+- A UNIDADE do alvo segue o critério do degrau: critério em reps → alvo em reps;
+  em segundos → alvo em segundos; "N/M tentativas boas" → alvo em tentativas
+  ("1 × 10 tentativas"), com o hold mínimo na \`obs\`. Nesse degrau a tela mostra o
+  placar de tentativas, não um cronômetro: "3 × 15s" vira um alvo que ninguém registra.
+- Um degrau por vez também no \`skill_ref\`: no máximo 1 nível acima do que o
+  \`plano_atual\` declara pra skill.
+- O mesmo degrau em dois treinos (um pesado, outro de manutenção) leva o MESMO
+  \`skill_ref\` nos dois — não anule um deles. A sessão com alvo abaixo do
+  critério não conta contra a subida; ela só pesa se ele falhar no próprio alvo.
 
 ## REGRAS DE TEXTO DENTRO DO JSON
 Os campos de texto (\`obs\`, \`tip\`, \`warmup\`, \`criteria\`, \`name\`…) são string JSON

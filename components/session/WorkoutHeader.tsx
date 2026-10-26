@@ -1,10 +1,12 @@
 import type { Workout } from "@/lib/plan/schema";
 import { durationLabel } from "@/lib/domain/estimateDuration";
+import { useDurationFactor } from "@/lib/utils/useDurationFactor";
 
 /** Cabeçalho da tela de treino: apenas título + metadados. O "por que" e o
  *  aquecimento são renderizados depois do progresso (ver SessionRunner e a
  *  tela de treino) para a sequência: título → progresso → por que → aquec. */
 export function WorkoutHeader({ workout }: { workout: Workout }) {
+  const factor = useDurationFactor();
   return (
     <header className="pt-8 pb-4">
       <div className="flex items-center gap-2">
@@ -14,7 +16,7 @@ export function WorkoutHeader({ workout }: { workout: Workout }) {
         >
           {workout.label}
         </span>
-        <span className="font-mono text-xs text-muted">{durationLabel(workout)}</span>
+        <span className="font-mono text-xs text-muted">{durationLabel(workout, factor)}</span>
         {workout.is_practice && (
           <span className="font-mono text-xs text-muted">· prática</span>
         )}

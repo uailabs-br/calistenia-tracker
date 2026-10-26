@@ -1,15 +1,18 @@
 import type { ExerciseLog, Session } from "@/lib/db/schema";
 import { getCompletedSessions, getLiveLogs, groupBySession } from "@/lib/db/queries/sessions";
-import { getWorkoutById, negFlagsOf, plan } from "@/lib/plan/loader";
+import { getExerciseById, getWorkoutById, negFlagsOf, plan } from "@/lib/plan/loader";
 import { resolveLogExercise } from "@/lib/plan/resolve";
 import type { Plan } from "@/lib/plan/schema";
 import { effectiveSets, extraSets, plannedSets } from "@/lib/domain/volume";
 import { isClean } from "@/lib/db/queries/progressionReady";
-import { skills, getLevelInfo } from "@/lib/plan/skills";
+import { skills, getLevelEquipment, getLevelInfo, type Skill } from "@/lib/plan/skills";
 import {
   mapAnswersToSkillLevels,
+  stepFitsEquipment,
+  type Equipment,
   type OnboardingAnswers,
 } from "@/lib/domain/onboarding";
+import { daysBetween, localDateKey } from "@/lib/utils/date";
 import { getOnboardingAnswers } from "@/lib/utils/onboarding";
 import {
   getSkillLogs,
@@ -62,6 +65,41 @@ export interface AiProgressSignal {
   degrau_anterior: string | null;
   /** Nome do próximo degrau na escada canônica — pra onde "ready" avança. */
   proximo_degrau: string | null;
+  /**
+   * Degraus acima do atual que o equipamento declarado não comporta, na ordem.
+   * `proximo_degrau` já pula esses; null com esta lista = topo alcançável com o
+   * equipamento. Ausente se nada foi pulado ou se não há perfil declarado.
+   */
+  fora_do_equipamento?: string[];
+}
+
+/**
+ * Exercício acrescentado no meio do treino em várias sessões da janela. A IA
+ * conseguiria contar sozinha, mas não conta: o sinal só serve se vier pronto.
+ */
+export interface AiRecurringAdded {
+  id: string;
+  exercicio: string;
+  sessoes: number;
+}
+
+/**
+ * Exercício do plano pulado nas últimas N vezes em que apareceu. Não é falha de
+ * degrau (pulado não vota na progressão): é rejeição do movimento, e o que se
+ * faz com ela é trocar o exercício, não baixar o nível.
+ */
+export interface AiRepeatedSkip {
+  id: string;
+  exercicio: string;
+  vezes: number;
+}
+
+/** Quantos dias por semana ele treinou de fato, pra comparar com o declarado. */
+export interface AiObservedFrequency {
+  dias_por_semana: number;
+  dias_treinados: number;
+  /** Período medido: as últimas 4 semanas, ou desde o primeiro treino se for mais recente. */
+  periodo_dias: number;
 }
 
 /**
@@ -116,6 +154,11 @@ export interface AiExport {
   /** Só existe se houver histórico mais antigo que a janela. */
   historico_anterior?: AiHistorySummary[];
   progressao: AiProgressSignal[];
+  /** Só existe se houver treino concluído nas últimas 4 semanas. */
+  frequencia_observada?: AiObservedFrequency;
+  /** Só existem quando há o que mostrar (ver os tipos). */
+  acrescentados_recorrentes?: AiRecurringAdded[];
+  pulados_seguidos?: AiRepeatedSkip[];
 }
 
 /**
@@ -185,6 +228,92 @@ function summarizeOld(entries: { session: Session; logs: ExerciseLog[] }[]): AiH
   }));
 }
 
+/** Sessões com o mesmo acrescentado a partir das quais ele vira sinal (e pulos seguidos idem). */
+export const RECURRING_MIN = 3;
+
+type Entry = { session: Session; logs: ExerciseLog[] };
+
+/** Acrescentados em RECURRING_MIN+ sessões. `entries` em qualquer ordem. */
+export function recurringAdded(entries: Entry[]): AiRecurringAdded[] {
+  const acc = new Map<string, AiRecurringAdded>();
+  for (const { session, logs } of entries) {
+    const added = new Set(session.added_exercises ?? []);
+    for (const log of logs) {
+      if (!added.has(log.exercise_id) || log.skipped) continue;
+      const cur = acc.get(log.exercise_id);
+      if (cur) cur.sessoes += 1;
+      else {
+        const name = resolveLogExercise(log, session.workout_id).name ?? log.exercise_id;
+        acc.set(log.exercise_id, { id: log.exercise_id, exercicio: name, sessoes: 1 });
+      }
+    }
+  }
+  return [...acc.values()]
+    .filter((a) => a.sessoes >= RECURRING_MIN)
+    .sort((a, b) => b.sessoes - a.sessoes);
+}
+
+/**
+ * Exercícios do plano VIGENTE pulados nas últimas RECURRING_MIN+ aparições
+ * seguidas. `entries` do mais antigo pro mais recente (a ordem do histórico).
+ * Quem já saiu do plano não entra: a IA não tem o que trocar.
+ */
+export function repeatedSkips(entries: Entry[]): AiRepeatedSkip[] {
+  const streak = new Map<string, { name: string; n: number; broken: boolean }>();
+  for (let i = entries.length - 1; i >= 0; i--) {
+    const { session, logs } = entries[i];
+    if (!session.workout_id) continue; // avulso não tem plano pra pular
+    const added = new Set(session.added_exercises ?? []);
+    for (const log of logs) {
+      if (added.has(log.exercise_id)) continue;
+      const cur = streak.get(log.exercise_id) ?? {
+        name: resolveLogExercise(log, session.workout_id).name ?? log.exercise_id,
+        n: 0,
+        broken: false,
+      };
+      if (!cur.broken) {
+        if (log.skipped) cur.n += 1;
+        else cur.broken = true;
+      }
+      streak.set(log.exercise_id, cur);
+    }
+  }
+  return [...streak.entries()]
+    .filter(([id, v]) => v.n >= RECURRING_MIN && getExerciseById(id))
+    .map(([id, v]) => ({ id, exercicio: v.name, vezes: v.n }))
+    .sort((a, b) => b.vezes - a.vezes);
+}
+
+/** Janela da frequência observada: 4 semanas inteiras, pra dividir por 4 sem sobra. */
+const FREQ_WINDOW_DAYS = 28;
+/** Piso do período: 2 treinos no primeiro dia não são "14 por semana". */
+const FREQ_MIN_DAYS = 7;
+
+/**
+ * Dias distintos com treino concluído (plano ou avulso) por semana. Quem começou
+ * há menos de 4 semanas é medido desde o primeiro treino — senão a frequência sai
+ * subestimada justo no começo, quando a IA mais lê o `perfil_declarado`.
+ */
+export function observedFrequency(
+  dates: string[],
+  today: string = localDateKey()
+): AiObservedFrequency | undefined {
+  const inWindow = dates.filter((d) => {
+    const ago = daysBetween(d, today);
+    return ago >= 0 && ago < FREQ_WINDOW_DAYS;
+  });
+  if (inWindow.length === 0) return undefined;
+  const first = dates.reduce((a, b) => (a < b ? a : b));
+  const since = daysBetween(first, today) + 1;
+  const period = Math.max(FREQ_MIN_DAYS, Math.min(FREQ_WINDOW_DAYS, since));
+  const days = new Set(inWindow).size;
+  return {
+    dias_por_semana: Math.round((days / period) * 7 * 10) / 10,
+    dias_treinados: days,
+    periodo_dias: period,
+  };
+}
+
 function buildExercises(session: Session, logs: ExerciseLog[]): AiHistoryExercise[] {
   const addedIds = new Set(session.added_exercises ?? []);
   return logs.map((log) => {
@@ -218,9 +347,17 @@ function buildExercises(session: Session, logs: ExerciseLog[]): AiHistoryExercis
  * exercícios que a IA vai editar).
  */
 async function buildHistory(
-  windowSessions: number
-): Promise<{ sessions: AiHistorySession[]; anterior: AiHistorySummary[] }> {
+  windowSessions: number,
+  onStep?: (s: ExportStep) => void
+): Promise<{
+  sessions: AiHistorySession[];
+  anterior: AiHistorySummary[];
+  added: AiRecurringAdded[];
+  skips: AiRepeatedSkip[];
+  frequency: AiObservedFrequency | undefined;
+}> {
   const sessions = await getCompletedSessions();
+  onStep?.({ step: "historico", treinos: sessions.length });
   const logsBySession = groupBySession(await getLiveLogs());
 
   const entries: { session: Session; logs: ExerciseLog[] }[] = [];
@@ -248,6 +385,9 @@ async function buildHistory(
       };
     }),
     anterior: summarizeOld(old),
+    added: recurringAdded(recent),
+    skips: repeatedSkips(recent),
+    frequency: observedFrequency(sessions.map((s) => s.date)),
   };
 }
 
@@ -280,7 +420,7 @@ async function latestLevel(skillId: string): Promise<number | null> {
  * e a IA teria que adivinhar o destino a partir do conhecimento geral dela
  * em vez do framework específico deste app.
  */
-async function buildProgressao(): Promise<AiProgressSignal[]> {
+async function buildProgressao(equipment: Equipment | null): Promise<AiProgressSignal[]> {
   const out: AiProgressSignal[] = [];
   for (const skill of skills) {
     const level = await latestLevel(skill.id);
@@ -289,30 +429,96 @@ async function buildProgressao(): Promise<AiProgressSignal[]> {
     const info = getLevelInfo(skill.id, level);
     const state = await getSkillState(skill.id, level);
     const idx = skill.steps.findIndex((s) => s.level === level);
+    const { anterior, proximo, fora } = neighborSteps(skill, idx, equipment);
     out.push({
       skill: skill.name,
       nivel_atual: `${info?.name ?? `nível ${level}`} (nível ${level}/${skill.steps.length})`,
       sinal: state,
-      degrau_anterior: idx > 0 ? skill.steps[idx - 1].label : null,
-      proximo_degrau:
-        idx >= 0 && idx < skill.steps.length - 1 ? skill.steps[idx + 1].label : null,
+      degrau_anterior: anterior,
+      proximo_degrau: proximo,
+      ...(fora.length > 0 ? { fora_do_equipamento: fora } : {}),
     });
   }
   return out;
 }
 
+/**
+ * Degraus vizinhos ALCANÇÁVEIS com o equipamento declarado. Sem perfil, a escada
+ * crua — não dá pra afirmar o que ele tem. O pulo vale pros dois lados: regredir
+ * de um Weighted Dip não pode mandar pro Ring Dip na praça.
+ */
+export function neighborSteps(
+  skill: Skill,
+  idx: number,
+  equipment: Equipment | null
+): { anterior: string | null; proximo: string | null; fora: string[] } {
+  const fits = (i: number) =>
+    equipment === null || stepFitsEquipment(getLevelEquipment(skill.id, skill.steps[i].level), equipment);
+  let anterior: string | null = null;
+  for (let i = idx - 1; i >= 0; i--) {
+    if (fits(i)) {
+      anterior = skill.steps[i].label;
+      break;
+    }
+  }
+  let proximo: string | null = null;
+  const fora: string[] = [];
+  if (idx >= 0) {
+    for (let i = idx + 1; i < skill.steps.length; i++) {
+      if (fits(i)) {
+        proximo = skill.steps[i].label;
+        break;
+      }
+      fora.push(skill.steps[i].label);
+    }
+  }
+  return { anterior, proximo, fora };
+}
+
+/** Etapa em curso do export, pra tela dizer o que está fazendo quando demora. */
+export type ExportStep = { step: "historico"; treinos: number } | { step: "progressao" };
+
 /** Plano em vigor + histórico (janela + resumo) + sinal de progressão, pronto pra colar numa IA externa. */
 export async function exportForAI(
-  opts: { windowSessions?: number } = {}
+  opts: { windowSessions?: number; onStep?: (s: ExportStep) => void } = {}
 ): Promise<AiExport> {
   const window = opts.windowSessions ?? detailWindow(plan.workouts.length);
-  const [history, progressao] = await Promise.all([buildHistory(window), buildProgressao()]);
   const declared = getOnboardingAnswers();
+  // Em sequência, não em paralelo: as duas leem o IndexedDB numa thread só, e
+  // assim a tela consegue dizer em que parte está.
+  const history = await buildHistory(window, opts.onStep);
+  opts.onStep?.({ step: "progressao" });
+  const progressao = await buildProgressao(declared?.equipment ?? null);
   return {
     plano_atual: plan,
     ...(declared ? { perfil_declarado: buildDeclaredProfile(declared) } : {}),
     sessions: history.sessions,
     ...(history.anterior.length > 0 ? { historico_anterior: history.anterior } : {}),
     progressao,
+    ...(history.frequency ? { frequencia_observada: history.frequency } : {}),
+    ...(history.added.length > 0 ? { acrescentados_recorrentes: history.added } : {}),
+    ...(history.skips.length > 0 ? { pulados_seguidos: history.skips } : {}),
+  };
+}
+
+/** O que foi no pedido, em números, pra mostrar depois de copiar. */
+export interface ExportSummary {
+  detalhe: number;
+  /** movimentos de antes da janela, resumidos */
+  resumidos: number;
+  skills: number;
+  prontas: number;
+  frequencia?: number;
+  declarado?: number;
+}
+
+export function exportSummary(ex: AiExport): ExportSummary {
+  return {
+    detalhe: ex.sessions.length,
+    resumidos: ex.historico_anterior?.length ?? 0,
+    skills: ex.progressao.length,
+    prontas: ex.progressao.filter((p) => p.sinal === "ready").length,
+    ...(ex.frequencia_observada ? { frequencia: ex.frequencia_observada.dias_por_semana } : {}),
+    ...(ex.perfil_declarado ? { declarado: ex.perfil_declarado.dias_por_semana } : {}),
   };
 }

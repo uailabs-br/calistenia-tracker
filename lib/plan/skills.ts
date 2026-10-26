@@ -142,6 +142,16 @@ export function getCriteria(skillId: string, level: number): Criteria | undefine
     ?.progressions.find((p) => p.level === level)?.criteria;
 }
 
+/**
+ * Número por série que o critério exige (reps ou segundos), pra comparar com o
+ * alvo do plano. Tentativas não têm: o critério é uma proporção, não um valor.
+ */
+export function criterionThreshold(criteria: Criteria): number | null {
+  if (criteria.type === "reps_rir") return criteria.reps;
+  if (criteria.type === "hold_clean") return criteria.duration_seconds;
+  return null;
+}
+
 /** Texto curto do alvo numérico que o motor de progressão verifica de fato (não a técnica). */
 export function formatCriteria(criteria: Criteria): string {
   const perSession =
@@ -162,6 +172,14 @@ export function formatCriteria(criteria: Criteria): string {
   const goodNeeded = Math.ceil(criteria.attempts * criteria.consistency_ratio);
   const hold = criteria.min_hold_seconds ? `, hold mín. ${criteria.min_hold_seconds}s` : "";
   return `${goodNeeded}/${criteria.attempts} tentativas boas${hold} · ${perSession}`;
+}
+
+/** Equipamento que o nível pede (chaves de progressions.json; qualquer um serve). */
+export function getLevelEquipment(skillId: string, level: number): string[] {
+  return (
+    rawSkills.find((s) => s.id === skillId)?.progressions.find((p) => p.level === level)
+      ?.equipment ?? []
+  );
 }
 
 /** Nome + descrição de um nível de skill (para exibir o critério na UI). */

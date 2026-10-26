@@ -1,7 +1,7 @@
 import catalogData from "./catalog.json";
 import type { Plan, PlanExercise, Workout } from "./schema";
-import { getCriteria } from "./skills";
-import { parseRestSeconds, targetValue } from "@/lib/domain/parseTarget";
+import { criterionThreshold, getCriteria, type Criteria } from "./skills";
+import { parseRestSeconds, targetValue, unitOf, type TargetUnit } from "@/lib/domain/parseTarget";
 
 /**
  * O que muda ao trocar de plano, por treino, e o que o schema não pega.
@@ -58,7 +58,7 @@ export interface PlanDiff {
   warnings: PlanWarning[];
 }
 
-const CATALOG = catalogData as { id: string; name: string }[];
+const CATALOG = catalogData as { id: string; name: string; aliases: string[] }[];
 
 const norm = (s: string) =>
   s
@@ -67,6 +67,70 @@ const norm = (s: string) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
+
+/** Id sem separador: "mu-false-grip-pull-up" e "mu-false-grip-pullup" viram o mesmo. */
+const compactId = (id: string) => id.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+/**
+ * Prefixos de padrão de movimento que a IA põe (ou tira) por conta própria:
+ * "core-hanging-knee-raise" pro "hanging-knee-raise" do catálogo. Do mais longo
+ * pro mais curto, pra "pull-up-" não sobrar como "up-".
+ */
+const ID_PREFIXES = ["pull-up-", "push-up-", "core-", "legs-", "pull-", "push-", "row-", "mu-", "hs-", "fl-"];
+const unprefixed = (id: string) => {
+  const p = ID_PREFIXES.find((x) => id.startsWith(x));
+  return p ? compactId(id.slice(p.length)) : null;
+};
+
+/** O tipo de critério do degrau → a unidade que o alvo tem que ter pra tela registrar o certo. */
+const CRITERIA_UNIT: Record<Criteria["type"], TargetUnit> = {
+  reps_rir: "reps",
+  hold_clean: "seconds",
+  skill_consistency: "attempts",
+};
+const UNIT_PT: Record<TargetUnit, string> = {
+  reps: "repetições",
+  seconds: "segundos",
+  attempts: "tentativas",
+};
+
+/**
+ * Ids conhecidos e os jeitos de reconhecer o mesmo movimento com outro id. A IA
+ * recebe a lista de ids e mesmo assim reinventa: separador diferente, prefixo a
+ * mais ou a menos, ou o nome em inglês de algo que o catálogo tem como alias.
+ * Prefixo só é ignorado de um lado — dos dois, "pull-up-arqueiro" casaria
+ * "push-up-arqueiro".
+ */
+class KnownIds {
+  private ids = new Set<string>();
+  private byName = new Map<string, string>();
+  private byCompact = new Map<string, string>();
+  private byUnprefixed = new Map<string, string>();
+
+  /** `override`: o nome passa a apontar pra este id (o plano atual vence o catálogo). */
+  add(id: string, names: string[], override = false) {
+    this.ids.add(id);
+    this.byCompact.set(compactId(id), id);
+    const u = unprefixed(id);
+    if (u) this.byUnprefixed.set(u, id);
+    for (const n of names) if (override || !this.byName.has(norm(n))) this.byName.set(norm(n), id);
+  }
+
+  has(id: string): boolean {
+    return this.ids.has(id);
+  }
+
+  twinOf(e: PlanExercise): string | undefined {
+    const c = compactId(e.id);
+    const u = unprefixed(e.id);
+    return (
+      this.byCompact.get(c) ??
+      this.byUnprefixed.get(c) ??
+      (u ? this.byCompact.get(u) : undefined) ??
+      this.byName.get(norm(e.name))
+    );
+  }
+}
 
 const flat = (w: Workout): PlanExercise[] => w.blocks.flatMap((b) => b.exercises);
 const brief = (e: PlanExercise): DiffExercise => ({ id: e.id, name: e.name, target: e.target });
@@ -147,16 +211,22 @@ export function diffPlans(current: Plan, next: Plan): PlanDiff {
  */
 export function planWarnings(current: Plan, next: Plan): PlanWarning[] {
   const out: PlanWarning[] = [];
-  const known = new Map<string, string>(); // nome normalizado → id (plano atual + catálogo)
-  const knownIds = new Set<string>();
-  for (const e of CATALOG) {
-    known.set(norm(e.name), e.id);
-    knownIds.add(e.id);
+  const catalog = new KnownIds();
+  for (const e of CATALOG) catalog.add(e.id, [e.name, ...e.aliases]);
+  // Catálogo + plano atual: o que conta como "já existe" pra um id novo.
+  const known = new KnownIds();
+  for (const e of CATALOG) known.add(e.id, [e.name, ...e.aliases]);
+  for (const w of current.workouts) {
+    for (const e of flat(w)) known.add(e.id, [e.name], true);
   }
+
+  // Maior nível que o plano atual declara por skill: base do aviso de salto.
+  const currentLevel = new Map<string, number>();
   for (const w of current.workouts) {
     for (const e of flat(w)) {
-      known.set(norm(e.name), e.id);
-      knownIds.add(e.id);
+      if (!e.skill_ref) continue;
+      const lv = currentLevel.get(e.skill_ref.skill_id) ?? 0;
+      currentLevel.set(e.skill_ref.skill_id, Math.max(lv, e.skill_ref.level));
     }
   }
 
@@ -189,16 +259,34 @@ export function planWarnings(current: Plan, next: Plan): PlanWarning[] {
           );
         }
         const criteria = getCriteria(e.skill_ref.skill_id, e.skill_ref.level);
-        const needed =
-          criteria?.type === "reps_rir"
-            ? criteria.reps
-            : criteria?.type === "hold_clean"
-              ? criteria.duration_seconds
-              : null;
-        if (criteria && needed !== null && value !== null && value < needed) {
+        const unit = unitOf(e.parsed, e.target);
+        const expected = criteria ? CRITERIA_UNIT[criteria.type] : null;
+        if (expected && unit && unit !== expected) {
+          // Degrau de tentativas: a tela segue o critério e mostra o placar, então
+          // o alvo escrito ("3 × 15s") nunca é o que se registra. Nos outros, a
+          // tela segue o alvo e o motor compara reps com segundos (ou o inverso).
+          // Nos dois casos a comparação com o critério abaixo não faz sentido.
           once(
-            "criteria",
-            `${e.name}: o alvo (${value}) fica abaixo do critério do nível (${needed}) — você cumpre o plano e nunca fica pronto pra subir de nível.`
+            "unit",
+            expected === "attempts"
+              ? `${e.name}: o nível é medido em tentativas boas, mas o alvo está em ${UNIT_PT[unit]} — a tela vai pedir tentativas, não o alvo escrito.`
+              : `${e.name}: o nível é medido em ${UNIT_PT[expected]}, mas o alvo está em ${UNIT_PT[unit]} — o motor compara um com o outro e o degrau nunca fecha.`
+          );
+        } else {
+          const needed = criteria ? criterionThreshold(criteria) : null;
+          if (needed !== null && value !== null && value < needed) {
+            once(
+              "criteria",
+              `${e.name}: o alvo (${value}) fica abaixo do critério do nível (${needed}) — você cumpre o plano e nunca fica pronto pra subir de nível.`
+            );
+          }
+        }
+
+        const before = currentLevel.get(e.skill_ref.skill_id);
+        if (before !== undefined && e.skill_ref.level > before + 1) {
+          once(
+            "jump",
+            `${e.name}: pula do nível ${before} pro ${e.skill_ref.level} — a escada sobe um degrau por vez.`
           );
         }
       }
@@ -210,12 +298,22 @@ export function planWarnings(current: Plan, next: Plan): PlanWarning[] {
         );
       }
 
-      if (!knownIds.has(e.id)) {
-        const twin = known.get(norm(e.name));
+      if (!known.has(e.id)) {
+        const twin = known.twinOf(e);
         if (twin && twin !== e.id) {
           once(
             "id",
             `${e.name}: id novo (${e.id}) pra um movimento que já existe como ${twin} — o histórico dele recomeça do zero.`
+          );
+        }
+      } else if (!catalog.has(e.id)) {
+        // Id que já veio inventado no plano atual: não é novo, então o aviso de
+        // cima nunca dispara, e o histórico segue partido em dois pra sempre.
+        const twin = catalog.twinOf(e);
+        if (twin && twin !== e.id) {
+          once(
+            "id",
+            `${e.name}: o id ${e.id} é o mesmo movimento que ${twin} no catálogo — o histórico fica dividido entre os dois. Peça pra IA usar ${twin}.`
           );
         }
       }

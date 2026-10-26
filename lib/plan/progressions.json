@@ -535,6 +535,36 @@
         },
         {
           "level": 3,
+          "name": "One Leg Front Lever",
+          "description": "Uma perna estendida, a outra dobrada, que encurta a alavanca. Vem antes do straddle, que pede abertura de quadril.",
+          "form_flags": [
+            "quadril nivelado",
+            "sem rotação"
+          ],
+          "criteria": {
+            "type": "hold_clean",
+            "sets": 3,
+            "duration_seconds": 8,
+            "unilateral": true,
+            "sessions_required": 2
+          },
+          "accessories": [
+            {
+              "name": "Straddle FL raise",
+              "volume_target": {
+                "sets": 3,
+                "reps": 4
+              },
+              "rationale": "Mantém o motor dinâmico ativo rumo ao full."
+            }
+          ],
+          "equipment": [
+            "pull_up_bar"
+          ],
+          "video_reference": null
+        },
+        {
+          "level": 4,
           "name": "Straddle Front Lever",
           "description": "Corpo estendido, pernas abertas em straddle. Reduz o braço de alavanca vs full.",
           "form_flags": [
@@ -563,36 +593,6 @@
                 "reps": 5
               },
               "rationale": "Une força de puxada e posição de lever."
-            }
-          ],
-          "equipment": [
-            "pull_up_bar"
-          ],
-          "video_reference": null
-        },
-        {
-          "level": 4,
-          "name": "One Leg Front Lever",
-          "description": "Uma perna estendida, a outra dobrada. Intermediário entre straddle e full.",
-          "form_flags": [
-            "quadril nivelado",
-            "sem rotação"
-          ],
-          "criteria": {
-            "type": "hold_clean",
-            "sets": 3,
-            "duration_seconds": 8,
-            "unilateral": true,
-            "sessions_required": 2
-          },
-          "accessories": [
-            {
-              "name": "Straddle FL raise",
-              "volume_target": {
-                "sets": 3,
-                "reps": 4
-              },
-              "rationale": "Mantém o motor dinâmico ativo rumo ao full."
             }
           ],
           "equipment": [

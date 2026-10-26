@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { takeFlash } from "@/lib/utils/flash";
 
 type ToastVariant = "info" | "success" | "error";
 
@@ -68,6 +69,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   );
 
   useEffect(() => clear, [clear]);
+
+  // Recado de uma ação que recarregou o app (ver lib/utils/flash.ts).
+  useEffect(() => {
+    const flash = takeFlash();
+    if (flash) toast(flash);
+  }, [toast]);
 
   return (
     <ToastContext.Provider value={{ toast }}>

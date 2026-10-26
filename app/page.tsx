@@ -24,6 +24,10 @@ import { isSeedPlanId } from "@/lib/plan/seeds";
 import { getPlanSwapSignal } from "@/lib/db/queries/planSwap";
 import { ackSwap } from "@/lib/utils/planSwap";
 import { usePlanReady } from "@/lib/utils/usePlanReady";
+import { useDelayedFlag } from "@/lib/utils/useDelayedFlag";
+import { getHomeAchievements } from "@/lib/db/queries/badges";
+import { AchievementsCard } from "@/components/home/AchievementsCard";
+import { HomeSkeleton } from "@/components/ui/Skeleton";
 
 const PAST_LABELS = ["Ontem", "Anteontem"];
 
@@ -35,6 +39,7 @@ export default function HomePage() {
   const active = useLiveQuery(async () => (await getActiveSession()) ?? null, []);
   const overview = useLiveQuery(() => getOverview(), []);
   const weekStatus = useLiveQuery(() => getWeekStatus(), []);
+  const achievements = useLiveQuery(() => getHomeAchievements(), []);
 
   // Último treino do plano concluído (undefined = ainda carregando). Ele define a fila.
   const lastPlanId = useLiveQuery(() => getLastPlanWorkoutId(), []);
@@ -99,6 +104,26 @@ export default function HomePage() {
     !showSwap;
   const firstWorkout = overview?.totalWorkouts === 0;
 
+  // Tudo que a tela mostra de cima a baixo entra junto: card por card, a home
+  // montava em degraus e o próximo treino pulava de lugar quando a constância chegava.
+  const loading =
+    !planReady ||
+    active === undefined ||
+    overview === undefined ||
+    weekStatus === undefined ||
+    lastPlanId === undefined ||
+    achievements === undefined;
+  const showSkeleton = useDelayedFlag(loading);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-6 px-4 pb-8">
+        <HomeGreeting />
+        {showSkeleton && <HomeSkeleton />}
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6 px-4 pb-8">
       <HomeGreeting />
@@ -111,12 +136,10 @@ export default function HomePage() {
       <WeekReviewCard />
 
       {/* Constância primeiro: resultado atual em 1 olhada */}
-      {weekStatus && (
-        <ConsistencyCard
-          streak={overview?.currentStreak ?? 0}
-          weekStatus={weekStatus}
-        />
-      )}
+      <ConsistencyCard streak={overview.currentStreak} weekStatus={weekStatus} />
+
+      {/* Logo abaixo da constância: a semana diz como vai, isto diz até onde chegou */}
+      <AchievementsCard data={achievements} />
 
       {showPlanBuilder && firstWorkout && <PlanBuilderCard first />}
 

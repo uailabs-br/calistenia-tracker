@@ -135,6 +135,66 @@ describe("avisos", () => {
     expect(msgs.some((m) => m.includes("recomeça do zero"))).toBe(true);
   });
 
+  it("id reinventado pra um id do catálogo: separador, prefixo ou alias", () => {
+    const twin = (e: PlanExercise) =>
+      warn(e).find((m) => m.includes("recomeça do zero")) ?? "";
+    // separador a mais
+    expect(twin(ex("mu-false-grip-pull-up", "3 × 5", { name: "False grip" }))).toContain(
+      "mu-false-grip-pullup"
+    );
+    // prefixo de padrão a mais
+    expect(twin(ex("core-hanging-knee-raise", "3 × 10", { name: "Knee raise na barra" }))).toContain(
+      "hanging-knee-raise"
+    );
+    // nome é alias do catálogo
+    expect(twin(ex("pull-dumbbell-row", "3 × 10", { name: "Remada com halter" }))).toContain(
+      "remada-halter"
+    );
+  });
+
+  it("prefixo não é ignorado dos dois lados (pull-up × push-up arqueiro)", () => {
+    const cur = plan([workout("A", [ex("push-up-arqueiro", "3 × 6", { name: "Flexão arqueiro" })])]);
+    const next = plan([
+      workout("A", [ex("push-up-arqueiro", "3 × 6", { name: "Flexão arqueiro" })]),
+      workout("B", [ex("pull-up-arqueiro", "3 × 3", { name: "Barra arqueiro" })]),
+    ]);
+    expect(diffPlans(cur, next).warnings.some((w) => w.message.includes("recomeça do zero"))).toBe(false);
+  });
+
+  it("degrau de tentativas com alvo em segundos", () => {
+    const msgs = warn(
+      ex("hs-kickup-livre", "3 × 15s", { skill_ref: { skill_id: "handstand_hold", level: 5 } })
+    );
+    expect(msgs.some((m) => m.includes("medido em tentativas"))).toBe(true);
+    // e não soma o aviso de critério, que compararia segundos com tentativas
+    expect(msgs.some((m) => m.includes("abaixo do critério"))).toBe(false);
+    expect(
+      warn(ex("hs-kickup-livre", "1 × 10 tentativas", { skill_ref: { skill_id: "handstand_hold", level: 5 } }))
+    ).toEqual([]);
+  });
+
+  it("salto de mais de um nível em relação ao plano atual", () => {
+    const ref = (level: number) => ({ skill_ref: { skill_id: "pull_up", level } });
+    const cur = plan([workout("A", [ex("row-inverso-barra-baixa", "3 × 10", ref(2))])]);
+    const jump = plan([workout("A", [ex("pull-up-peso-morto", "3 × 8", ref(4))])]);
+    const step = plan([workout("A", [ex("pull-up-negativa-lenta", "3 × 5", ref(3))])]);
+    const msgs = (n: Plan) => diffPlans(cur, n).warnings.map((w) => w.message);
+    expect(msgs(jump).some((m) => m.includes("pula do nível 2 pro 4"))).toBe(true);
+    expect(msgs(step).some((m) => m.includes("pula do nível"))).toBe(false);
+  });
+
+  it("id inventado que já está no plano atual também avisa: o histórico fica dividido", () => {
+    const fake = ex("mu-false-grip-pull-up", "3 × 5", { name: "False grip" });
+    const cur = plan([workout("A", [fake])]);
+    const msgs = diffPlans(cur, plan([workout("A", [fake])])).warnings.map((w) => w.message);
+    expect(msgs.some((m) => m.includes("dividido") && m.includes("mu-false-grip-pullup"))).toBe(true);
+  });
+
+  it("alvo em reps num degrau medido em segundos", () => {
+    const msgs = warn(ex("scapular-pull", "3 × 10", { skill_ref: { skill_id: "pull_up", level: 1 } }));
+    expect(msgs.some((m) => m.includes("nunca fecha"))).toBe(true);
+  });
+
   it("o mesmo problema em dois treinos avisa uma vez", () => {
     const bad = ex("push-up", "8-10 entradas");
     const diff = diffPlans(empty, plan([workout("A", [bad]), workout("B", [bad])]));

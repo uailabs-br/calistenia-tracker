@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { Workout } from "@/lib/plan/schema";
 import { durationLabel } from "@/lib/domain/estimateDuration";
+import { useDurationFactor } from "@/lib/utils/useDurationFactor";
 import { ChevronDownIcon, ChevronRightIcon } from "@/components/ui/icons";
 
 /**
@@ -13,6 +14,7 @@ import { ChevronDownIcon, ChevronRightIcon } from "@/components/ui/icons";
  */
 export function WorkoutCard({ workout, next }: { workout: Workout; next: boolean }) {
   const [open, setOpen] = useState(false);
+  const factor = useDurationFactor();
   const count = workout.blocks.reduce((n, b) => n + b.exercises.length, 0);
 
   return (
@@ -35,7 +37,7 @@ export function WorkoutCard({ workout, next }: { workout: Workout; next: boolean
         <span className="min-w-0 flex-1">
           <span className="block truncate font-medium">{workout.title}</span>
           <span className="font-mono text-xs text-muted">
-            {durationLabel(workout)} · {count} {count === 1 ? "exercício" : "exercícios"}
+            {durationLabel(workout, factor)} · {count} {count === 1 ? "exercício" : "exercícios"}
           </span>
         </span>
         {next && (
