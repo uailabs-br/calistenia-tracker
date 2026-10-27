@@ -75,17 +75,17 @@ export interface LatestRecord extends PRResult {
 }
 
 /**
- * O recorde mais recente do histórico, na mesma regra de `computePR` (só série
- * limpa, 1ª vez não conta, empate não conta). Recorde não fica gravado — é
- * calculado no registro —, então aqui o histórico é refeito em ordem: cada
- * sessão compara com o melhor de antes dela.
+ * Todos os recordes do histórico, em ordem, na mesma regra de `computePR` (só
+ * série limpa, 1ª vez não conta, empate não conta). Recorde não fica gravado
+ * (é calculado no registro), então o histórico é refeito em ordem: cada sessão
+ * compara com o melhor de antes dela.
  */
-export async function getLatestRecord(): Promise<LatestRecord | null> {
+export async function replayRecords(): Promise<LatestRecord[]> {
   const sessions = await getCompletedSessions();
   const logsBySession = groupBySession(await getLiveLogs());
   // Por exercício E unidade: um plano que troca reps por segundos não compara as duas.
   const best = new Map<string, number>();
-  let latest: LatestRecord | null = null;
+  const records: LatestRecord[] = [];
 
   for (const session of sessions) {
     for (const log of logsBySession.get(session.id) ?? []) {
@@ -98,17 +98,43 @@ export async function getLatestRecord(): Promise<LatestRecord | null> {
       const key = `${log.exercise_id}|${unit}`;
       const prev = best.get(key);
       if (prev !== undefined && value > prev) {
-        latest = {
+        records.push({
           exerciseId: log.exercise_id,
           name: ex.name ?? log.exercise_id,
           value,
           unit,
           previous: prev,
           date: session.date,
-        };
+        });
       }
       if (prev === undefined || value > prev) best.set(key, value);
     }
   }
-  return latest;
+  return records;
+}
+
+/** O recorde mais recente do histórico. */
+export async function getLatestRecord(): Promise<LatestRecord | null> {
+  return (await replayRecords()).at(-1) ?? null;
+}
+
+/**
+ * Recordes batidos entre duas datas (dateKey, inclusivo), um por exercício: o
+ * maior valor do período, partindo do melhor de ANTES do período (o salto da
+ * semana inteira, não o da última sessão).
+ */
+export async function getRecordsBetween(from: string, to: string): Promise<LatestRecord[]> {
+  return recordsBetween(await replayRecords(), from, to);
+}
+
+/** O mesmo sobre um histórico já refeito (o histórico de semanas refaz uma vez só). */
+export function recordsBetween(all: LatestRecord[], from: string, to: string): LatestRecord[] {
+  const byExercise = new Map<string, LatestRecord>();
+  for (const r of all) {
+    if (r.date < from || r.date > to) continue;
+    const key = `${r.exerciseId}|${r.unit}`;
+    const first = byExercise.get(key);
+    byExercise.set(key, first ? { ...r, previous: first.previous } : r);
+  }
+  return [...byExercise.values()];
 }

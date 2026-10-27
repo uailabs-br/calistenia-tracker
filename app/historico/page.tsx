@@ -13,15 +13,18 @@ import {
   localDateKey,
   formatDuration,
 } from "@/lib/utils/date";
-import {
-  getWeekHistory,
-  buildWeekReviewTexts,
-  type WeekReview,
-} from "@/lib/db/queries/weekReview";
+import { getWeekHistory, type WeekReview } from "@/lib/db/queries/weekReview";
+import { weekHighlights, weekRangeShort } from "@/lib/domain/weekRecap";
+import { WeekDays } from "@/components/home/WeekDays";
 import { BackLink } from "@/components/ui/BackLink";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { HistorySkeleton } from "@/components/ui/Skeleton";
-import { ChevronRightIcon, ChevronDownIcon } from "@/components/ui/icons";
+import {
+  ChevronRightIcon,
+  ChevronDownIcon,
+  TrophyIcon,
+  UnlockIcon,
+} from "@/components/ui/icons";
 import { themedAccent } from "@/components/ui/accent";
 
 function SessionRow({
@@ -90,37 +93,59 @@ function PlainWeek({ label, rows }: { label: string; rows: Session[] }) {
   );
 }
 
-/** Semana fechada: card de resumo + treinos do dia recolhíveis. */
+/**
+ * Semana fechada, no formato do resumo da home: período, dias, número contra a
+ * meta e até três destaques. Os treinos do dia ficam recolhidos.
+ */
 function ClosedWeek({ review, rows }: { review: WeekReview; rows: Session[] }) {
   const [open, setOpen] = useState(false);
-  const texts = buildWeekReviewTexts(review);
+  const met = review.sessionsDone >= review.goal;
+  const highlights = weekHighlights(review);
+  const delta = review.volumeDeltaPct;
   return (
     <section>
-      <div className="card px-4 py-3">
-        <div className="flex items-baseline justify-between gap-2">
-          <span className="eyebrow">
-            Semana de {shortDate(review.weekStart)}
-          </span>
-          <span className="tnum text-sm font-semibold">
-            {review.sessionsDone}/{review.planTotal}
-            {review.volumeDeltaPct !== null && (
-              <span className="ml-2 text-xs font-normal text-muted">
-                vol {review.volumeDeltaPct > 0 ? "+" : ""}
-                {review.volumeDeltaPct}%
-              </span>
-            )}
-            {review.avgRpe !== null && (
-              <span className="ml-2 text-xs font-normal text-muted">
-                rpe {review.avgRpe}
-              </span>
-            )}
-          </span>
+      <div className="card flex flex-col gap-3 px-4 py-3">
+        <div className="flex items-end justify-between gap-3">
+          <div>
+            <p className="eyebrow">{weekRangeShort(review.weekStart, review.weekEnd)}</p>
+            <p className="display mt-1 text-3xl leading-none">
+              <span className={met ? "text-ac" : ""}>{review.sessionsDone}</span>
+              <span className="text-xl text-muted">/{review.goal}</span>
+            </p>
+            <p className="mt-1 font-mono text-2xs text-muted">
+              {met ? "meta batida" : "treinos da meta"}
+              {delta !== null && ` · vol ${delta > 0 ? "+" : delta < 0 ? "−" : ""}${Math.abs(delta)}%`}
+              {review.avgRpe !== null && ` · rpe ${String(review.avgRpe).replace(".", ",")}`}
+            </p>
+          </div>
+          <div className="w-36 shrink-0">
+            <WeekDays days={review.days} size="sm" />
+          </div>
         </div>
-        <p className="mt-1 text-xs text-muted">{texts.good}</p>
+
+        {highlights.length > 0 && (
+          <ul className="flex flex-col gap-1.5 border-t border-border pt-2.5 text-sm leading-snug">
+            {highlights.map((h, i) => (
+              <li key={i} className="flex items-start gap-2">
+                <span className="mt-0.5 flex w-4 shrink-0 justify-center" aria-hidden="true">
+                  {h.kind === "level" ? (
+                    <UnlockIcon className="h-4 w-4 text-ac" />
+                  ) : h.kind === "record" ? (
+                    <TrophyIcon className="h-4 w-4 text-gold" />
+                  ) : (
+                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-warn" />
+                  )}
+                </span>
+                <span className="min-w-0 flex-1">{h.text}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="tap -ml-1 mt-2 inline-flex items-center gap-1 text-xs text-muted active:opacity-70"
+          className="tap -my-1 -ml-1 inline-flex items-center gap-1 self-start text-xs text-muted active:opacity-70"
         >
           <ChevronDownIcon
             className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`}
@@ -128,7 +153,7 @@ function ClosedWeek({ review, rows }: { review: WeekReview; rows: Session[] }) {
           {open ? "ocultar treinos" : `ver treinos (${rows.length})`}
         </button>
         {open && (
-          <ul className="mt-3 flex flex-col gap-2 border-t border-border pt-3">
+          <ul className="flex flex-col gap-2 border-t border-border pt-3">
             {rows.map((s) => (
               <SessionRow key={s.id} session={s} nested />
             ))}

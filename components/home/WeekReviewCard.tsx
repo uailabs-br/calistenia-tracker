@@ -2,103 +2,108 @@
 
 import { useEffect, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import {
-  getWeekReview,
-  buildWeekReviewTexts,
-} from "@/lib/db/queries/weekReview";
-import { localDateKey, shortDate, weekStartKey } from "@/lib/utils/date";
-import { CheckIcon, ChevronRightIcon } from "@/components/ui/icons";
+import type { Workout } from "@/lib/plan/schema";
+import { getWeekReview } from "@/lib/db/queries/weekReview";
+import { weekRangeShort } from "@/lib/domain/weekRecap";
+import { localDateKey, weekStartKey } from "@/lib/utils/date";
+import { WeekDays } from "./WeekDays";
+import { WeekReviewScreen } from "./WeekReviewScreen";
 
 const SEEN_KEY = "calistenia:week-review-seen";
 
 /**
- * Feedback semanal: aparece na primeira abertura de cada semana nova, com o
- * resumo da semana anterior (o que foi bom, o que melhorar, frase contextual).
- * Dispensado, só volta na próxima virada de semana. MVP 100% local.
+ * Resumo da semana passada na home: número contra a meta, os dias e o que
+ * houve de destaque, num olhar. O detalhe abre em tela cheia pelo botão, nunca
+ * sozinho. Some quando a pessoa toca em "Começar nova semana" ou conclui o
+ * primeiro treino da semana nova: dali em diante o resumo não tem mais o que
+ * fazer na home. MVP 100% local.
  */
-export function WeekReviewCard() {
+export function WeekReviewCard({
+  streak,
+  weekStarted,
+  next,
+}: {
+  /** Semanas seguidas batendo a meta (o mesmo número da constância). */
+  streak: number;
+  /** Já tem treino concluído na semana corrente. */
+  weekStarted: boolean;
+  /** Próximo treino da fila, pro "Essa semana". */
+  next: Workout | null;
+}) {
   // undefined = ainda não leu o localStorage (evita flash no SSR/hidratação)
   const [seen, setSeen] = useState<string | null | undefined>(undefined);
   useEffect(() => setSeen(localStorage.getItem(SEEN_KEY)), []);
+  const [open, setOpen] = useState(false);
 
   const review = useLiveQuery(() => getWeekReview(), []);
   const currentWeek = weekStartKey(localDateKey());
 
-  if (seen === undefined || !review || seen === currentWeek) return null;
+  if (seen === undefined || !review || seen === currentWeek || weekStarted) return null;
 
-  const t = buildWeekReviewTexts(review);
-  const dismiss = () => {
+  const start = () => {
     localStorage.setItem(SEEN_KEY, currentWeek);
     setSeen(currentWeek);
+    setOpen(false);
   };
 
-  const volumeStat =
-    review.volumeDeltaPct !== null
-      ? `${review.volumeDeltaPct > 0 ? "+" : ""}${review.volumeDeltaPct}%`
-      : String(review.volume);
+  const met = review.sessionsDone >= review.goal;
+  const delta = review.volumeDeltaPct;
 
   return (
-    <section className="card anim-fade-in-up px-4 py-4">
-      <p className="eyebrow-lg">
-        Resumo da semana · {shortDate(review.weekStart)}–
-        {shortDate(review.weekEnd)}
-      </p>
+    <section className="card glow anim-fade-in-up flex flex-col gap-3.5 bg-ac-bg p-4">
+      <p className="eyebrow -mb-1">Semana passada · {weekRangeShort(review.weekStart, review.weekEnd)}</p>
+      <div className="flex items-end justify-between gap-3">
+        <div>
+          <p className="display text-display-lg leading-[0.85] text-ac">
+            {review.sessionsDone}
+            <span className="text-3xl text-muted">/{review.goal}</span>
+          </p>
+          <p className="mt-1 font-mono text-xs text-muted">
+            {met ? "meta batida" : "treinos da meta"}
+          </p>
+        </div>
+        <div className="w-40 shrink-0">
+          <WeekDays days={review.days} size="sm" />
+        </div>
+      </div>
 
-      <div className="mt-3 flex gap-4">
-        <div>
-          <p className="tnum text-lg font-semibold leading-none">
-            {review.sessionsDone}/{review.planTotal}
-          </p>
-          <p className="mt-1 text-3xs uppercase tracking-wide text-muted">
-            treinos
-          </p>
-        </div>
-        <div>
-          <p className="tnum text-lg font-semibold leading-none">
-            {volumeStat}
-          </p>
-          <p className="mt-1 text-3xs uppercase tracking-wide text-muted">
-            {review.volumeDeltaPct !== null ? "volume vs. ant." : "volume"}
-          </p>
-        </div>
-        {review.avgRpe !== null && (
-          <div>
-            <p className="tnum text-lg font-semibold leading-none">
-              {review.avgRpe}
-            </p>
-            <p className="mt-1 text-3xs uppercase tracking-wide text-muted">
-              rpe médio
-            </p>
-          </div>
+      <div className="flex flex-wrap gap-1.5">
+        {review.records.length > 0 && (
+          <span className="rounded-full bg-gold/14 px-2.5 py-0.5 font-mono text-xs text-gold">
+            {review.records.length} {review.records.length === 1 ? "recorde" : "recordes"}
+          </span>
+        )}
+        {review.levelsClosed.length > 0 && (
+          <span className="rounded-full bg-ac/14 px-2.5 py-0.5 font-mono text-xs text-ac">
+            {review.levelsClosed.length}{" "}
+            {review.levelsClosed.length === 1 ? "nível concluído" : "níveis concluídos"}
+          </span>
+        )}
+        {delta !== null && (
+          <span className="rounded-full border border-border px-2.5 py-0.5 font-mono text-xs text-muted">
+            {delta > 0 ? "+" : delta < 0 ? "−" : ""}
+            {Math.abs(delta)}% volume
+          </span>
         )}
       </div>
 
-      <ul className="mt-3 flex flex-col gap-1.5 text-sm">
-        <li className="flex items-start gap-2">
-          <span className="mt-0.5 shrink-0 text-success">
-            <CheckIcon className="h-4 w-4" />
-          </span>
-          <span>{t.good}</span>
-        </li>
-        {t.improve && (
-          <li className="flex items-start gap-2">
-            <span className="mt-0.5 shrink-0 text-warn">
-              <ChevronRightIcon className="h-4 w-4" />
-            </span>
-            <span>{t.improve}</span>
-          </li>
-        )}
-      </ul>
-
-      <p className="mt-3 text-sm italic text-muted">{t.phrase}</p>
-
       <button
         type="button"
-        onClick={dismiss}
-        className="tap mt-4 w-full rounded-xl border border-border bg-surface2 py-2.5 text-sm font-medium"
+        onClick={() => setOpen(true)}
+        className="btn-primary tap w-full rounded-xl py-3 font-medium"
       >
-        Ok, bora pra essa semana
+        Ver a semana passada
       </button>
+
+      {open && (
+        <WeekReviewScreen
+          review={review}
+          streak={streak}
+          next={next}
+          onStart={start}
+          onClose={() => setOpen(false)}
+        />
+      )}
     </section>
   );
 }

@@ -20,6 +20,46 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-10-27, histórico de semanas — 629 testes):**
+> as semanas fechadas de Evolução → Histórico seguem o resumo novo: período, tira de dias,
+> número contra a meta da constância e os mesmos destaques. Saíram a frase motivacional e os
+> textos antigos (`buildWeekReviewTexts`, com os testes dela). Recordes e níveis do histórico
+> são refeitos uma vez pra todas as semanas, não uma por semana.
+
+> **Atualização (pós-v1.8, 2026-10-27, semana passada — 633 testes):**
+> aprovado em protótipo clicável (artifact `89ZGUBgmhoWeq725tLPCPd`, versão enxuta). O resumo
+> da semana virou card com o número contra a meta, os dias e chips de recorde/nível/volume;
+> "Ver a semana passada" abre a tela cheia, que cabe sem rolar, com o botão "Começar nova
+> semana" sempre à vista. Sai a frase motivacional; entram até três destaques (nível
+> concluído, recordes, o que ficou pra trás) e o próximo treino com o objetivo em jogo. O card
+> some ao tocar no botão ou ao concluir o 1º treino da semana. A meta passou a ser a mesma da
+> constância (a do perfil), não o nº de treinos do plano. Nada novo no banco: recordes e
+> níveis concluídos são refeitos dos logs.
+
+> **Atualização (pós-v1.8, 2026-10-27, revisão das escadas e contagem — 623 testes):**
+> revisão das 17 escadas contra o Overcoming Gravity 2: L-sit 4, muscle-up 6, dips 5, pull-up 5
+> e handstand 7–8 trocados; degraus novos no push-up e no back lever; frog stand das sementes
+> no press de braço flexionado. Front lever ficou como estava, por escolha. Os números da home
+> e de Evolução contam só na primeira vez que a tela abre desde que o app carregou. Ver
+> [PLAN-revisao-escadas.md](PLAN-revisao-escadas.md).
+
+> **Atualização (pós-v1.8, 2026-10-27, escadas v3.1 — 618 testes):**
+> skill nova `bent_arm_press` ("Push to Handstand", braço flexionado: frog stand → negativa
+> → frog press → headstand → L-sit → tiger bend → HS-elbow lever-HS), da coluna de press de
+> braço flexionado do Overcoming Gravity 2 e do Lost Art of Hand Balancing. `press_handstand`
+> virou só braço estendido e seguiu a coluna do OG2 (o tuck press saiu: de braço estendido é
+> mais difícil que o straddle). Mapeamentos: MU completo → muscle-up 5, HSPU negativa →
+> HSPU 3, toe-pull → handstand 4, negativa do frog → press de braço flexionado 2 (também
+> no plano pessoal). Cinco exercícios novos no catálogo, nenhum id mudou.
+
+> **Atualização (pós-v1.8, 2026-10-27, campanha — 614 testes):**
+> aprovada em protótipo clicável. Os objetivos de "Meus objetivos" viraram a campanha: tela
+> de carregamento ao começar o treino (escada do nível, o que está em jogo, dica de forma),
+> uma linha por objetivo no card do próximo treino, bloco de objetivos no fim do treino e
+> cena de "nível concluído" depois de "Continuar". Sem dado novo. `fl-single-leg-hold`
+> mapeado ao nível 3 do front lever. Conquista e recorde da home diminuíram. Ver
+> [PLAN-campanha.md](PLAN-campanha.md).
+
 > **Atualização (pós-v1.8, 2026-10-26, tema tático — 594 testes):**
 > aprovado em protótipo clicável (tático, corrida e GTA; ficou o tático). Ajustes ganhou
 > "Aparência": estilo padrão ou tático e, no tático, cinco cores (verde, ciano, âmbar, oliva,

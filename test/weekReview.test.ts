@@ -3,9 +3,9 @@ import { db, type Session } from "@/lib/db/schema";
 import {
   getWeekReview,
   getWeekHistory,
-  buildWeekReviewTexts,
-  type WeekReview,
 } from "@/lib/db/queries/weekReview";
+import { upsertLog } from "@/lib/db/repositories/logs";
+import { closingIndexes } from "@/lib/domain/campaign";
 import { localDateKey, shiftDays, weekStartKey } from "@/lib/utils/date";
 
 // Semanas relativas a hoje (a query revisa sempre a semana anterior à corrente)
@@ -20,8 +20,9 @@ function session(date: string, rpe: number | null = 3): Session {
     workout_id: "A",
     date,
     status: "completed",
-    started_at: Date.now(),
-    ended_at: Date.now(),
+    // a data manda na ordem: com todos no mesmo instante o desempate é o uuid
+    started_at: new Date(`${date}T12:00:00`).getTime(),
+    ended_at: new Date(`${date}T13:00:00`).getTime(),
     rpe,
     note: null,
     source: "plan",
@@ -30,17 +31,16 @@ function session(date: string, rpe: number | null = 3): Session {
   };
 }
 
-async function addLog(sessionId: string, value: number) {
+async function addLog(sessionId: string, value: number, skipped = false, exerciseId = "mu-puxada-explosiva") {
   await db.exerciseLogs.add({
     id: crypto.randomUUID(),
     session_id: sessionId,
-    // exercício do treino A do plano
-    exercise_id: "mu-puxada-explosiva",
+    exercise_id: exerciseId,
     as_target: false,
     sets: [{ index: 0, value }],
     flags_selected: [],
     note: null,
-    skipped: false,
+    skipped,
     logged_at: Date.now(),
     updated_at: Date.now(),
     deleted_at: null,
@@ -136,39 +136,73 @@ describe("getWeekHistory", () => {
   });
 });
 
-describe("buildWeekReviewTexts", () => {
-  const base: WeekReview = {
-    weekStart: "2026-07-06",
-    weekEnd: "2026-07-12",
-    sessionsDone: 5,
-    planTotal: 5,
-    volume: 100,
-    volumeDeltaPct: 10,
-    avgRpe: 3,
-    skippedCount: 0,
-  };
-
-  it("semana completa → destaca a completude, sem 'a melhorar'", () => {
-    const t = buildWeekReviewTexts(base);
-    expect(t.good).toContain("Semana completa");
-    expect(t.improve).toBeNull();
+describe("getWeekReview — o que a tela da semana mostra", () => {
+  it("dias de seg a dom com o rótulo do treino, e meta igual à da constância", async () => {
+    const mon = session(lastMonday);
+    const wed = session(shiftDays(lastMonday, 2));
+    await db.sessions.bulkAdd([mon, wed]);
+    const r = await getWeekReview();
+    expect(r!.days).toEqual(["A", null, "A", null, null, null, null]);
+    // sem meta no perfil (teste roda sem localStorage): o nº de treinos do plano
+    expect(r!.goal).toBe(r!.planTotal);
   });
 
-  it("semana parcial com volume subindo → good de volume, improve de treinos", () => {
-    const t = buildWeekReviewTexts({ ...base, sessionsDone: 3, volumeDeltaPct: 15 });
-    expect(t.good).toContain("15%");
-    expect(t.improve).toContain("2 treinos");
+  it("recorde da semana parte do melhor de antes dela", async () => {
+    const prev = session(prevMonday);
+    const a = session(lastMonday);
+    const b = session(shiftDays(lastMonday, 2));
+    await db.sessions.bulkAdd([prev, a, b]);
+    // recorde precisa de unidade: o exercício tem de estar no plano (treino A)
+    await addLog(prev.id, 4, false, "pull-up-negativa-lenta");
+    await addLog(a.id, 5, false, "pull-up-negativa-lenta");
+    await addLog(b.id, 6, false, "pull-up-negativa-lenta");
+    const r = await getWeekReview();
+    expect(r!.records).toHaveLength(1);
+    expect(r!.records[0]).toMatchObject({ value: 6, previous: 4 });
   });
 
-  it("semana completa com volume caindo → improve aponta o volume", () => {
-    const t = buildWeekReviewTexts({ ...base, volumeDeltaPct: -8 });
-    expect(t.improve).toContain("8% abaixo");
+  it("pulados agrupados por exercício", async () => {
+    const a = session(lastMonday);
+    const b = session(shiftDays(lastMonday, 1));
+    await db.sessions.bulkAdd([a, b]);
+    await addLog(a.id, 0, true);
+    await addLog(b.id, 0, true);
+    const r = await getWeekReview();
+    expect(r!.skipped).toHaveLength(1);
+    expect(r!.skipped[0].count).toBe(2);
   });
 
-  it("frase é determinística para a mesma semana", () => {
-    const a = buildWeekReviewTexts(base).phrase;
-    const b = buildWeekReviewTexts(base).phrase;
-    expect(a).toBe(b);
-    expect(a.length).toBeGreaterThan(10);
+  it("nível que fechou na semana: a 2ª sessão no critério caiu nela", async () => {
+    const a = session(lastMonday);
+    const b = session(shiftDays(lastMonday, 3));
+    await db.sessions.bulkAdd([a, b]);
+    for (const s of [a, b]) {
+      await upsertLog({
+        session_id: s.id,
+        exercise_id: "mu-completo",
+        as_target: false,
+        sets: [3, 3, 3].map((value, index) => ({ index, value })),
+        flags_selected: [],
+        skipped: false,
+        sets_performed: { type: "reps_rir", reps: [3, 3, 3], rir: null, form_ok: true },
+      });
+    }
+    const r = await getWeekReview();
+    expect(r!.levelsClosed).toEqual([
+      expect.objectContaining({ skillId: "muscle_up", level: 5 }),
+    ]);
+  });
+});
+
+describe("closingIndexes", () => {
+  const met = { met: true, realFailure: false };
+  const miss = { met: false, realFailure: true };
+  const neutral = { met: false, realFailure: false, neutral: true };
+
+  it("marca a sessão em que a sequência chega ao exigido; neutro não quebra", () => {
+    expect(closingIndexes([met, neutral, met], 2)).toEqual([2]);
+    expect(closingIndexes([met, miss, met, met], 2)).toEqual([3]);
+    expect(closingIndexes([met, met, met], 2)).toEqual([1]);
+    expect(closingIndexes([met], 2)).toEqual([]);
   });
 });

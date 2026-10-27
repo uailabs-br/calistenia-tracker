@@ -132,8 +132,12 @@ export default function HomePage() {
 
       {active && activeWorkout && <ResumeBanner workout={activeWorkout} />}
 
-      {/* Feedback da última semana: só na 1ª abertura de cada semana nova */}
-      <WeekReviewCard />
+      {/* Semana passada: até tocar em "Começar nova semana" ou concluir o 1º treino da semana */}
+      <WeekReviewCard
+        streak={overview.currentStreak}
+        weekStarted={weekStatus.done > 0}
+        next={next}
+      />
 
       {/* Constância primeiro: resultado atual em 1 olhada */}
       <ConsistencyCard streak={overview.currentStreak} weekStatus={weekStatus} />
