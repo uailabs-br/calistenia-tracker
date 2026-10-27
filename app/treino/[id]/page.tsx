@@ -28,6 +28,14 @@ import { MissionIntro } from "@/components/session/MissionIntro";
 import { ChevronRightIcon } from "@/components/ui/icons";
 import { accentVars } from "@/components/ui/accent";
 
+/** "x,y" da URL → ponto na janela; malformado abre do centro, perto do rodapé. */
+function parseOrigin(param: string): { x: number; y: number } {
+  const [x, y] = param.split(",").map(Number);
+  return Number.isFinite(x) && Number.isFinite(y)
+    ? { x, y }
+    : { x: window.innerWidth / 2, y: window.innerHeight * 0.8 };
+}
+
 export default function TreinoPage() {
   const params = useParams<{ id: string }>();
   const search = useSearchParams();
@@ -36,6 +44,10 @@ export default function TreinoPage() {
   const urlId = decodeURIComponent(params.id);
   const todayKey = localDateKey();
   const initialEx = search.get("ex") ?? undefined;
+  // Começo pela home: "?start=x,y" é o centro do botão de lá, de onde a tela de
+  // carregamento abre. A prévia fica pra quem vem da aba Treino ou da lista.
+  const startParam = search.get("start");
+  const autoStart = Boolean(initialEx || startParam);
 
   // Treino pela URL; se o id não existe no plano (link antigo, plano trocado),
   // cai no primeiro do plano.
@@ -49,9 +61,6 @@ export default function TreinoPage() {
   // null = carregado sem sessão; undefined = ainda carregando (distinção importa
   // para o auto-start do deep-link não disparar antes da hora).
   const active = useLiveQuery(async () => (await getActiveSession()) ?? null, []);
-  // Antes de saber se há sessão, a tela não sabe se é prévia ou runner: mostrar
-  // a prévia e trocar pelo runner era o "pisca" de quem volta pro treino.
-  const showSkeleton = useDelayedFlag(!planReady || active === undefined);
 
   // Próximo da sequência: só pra marcar na seleção. Não obriga a fazer esse.
   const lastPlanId = useLiveQuery(() => getLastPlanWorkoutId(), []);
@@ -74,12 +83,12 @@ export default function TreinoPage() {
     async () =>
       (await getCompletedSessionsOn(todayKey)).find(
         (s) => s.source === "plan" && s.workout_id === selected
-      ),
+      ) ?? null,
     [todayKey, selected]
   );
 
-  // Tela de carregamento: abre num círculo a partir do botão. Só ao começar pelo
-  // botão: retomada e deep-link (?ex=) vão direto pro exercício.
+  // Tela de carregamento: abre num círculo a partir do botão (daqui ou da home).
+  // Retomada e deep-link (?ex=) vão direto pro exercício.
   const [intro, setIntro] = useState<{ x: number; y: number } | null>(null);
 
   const start = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -95,16 +104,32 @@ export default function TreinoPage() {
     <MissionIntro workout={workout} origin={intro} onClose={() => setIntro(null)} />
   );
 
-  // Deep-link ?ex=: sem sessão ativa e sem já ter concluído hoje, inicia direto.
-  const autoStarted = useRef(false);
+  // ?start= (home) e ?ex= (deep-link): sem sessão ativa e sem já ter concluído
+  // hoje, inicia direto. Concluído hoje cai na prévia, com o "Treinar de novo".
+  // Decide uma vez só, no carregamento. Se havia outra sessão em andamento, o
+  // pedido morre ali: sem isso ele ficava pendente e, quando aquela sessão
+  // terminava, criava uma nova e abria o carregamento por cima do resumo.
+  const autoDecided = useRef(false);
   useEffect(() => {
-    if (!initialEx || autoStarted.current) return;
-    if (active === undefined) return; // ainda carregando
+    if (!autoStart || autoDecided.current) return;
+    if (active === undefined || completedForSelected === undefined) return; // carregando
+    autoDecided.current = true;
     if (active || completedForSelected) return; // já há sessão/registro
-    autoStarted.current = true;
     setStarting(true);
+    if (startParam && !initialEx) setIntro(parseOrigin(startParam));
     createSession(selected);
-  }, [initialEx, active, completedForSelected, selected]);
+  }, [autoStart, startParam, initialEx, active, completedForSelected, selected]);
+
+  // Enquanto o começo automático decide e cria a sessão, a prévia não aparece
+  // nem por um frame: era ela piscando antes do carregamento/runner.
+  const autoPending =
+    autoStart &&
+    !active &&
+    (completedForSelected === undefined ||
+      (completedForSelected === null && (!autoDecided.current || starting)));
+  // Antes de saber se há sessão, a tela não sabe se é prévia ou runner: mostrar
+  // a prévia e trocar pelo runner era o "pisca" de quem volta pro treino.
+  const showSkeleton = useDelayedFlag(!planReady || active === undefined || autoPending);
 
   // Sessão em andamento (ou acabou de finalizar e mostra o resumo) → runner
   // do treino da PRÓPRIA sessão.
@@ -136,8 +161,13 @@ export default function TreinoPage() {
 
   // Sem isto, o HTML estático traz o treino do plano embutido e o cliente, o do
   // override: a hidratação falha e a tela inteira é repintada.
-  if (!planReady || active === undefined) {
-    return showSkeleton ? <WorkoutSkeleton /> : <div className="px-4 pt-6" aria-busy="true" />;
+  if (!planReady || active === undefined || autoPending) {
+    return (
+      <>
+        {showSkeleton ? <WorkoutSkeleton /> : <div className="px-4 pt-6" aria-busy="true" />}
+        {introEl}
+      </>
+    );
   }
 
   return (

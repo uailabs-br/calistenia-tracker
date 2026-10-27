@@ -61,3 +61,15 @@ export function longDate(dateKey: string): string {
     year: "numeric",
   });
 }
+
+/** Quando foi, a partir de hoje: "hoje", "ontem", "quinta, há 5 dias", "há 12 dias". */
+export function relativeDay(dateKey: string, todayKey: string = localDateKey()): string {
+  const n = daysBetween(dateKey, todayKey);
+  if (n <= 0) return "hoje";
+  if (n === 1) return "ontem";
+  if (n >= 7) return `há ${n} dias`;
+  const weekday = new Date(dateKey + "T00:00:00")
+    .toLocaleDateString("pt-BR", { weekday: "long" })
+    .replace("-feira", "");
+  return `${weekday}, há ${n} dias`;
+}

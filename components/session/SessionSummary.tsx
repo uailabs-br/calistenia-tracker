@@ -138,165 +138,175 @@ function SummaryScreen({
 
   return (
     <Portal>
+      {/* Só o conteúdo rola: o botão de saída fica preso embaixo, à vista mesmo
+          com recorde, objetivo e aviso de progressão empilhados. */}
       <div
-        className="anim-fade-in fixed inset-0 z-40 overflow-y-auto bg-bg"
+        className="anim-fade-in fixed inset-0 z-40 flex flex-col bg-bg"
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        style={accentVars(accent)}
       >
-        <div
-          ref={ref}
-          tabIndex={-1}
-          className="mx-auto flex max-w-md flex-col gap-[22px] px-4 pb-8 outline-none"
-          style={{ ...accentVars(accent), paddingTop: "calc(env(safe-area-inset-top) + 2rem)" }}
-        >
-          <header>
-            <p
-              className="eyebrow-lg"
-              style={reveal(t, T.title)}
-            >
-              Treino {workout.label} · {workout.title}
-            </p>
-            <div className="mt-1.5 flex items-center gap-2.5">
-              <span
-                className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-ac text-on-accent"
-                style={{
-                  opacity: Math.min(1, pop * 2),
-                  transform: `scale(${pop < 1 ? 0.4 + pop * 0.75 : 1})`,
-                }}
-                aria-hidden="true"
-              >
-                <CheckIcon className="h-5 w-5" />
-              </span>
-              <h2
-                id={titleId}
-                className="display-caps text-display leading-none"
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <div
+            ref={ref}
+            tabIndex={-1}
+            className="mx-auto flex max-w-md flex-col gap-[22px] px-4 pb-6 outline-none"
+            style={{ paddingTop: "calc(env(safe-area-inset-top) + 2rem)" }}
+          >
+            <header>
+              <p
+                className="eyebrow-lg"
                 style={reveal(t, T.title)}
               >
-                Treino concluído
-              </h2>
-            </div>
-          </header>
-
-          <section aria-label="Números do treino" className="flex flex-col gap-2.5">
-            <div className="card flex items-end justify-between gap-3 p-4">
-              <div>
-                <p
-                  className="display text-display-hero leading-[0.9] text-ac"
-                  aria-label={`${hero.value} ${hero.label}`}
-                >
-                  {countAt(t, hero.value, T.hero, 950)}
-                </p>
-                <p className="mt-1.5 font-mono text-xs text-muted">{hero.label}</p>
-              </div>
-              {deltaText && (
+                Treino {workout.label} · {workout.title}
+              </p>
+              <div className="mt-1.5 flex items-center gap-2.5">
                 <span
-                  className="tnum mb-1 shrink-0 rounded-full px-2.5 py-1 text-xs"
+                  className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-ac text-on-accent"
                   style={{
-                    ...reveal(t, T.delta),
-                    ...(delta! > 0
-                      ? {
-                          background: "color-mix(in oklab, var(--color-success) 14%, transparent)",
-                          color: "var(--color-success)",
-                        }
-                      : { border: "1px solid var(--color-border)", color: "var(--color-muted)" }),
+                    opacity: Math.min(1, pop * 2),
+                    transform: `scale(${pop < 1 ? 0.4 + pop * 0.75 : 1})`,
+                  }}
+                  aria-hidden="true"
+                >
+                  <CheckIcon className="h-5 w-5" />
+                </span>
+                <h2
+                  id={titleId}
+                  className="display-caps text-display leading-none"
+                  style={reveal(t, T.title)}
+                >
+                  Treino concluído
+                </h2>
+              </div>
+            </header>
+
+            <section aria-label="Números do treino" className="flex flex-col gap-2.5">
+              <div className="card flex items-end justify-between gap-3 p-4">
+                <div>
+                  <p
+                    className="display text-display-hero leading-[0.9] text-ac"
+                    aria-label={`${hero.value} ${hero.label}`}
+                  >
+                    {countAt(t, hero.value, T.hero, 950)}
+                  </p>
+                  <p className="mt-1.5 font-mono text-xs text-muted">{hero.label}</p>
+                </div>
+                {deltaText && (
+                  <span
+                    className="tnum mb-1 shrink-0 rounded-full px-2.5 py-1 text-xs"
+                    style={{
+                      ...reveal(t, T.delta),
+                      ...(delta! > 0
+                        ? {
+                            background: "color-mix(in oklab, var(--color-success) 14%, transparent)",
+                            color: "var(--color-success)",
+                          }
+                        : { border: "1px solid var(--color-border)", color: "var(--color-muted)" }),
+                    }}
+                  >
+                    {deltaText}
+                  </span>
+                )}
+              </div>
+
+              <div
+                className={`grid gap-2.5 ${tiles.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}
+              >
+                {tiles.map((tile, i) => (
+                  <div key={tile.key} className="card p-3">
+                    <p
+                      className="display text-display leading-none"
+                      aria-label={`${tile.value} ${tile.label}`}
+                    >
+                      {countAt(t, tile.value, T.tiles[i] ?? T.tiles[0], 800)}
+                      {tile.total !== null && (
+                        <span className="text-xl text-muted">/{tile.total}</span>
+                      )}
+                    </p>
+                    <p className="mt-1 font-mono text-2xs text-muted">
+                      {tile.label}
+                      {tile.key === "sets" && extraSets > 0 && (
+                        <span className="text-ac" style={{ opacity: progressAt(t, T.extra, 300) }}>
+                          {" "}+{extraSets} extra
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {prs.length > 0 && (
+              <section aria-label="Recordes" style={reveal(t, T.pr)}>
+                <p className="eyebrow mb-2">
+                  {prs.length === 1 ? "Recorde" : "Recordes"}
+                </p>
+                <ul
+                  className="rounded-card border"
+                  style={{
+                    borderColor: "color-mix(in oklab, var(--color-gold) 25%, var(--color-border))",
+                    background: "color-mix(in oklab, var(--color-gold) 5%, var(--color-surface))",
                   }}
                 >
-                  {deltaText}
-                </span>
-              )}
-            </div>
-
-            <div
-              className={`grid gap-2.5 ${tiles.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}
-            >
-              {tiles.map((tile, i) => (
-                <div key={tile.key} className="card p-3">
-                  <p
-                    className="display text-display leading-none"
-                    aria-label={`${tile.value} ${tile.label}`}
-                  >
-                    {countAt(t, tile.value, T.tiles[i] ?? T.tiles[0], 800)}
-                    {tile.total !== null && (
-                      <span className="text-xl text-muted">/{tile.total}</span>
-                    )}
-                  </p>
-                  <p className="mt-1 font-mono text-2xs text-muted">
-                    {tile.label}
-                    {tile.key === "sets" && extraSets > 0 && (
-                      <span className="text-ac" style={{ opacity: progressAt(t, T.extra, 300) }}>
-                        {" "}+{extraSets} extra
-                      </span>
-                    )}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {prs.length > 0 && (
-            <section aria-label="Recordes" style={reveal(t, T.pr)}>
-              <p className="eyebrow mb-2">
-                {prs.length === 1 ? "Recorde" : "Recordes"}
-              </p>
-              <ul
-                className="rounded-card border"
-                style={{
-                  borderColor: "color-mix(in oklab, var(--color-gold) 25%, var(--color-border))",
-                  background: "color-mix(in oklab, var(--color-gold) 5%, var(--color-surface))",
-                }}
-              >
-                {prs.map((p, i) => {
-                  const start = T.prCount + i * 150;
-                  const done = t >= start + PR_COUNT_MS;
-                  // tranco curto quando o número chega no recorde
-                  const bump = done && t < start + PR_COUNT_MS + 250;
-                  const u = p.pr.unit === "seconds" ? "s" : "";
-                  return (
-                    <li
-                      key={p.id}
-                      className={`flex items-center gap-3 px-4 py-3 ${i > 0 ? "border-t border-border" : ""}`}
-                    >
-                      <span className="shrink-0 text-gold" aria-hidden="true">
-                        <TrophyIcon className="h-5 w-5" />
-                      </span>
-                      <span className="min-w-0 flex-1 truncate font-medium">{p.name}</span>
-                      <span
-                        className="tnum shrink-0 text-sm text-muted"
-                        aria-label={`de ${p.pr.previous} para ${p.pr.value}${p.pr.unit === "seconds" ? " segundos" : " reps"}`}
+                  {prs.map((p, i) => {
+                    const start = T.prCount + i * 150;
+                    const done = t >= start + PR_COUNT_MS;
+                    // tranco curto quando o número chega no recorde
+                    const bump = done && t < start + PR_COUNT_MS + 250;
+                    const u = p.pr.unit === "seconds" ? "s" : "";
+                    return (
+                      <li
+                        key={p.id}
+                        className={`flex items-center gap-3 px-4 py-3 ${i > 0 ? "border-t border-border" : ""}`}
                       >
-                        {p.pr.previous}
-                        {u} →{" "}
-                        <span
-                          className="display inline-block text-2xl text-gold"
-                          style={{
-                            transform: `scale(${bump ? 1.25 : 1})`,
-                            transition: "transform 0.18s cubic-bezier(0.3, 1.6, 0.5, 1)",
-                          }}
-                        >
-                          {countAt(t, p.pr.value, start, PR_COUNT_MS, p.pr.previous)}
-                          {u}
+                        <span className="shrink-0 text-gold" aria-hidden="true">
+                          <TrophyIcon className="h-5 w-5" />
                         </span>
-                        {u ? "" : " reps"}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-          )}
+                        <span className="min-w-0 flex-1 truncate font-medium">{p.name}</span>
+                        <span
+                          className="tnum shrink-0 text-sm text-muted"
+                          aria-label={`de ${p.pr.previous} para ${p.pr.value}${p.pr.unit === "seconds" ? " segundos" : " reps"}`}
+                        >
+                          {p.pr.previous}
+                          {u} →{" "}
+                          <span
+                            className="display inline-block text-2xl text-gold"
+                            style={{
+                              transform: `scale(${bump ? 1.25 : 1})`,
+                              transition: "transform 0.18s cubic-bezier(0.3, 1.6, 0.5, 1)",
+                            }}
+                          >
+                            {countAt(t, p.pr.value, start, PR_COUNT_MS, p.pr.previous)}
+                            {u}
+                          </span>
+                          {u ? "" : " reps"}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            )}
 
-          <CampaignResult results={campaign} t={t} start={campaignAt} />
+            <CampaignResult results={campaign} t={t} start={campaignAt} />
 
-          <ProgressionNudge
-            workout={workout}
-            accent={accent}
-            excludeSkills={campaign.map((c) => c.item.skillId)}
-            style={reveal(t, signalsAt)}
-          />
+            <ProgressionNudge
+              workout={workout}
+              accent={accent}
+              excludeSkills={campaign.map((c) => c.item.skillId)}
+              style={reveal(t, signalsAt)}
+            />
+          </div>
+        </div>
 
+        <div
+          className="shrink-0 border-t border-border px-4 pt-3"
+          style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
+        >
           {/* entrada no invólucro: transform inline no botão mataria o :active */}
-          <div style={reveal(t, buttonAt)}>
+          <div className="mx-auto max-w-md" style={reveal(t, buttonAt)}>
             <button
               type="button"
               onClick={closed.length > 0 ? () => setScene(0) : onClose}

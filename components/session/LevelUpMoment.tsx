@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState, type CSSProperties } from "react";
+import { useEffect, useId, type CSSProperties } from "react";
 import { shortSkillName, type CampaignItem } from "@/lib/domain/campaign";
 import { formatCriteria, getCriteria } from "@/lib/plan/skills";
 import { useModalA11y } from "@/lib/utils/useModalA11y";
@@ -12,8 +12,9 @@ import { SkillLadder } from "./SkillLadder";
 const at = (ms: number) => ({ "--d": `${ms}ms` }) as CSSProperties;
 
 /**
- * Cena de nível concluído, no molde da tela de recorde (flash, cortes secos),
- * mas na cor do treino: recorde é número, isto é a escada andando. Abre quando
+ * Cena de nível concluído, no molde da tela de recorde (entrada suave, sem
+ * flash: o quadro aceso de 120ms lia como tela piscando), mas na cor do
+ * treino: recorde é número, isto é a escada andando. Abre quando
  * a pessoa toca em "Continuar" no fim do treino, não sozinha: aparecer logo
  * depois do resumo confundia. Com dois níveis fechados no mesmo treino, uma
  * cena por vez (`index` de `total`).
@@ -35,12 +36,9 @@ export function LevelUpMoment({
 }) {
   const titleId = useId();
   const ref = useModalA11y<HTMLDivElement>(onLater);
-  const [flash, setFlash] = useState(true);
 
   useEffect(() => {
     haptic(60);
-    const off = window.setTimeout(() => setFlash(false), 120);
-    return () => window.clearTimeout(off);
   }, []);
 
   const next = item.ladder[item.level] ?? null;
@@ -54,18 +52,16 @@ export function LevelUpMoment({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={`fixed inset-0 z-[60] flex flex-col overflow-y-auto px-5 outline-none ${flash ? "bg-ac" : "bg-bg"}`}
+        className="mission-screen anim-fade-in fixed inset-0 z-[60] flex flex-col overflow-y-auto px-5 outline-none"
         style={{
           ...accentVars(accent),
           paddingTop: "calc(env(safe-area-inset-top) + 2.5rem)",
           paddingBottom: "calc(env(safe-area-inset-bottom) + 1.5rem)",
         }}
       >
-        <div
-          className={`mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-[18px] ${flash ? "invisible" : ""}`}
-        >
-          <div className="pr-cut flex items-center justify-between gap-3" style={at(0)}>
-            <span className="bg-ac px-2 py-1 font-mono text-xs font-medium uppercase tracking-[0.14em] text-on-accent">
+        <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-[18px]">
+          <div className="anim-rise flex items-center justify-between gap-3" style={at(150)}>
+            <span className="rounded-full bg-ac px-2.5 py-1 font-mono text-xs font-medium uppercase tracking-[0.14em] text-on-accent">
               Nível concluído
             </span>
             {total > 1 && (
@@ -74,21 +70,21 @@ export function LevelUpMoment({
               </span>
             )}
           </div>
-          <p className="pr-cut font-mono text-sm uppercase leading-snug tracking-[0.14em]" style={at(180)}>
+          <p className="anim-rise font-mono text-sm uppercase leading-snug tracking-[0.14em]" style={at(250)}>
             {shortSkillName(item.skillName)} · {item.ladder[item.level - 1]}
           </p>
           <p
             id={titleId}
-            className="pr-slam display-caps text-display-hero leading-[0.8] text-ac"
-            style={at(380)}
+            className="anim-rise display-caps text-display-hero leading-[0.8] text-ac"
+            style={at(350)}
           >
             Nível {item.level}
           </p>
-          <span className="pr-wipe block h-2 w-full bg-ac" style={at(620)} />
-          <div className="pr-cut" style={at(900)}>
+          <span className="anim-grow-x block h-1 w-full rounded-full bg-ac" style={at(500)} />
+          <div className="anim-rise" style={at(700)}>
             <SkillLadder names={item.ladder} level={item.level} mode="levelUp" />
           </div>
-          <div className="pr-cut" style={at(1700)}>
+          <div className="anim-rise" style={at(1700)}>
             {next ? (
               <>
                 <p className="eyebrow">Próximo nível · desbloqueado</p>
@@ -105,7 +101,7 @@ export function LevelUpMoment({
             )}
           </div>
         </div>
-        <div className="pr-cut mx-auto mt-6 flex w-full max-w-md flex-col gap-1" style={at(2000)}>
+        <div className="anim-rise mx-auto mt-6 flex w-full max-w-md flex-col gap-1" style={at(2000)}>
           <button
             type="button"
             onClick={onAdjust}

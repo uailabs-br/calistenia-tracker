@@ -133,13 +133,14 @@ npm run validate:plan  # valida o plano contra o schema Zod
 
 ```
 app/                  # rotas: / (início), plano (aba Treino), treino/[id] (sessão), historico, metricas, progressao, skills, config
-components/home/      # NextWorkoutCard, ConsistencyCard, WeekReviewCard, ResumeBanner, FreeformLog*
-components/session/   # ExerciseCard, Stepper, FlagChips, RpeSheet, WorkoutPills, SessionRunner, AddExerciseSheet
+components/home/      # NextWorkoutCard, ConsistencyCard, WeekReviewCard/Screen, AchievementsCard, ResumeBanner, FreeformLog*
+components/session/   # ExerciseCard, Stepper, FlagChips, RpeSheet, WorkoutPills, SessionRunner, AddExerciseSheet,
+                      # MissionIntro, CampaignResult, LevelUpMoment, SkillLadder, StreakBar (campanha)
 components/metrics/   # StatTile, Sparkline, FlagIncidenceRow, Badges
 components/config/    # ReminderSettings, CustomExercisesCard
 components/ui/        # BottomNav, PageHeader, SwUpdater, Toast, icons
 lib/db/               # schema Dexie, repositories/ (escrita), queries/ (leitura), backup
-lib/domain/           # parseTarget, volume, nextWorkout (sequência de treinos), streak, badges
+lib/domain/           # parseTarget, volume, nextWorkout (sequência de treinos), streak, badges, campaign, weekRecap
 lib/plan/             # plan.json (fonte de verdade), schema Zod, loader, resolve, legacyPlan (formato antigo),
                       # catalog.json (catálogo de exercícios), skills/progressions, import/export pra IA
 lib/utils/            # date, id, profile, hooks (wake lock, a11y de modal)

@@ -424,45 +424,25 @@ a {
   animation: kick 0.38s cubic-bezier(0.3, 1.6, 0.5, 1);
 }
 
-/* Tela de recorde: entradas em corte seco, sem easing (steps). `--d` é o
-   atraso de cada bloco, definido inline pra eles entrarem em sequência. */
-/* Corte = 1ms linear, não steps(1): com atraso de 2,3s o ponto flutuante
-   fecha o progresso em 0,99999… e o steps(1) arredondava pra invisível. Pelo
-   mesmo motivo os degraus usam jump-none: o último degrau é o valor final. */
-@keyframes pr-cut {
+/* Tela de recorde: brilho dourado no topo, como a tela de carregamento usa a
+   cor do treino. Recorde é dourado em qualquer treino. */
+.pr-screen {
+  background:
+    radial-gradient(130% 60% at 50% 0%, color-mix(in oklab, var(--color-gold) 22%, transparent), transparent 64%),
+    var(--color-bg);
+}
+/* Barra do fechamento automático: esvazia em `--t`. */
+@keyframes drain {
   from {
-    opacity: 0;
+    transform: scaleX(1);
   }
   to {
-    opacity: 1;
-  }
-}
-@keyframes pr-slam {
-  from {
-    transform: translateY(-14%);
-  }
-}
-@keyframes pr-wipe {
-  from {
     transform: scaleX(0);
   }
 }
-.pr-cut {
-  animation: pr-cut 1ms linear both;
-  animation-delay: var(--d, 0ms);
-}
-.pr-slam {
-  animation:
-    pr-cut 1ms linear both,
-    pr-slam 0.2s steps(3, jump-none) both;
-  animation-delay: var(--d, 0ms);
-}
-.pr-wipe {
+.pr-drain {
   transform-origin: left;
-  animation:
-    pr-cut 1ms linear both,
-    pr-wipe 0.3s steps(6, jump-none) both;
-  animation-delay: var(--d, 0ms);
+  animation: drain var(--t, 6s) linear both;
 }
 
 /* Campanha (tela de carregamento, escada de níveis, nível concluído). `--d` é o

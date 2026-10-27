@@ -113,8 +113,18 @@ de "selecionado": se o atributo está certo pro leitor de tela, o visual também
 A cor do texto desligado (`text-muted` ou `text-text`) fica com quem usa; ligado, o seletor
 de atributo vence.
 
-Animação: `anim-*` (entrada), `pr-*` (tela de recorde), `rest-wave` (cronômetro). Com
-"reduzir movimento" tudo encurta pra quase zero, e os loops param.
+Animação: `anim-*` (entrada), `pr-screen`/`pr-drain` (tela de recorde), `rest-wave`
+(cronômetro). Com "reduzir movimento" tudo encurta pra quase zero, e os loops param. Tela
+cheia entra por opacidade, nunca com flash ou corte seco: no celular isso lê como bug.
+
+- **Sequência de tela** (carregamento da missão, nível concluído, semana passada): cada peça
+  recebe o atraso em `--d` (`style={{ "--d": "450ms" }}`) e as classes leem dele:
+  `anim-rise` (sobe), `anim-lit` (acende), `anim-unlock` (destranca), `anim-reveal` (círculo
+  abrindo a partir do botão tocado), `ladder-fill` / `load-fill` / `anim-grow-x` (traço ou
+  barra crescendo), `check-draw-at` (check desenhado).
+- **Número contando:** `useTimeline` + `countAt`/`progressAt` (`lib/domain/timeline.ts`).
+  Na home e em Evolução conta só na primeira abertura desde que o app carregou
+  (`useFirstView`): contar toda vez que a pessoa volta pra aba cansa e atrasa a leitura.
 
 ---
 
@@ -163,6 +173,9 @@ Ganchos de classe que só o tático usa (no padrão não fazem nada):
 | `done-mark` | check do exercício fechado | quadrado com brilho |
 | `rest-clock` | número do descanso | laranja com brilho |
 | `app-nav` | `BottomNav` | caixa alta; aba ativa com seta e traço |
+| `mission-screen` | fundo das telas cheias da campanha | grade e varredura |
+| `load-bar` | barra da tela de carregamento | blocos |
+| `ladder-node` + `data-state` | degrau da `SkillLadder` | vencido com brilho |
 
 A landing usa a cor fixa (`DEFAULT_ACCENT` literal): quem chega nela ainda não escolheu tema.
 
@@ -176,7 +189,10 @@ A landing usa a cor fixa (`DEFAULT_ACCENT` literal): quem chega nela ainda não 
    de um treino que não é o da tela (pílulas, heatmap, lista de treinos). Cor de treino
    inline passa por `themedAccent`/`themedAccentBg`, senão fica fora do tema tático.
 3. Estado visual de seleção vem do atributo ARIA (`toggle`, `option`).
-4. Overlay novo usa `Dialog` ou `Sheet`, nunca `Portal` + `useModalA11y` à mão.
+4. Overlay novo usa `Dialog` ou `Sheet`, nunca `Portal` + `useModalA11y` à mão. Exceção:
+   **tela cheia que é cena** (fim do treino, carregamento da missão, nível concluído, semana
+   passada). Não tem alça, cartão nem fundo escurecido, então `Dialog`/`Sheet` não servem;
+   essas seguem o `SessionSummary` (`Portal` + `useModalA11y`, `role="dialog"`).
 5. Mudança **visual** passa por protótipo antes do código. Este sistema só deu nome ao que já
    existia: a migração foi validada com screenshot pixel a pixel antes/depois.
 

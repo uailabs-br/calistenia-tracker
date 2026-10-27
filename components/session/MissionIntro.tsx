@@ -12,6 +12,10 @@ import {
   statusLabel,
 } from "@/lib/domain/campaign";
 import { durationLabel } from "@/lib/domain/estimateDuration";
+import { focusLabel, workoutFocus } from "@/lib/domain/workoutFocus";
+import { getLastWorkoutRun } from "@/lib/db/queries/previousWorkout";
+import { focusEntries } from "@/lib/plan/focus";
+import { relativeDay } from "@/lib/utils/date";
 import { exerciseSkillMapping, getLevelFlags } from "@/lib/plan/skills";
 import { getAiGoals } from "@/lib/utils/aiPersona";
 import { useDurationFactor } from "@/lib/utils/useDurationFactor";
@@ -21,6 +25,7 @@ import { FlagIcon } from "@/components/ui/icons";
 import { accentVars } from "@/components/ui/accent";
 import { SkillLadder } from "./SkillLadder";
 import { StreakBar } from "./StreakBar";
+import { RPE_LABELS } from "./RpeSheet";
 
 const at = (ms: number) => ({ "--d": `${ms}ms` }) as CSSProperties;
 const LEAVE_MS = 280;
@@ -61,6 +66,8 @@ export function MissionIntro({
   // Só monta depois de um toque: ler o localStorage aqui não afeta a hidratação.
   const [goals] = useState(getAiGoals);
   const items = useLiveQuery(() => getWorkoutCampaign(workout, goals), [workout, goals]);
+  // null = primeira vez neste treino; undefined = carregando
+  const last = useLiveQuery(async () => (await getLastWorkoutRun(workout.id)) ?? null, [workout.id]);
   const [leaving, setLeaving] = useState(false);
   const ref = useModalA11y<HTMLDivElement>(() => setLeaving(true));
 
@@ -74,6 +81,21 @@ export function MissionIntro({
   const primary = items?.[0];
   const rest = items?.slice(1) ?? [];
   const tip = primary ? formTip(primary.flags) : workoutTip(workout);
+  // Sem objetivo em jogo, a tela ficava só com o título: entra o foco do treino
+  // e como foi a última vez, que a lista de exercícios não diz.
+  const offGoal = items !== undefined && !primary;
+  const focus = offGoal ? workoutFocus(focusEntries(workout)) : null;
+  const lastTiles = last
+    ? [
+        last.minutes !== null && { value: last.minutes, label: last.minutes === 1 ? "minuto" : "minutos" },
+        last.reps !== null && { value: last.reps, label: "reps" },
+        last.rpe !== null && {
+          value: last.rpe,
+          label: RPE_LABELS.find((r) => r.v === last.rpe)?.label ?? "esforço",
+        },
+      ].filter((t): t is { value: number; label: string } => Boolean(t))
+    : [];
+  const offAt = goals.length === 0 ? 350 : 250;
 
   return (
     <Portal>
@@ -116,6 +138,33 @@ export function MissionIntro({
               Meus objetivos você escolhe uma skill, e cada treino passa a mostrar o quanto ela
               anda.
             </p>
+          )}
+
+          {offGoal && focus && (
+            <div className="anim-rise flex flex-col gap-1" style={at(offAt)}>
+              <p className="eyebrow">Foco do treino</p>
+              <p className="display text-display-sm leading-tight">{focusLabel(focus)}</p>
+            </div>
+          )}
+
+          {offGoal && last && lastTiles.length > 0 && (
+            <section aria-label="Última vez" className="anim-rise flex flex-col gap-2" style={at(offAt + 150)}>
+              <div className="flex items-baseline justify-between gap-3">
+                <p className="eyebrow">Última vez · Treino {workout.label}</p>
+                <span className="shrink-0 font-mono text-xs text-muted">{relativeDay(last.date)}</span>
+              </div>
+              <div
+                className="grid gap-2"
+                style={{ gridTemplateColumns: `repeat(${lastTiles.length}, minmax(0, 1fr))` }}
+              >
+                {lastTiles.map((tile) => (
+                  <div key={tile.label} className="card px-3 py-2.5">
+                    <p className="display text-display-sm leading-none">{tile.value}</p>
+                    <p className="mt-1 font-mono text-2xs text-muted">{tile.label}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
           )}
 
           {primary && (

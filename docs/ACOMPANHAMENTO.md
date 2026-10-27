@@ -20,6 +20,23 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-10-27, recorde suave e começo direto — 637 testes):**
+> aprovado em protótipo clicável (artifact `9NDQUYnthJrZMTbVqs2gc1`). A tela de recorde perdeu
+> o flash claro e os cortes secos (no celular parecia bug): entra por opacidade, com brilho
+> dourado, e o número conta do recorde anterior até o novo (`countAt`, como no resumo). A cena
+> de nível concluído foi pro mesmo estilo, na cor do treino. "Começar treino" da home pula a
+> prévia: vai pra `/treino/[id]?start=x,y`, que cria a sessão e abre o carregamento a partir
+> do botão. A prévia segue pra quem entra pela aba Treino ou pela lista "Depois". Descartados
+> no protótipo: recorde dentro do timer de descanso e faixa no topo. No fim do treino, o botão
+> "Voltar pro início"/"Continuar" ficou preso embaixo; só o conteúdo rola.
+> O começo automático (`?start=`/`?ex=`) decide uma vez só, no carregamento: com outra sessão
+> em andamento, o pedido ficava pendente e criava uma sessão nova quando aquela terminava.
+> Sem objetivo em jogo, a tela de carregamento ficava só com o título: agora mostra o foco do
+> treino (categorias com ≥ 1/4 das séries, pelo catálogo; fora dele, o `skill_ref` e depois a
+> skill do treino; some se menos da metade das séries tiver categoria) e a última vez daquele
+> treino (quando, minutos, reps, esforço). Descartados no protótipo: lista de exercícios
+> (repetia o treino) e séries por músculo (o MU contava cheio pra peito e tríceps).
+
 > **Atualização (pós-v1.8, 2026-10-27, histórico de semanas — 629 testes):**
 > as semanas fechadas de Evolução → Histórico seguem o resumo novo: período, tira de dias,
 > número contra a meta da constância e os mesmos destaques. Saíram a frase motivacional e os

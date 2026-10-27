@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useLiveQuery } from "dexie-react-hooks";
 import type { Workout } from "@/lib/plan/schema";
 import { durationLabel } from "@/lib/domain/estimateDuration";
@@ -31,6 +32,7 @@ export function NextWorkoutCard({
   doneToday: string[];
 }) {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
   const factor = useDurationFactor();
   // Objetivos vêm do localStorage: só depois do mount (regra 10).
   const [goals, setGoals] = useState<string[]>([]);
@@ -92,13 +94,32 @@ export function NextWorkoutCard({
         </p>
       )}
 
-      <Link
-        href={`/treino/${workout.id}`}
-        className="btn-primary tap mt-4 flex w-full items-center justify-center rounded-xl py-3.5 text-center font-semibold"
-        style={accentVars(workout.accent)}
-      >
-        {activeHere ? "Continuar treino" : "Começar treino"}
-      </Link>
+      {activeHere ? (
+        <Link
+          href={`/treino/${workout.id}`}
+          className="btn-primary tap mt-4 flex w-full items-center justify-center rounded-xl py-3.5 text-center font-semibold"
+          style={accentVars(workout.accent)}
+        >
+          Continuar treino
+        </Link>
+      ) : (
+        // Começa direto, sem a prévia do treino: a home já mostra objetivo e
+        // exercícios. O centro do botão vai na URL pra a tela de carregamento
+        // abrir a partir dele.
+        <button
+          type="button"
+          onClick={(e) => {
+            const r = e.currentTarget.getBoundingClientRect();
+            const x = Math.round(r.left + r.width / 2);
+            const y = Math.round(r.top + r.height / 2);
+            router.push(`/treino/${workout.id}?start=${x},${y}`);
+          }}
+          className="btn-primary tap mt-4 flex w-full items-center justify-center rounded-xl py-3.5 text-center font-semibold"
+          style={accentVars(workout.accent)}
+        >
+          Começar treino
+        </button>
+      )}
 
       <button
         type="button"

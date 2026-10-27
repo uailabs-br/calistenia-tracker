@@ -4,7 +4,8 @@ import { useId, useState } from "react";
 import { Sheet } from "@/components/ui/Modal";
 import { accentVars } from "@/components/ui/accent";
 
-const RPE_LABELS = [
+/** Rótulo de cada nota de esforço; a tela de carregamento mostra o da última vez. */
+export const RPE_LABELS = [
   { v: 1, label: "leve" },
   { v: 2, label: "tranquilo" },
   { v: 3, label: "moderado" },

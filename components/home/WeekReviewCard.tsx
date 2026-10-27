@@ -6,6 +6,7 @@ import type { Workout } from "@/lib/plan/schema";
 import { getWeekReview } from "@/lib/db/queries/weekReview";
 import { weekRangeShort } from "@/lib/domain/weekRecap";
 import { localDateKey, weekStartKey } from "@/lib/utils/date";
+import { CloseIcon } from "@/components/ui/icons";
 import { WeekDays } from "./WeekDays";
 import { WeekReviewScreen } from "./WeekReviewScreen";
 
@@ -16,7 +17,8 @@ const SEEN_KEY = "calistenia:week-review-seen";
  * houve de destaque, num olhar. O detalhe abre em tela cheia pelo botão, nunca
  * sozinho. Some quando a pessoa toca em "Começar nova semana" ou conclui o
  * primeiro treino da semana nova: dali em diante o resumo não tem mais o que
- * fazer na home. MVP 100% local.
+ * fazer na home. O X faz o mesmo que "Começar nova semana", sem abrir o
+ * detalhe. MVP 100% local.
  */
 export function WeekReviewCard({
   streak,
@@ -51,7 +53,17 @@ export function WeekReviewCard({
 
   return (
     <section className="card glow anim-fade-in-up flex flex-col gap-3.5 bg-ac-bg p-4">
-      <p className="eyebrow -mb-1">Semana passada · {weekRangeShort(review.weekStart, review.weekEnd)}</p>
+      <div className="-mb-1 -mt-1.5 flex items-center justify-between gap-2">
+        <p className="eyebrow">Semana passada · {weekRangeShort(review.weekStart, review.weekEnd)}</p>
+        <button
+          type="button"
+          onClick={start}
+          aria-label="Dispensar a semana passada"
+          className="tap -mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted"
+        >
+          <CloseIcon className="h-4 w-4" />
+        </button>
+      </div>
       <div className="flex items-end justify-between gap-3">
         <div>
           <p className="display text-display-lg leading-[0.85] text-ac">
