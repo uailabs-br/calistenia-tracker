@@ -712,6 +712,7 @@ export function SessionRunner({
       {showSummary && (
         <SessionSummary
           workout={workout}
+          sessionId={session.id}
           exercisesDone={exercisesDone}
           exercisesTotal={flat.length}
           repsVolume={repsVolume}

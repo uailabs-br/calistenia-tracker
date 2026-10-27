@@ -48,10 +48,13 @@ const DETAIL: Record<Signal["state"], string> = {
 export function ProgressionNudge({
   workout,
   accent,
+  excludeSkills = [],
   style,
 }: {
   workout: Workout;
   accent: string;
+  /** Skills que o bloco de objetivos já mostra no fim do treino: o aviso não repete. */
+  excludeSkills?: string[];
   /** Entrada animada, controlada pela tela que mostra o aviso. */
   style?: React.CSSProperties;
 }) {
@@ -67,6 +70,7 @@ export function ProgressionNudge({
 
     for (const id of ids) {
       const mapping = exerciseSkillMapping(id);
+      if (mapping && excludeSkills.includes(mapping.skill_id)) continue;
       if (mapping) {
         const key = ackKeySkill(mapping.skill_id, mapping.level);
         if (seen.has(key)) continue; // dois exercícios no mesmo nível: um aviso só
@@ -91,7 +95,7 @@ export function ProgressionNudge({
       }
     }
     return out;
-  }, [workout, ackVersion]);
+  }, [workout, ackVersion, excludeSkills.join("|")]);
 
   if (!signals || signals.length === 0) return null;
 

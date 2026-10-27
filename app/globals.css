@@ -465,6 +465,133 @@ a {
   animation-delay: var(--d, 0ms);
 }
 
+/* Campanha (tela de carregamento, escada de níveis, nível concluído). `--d` é o
+   atraso de cada bloco, como na tela de recorde. */
+@keyframes mission-reveal {
+  from {
+    clip-path: circle(0px at var(--x, 50%) var(--y, 85%));
+  }
+  to {
+    clip-path: circle(150% at var(--x, 50%) var(--y, 85%));
+  }
+}
+@keyframes mission-leave {
+  to {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+}
+@keyframes lit {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+}
+@keyframes ladder-ring {
+  from {
+    opacity: 0.7;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.4);
+  }
+}
+@keyframes ladder-fill {
+  from {
+    width: var(--from);
+  }
+  to {
+    width: var(--to);
+  }
+}
+@keyframes load-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes press-blink {
+  50% {
+    opacity: 0.35;
+  }
+}
+@keyframes unlock {
+  from {
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+}
+.mission-screen {
+  background:
+    radial-gradient(120% 55% at 50% 0%, color-mix(in oklab, var(--ac) 18%, transparent), transparent 62%),
+    var(--color-bg);
+}
+.anim-reveal {
+  animation: mission-reveal 0.55s cubic-bezier(0.65, 0, 0.25, 1) both;
+}
+.anim-leave {
+  animation: mission-leave 0.28s ease-in both;
+}
+.anim-rise {
+  animation: fade-in-up 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: var(--d, 0ms);
+}
+.anim-lit {
+  animation: lit 0.32s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+  animation-delay: var(--d, 0ms);
+}
+.anim-unlock {
+  animation: unlock 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+  animation-delay: var(--d, 0ms);
+}
+.ladder-ring::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  border: 2px solid var(--ac);
+  opacity: 0;
+  animation: ladder-ring 1.8s ease-out 1s infinite;
+}
+.ladder-fill {
+  animation: ladder-fill 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: var(--d, 0ms);
+}
+.load-fill {
+  transform-origin: left;
+  animation: load-fill 2.2s linear 0.3s both;
+}
+.anim-press {
+  animation:
+    fade-in 0.3s 2.5s both,
+    press-blink 1.4s ease-in-out 2.8s infinite;
+}
+/* Barra que cresce da esquerda (Evolução, na primeira abertura). */
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+.anim-grow-x {
+  transform-origin: left;
+  animation: grow-x 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: var(--d, 0ms);
+}
+.check-draw-at {
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: check-draw 0.3s ease-out forwards;
+  animation-delay: var(--d, 0ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ladder-ring::after,
+  .anim-press {
+    animation: none !important;
+  }
+}
+
 /* Timer de descanso: onda do líquido. Desliza exatamente um comprimento de
    onda (--wave-shift, definido inline) pra o loop não ter emenda. */
 @keyframes rest-wave {
@@ -649,6 +776,43 @@ a {
 }
 :root[data-theme="tatico"] .session-progress > * {
   border-radius: 0;
+}
+
+/* Tela de carregamento: quadriculado fino, barra em blocos e uma linha que varre
+   a tela na entrada. Degrau vencido da escada acende. */
+:root[data-theme="tatico"] .mission-screen {
+  background:
+    linear-gradient(color-mix(in oklab, var(--ac) 5%, transparent) 1px, transparent 1px) 0 0 / 100% 24px,
+    linear-gradient(90deg, color-mix(in oklab, var(--ac) 5%, transparent) 1px, transparent 1px) 0 0 / 24px 100%,
+    var(--color-bg);
+}
+:root[data-theme="tatico"] .mission-screen.anim-reveal::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  pointer-events: none;
+  background: var(--ac);
+  box-shadow: 0 0 14px var(--ac);
+  animation: mission-sweep 0.7s steps(14, jump-none) 0.1s both;
+}
+@keyframes mission-sweep {
+  from {
+    top: 0;
+  }
+  to {
+    top: 100%;
+    opacity: 0;
+  }
+}
+:root[data-theme="tatico"] .load-bar {
+  height: 10px;
+  border-radius: 0;
+  -webkit-mask: repeating-linear-gradient(90deg, #000 0 9px, transparent 9px 12px);
+  mask: repeating-linear-gradient(90deg, #000 0 9px, transparent 9px 12px);
+}
+:root[data-theme="tatico"] .ladder-node[data-state="done"] {
+  box-shadow: 0 0 10px color-mix(in oklab, var(--ac) 60%, transparent);
 }
 
 /* Séries: as que faltam viram [ 8 ] vazado; as feitas, bloco aceso. */

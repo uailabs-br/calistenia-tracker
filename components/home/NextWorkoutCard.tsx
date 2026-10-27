@@ -1,10 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useLiveQuery } from "dexie-react-hooks";
 import type { Workout } from "@/lib/plan/schema";
 import { durationLabel } from "@/lib/domain/estimateDuration";
+import { remainingSessions, shortSkillName, statusLabel } from "@/lib/domain/campaign";
+import { getWorkoutCampaign } from "@/lib/db/queries/campaign";
+import { getAiGoals } from "@/lib/utils/aiPersona";
 import { useDurationFactor } from "@/lib/utils/useDurationFactor";
+import { StreakBar } from "@/components/session/StreakBar";
 import {
   ChevronDownIcon,
   PlayIcon,
@@ -27,6 +32,13 @@ export function NextWorkoutCard({
 }) {
   const [open, setOpen] = useState(false);
   const factor = useDurationFactor();
+  // Objetivos vêm do localStorage: só depois do mount (regra 10).
+  const [goals, setGoals] = useState<string[]>([]);
+  useEffect(() => setGoals(getAiGoals()), []);
+  const campaign = useLiveQuery(
+    async () => (workout ? getWorkoutCampaign(workout, goals) : []),
+    [workout, goals]
+  );
 
   if (!workout) return null;
 
@@ -53,6 +65,25 @@ export function NextWorkoutCard({
       </div>
 
       <h2 className="display mt-2 text-3xl leading-tight">{workout.title}</h2>
+
+      {/* Objetivos que este treino move; o que ele não toca não aparece. */}
+      {campaign && campaign.length > 0 && (
+        <ul className="anim-fade-in mt-3 flex flex-col gap-2 rounded-xl bg-ac/10 px-3 py-2.5">
+          {campaign.map((it) => (
+            <li key={it.skillId} className="flex items-center gap-2.5 text-sm">
+              <StreakBar total={it.required} filled={Math.min(it.streak, it.required)} size="sm" />
+              <span className="min-w-0 flex-1 truncate">
+                <span className="font-semibold">{shortSkillName(it.skillName)}</span> · nível {it.level}
+              </span>
+              <span
+                className={`shrink-0 font-mono text-xs ${remainingSessions(it) <= 1 ? "text-ac" : "text-muted"}`}
+              >
+                {statusLabel(it)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
 
       {doneToday.length > 0 && !activeHere && (
         <p className="mt-2 flex items-center gap-1.5 text-xs text-muted">

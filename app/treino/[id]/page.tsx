@@ -24,6 +24,7 @@ import { SessionRunner } from "@/components/session/SessionRunner";
 import { CollapsibleTip } from "@/components/session/CollapsibleTip";
 import { getExerciseMedia } from "@/lib/plan/media";
 import { WarmupCard } from "@/components/session/WarmupCard";
+import { MissionIntro } from "@/components/session/MissionIntro";
 import { ChevronRightIcon } from "@/components/ui/icons";
 import { accentVars } from "@/components/ui/accent";
 
@@ -77,10 +78,22 @@ export default function TreinoPage() {
     [todayKey, selected]
   );
 
-  const start = async () => {
+  // Tela de carregamento: abre num círculo a partir do botão. Só ao começar pelo
+  // botão: retomada e deep-link (?ex=) vão direto pro exercício.
+  const [intro, setIntro] = useState<{ x: number; y: number } | null>(null);
+
+  const start = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    setIntro({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
     setStarting(true);
     await createSession(selected);
   };
+
+  // Fica fora dos ramos abaixo: a sessão nasce com a tela aberta, e trocar de
+  // ramo (prévia → runner) remontaria a animação do zero.
+  const introEl = intro && (
+    <MissionIntro workout={workout} origin={intro} onClose={() => setIntro(null)} />
+  );
 
   // Deep-link ?ex=: sem sessão ativa e sem já ter concluído hoje, inicia direto.
   const autoStarted = useRef(false);
@@ -100,21 +113,24 @@ export default function TreinoPage() {
     const activeWorkout =
       (session.workout_id && getWorkoutById(session.workout_id)) || workout;
     return (
-      <div style={accentVars(activeWorkout.accent)}>
-        <div className="px-4">
-          <WorkoutHeader workout={activeWorkout} />
+      <>
+        <div style={accentVars(activeWorkout.accent)}>
+          <div className="px-4">
+            <WorkoutHeader workout={activeWorkout} />
+          </div>
+          <SessionRunner
+            session={session}
+            workout={activeWorkout}
+            initialExerciseId={initialEx}
+            onCompleted={() => setFinishing(true)}
+            onFinished={() => {
+              setFinishing(false);
+              router.push("/");
+            }}
+          />
         </div>
-        <SessionRunner
-          session={session}
-          workout={activeWorkout}
-          initialExerciseId={initialEx}
-          onCompleted={() => setFinishing(true)}
-          onFinished={() => {
-            setFinishing(false);
-            router.push("/");
-          }}
-        />
-      </div>
+        {introEl}
+      </>
     );
   }
 
@@ -125,79 +141,82 @@ export default function TreinoPage() {
   }
 
   return (
-    <div className="px-4" style={accentVars(workout.accent, workout.accent_bg)}>
-      <div className="pt-6">
-        <WorkoutPills selectedId={selected} nextId={nextId} onSelect={setSelected} />
-      </div>
-
-      <WorkoutHeader workout={workout} />
-
-      <button
-        type="button"
-        onClick={start}
-        disabled={starting}
-        className="btn-primary tap w-full rounded-xl py-3.5 text-center font-semibold transition-transform active:scale-[0.99] disabled:opacity-60"
-      >
-        {starting
-          ? "Abrindo…"
-          : completedForSelected
-            ? "Treinar de novo"
-            : `Começar · ${workout.title}`}
-      </button>
-
-      {completedForSelected && (
-        <div className="mb-4 mt-4 rounded-card border border-ac px-4 py-3 text-sm text-ac">
-          Esse treino já foi registrado hoje. Começar de novo cria uma nova sessão.
+    <>
+      <div className="px-4" style={accentVars(workout.accent, workout.accent_bg)}>
+        <div className="pt-6">
+          <WorkoutPills selectedId={selected} nextId={nextId} onSelect={setSelected} />
         </div>
-      )}
 
-      {skillIdForWorkout(workout.skill) && (
-        <Link
-          href={`/skills/${skillIdForWorkout(workout.skill)}`}
-          className="card tap mt-3 flex items-center justify-between px-4 py-3 active:scale-[0.99]"
+        <WorkoutHeader workout={workout} />
+
+        <button
+          type="button"
+          onClick={start}
+          disabled={starting}
+          className="btn-primary tap w-full rounded-xl py-3.5 text-center font-semibold transition-transform active:scale-[0.99] disabled:opacity-60"
         >
-          <span className="text-sm font-medium">Progressão · {workout.skill}</span>
-          <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted" />
-        </Link>
-      )}
+          {starting
+            ? "Abrindo…"
+            : completedForSelected
+              ? "Treinar de novo"
+              : `Começar · ${workout.title}`}
+        </button>
 
-      {/* título → começar → por que → aquecimento → exercícios */}
-      <CollapsibleTip tip={workout.tip} />
-      {workout.warmup && (
-        <div className="mt-3">
-          <WarmupCard warmup={workout.warmup} />
-        </div>
-      )}
+        {completedForSelected && (
+          <div className="mb-4 mt-4 rounded-card border border-ac px-4 py-3 text-sm text-ac">
+            Esse treino já foi registrado hoje. Começar de novo cria uma nova sessão.
+          </div>
+        )}
 
-      <ul className="mt-5 flex flex-col gap-2">
-        {workout.blocks.map((block) => (
-          <li key={block.label}>
-            <p className="eyebrow mb-1 mt-3">{block.label}</p>
-            <ul className="flex flex-col gap-2">
-              {block.exercises.map((ex) => (
-                <li key={ex.id} className="card px-4 py-3">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <span className={`font-medium ${block.is_skill ? "text-ac" : ""}`}>
-                      {ex.name}
-                    </span>
-                    <span className="tnum shrink-0 text-sm text-muted">
-                      {ex.target}
-                    </span>
-                  </div>
-                  <CollapsibleTip
-                    tip={ex.obs}
-                    label="como executar"
-                    media={getExerciseMedia(ex.id)}
-                    mediaName={ex.name}
-                  />
-                </li>
-              ))}
-            </ul>
-          </li>
-        ))}
-      </ul>
+        {skillIdForWorkout(workout.skill) && (
+          <Link
+            href={`/skills/${skillIdForWorkout(workout.skill)}`}
+            className="card tap mt-3 flex items-center justify-between px-4 py-3 active:scale-[0.99]"
+          >
+            <span className="text-sm font-medium">Progressão · {workout.skill}</span>
+            <ChevronRightIcon className="h-5 w-5 shrink-0 text-muted" />
+          </Link>
+        )}
 
-      <div className="h-8" />
-    </div>
+        {/* título → começar → por que → aquecimento → exercícios */}
+        <CollapsibleTip tip={workout.tip} />
+        {workout.warmup && (
+          <div className="mt-3">
+            <WarmupCard warmup={workout.warmup} />
+          </div>
+        )}
+
+        <ul className="mt-5 flex flex-col gap-2">
+          {workout.blocks.map((block) => (
+            <li key={block.label}>
+              <p className="eyebrow mb-1 mt-3">{block.label}</p>
+              <ul className="flex flex-col gap-2">
+                {block.exercises.map((ex) => (
+                  <li key={ex.id} className="card px-4 py-3">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <span className={`font-medium ${block.is_skill ? "text-ac" : ""}`}>
+                        {ex.name}
+                      </span>
+                      <span className="tnum shrink-0 text-sm text-muted">
+                        {ex.target}
+                      </span>
+                    </div>
+                    <CollapsibleTip
+                      tip={ex.obs}
+                      label="como executar"
+                      media={getExerciseMedia(ex.id)}
+                      mediaName={ex.name}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
+
+        <div className="h-8" />
+      </div>
+      {introEl}
+    </>
   );
 }

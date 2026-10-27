@@ -15,6 +15,12 @@ export function progressAt(t: number, start: number, duration: number): number {
   return Math.max(0, Math.min(1, (t - start) / duration));
 }
 
+/** Entrada de bloco: sobe 10px e aparece em 320ms. Estilo inline (opacity, transform). */
+export function revealStyle(t: number, start: number): { opacity: number; transform: string } {
+  const r = easeOutCubic(progressAt(t, start, 320));
+  return { opacity: r, transform: `translateY(${((1 - r) * 10).toFixed(1)}px)` };
+}
+
 /** Valor inteiro de um número que sobe de `from` até `to` dentro do trecho. */
 export function countAt(
   t: number,

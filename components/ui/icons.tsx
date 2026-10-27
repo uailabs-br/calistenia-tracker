@@ -97,6 +97,8 @@ export const SparkleIcon = stroke(
   "M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9L12 17.5l-1.9-5.1L5 10.5l5.1-1.9L12 3.5ZM18.5 16.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6.6-1.4Z"
 );
 export const FlagIcon = stroke("M5.5 21V4M5.5 4.5h11l-2 4 2 4h-11");
+export const LockIcon = stroke("M6 11h12v9H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3");
+export const UnlockIcon = stroke("M6 11h12v9H6zM8.5 11V8a3.5 3.5 0 0 1 6.6-1.6");
 export const ListIcon = stroke(
   "M9 6.5h11M9 12h11M9 17.5h11M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01"
 );

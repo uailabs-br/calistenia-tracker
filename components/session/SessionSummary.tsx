@@ -1,15 +1,22 @@
 "use client";
 
-import { useId } from "react";
+import { useId, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useLiveQuery } from "dexie-react-hooks";
 import type { Workout } from "@/lib/plan/schema";
 import { useModalA11y } from "@/lib/utils/useModalA11y";
 import { useTimeline } from "@/lib/utils/useTimeline";
-import { countAt, easeOutCubic, progressAt } from "@/lib/domain/timeline";
+import { getAiGoals } from "@/lib/utils/aiPersona";
+import { countAt, easeOutCubic, progressAt, revealStyle as reveal } from "@/lib/domain/timeline";
+import { sessionOutcome } from "@/lib/domain/campaign";
 import { Portal } from "@/components/ui/Portal";
 import { CheckIcon, TrophyIcon } from "@/components/ui/icons";
 import { accentVars, themedAccent } from "@/components/ui/accent";
 import type { PRResult } from "@/lib/db/queries/pr";
+import { getSessionCampaign, type SessionCampaignItem } from "@/lib/db/queries/campaign";
 import { ProgressionNudge } from "./ProgressionNudge";
+import { CampaignResult, campaignDuration } from "./CampaignResult";
+import { LevelUpMoment } from "./LevelUpMoment";
 
 export interface SessionPR {
   id: string;
@@ -31,30 +38,10 @@ const T = {
 };
 const PR_COUNT_MS = 450;
 
-/** Entrada de bloco: sobe 10px e aparece. */
-function reveal(t: number, start: number): React.CSSProperties {
-  const r = easeOutCubic(progressAt(t, start, 320));
-  return { opacity: r, transform: `translateY(${((1 - r) * 10).toFixed(1)}px)` };
-}
-
-/**
- * Tela de fim de treino, em tela cheia: os números do treino contando, recordes
- * da sessão e, por último, os sinais de progressão. Sem frase motivacional: o
- * número já diz como foi. Fecha só pelo botão (ou Esc) e volta pra home.
- */
-export function SessionSummary({
-  workout,
-  prs,
-  exercisesDone,
-  exercisesTotal,
-  repsVolume,
-  prevRepsVolume,
-  setsCount,
-  extraSets = 0,
-  minutes,
-  onClose,
-}: {
+interface SummaryProps {
   workout: Workout;
+  /** Sessão que acabou de fechar: a campanha mostra o que ela fez com cada objetivo. */
+  sessionId: string;
   prs: SessionPR[];
   /** Exercícios registrados (não pulados) nesta sessão. */
   exercisesDone: number;
@@ -69,14 +56,60 @@ export function SessionSummary({
   extraSets?: number;
   minutes: number;
   onClose: () => void;
-}) {
+}
+
+/**
+ * Tela de fim de treino, em tela cheia: os números do treino contando, recordes
+ * da sessão, os objetivos andando e, por último, os sinais de progressão. Sem
+ * frase motivacional: o número já diz como foi. Fecha só pelo botão (ou Esc) e
+ * volta pra home; se um nível fechou, o botão vira "Continuar" e abre a cena.
+ */
+export function SessionSummary(props: SummaryProps) {
+  // Só monta depois de finalizar: ler o localStorage aqui não afeta a hidratação.
+  const [goals] = useState(getAiGoals);
+  const campaign = useLiveQuery(
+    () => getSessionCampaign(props.workout, goals, props.sessionId),
+    [props.workout, goals, props.sessionId]
+  );
+  // A linha do tempo depende de quantos objetivos entram: espera a consulta (ms)
+  // em vez de reiniciar a animação quando ela chega.
+  if (campaign === undefined) {
+    return (
+      <Portal>
+        <div className="fixed inset-0 z-40 bg-bg" />
+      </Portal>
+    );
+  }
+  return <SummaryScreen {...props} campaign={campaign} />;
+}
+
+function SummaryScreen({
+  workout,
+  prs,
+  exercisesDone,
+  exercisesTotal,
+  repsVolume,
+  prevRepsVolume,
+  setsCount,
+  extraSets = 0,
+  minutes,
+  onClose,
+  campaign,
+}: SummaryProps & { campaign: SessionCampaignItem[] }) {
+  const router = useRouter();
   const ref = useModalA11y<HTMLDivElement>(onClose);
   const titleId = useId();
   const accent = themedAccent(workout.accent);
 
-  // Sem recorde, a progressão sobe pro lugar dele em vez de esperar à toa.
-  const signalsAt = prs.length > 0 ? T.prCount + (prs.length - 1) * 150 + 500 : T.pr + 100;
+  // Sem recorde, os objetivos sobem pro lugar dele em vez de esperar à toa.
+  const campaignAt = prs.length > 0 ? T.prCount + (prs.length - 1) * 150 + 500 : T.pr + 100;
+  const signalsAt = campaignAt + campaignDuration(campaign.length);
   const buttonAt = signalsAt + 400;
+  const closed = campaign
+    .filter((c) => sessionOutcome(c.before, c.today, c.item.required) === "closed")
+    .map((c) => c.item);
+  // Cena de nível concluído aberta (índice em `closed`), uma depois da outra.
+  const [scene, setScene] = useState<number | null>(null);
   const t = useTimeline(buttonAt + 400);
 
   const pop = easeOutCubic(progressAt(t, T.check, 320));
@@ -253,20 +286,39 @@ export function SessionSummary({
             </section>
           )}
 
-          <ProgressionNudge workout={workout} accent={accent} style={reveal(t, signalsAt)} />
+          <CampaignResult results={campaign} t={t} start={campaignAt} />
+
+          <ProgressionNudge
+            workout={workout}
+            accent={accent}
+            excludeSkills={campaign.map((c) => c.item.skillId)}
+            style={reveal(t, signalsAt)}
+          />
 
           {/* entrada no invólucro: transform inline no botão mataria o :active */}
           <div style={reveal(t, buttonAt)}>
             <button
               type="button"
-              onClick={onClose}
+              onClick={closed.length > 0 ? () => setScene(0) : onClose}
               className="btn-primary tap w-full rounded-xl py-3.5 font-medium"
             >
-              Voltar pro início
+              {closed.length > 0 ? "Continuar" : "Voltar pro início"}
             </button>
           </div>
         </div>
       </div>
+
+      {scene !== null && closed[scene] && (
+        <LevelUpMoment
+          key={scene}
+          item={closed[scene]}
+          accent={accent}
+          index={scene}
+          total={closed.length}
+          onAdjust={() => router.push("/config/plano?modo=novo")}
+          onLater={() => (scene + 1 < closed.length ? setScene(scene + 1) : onClose())}
+        />
+      )}
     </Portal>
   );
 }
