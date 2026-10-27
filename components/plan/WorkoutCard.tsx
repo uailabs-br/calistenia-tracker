@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { Workout } from "@/lib/plan/schema";
+import { themedAccent, themedAccentBg } from "@/components/ui/accent";
 import { durationLabel } from "@/lib/domain/estimateDuration";
 import { useDurationFactor } from "@/lib/utils/useDurationFactor";
 import { ChevronDownIcon, ChevronRightIcon } from "@/components/ui/icons";
@@ -20,7 +21,7 @@ export function WorkoutCard({ workout, next }: { workout: Workout; next: boolean
   return (
     <li
       className="overflow-hidden rounded-card border bg-surface"
-      style={{ borderColor: next ? workout.accent : "var(--color-border)" }}
+      style={{ borderColor: next ? themedAccent(workout.accent) : "var(--color-border)" }}
     >
       <button
         type="button"
@@ -30,7 +31,7 @@ export function WorkoutCard({ workout, next }: { workout: Workout; next: boolean
       >
         <span
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-mono text-xs"
-          style={{ background: workout.accent_bg, color: workout.accent }}
+          style={{ background: themedAccentBg(workout.accent_bg), color: themedAccent(workout.accent) }}
         >
           {workout.label}
         </span>
@@ -43,7 +44,7 @@ export function WorkoutCard({ workout, next }: { workout: Workout; next: boolean
         {next && (
           <span
             className="shrink-0 rounded-full px-2 py-0.5 font-mono text-3xs uppercase tracking-wide"
-            style={{ background: workout.accent_bg, color: workout.accent }}
+            style={{ background: themedAccentBg(workout.accent_bg), color: themedAccent(workout.accent) }}
           >
             próximo
           </span>
@@ -65,7 +66,7 @@ export function WorkoutCard({ workout, next }: { workout: Workout; next: boolean
                   <li key={ex.id} className="flex items-baseline justify-between gap-3 py-1">
                     <span
                       className="min-w-0 truncate text-sm"
-                      style={block.is_skill ? { color: workout.accent } : undefined}
+                      style={block.is_skill ? { color: themedAccent(workout.accent) } : undefined}
                     >
                       {ex.name}
                     </span>
@@ -79,7 +80,7 @@ export function WorkoutCard({ workout, next }: { workout: Workout; next: boolean
           <Link
             href={`/treino/${workout.id}`}
             className="tap -mx-1 mt-2 flex items-center justify-between rounded-lg px-1 py-2 text-sm font-medium"
-            style={{ color: workout.accent }}
+            style={{ color: themedAccent(workout.accent) }}
           >
             Começar este treino
             <ChevronRightIcon className="h-4 w-4" />

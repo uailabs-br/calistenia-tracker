@@ -3,7 +3,10 @@
 import type { HeatmapDay } from "@/lib/db/queries/metrics";
 import { heatLevel, type HeatLevel } from "@/lib/domain/heatLevel";
 import { shortDate } from "@/lib/utils/date";
-import { DEFAULT_ACCENT } from "@/components/ui/accent";
+import { DEFAULT_ACCENT, themedAccent } from "@/components/ui/accent";
+
+// A cor das métricas, ou a única do tema tático.
+const AC = themedAccent(DEFAULT_ACCENT);
 
 const DAY_LETTERS = ["S", "T", "Q", "Q", "S", "S", "D"]; // Seg→Dom
 
@@ -11,11 +14,11 @@ const DAY_LETTERS = ["S", "T", "Q", "Q", "S", "S", "D"]; // Seg→Dom
 const DAY_NAMES = ["segunda", "terça", "quarta", "quinta", "sexta", "sábado", "domingo"];
 
 /** Dia treinado: a cor das métricas clareando em cima e escurecendo embaixo. */
-const TRAINED = `linear-gradient(145deg, color-mix(in oklab, ${DEFAULT_ACCENT} 60%, white) 0%, ${DEFAULT_ACCENT} 55%, color-mix(in oklab, ${DEFAULT_ACCENT} 85%, black) 100%)`;
+const TRAINED = `linear-gradient(145deg, color-mix(in oklab, ${AC} 60%, white) 0%, ${AC} 55%, color-mix(in oklab, ${AC} 85%, black) 100%)`;
 /** Dia vazio: rebaixo da superfície de campo. */
 const EMPTY =
   "linear-gradient(180deg, color-mix(in oklab, var(--color-surface2) 80%, black) 0%, var(--color-surface2) 100%)";
-const TODAY_RING = `0 0 0 1.5px color-mix(in oklab, ${DEFAULT_ACCENT} 90%, transparent), `;
+const TODAY_RING = `0 0 0 1.5px color-mix(in oklab, ${AC} 90%, transparent), `;
 
 /**
  * Treinou = gradiente com luz vindo de cima (sem sombra colorida: glow saiu do app);

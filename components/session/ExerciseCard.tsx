@@ -405,7 +405,7 @@ export function ExerciseCard({
             </div>
             {done ? (
               <span
-                className="anim-pop flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ac text-on-accent"
+                className="done-mark anim-pop flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ac text-on-accent"
                 aria-label="concluído"
               >
                 <CheckIcon className="h-4 w-4" />

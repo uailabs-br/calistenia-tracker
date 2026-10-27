@@ -7,7 +7,7 @@ import { useTimeline } from "@/lib/utils/useTimeline";
 import { countAt, easeOutCubic, progressAt } from "@/lib/domain/timeline";
 import { Portal } from "@/components/ui/Portal";
 import { CheckIcon, TrophyIcon } from "@/components/ui/icons";
-import { accentVars } from "@/components/ui/accent";
+import { accentVars, themedAccent } from "@/components/ui/accent";
 import type { PRResult } from "@/lib/db/queries/pr";
 import { ProgressionNudge } from "./ProgressionNudge";
 
@@ -72,7 +72,7 @@ export function SessionSummary({
 }) {
   const ref = useModalA11y<HTMLDivElement>(onClose);
   const titleId = useId();
-  const accent = workout.accent;
+  const accent = themedAccent(workout.accent);
 
   // Sem recorde, a progressão sobe pro lugar dele em vez de esperar à toa.
   const signalsAt = prs.length > 0 ? T.prCount + (prs.length - 1) * 150 + 500 : T.pr + 100;

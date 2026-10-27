@@ -1,6 +1,7 @@
 "use client";
 
 import { plan } from "@/lib/plan/loader";
+import { themedAccent, themedAccentBg } from "@/components/ui/accent";
 
 /**
  * Seletor de treino. Cada treino é um template: o "próximo" da sequência é só
@@ -30,13 +31,13 @@ export function WorkoutPills({
               className="tap flex shrink-0 flex-col items-start justify-center rounded-xl border px-3.5 py-3 transition-colors duration-200 active:scale-[0.97]"
               style={
                 active
-                  ? { borderColor: w.accent, background: w.accent_bg }
+                  ? { borderColor: themedAccent(w.accent), background: themedAccentBg(w.accent_bg) }
                   : { borderColor: "var(--color-border)", background: "var(--color-surface)" }
               }
             >
               <span
                 className="font-mono text-xs"
-                style={{ color: active ? w.accent : "var(--color-muted)" }}
+                style={{ color: active ? themedAccent(w.accent) : "var(--color-muted)" }}
               >
                 {w.label}
                 {isNext && " · próximo"}

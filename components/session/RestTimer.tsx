@@ -5,6 +5,7 @@ import { formatClock } from "@/lib/domain/parseTarget";
 import { MinusIcon, PlusIcon } from "@/components/ui/icons";
 import { useModalA11y } from "@/lib/utils/useModalA11y";
 import { Portal } from "@/components/ui/Portal";
+import { themedAccent } from "@/components/ui/accent";
 
 /**
  * Timer de descanso pós-registro. Countdown no accent do dia, com feedback
@@ -72,7 +73,10 @@ export function RestTimer({
   const radius = (size - stroke) / 2 - 1;
   const circ = 2 * Math.PI * radius;
   const disc = size / 2 - 9;
-  const color = finished ? "var(--color-success)" : accent;
+  // No tema tático o descanso tem cor própria (--rest-color, laranja de alerta);
+  // no padrão a variável não existe e segue o accent do treino.
+  const ac = `var(--rest-color, ${themedAccent(accent)})`;
+  const color = finished ? "var(--color-success)" : ac;
   const elapsed = finished ? 1 : 1 - pct / 100;
   // y da superfície: começa abaixo do disco e termina acima dele, pra a crista
   // da onda não deixar fresta no topo quando enche.
@@ -192,7 +196,7 @@ export function RestTimer({
             ) : (
               <>
                 <span
-                  className={`display text-display-lg leading-none ${ending ? "anim-pulse" : ""}`}
+                  className={`rest-clock display text-display-lg leading-none ${ending ? "anim-pulse" : ""}`}
                   style={{ textShadow: "0 2px 12px rgb(0 0 0 / 0.5)" }}
                 >
                   {formatClock(remaining)}
@@ -235,7 +239,7 @@ export function RestTimer({
             style={
               finished
                 ? { background: color, color: "var(--color-on-accent)" }
-                : { color: accent }
+                : { color: ac }
             }
           >
             {finished ? "ok" : "pular"}

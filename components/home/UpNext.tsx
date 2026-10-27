@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { Workout } from "@/lib/plan/schema";
+import { themedAccent, themedAccentBg } from "@/components/ui/accent";
 import { durationLabel } from "@/lib/domain/estimateDuration";
 import { useDurationFactor } from "@/lib/utils/useDurationFactor";
 import { ChevronDownIcon, ChevronRightIcon } from "@/components/ui/icons";
@@ -31,7 +32,7 @@ export function UpNext({ queue }: { queue: Workout[] }) {
             >
               <span
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-mono text-xs"
-                style={{ background: w.accent_bg, color: w.accent }}
+                style={{ background: themedAccentBg(w.accent_bg), color: themedAccent(w.accent) }}
               >
                 {w.label}
               </span>

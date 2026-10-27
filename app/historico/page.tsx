@@ -22,6 +22,7 @@ import { BackLink } from "@/components/ui/BackLink";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { HistorySkeleton } from "@/components/ui/Skeleton";
 import { ChevronRightIcon, ChevronDownIcon } from "@/components/ui/icons";
+import { themedAccent } from "@/components/ui/accent";
 
 function SessionRow({
   session,
@@ -46,7 +47,7 @@ function SessionRow({
             : "flex items-center justify-between gap-3 card px-4 py-3 transition-colors duration-200"
         }
         style={{
-          borderLeftColor: isFreeform ? "var(--color-border)" : day?.accent,
+          borderLeftColor: isFreeform || !day ? "var(--color-border)" : themedAccent(day.accent),
           borderLeftWidth: 3,
           borderLeftStyle: isFreeform ? "dashed" : "solid",
         }}
@@ -62,7 +63,7 @@ function SessionRow({
         </div>
         <div className="flex items-center gap-2">
           {!isFreeform && (
-            <span className="tnum text-sm" style={{ color: day?.accent }}>
+            <span className="tnum text-sm" style={day ? { color: themedAccent(day.accent) } : undefined}>
               RPE {session.rpe ?? "-"}
             </span>
           )}

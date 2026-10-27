@@ -579,7 +579,7 @@ export function SessionRunner({
       {/* Barra de progresso da sessão */}
       <div className="sticky top-0 z-20 -mx-4 mb-2 bg-bg/85 px-4 py-2 backdrop-blur">
         <div className="flex items-center gap-3">
-          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface2">
+          <div className="session-progress h-1.5 flex-1 overflow-hidden rounded-full bg-surface2">
             <div
               className="h-full rounded-full bg-ac transition-[width] duration-300"
               style={{ width: `${progressPct}%` }}

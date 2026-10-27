@@ -89,6 +89,10 @@ export const TargetIcon = stroke(
   "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 16.5a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM12 12h.01"
 );
 export const SlidersIcon = stroke("M4 7h9M17 7h3M4 17h3M11 17h9M15 4.5v5M9 14.5v5");
+/** Estilo visual (Ajustes → Aparência). */
+export const MonitorIcon = stroke("M3.5 5h17v11h-17zM8 20h8M12 16v4");
+/** Scanlines do tema tático. */
+export const ScanlinesIcon = stroke("M4 7h16M4 11h16M4 15h16M4 19h16");
 export const SparkleIcon = stroke(
   "M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9L12 17.5l-1.9-5.1L5 10.5l5.1-1.9L12 3.5ZM18.5 16.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6.6-1.4Z"
 );

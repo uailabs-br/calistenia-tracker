@@ -134,12 +134,47 @@ Animação: `anim-*` (entrada), `pr-*` (tela de recorde), `rest-wave` (cronômet
 
 ---
 
+## Temas
+
+Dois estilos, escolhidos em Ajustes → Aparência: **padrão** (o de sempre) e **tático**
+(escuro militar, cantos retos, caixa alta, scanlines). Decisão em
+[PLAN-tema-tatico.md](PLAN-tema-tatico.md).
+
+- O tema mora em atributos do `<html>`: `data-theme="tatico"`, `data-tone` (verde, ciano,
+  ambar, oliva, gelo) e `data-scanlines`. No padrão não há atributo nenhum.
+- Quem marca é o boot script do `<head>` (`THEME_BOOT_SCRIPT` em `lib/utils/theme.ts`), antes
+  da primeira pintura. Ajustes chama `setThemePref`, que grava e reaplica na hora.
+- **Nenhum componente decide nada pelo tema.** O tático é um bloco no fim de `globals.css`
+  que redefine os tokens (cor, raio) e restiliza utilitários e alguns ganchos de classe.
+  Componente não lê o tema em JS: o HTML estático tem que ser o mesmo nos dois (regra 10).
+- **Cor do treino trocável:** no tático todos os treinos (e as categorias de skill) ficam na
+  cor do tom. Por isso toda cor de treino passa por `accentVars`, `themedAccent` ou
+  `themedAccentBg`, que escrevem `var(--theme-ac, <hex do plano>)`. No padrão
+  `--theme-ac` não existe e vale o hex.
+- `--rest-color`: cor do descanso no tático (laranja de alerta); no padrão não existe e o
+  cronômetro segue o treino.
+
+Ganchos de classe que só o tático usa (no padrão não fazem nada):
+
+| Classe | Onde | No tático |
+|---|---|---|
+| `session-progress` | trilho da barra da sessão | vira blocos (máscara) |
+| `set-chip` + `data-state` | série no `SetBySetPanel` | `[ 8 ]` vazado; feita acende |
+| `done-mark` | check do exercício fechado | quadrado com brilho |
+| `rest-clock` | número do descanso | laranja com brilho |
+| `app-nav` | `BottomNav` | caixa alta; aba ativa com seta e traço |
+
+A landing usa a cor fixa (`DEFAULT_ACCENT` literal): quem chega nela ainda não escolheu tema.
+
+---
+
 ## Regras
 
 1. Cor e tamanho saem de token. `text-[11px]`, `#8174e8` ou `style={{ color: "var(--color-danger)" }}`
    num componente novo é sinal de que falta usar (ou criar) um token.
 2. `style` inline só pra valor que muda em runtime: largura de barra, quadro de animação, cor
-   de um treino que não é o da tela (pílulas, heatmap, lista de treinos).
+   de um treino que não é o da tela (pílulas, heatmap, lista de treinos). Cor de treino
+   inline passa por `themedAccent`/`themedAccentBg`, senão fica fora do tema tático.
 3. Estado visual de seleção vem do atributo ARIA (`toggle`, `option`).
 4. Overlay novo usa `Dialog` ou `Sheet`, nunca `Portal` + `useModalA11y` à mão.
 5. Mudança **visual** passa por protótipo antes do código. Este sistema só deu nome ao que já

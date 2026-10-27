@@ -10,7 +10,7 @@ import {
   PlayIcon,
   CheckIcon,
 } from "@/components/ui/icons";
-import { accentVars } from "@/components/ui/accent";
+import { accentVars, themedAccent, themedAccentBg } from "@/components/ui/accent";
 
 /** Hero do painel: o próximo treino da sequência, com CTA de 1 toque e exercícios. */
 export function NextWorkoutCard({
@@ -37,12 +37,12 @@ export function NextWorkoutCard({
   return (
     <section
       className="anim-fade-in-up glow rounded-card p-5"
-      style={{ ...accentVars(workout.accent), background: workout.accent_bg }}
+      style={{ ...accentVars(workout.accent), background: themedAccentBg(workout.accent_bg) }}
     >
       <div className="flex items-center gap-2">
         <span
           className="rounded-full px-2 py-0.5 font-mono text-xs"
-          style={{ background: workout.accent, color: "var(--color-on-accent)" }}
+          style={{ background: themedAccent(workout.accent), color: "var(--color-on-accent)" }}
         >
           {workout.label}
         </span>
@@ -92,7 +92,7 @@ export function NextWorkoutCard({
                 <span className="min-w-0 flex-1">
                   <span
                     className="block truncate text-sm font-medium"
-                    style={ex.isSkill ? { color: workout.accent } : undefined}
+                    style={ex.isSkill ? { color: themedAccent(workout.accent) } : undefined}
                   >
                     {ex.name}
                   </span>
@@ -100,7 +100,7 @@ export function NextWorkoutCard({
                 </span>
                 <span
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-                  style={{ background: workout.accent, color: "var(--color-on-accent)" }}
+                  style={{ background: themedAccent(workout.accent), color: "var(--color-on-accent)" }}
                   aria-label={`Treinar ${ex.name}`}
                 >
                   <PlayIcon className="h-4 w-4" />

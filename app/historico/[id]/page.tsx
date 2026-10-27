@@ -12,7 +12,7 @@ import { summarizeLog } from "@/lib/domain/volume";
 import { longDate, formatDuration } from "@/lib/utils/date";
 import { BackLink } from "@/components/ui/BackLink";
 import { CheckIcon } from "@/components/ui/icons";
-import { DEFAULT_ACCENT } from "@/components/ui/accent";
+import { DEFAULT_ACCENT, themedAccent, themedAccentBg } from "@/components/ui/accent";
 
 export default function SessionDetailPage({
   params,
@@ -41,7 +41,7 @@ export default function SessionDetailPage({
   const { session, logs } = data;
   const isFreeform = session.source === "freeform";
   const day = isFreeform ? undefined : (session.workout_id ? getWorkoutById(session.workout_id) : undefined);
-  const accent = day?.accent ?? DEFAULT_ACCENT;
+  const accent = themedAccent(day?.accent ?? DEFAULT_ACCENT);
   const duration =
     session.started_at && session.ended_at
       ? formatDuration(session.started_at, session.ended_at)
@@ -83,7 +83,7 @@ export default function SessionDetailPage({
         <div className="flex items-center gap-2">
           <span
             className="rounded-full px-2 py-0.5 font-mono text-xs"
-            style={{ background: day?.accent_bg, color: accent }}
+            style={{ background: day ? themedAccentBg(day.accent_bg) : undefined, color: accent }}
           >
             {isFreeform ? "Avulso" : (day?.label ?? "Treino")}
           </span>

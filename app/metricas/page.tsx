@@ -21,7 +21,10 @@ import {
   getBestHold,
   getActivityHeatmap,
 } from "@/lib/db/queries/metrics";
-import { DEFAULT_ACCENT as AC } from "@/components/ui/accent";
+import { DEFAULT_ACCENT, themedAccent } from "@/components/ui/accent";
+
+// Cor das métricas: a do app, ou a única do tema tático.
+const AC = themedAccent(DEFAULT_ACCENT);
 
 export default function MetricasPage() {
   const overview = useLiveQuery(() => getOverview(), []);

@@ -1,4 +1,5 @@
 import type { Workout } from "@/lib/plan/schema";
+import { themedAccent, themedAccentBg } from "@/components/ui/accent";
 import { durationLabel } from "@/lib/domain/estimateDuration";
 import { useDurationFactor } from "@/lib/utils/useDurationFactor";
 
@@ -12,7 +13,7 @@ export function WorkoutHeader({ workout }: { workout: Workout }) {
       <div className="flex items-center gap-2">
         <span
           className="rounded-full px-2 py-0.5 font-mono text-xs"
-          style={{ background: workout.accent_bg, color: workout.accent }}
+          style={{ background: themedAccentBg(workout.accent_bg), color: themedAccent(workout.accent) }}
         >
           {workout.label}
         </span>

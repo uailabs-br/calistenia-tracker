@@ -103,7 +103,8 @@ export function SetBySetPanel({
               role="listitem"
               onClick={() => pick(i)}
               aria-label={`Série ${i + 1}: ${value}${suffix}${isDone ? ", feita" : ""}`}
-              className={`tnum flex h-11 min-w-11 items-center justify-center rounded-[10px] px-2 font-mono text-sm ${
+              data-state={isDone ? "done" : isCur ? "cur" : "todo"}
+              className={`set-chip tnum flex h-11 min-w-11 items-center justify-center rounded-[10px] px-2 font-mono text-sm ${
                 isDone
                   ? "bg-ac font-medium text-on-accent"
                   : isCur

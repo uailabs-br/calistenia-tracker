@@ -20,6 +20,12 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-10-26, tema tático — 594 testes):**
+> aprovado em protótipo clicável (tático, corrida e GTA; ficou o tático). Ajustes ganhou
+> "Aparência": estilo padrão ou tático e, no tático, cinco cores (verde, ciano, âmbar, oliva,
+> branco gelo) e scanlines desligáveis. Todos os treinos ficam na cor escolhida. O padrão
+> não mudou. Ver [PLAN-tema-tatico.md](PLAN-tema-tatico.md).
+
 > **Atualização (pós-v1.8, 2026-10-26, sementes de iniciante — 580 testes):**
 > scapular pull saiu da escada (é acessório do nível 1 do pull-up, com alvo em reps num
 > critério de hold: o degrau nunca fechava). Alvos em reps a até 3 do critério subiram até

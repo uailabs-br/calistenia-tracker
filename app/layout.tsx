@@ -8,6 +8,7 @@ import { ToastProvider } from "@/components/ui/Toast";
 import { PlanBoot } from "@/components/ui/PlanBoot";
 import { AppMain } from "@/components/ui/AppMain";
 import { APP_NAME } from "@/lib/appInfo";
+import { THEME_BOOT_SCRIPT } from "@/lib/utils/theme";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -59,7 +60,16 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR" className={`${dmSans.variable} ${dmMono.variable} ${barlow.variable}`}>
+    // suppressHydrationWarning: o boot script marca o tema no <html> antes do React,
+    // então os atributos dele divergem do HTML estático de propósito (só este nível).
+    <html
+      lang="pt-BR"
+      className={`${dmSans.variable} ${dmMono.variable} ${barlow.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
+      </head>
       <body>
         <ToastProvider>
           <SwUpdater />

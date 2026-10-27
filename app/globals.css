@@ -510,3 +510,223 @@ a {
     animation: none;
   }
 }
+
+/* ── Tema tático (Ajustes → Aparência) ──────────────────────────────────
+   Só pele: redefine tokens e utilitários; nenhum componente tem versão
+   própria (mapa em docs/DESIGN-SYSTEM.md, decisão em docs/PLAN-tema-tatico.md).
+   O boot script do <head> (lib/utils/theme.ts) marca o <html> antes da
+   primeira pintura. Todos os treinos ficam na cor única do tom escolhido:
+   `--theme-ac` vence o hex do plano em accentVars/themedAccent. */
+:root {
+  --tone-verde: #00ff66;
+  --tone-ciano: #2ee6ff;
+  --tone-ambar: #ffb000;
+  --tone-oliva: #b9cc5e;
+  --tone-gelo: #c6e4f0;
+}
+
+:root[data-theme="tatico"] {
+  --color-bg: #0a0c0e;
+  --color-surface: #14191c;
+  --color-surface2: #1a2024;
+  --color-border: #2d353b;
+  --color-text: #d4e2d9;
+  /* o #3a424a do briefing dá 1,9:1: fica só em borda e slot vazio (--slot) */
+  --color-muted: #8a988f;
+  --color-danger: #ff4d4d;
+  --color-warn: #ff5500;
+  --color-gold: #ffb81c;
+  --color-on-accent: #0a0c0e;
+  --slot: #3a424a;
+
+  --theme-ac: var(--tone-verde);
+  --theme-ac-bg: color-mix(in oklab, var(--theme-ac) 8%, #0a0c0e);
+  --ac: var(--theme-ac);
+  --ac-bg: var(--theme-ac-bg);
+  --color-success: var(--theme-ac);
+  /* laranja só no descanso e em alerta */
+  --rest-color: #ff5500;
+
+  --radius-card: 2px;
+  --radius-xs: 2px;
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 2px;
+  --radius-2xl: 2px;
+  --radius-3xl: 2px;
+}
+:root[data-theme="tatico"][data-tone="ciano"] { --theme-ac: var(--tone-ciano); }
+/* no âmbar o recorde sai do dourado, senão vira a mesma cor */
+:root[data-theme="tatico"][data-tone="ambar"] { --theme-ac: var(--tone-ambar); --color-gold: #f4e9cf; }
+:root[data-theme="tatico"][data-tone="oliva"] { --theme-ac: var(--tone-oliva); }
+:root[data-theme="tatico"][data-tone="gelo"] { --theme-ac: var(--tone-gelo); }
+
+/* Raio: os tokens acima cobrem rounded-xl/2xl…; rounded-full e os valores
+   arbitrários não são variável no Tailwind, então entram aqui. O spinner fica
+   redondo: quadrado girando parece travado. */
+:root[data-theme="tatico"] :is(.rounded-full, .rounded-\[10px\]):not(.animate-spin) {
+  border-radius: 2px;
+}
+
+/* Caixa alta em título, botão e navegação; texto corrido segue normal. */
+:root[data-theme="tatico"] :is(h1, h2, h3).display {
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+:root[data-theme="tatico"] :is(.btn-primary, .btn-secondary, .btn-outline, .btn-neutral, .btn-danger, .btn-inverse) {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Primário chapado na cor, com canto chanfrado. Sem chanfro no foco: o
+   clip-path cortaria o contorno de teclado. */
+:root[data-theme="tatico"] .btn-primary {
+  background: var(--ac);
+  box-shadow: none;
+  font-weight: 700;
+}
+:root[data-theme="tatico"] .btn-primary:not(:focus-visible) {
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+}
+:root[data-theme="tatico"] .btn-primary:active {
+  filter: brightness(0.82);
+}
+:root[data-theme="tatico"] .btn-key {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.04),
+    0 3px 0 #000;
+}
+:root[data-theme="tatico"] .btn-key:active {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
+}
+
+/* Destaque da tela (próximo treino): borda na cor e cantoneiras. */
+:root[data-theme="tatico"] .glow {
+  position: relative;
+  border-color: color-mix(in oklab, var(--ac) 55%, var(--color-border));
+}
+:root[data-theme="tatico"] .glow::before,
+:root[data-theme="tatico"] .glow::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+}
+:root[data-theme="tatico"] .glow::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid var(--ac);
+  border-left: 2px solid var(--ac);
+}
+:root[data-theme="tatico"] .glow::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid var(--ac);
+  border-right: 2px solid var(--ac);
+}
+
+/* Card tocável: brilho por dentro ao tocar (e ao passar, onde há mouse). */
+:root[data-theme="tatico"] :is(a, button).card:active {
+  border-color: var(--ac);
+  box-shadow: inset 0 0 14px color-mix(in oklab, var(--ac) 22%, transparent);
+}
+@media (hover: hover) {
+  :root[data-theme="tatico"] :is(a, button).card:hover {
+    border-color: var(--ac);
+    box-shadow: inset 0 0 14px color-mix(in oklab, var(--ac) 22%, transparent);
+  }
+}
+
+/* Progresso da sessão em blocos: a máscara recorta trilho e preenchimento juntos. */
+:root[data-theme="tatico"] .session-progress {
+  height: 10px;
+  border-radius: 0;
+  background: var(--slot);
+  -webkit-mask: repeating-linear-gradient(90deg, #000 0 9px, transparent 9px 12px);
+  mask: repeating-linear-gradient(90deg, #000 0 9px, transparent 9px 12px);
+}
+:root[data-theme="tatico"] .session-progress > * {
+  border-radius: 0;
+}
+
+/* Séries: as que faltam viram [ 8 ] vazado; as feitas, bloco aceso. */
+:root[data-theme="tatico"] .set-chip {
+  gap: 0.2em;
+}
+:root[data-theme="tatico"] .set-chip:is([data-state="todo"], [data-state="cur"]) {
+  border-color: transparent;
+}
+:root[data-theme="tatico"] .set-chip:is([data-state="todo"], [data-state="cur"])::before,
+:root[data-theme="tatico"] .set-chip:is([data-state="todo"], [data-state="cur"])::after {
+  font-size: 1.35em;
+  line-height: 1;
+  color: var(--slot);
+}
+:root[data-theme="tatico"] .set-chip:is([data-state="todo"], [data-state="cur"])::before {
+  content: "[";
+}
+:root[data-theme="tatico"] .set-chip:is([data-state="todo"], [data-state="cur"])::after {
+  content: "]";
+}
+:root[data-theme="tatico"] .set-chip[data-state="cur"]::before,
+:root[data-theme="tatico"] .set-chip[data-state="cur"]::after {
+  color: var(--ac);
+}
+:root[data-theme="tatico"] :is(.set-chip[data-state="done"], .done-mark) {
+  box-shadow: 0 0 10px color-mix(in oklab, var(--ac) 65%, transparent);
+}
+
+/* Descanso: número em laranja de alerta, com brilho. */
+:root[data-theme="tatico"] .rest-clock {
+  color: var(--rest-color);
+  text-shadow: 0 0 16px color-mix(in oklab, var(--rest-color) 55%, transparent);
+}
+
+/* Navegação: rótulo em caixa alta; a aba ativa ganha seta e traço acesos. */
+:root[data-theme="tatico"] .app-nav a {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+:root[data-theme="tatico"] .app-nav a[aria-current="page"] {
+  color: var(--theme-ac);
+  background: linear-gradient(to top, color-mix(in oklab, var(--theme-ac) 9%, transparent), transparent 70%);
+}
+:root[data-theme="tatico"] .app-nav a[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--theme-ac);
+  filter: drop-shadow(0 0 4px var(--theme-ac));
+}
+:root[data-theme="tatico"] .app-nav a[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  left: 30%;
+  right: 30%;
+  height: 2px;
+  background: var(--theme-ac);
+  box-shadow: 0 0 6px var(--theme-ac);
+}
+
+/* Scanlines e vinheta: por cima de tudo, inclusive sheet e diálogo, sem
+   pegar toque. Desligável em Ajustes (sol, academia). */
+:root[data-theme="tatico"][data-scanlines] body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.55;
+  background:
+    radial-gradient(ellipse at center, transparent 58%, rgb(0 0 0 / 0.5) 100%),
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+    linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background-size: 100% 100%, 100% 3px, 3px 100%;
+}
