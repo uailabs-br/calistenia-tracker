@@ -7,6 +7,7 @@ import { PageTransition } from "@/components/ui/PageTransition";
 import { ToastProvider } from "@/components/ui/Toast";
 import { PlanBoot } from "@/components/ui/PlanBoot";
 import { AppMain } from "@/components/ui/AppMain";
+import { Splash } from "@/components/ui/Splash";
 import { APP_NAME } from "@/lib/appInfo";
 import { THEME_BOOT_SCRIPT } from "@/lib/utils/theme";
 
@@ -43,7 +44,12 @@ export const metadata: Metadata = {
     title: APP_NAME,
   },
   icons: {
-    icon: "/icons/icon-192.png",
+    // SVG primeiro: na aba o A precisa encher o quadrado; no PNG de 192 ele tem a
+    // margem do ícone de app e some a 16px. O PNG fica pra navegador sem SVG.
+    icon: [
+      { url: "/icons/favicon.svg", type: "image/svg+xml" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
     apple: "/icons/apple-touch-icon.png",
   },
 };
@@ -78,6 +84,7 @@ export default function RootLayout({
             <PageTransition>{children}</PageTransition>
           </AppMain>
           <BottomNav />
+          <Splash />
         </ToastProvider>
       </body>
     </html>

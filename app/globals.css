@@ -19,6 +19,8 @@
   --color-warn: #ff9066;
   --color-gold: #f0b429;
   --color-on-accent: #0e0e0f; /* texto sobre fundo no accent do dia */
+  /* Lilás do símbolo (ícone e abertura). Fixo: a marca não muda com a cor do treino nem com o tema. */
+  --color-brand: #a99bff;
 
   --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-dm-mono), ui-monospace, monospace;
@@ -594,6 +596,75 @@ a {
   stroke-dasharray: 30;
   stroke-dashoffset: 30;
   animation: check-draw 0.35s 0.1s ease-out forwards;
+}
+
+/* Abertura (Splash.tsx): o contorno do A se desenha, enche, a barra aparece e o
+   nome sobe. A sequência é só CSS pra começar no primeiro paint, antes do JS;
+   o tempo parado no fim e a saída ficam com o componente. 1590 = perímetro das
+   pernas no viewBox do símbolo. */
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9000; /* acima de nav e overlays; as scanlines do tema tático (9999) seguem por cima */
+  display: grid;
+  place-items: center;
+  background: var(--color-bg);
+  transition: opacity 320ms ease;
+}
+.splash[data-phase="out"] {
+  opacity: 0;
+  pointer-events: none;
+}
+.splash-lockup {
+  display: grid;
+  justify-items: center;
+  gap: 22px;
+  transform: translateY(-4%);
+}
+.splash-mark {
+  width: 112px;
+  height: auto;
+  overflow: visible;
+}
+.splash-legs {
+  fill: var(--color-brand);
+  fill-opacity: 0;
+  stroke: var(--color-brand);
+  stroke-width: 7;
+  stroke-dasharray: 1590;
+  animation:
+    splash-draw 950ms cubic-bezier(0.6, 0.05, 0.3, 1) both,
+    splash-fill 380ms 820ms ease-out both;
+}
+.splash-bar {
+  fill: var(--color-brand);
+  animation: fade-in 300ms 1080ms ease-out both;
+}
+.splash-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-display-sm);
+  line-height: 1;
+  letter-spacing: 0.34em;
+  margin-right: -0.34em; /* o espaçamento depois do S descentralizaria o nome */
+  color: var(--color-text);
+  animation: fade-in-up 520ms 1180ms ease-out both;
+}
+@keyframes splash-draw {
+  from {
+    stroke-dashoffset: 1590;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes splash-fill {
+  from {
+    fill-opacity: 0;
+  }
+  to {
+    fill-opacity: 1;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   /* o reset global só encurta a duração; loop infinito de 0.01ms vira tremor */

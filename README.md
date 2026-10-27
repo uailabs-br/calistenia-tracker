@@ -1,4 +1,4 @@
-# Calistenia Tracker
+# Gravks
 
 > PWA offline-first para registrar treinos de calistenia **durante a sessão**, com zero fricção — um toque por exercício, na barra, entre as séries.
 

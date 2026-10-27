@@ -20,6 +20,20 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-10-27, marca Gravks: ícone e abertura — 637 testes):**
+> o app vai se chamar Gravks. Símbolo escolhido numa página de opções (artifact
+> `M62t5r2wxhZP8fuWMDC7pN`): um A sem barra reta, com barra em V e pernas que afinam do pé até
+> o topo, aberto a 62°. Os quatro PNGs de `public/icons` trocaram a barra de pull-up por ele,
+> e o maskable tem o A menor, pra caber no corte do Android. Abertura aprovada em protótipo (artifact
+> `TcKr5Q9w8ecGY96ZsVKAL3`): o contorno do A se desenha, enche, a barra aparece, o nome
+> GRAVKS sobe e tudo fica 1 s parado antes de sumir. Só no carregamento da página (o layout
+> não remonta entre rotas), nunca na landing, e um toque pula. Descartados no protótipo: A
+> que salta "contra a gravidade", A crescendo do chão e slogan embaixo do nome. Nome trocado
+> pra Gravks em `APP_NAME`, manifest, `package.json` e README. A aba ganhou um `favicon.svg`
+> com o A ocupando o quadrado. O PNG de 192 tem a margem do ícone de app e fica ilegível a 16px.
+> Ficam de propósito com o nome velho o banco Dexie (`calistenia-tracker`: renomear abriria
+> um banco vazio) e o formato do backup (os arquivos antigos deixariam de importar).
+
 > **Atualização (pós-v1.8, 2026-10-27, recorde suave e começo direto — 637 testes):**
 > aprovado em protótipo clicável (artifact `9NDQUYnthJrZMTbVqs2gc1`). A tela de recorde perdeu
 > o flash claro e os cortes secos (no celular parecia bug): entra por opacidade, com brilho

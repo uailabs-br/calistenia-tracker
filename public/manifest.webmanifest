@@ -1,7 +1,7 @@
 {
-  "name": "Calistenia Tracker",
-  "short_name": "Calistenia",
-  "description": "Registro de treino de calistenia — MU + HS",
+  "name": "Gravks",
+  "short_name": "Gravks",
+  "description": "Registro de treino de calistenia, com plano e progressão.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

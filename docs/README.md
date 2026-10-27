@@ -1,4 +1,4 @@
-# Documentação — Calistenia Tracker
+# Documentação — Gravks
 
 Índice dos documentos do projeto. O [`README.md`](../README.md) da raiz é a visão geral
 (problema, solução, arquitetura, como rodar); aqui fica o histórico de produto e as decisões.

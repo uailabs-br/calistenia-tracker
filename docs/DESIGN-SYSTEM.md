@@ -26,6 +26,7 @@ Não há biblioteca de componentes nem de gráficos: num PWA offline, bundle é 
 | `--color-muted` | `text-muted` | texto secundário (5,2:1, passa AA em texto pequeno) |
 | `--color-danger` / `success` / `warn` / `gold` | `text-danger`… | erro, ganho, atenção, recorde |
 | `--color-on-accent` | `text-on-accent` | texto sobre a cor do treino |
+| `--color-brand` | `text-brand`… | lilás do símbolo (ícone e abertura). Fixo: não segue treino nem tema |
 
 ### Cor do treino
 
@@ -141,6 +142,7 @@ cheia entra por opacidade, nunca com flash ou corte seco: no celular isso lê co
 | `icons.tsx` | ícones de traço (`stroke(d)`), 1.8 padrão e 2.2 em ação |
 | `accent.ts` | `accentVars`, `DEFAULT_ACCENT`, `CATEGORY_ACCENT` |
 | `ProgressRing`, `RollingNumber`, `DuotoneImage`, `Switch` | peças específicas |
+| `Splash` | abertura no carregamento da página (A desenhado + nome). Sequência em CSS (`.splash*`), parada de 1 s e saída no componente; fora da landing |
 
 ---
 
