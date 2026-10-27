@@ -20,6 +20,14 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-10-26, sementes de iniciante — 580 testes):**
+> scapular pull saiu da escada (é acessório do nível 1 do pull-up, com alvo em reps num
+> critério de hold: o degrau nunca fechava). Alvos em reps a até 3 do critério subiram até
+> ele, pra semente sozinha conseguir dar "pronto pra subir": row inverso 8 → 10, flexão
+> inclinada 10 → 12, agachamento 12 → 15. Holds e flexão com joelhos (8 de 12) ficaram:
+> distância grande demais pra quem está começando. Teste novo trava alvo na unidade errada
+> em semente.
+
 > **Atualização (pós-v1.8, 2026-10-26, loading e conquistas — 577 testes):**
 > aprovados em protótipo clicável. Card de conquistas na home, abaixo da constância: o selo
 > mais difícil já ganho e o último recorde, contando ao abrir. Home e tela de treino com

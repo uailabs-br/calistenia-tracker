@@ -6,6 +6,7 @@ import { DEFAULT_SEED_ID, getSeed, isSeedPlanId, seeds } from "@/lib/plan/seeds"
 import { getKnownPlan, knownPlanIds } from "@/lib/plan/plans";
 import { seedFits, suggestSeed } from "@/lib/domain/onboarding";
 import { skillIdForWorkout } from "@/lib/plan/skills";
+import { planWarnings } from "@/lib/plan/diffPlan";
 
 type CatalogEntry = { id: string; equipment: string[] };
 const catalog: CatalogEntry[] = JSON.parse(
@@ -21,6 +22,11 @@ describe.each(seeds)("semente $id", (seed) => {
 
   it("tem 3 treinos com ids únicos (A, B, C)", () => {
     expect(seed.plan.workouts.map((w) => w.id)).toEqual(["A", "B", "C"]);
+  });
+
+  it("alvo de degrau na unidade do critério (senão o degrau nunca fecha)", () => {
+    const unit = planWarnings(seed.plan, seed.plan).filter((w) => w.message.includes("é medido em"));
+    expect(unit.map((w) => w.message)).toEqual([]);
   });
 
   it("todo exercise.id existe no catálogo", () => {

@@ -68,18 +68,15 @@
                 "dobrei o cotovelo",
                 "balançou"
               ],
-              "skill_ref": {
-                "skill_id": "pull_up",
-                "level": 1
-              }
+              "skill_ref": null
             },
             {
               "id": "row-inverso-barra-baixa",
               "name": "Row inverso (australiano)",
-              "target": "3 × 8",
+              "target": "3 × 10",
               "parsed": {
                 "sets": 3,
-                "target": 8,
+                "target": 10,
                 "unit": "reps",
                 "per_side": false
               },
@@ -142,7 +139,7 @@
         },
         {
           "exercise_id": "row-inverso-barra-baixa",
-          "criteria": "Quando fizer 3 × 8 sem marcar \"quadril caiu\" por 2 sessões seguidas → próximo passo: Row inverso (pés elevados)."
+          "criteria": "Quando fizer 3 × 10 sem marcar \"quadril caiu\" por 2 sessões seguidas → próximo passo: Row inverso (pés elevados)."
         },
         {
           "exercise_id": "plank",
@@ -169,10 +166,10 @@
             {
               "id": "push-up-inclinada",
               "name": "Flexão inclinada",
-              "target": "3 × 10",
+              "target": "3 × 12",
               "parsed": {
                 "sets": 3,
-                "target": 10,
+                "target": 12,
                 "unit": "reps",
                 "per_side": false
               },
@@ -227,10 +224,10 @@
             {
               "id": "agachamento",
               "name": "Agachamento livre",
-              "target": "3 × 12",
+              "target": "3 × 15",
               "parsed": {
                 "sets": 3,
-                "target": 12,
+                "target": 15,
                 "unit": "reps",
                 "per_side": false
               },
@@ -279,7 +276,7 @@
       "progression": [
         {
           "exercise_id": "push-up-inclinada",
-          "criteria": "Quando fizer 3 × 10 sem marcar \"desci pouco\" por 2 sessões seguidas → próximo passo: Flexão no chão."
+          "criteria": "Quando fizer 3 × 12 sem marcar \"desci pouco\" por 2 sessões seguidas → próximo passo: Flexão no chão."
         },
         {
           "exercise_id": "push-up-joelhos",
@@ -287,7 +284,7 @@
         },
         {
           "exercise_id": "agachamento",
-          "criteria": "Quando fizer 3 × 12 sem marcar \"desci pouco\" por 2 sessões seguidas → próximo passo: Agachamento com salto."
+          "criteria": "Quando fizer 3 × 15 sem marcar \"desci pouco\" por 2 sessões seguidas → próximo passo: Agachamento com salto."
         },
         {
           "exercise_id": "ponte-gluteo",
@@ -367,10 +364,10 @@
             {
               "id": "row-inverso-barra-baixa",
               "name": "Row inverso (australiano)",
-              "target": "3 × 8",
+              "target": "3 × 10",
               "parsed": {
                 "sets": 3,
-                "target": 8,
+                "target": 10,
                 "unit": "reps",
                 "per_side": false
               },
@@ -427,7 +424,7 @@
         },
         {
           "exercise_id": "row-inverso-barra-baixa",
-          "criteria": "Quando fizer 3 × 8 sem marcar \"quadril caiu\" por 2 sessões seguidas → próximo passo: Row inverso (pés elevados)."
+          "criteria": "Quando fizer 3 × 10 sem marcar \"quadril caiu\" por 2 sessões seguidas → próximo passo: Row inverso (pés elevados)."
         },
         {
           "exercise_id": "hollow-hold",
