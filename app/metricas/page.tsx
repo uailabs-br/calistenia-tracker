@@ -13,6 +13,7 @@ import { SettingsGroup } from "@/components/ui/SettingsGroup";
 import { SettingsRow } from "@/components/ui/SettingsRow";
 import { ChevronDownIcon, HistoryIcon } from "@/components/ui/icons";
 import { shortDate } from "@/lib/utils/date";
+import { useFirstView } from "@/lib/utils/useFirstView";
 import {
   getOverview,
   getFlagIncidence,
@@ -27,6 +28,8 @@ import { DEFAULT_ACCENT, themedAccent } from "@/components/ui/accent";
 const AC = themedAccent(DEFAULT_ACCENT);
 
 export default function MetricasPage() {
+  // Números contam e barras crescem só na primeira vez que a aba abre.
+  const animate = useFirstView("metricas");
   const overview = useLiveQuery(() => getOverview(), []);
   const heatmap = useLiveQuery(() => getActivityHeatmap(12), []);
   const flags = useLiveQuery(() => getFlagIncidence(), []);
@@ -56,10 +59,10 @@ export default function MetricasPage() {
       ) : (
         <>
           <div className="grid grid-cols-2 gap-2">
-            <StatTile value={overview.totalWorkouts} label="treinos realizados" accent={AC} />
-            <StatTile value={overview.last30Workouts} label="treinos em 30 dias" />
-            <StatTile value={overview.currentStreak} label="semanas seguidas" accent={AC} />
-            <StatTile value={overview.longestStreak} label="recorde de semanas" />
+            <StatTile value={overview.totalWorkouts} label="treinos realizados" accent={AC} animate={animate} delay={100} />
+            <StatTile value={overview.last30Workouts} label="treinos em 30 dias" animate={animate} delay={200} />
+            <StatTile value={overview.currentStreak} label="semanas seguidas" accent={AC} animate={animate} delay={300} />
+            <StatTile value={overview.longestStreak} label="recorde de semanas" animate={animate} delay={400} />
           </div>
 
           {/* Histórico não tem aba: é consulta, e mora aqui */}
@@ -80,13 +83,15 @@ export default function MetricasPage() {
           {/* Equilíbrio entre treinos: quantas vezes cada um foi feito */}
           <h2 className="mb-2 mt-6 text-sm font-semibold">Equilíbrio entre treinos</h2>
           <div className="card flex flex-col gap-2 px-4 py-3">
-            {overview.balanceByWorkout.map((b) => (
+            {overview.balanceByWorkout.map((b, i) => (
               <div key={b.id} className="flex items-center gap-3">
                 <span className="w-8 font-mono text-xs text-muted">{b.label}</span>
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface2">
                   <div
-                    className="h-full rounded-full"
-                    style={{ width: `${b.pct}%`, background: AC }}
+                    className={`h-full rounded-full ${animate ? "anim-grow-x" : ""}`}
+                    style={
+                      { width: `${b.pct}%`, background: AC, "--d": `${300 + i * 80}ms` } as React.CSSProperties
+                    }
                   />
                 </div>
                 <span className="tnum w-28 text-right text-xs text-muted">

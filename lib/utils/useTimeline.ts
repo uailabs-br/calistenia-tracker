@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 
 /**
  * Relógio de uma animação em sequência: devolve os ms desde a montagem, parando
- * em `totalMs`. Com "reduzir movimento" já nasce no fim (os números aparecem
- * prontos). Ver lib/domain/timeline.ts pra converter o instante em valores.
+ * em `totalMs`. Com "reduzir movimento", ou `animate` falso, já nasce no fim (os
+ * números aparecem prontos). Ver lib/domain/timeline.ts pra converter o instante
+ * em valores.
  */
-export function useTimeline(totalMs: number): number {
-  const [t, setT] = useState(0);
+export function useTimeline(totalMs: number, animate = true): number {
+  const [t, setT] = useState(animate ? 0 : totalMs);
   useEffect(() => {
+    if (!animate) return;
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
       setT(totalMs);
       return;
@@ -23,6 +25,6 @@ export function useTimeline(totalMs: number): number {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [totalMs]);
+  }, [totalMs, animate]);
   return t;
 }
