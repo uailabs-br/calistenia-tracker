@@ -64,6 +64,35 @@ describe("LEVEL_EXERCISE (via exerciseSkillMapping)", () => {
     });
   });
 
+  it("v3.1: MU completo é o muscle-up estrito (nível 5)", () => {
+    expect(exerciseSkillMapping("mu-completo")).toEqual({
+      skill_id: "muscle_up",
+      level: 5,
+      criteria_type: "reps_rir",
+    });
+  });
+
+  it("v3.1: nível 4 do handstand é o toe-pull; a negativa do frog é do press de braço flexionado", () => {
+    expect(exerciseSkillMapping("hs-toe-pull")).toMatchObject({ skill_id: "handstand_hold", level: 4 });
+    expect(exerciseSkillMapping("hs-frog-press")).toMatchObject({ skill_id: "bent_arm_press", level: 3 });
+    expect(exerciseSkillMapping("hs-headstand-press")).toMatchObject({ skill_id: "bent_arm_press", level: 4 });
+  });
+
+  it("v3.1: press de braço estendido segue o Overcoming Gravity, straddle antes do pike", () => {
+    const levels = ["press-compressao", "press-straddle-negativo", "press-straddle-elevado", "press-straddle", "press-pike"]
+      .map((id) => exerciseSkillMapping(id));
+    expect(levels.map((m) => m?.skill_id)).toEqual(Array(5).fill("press_handstand"));
+    expect(levels.map((m) => m?.level)).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it("fl-single-leg-hold é o nível 3 do front lever (sem ele o objetivo não anda)", () => {
+    expect(exerciseSkillMapping("fl-single-leg-hold")).toEqual({
+      skill_id: "front_lever",
+      level: 3,
+      criteria_type: "hold_clean",
+    });
+  });
+
   it("remapeamento v1→v3: mu-negativa-transicao aponta pro nível 3", () => {
     expect(exerciseSkillMapping("mu-negativa-transicao")?.level).toBe(3);
   });
@@ -78,5 +107,31 @@ describe("LEVEL_EXERCISE (via exerciseSkillMapping)", () => {
 
   it("remapeamento v1→v3: core-dragon-flag-negativa aponta pro nível 4", () => {
     expect(exerciseSkillMapping("core-dragon-flag-negativa")?.level).toBe(4);
+  });
+});
+
+describe("revisão das escadas v3.1 (Overcoming Gravity 2)", () => {
+  const names = (id: string) =>
+    progressionsData.skills.find((s) => s.id === id)!.progressions.map((p) => p.name);
+
+  it("parallettes não vêm depois do L-sit no chão: o 4 é o straddle L-sit", () => {
+    expect(names("l_sit")[3]).toBe("Straddle L-sit");
+  });
+
+  it("MU nas argolas não é degrau acima do estrito na barra", () => {
+    expect(names("muscle_up").some((n) => /argolas/i.test(n))).toBe(false);
+  });
+
+  it("degraus que faltavam: one-arm elevado e back lever de uma perna", () => {
+    const pu = names("push_up");
+    expect(pu.indexOf("One-Arm Push-up Elevado")).toBe(pu.indexOf("One-Arm Push-up") - 1);
+    const bl = names("back_lever");
+    expect(bl.indexOf("Half Lay / One-Leg Back Lever")).toBe(bl.indexOf("Full Back Lever") - 1);
+  });
+
+  it("handstand segue pro one-arm, não pra pirueta", () => {
+    const hs = names("handstand_hold");
+    expect(hs.at(-1)).toBe("One-Arm Handstand");
+    expect(hs.some((n) => /pirueta/i.test(n))).toBe(false);
   });
 });

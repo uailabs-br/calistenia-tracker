@@ -54,18 +54,40 @@ const LEVEL_EXERCISE: Record<string, Record<number, string>> = {
     2: "mu-false-grip-pullup",
     3: "mu-negativa-transicao",
     4: "mu-jumping-barra-baixa",
+    5: "mu-completo",
   },
-  front_lever: { 1: "fl-tuck-hold" },
+  // o 3 é o hold de uma perna do plano pessoal: sem ele, o objetivo de front
+  // lever nunca anda (a campanha só lê nível com exercício mapeado)
+  front_lever: { 1: "fl-tuck-hold", 3: "fl-single-leg-hold" },
   push_up: { 2: "push-up-com-pausa" },
-  hspu: { 2: "hs-pike-pushup-elevado" },
+  hspu: { 2: "hs-pike-pushup-elevado", 3: "hs-wall-hspu-negativa" },
+  // v3.1: a negativa do frog saiu do nível 4 (sair da parede pela ponta do pé,
+  // que é equilíbrio) e foi pra escada do press de braço flexionado, onde a
+  // literatura põe o movimento.
   handstand_hold: {
-    4: "hs-frog-to-hs-negativa",
+    4: "hs-toe-pull",
     5: "hs-kickup-livre",
     6: "hs-kickup-controlado",
   },
+  bent_arm_press: {
+    2: "hs-frog-to-hs-negativa",
+    3: "hs-frog-press",
+    4: "hs-headstand-press",
+  },
+  // v3.1: escada realinhada à coluna de press de braço estendido do Overcoming
+  // Gravity 2 (o tuck press saiu: de braço estendido ele é mais difícil que o
+  // straddle, não mais fácil).
+  press_handstand: {
+    1: "press-compressao",
+    2: "press-straddle-negativo",
+    3: "press-straddle-elevado",
+    4: "press-straddle",
+    5: "press-pike",
+  },
   l_sit: { 3: "core-l-sit-chao" },
   dragon_flag: { 4: "core-dragon-flag-negativa" },
-  dips: { 3: "mu-straight-bar-dip" },
+  // v3.1: sem dips — o straight bar dip (fim do muscle-up) estava como "dip
+  // completo" nas paralelas, e eram movimentos diferentes.
   pistol_squat: { 2: "legs-pistol-split-squat" },
 };
 
@@ -189,6 +211,14 @@ export function getLevelInfo(
 ): { name: string; description: string } | undefined {
   const p = rawSkills.find((s) => s.id === skillId)?.progressions.find((p) => p.level === level);
   return p ? { name: p.name, description: p.description } : undefined;
+}
+
+/** Pontos de forma do nível (o que o critério chama de "limpo"), na ordem do catálogo. */
+export function getLevelFlags(skillId: string, level: number): string[] {
+  return (
+    rawSkills.find((s) => s.id === skillId)?.progressions.find((p) => p.level === level)
+      ?.form_flags ?? []
+  );
 }
 
 export interface ExerciseSkillMapping {

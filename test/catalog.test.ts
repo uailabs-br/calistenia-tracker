@@ -72,7 +72,7 @@ describe("integridade do catálogo", () => {
         }
   });
 
-  it("cobre as quatro categorias e as 16 skills", () => {
+  it("cobre as quatro categorias e todas as skills", () => {
     expect(new Set(catalog.map((e) => e.category))).toEqual(
       new Set(["Puxar", "Empurrar", "Core", "Pernas"])
     );

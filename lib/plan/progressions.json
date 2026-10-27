@@ -1,10 +1,11 @@
 {
-  "version": "3.0",
+  "version": "3.1",
   "sources": [
     "Overcoming Gravity (2nd Edition) — Steven Low",
     "r/bodyweightfitness Recommended Routine Wiki",
     "Gymnastic Bodies — Coach Christopher Sommer",
-    "Gold Medal Bodies — Ryan Hurst"
+    "Gold Medal Bodies — Ryan Hurst",
+    "Lost Art of Hand Balancing — Logan Christopher"
   ],
   "schema_notes": {
     "criteria_types": {
@@ -152,27 +153,28 @@
         },
         {
           "level": 5,
-          "name": "Pull-up Pegada Larga",
-          "description": "Pull-up com pegada mais larga que os ombros. Maior ênfase no grande dorsal e na retração escapular.",
+          "name": "L-sit Pull-up",
+          "description": "Pull-up estrito mantendo as pernas em L a repetição inteira. Tira o balanço e soma core à puxada.",
           "form_flags": [
-            "pegada mais larga que os ombros",
-            "escápula ativa"
+            "pernas em L",
+            "queixo acima da barra",
+            "descida controlada"
           ],
           "criteria": {
             "type": "reps_rir",
             "sets": 3,
-            "reps": 8,
+            "reps": 6,
             "rir_max": 2,
             "sessions_required": 2
           },
           "accessories": [
             {
-              "name": "Pull-up com pausa no topo",
+              "name": "Pull-up pronado",
               "volume_target": {
                 "sets": 2,
-                "reps": 5
+                "reps": 8
               },
-              "rationale": "Fortalece o topo da puxada, ponto fraco típico antes de archer."
+              "rationale": "Volume na variação base enquanto o L ainda cai."
             }
           ],
           "equipment": [
@@ -253,7 +255,7 @@
         "pull_up_bar"
       ],
       "equipment_alternatives": {
-        "argolas": "Muscle-up em argolas (transição mais natural, mais estabilização)"
+        "argolas": "Muscle-up nas argolas com false grip: a transição é mais fácil que o estrito na barra"
       },
       "prerequisites": [
         {
@@ -419,31 +421,32 @@
         },
         {
           "level": 6,
-          "name": "Muscle-up em Argolas (Estrito)",
-          "description": "MU estrito em argolas. Transição mais natural mas exige muito mais estabilização de ombro.",
+          "name": "L-sit Muscle-up (Barra)",
+          "description": "Muscle-up estrito mantendo as pernas em L do começo ao fim. Sem o balanço das pernas, a puxada e a transição ficam só na força.",
           "form_flags": [
-            "argolas estáveis",
-            "sem galo na transição"
+            "pernas em L o tempo todo",
+            "sem impulso",
+            "transição simétrica"
           ],
           "criteria": {
             "type": "reps_rir",
             "sets": 3,
-            "reps": 3,
+            "reps": 2,
             "rir_max": 2,
             "sessions_required": 2
           },
           "accessories": [
             {
-              "name": "Ring support hold + ring dip",
+              "name": "Muscle-up estrito",
               "volume_target": {
                 "sets": 3,
-                "reps": 6
+                "reps": 3
               },
-              "rationale": "Estabilização de argola no topo, gargalo específico da versão em argolas."
+              "rationale": "Mantém o volume do padrão enquanto o L ainda cai."
             }
           ],
           "equipment": [
-            "rings"
+            "pull_up_bar"
           ],
           "video_reference": null
         }
@@ -768,6 +771,34 @@
         },
         {
           "level": 5,
+          "name": "Half Lay / One-Leg Back Lever",
+          "description": "Back lever com uma perna estendida e a outra dobrada (ou quadril aberto em meia-extensão). Encurta a alavanca entre o straddle e o completo.",
+          "form_flags": [
+            "quadril na linha dos ombros",
+            "perna estendida reta",
+            "sem arquear"
+          ],
+          "criteria": {
+            "type": "hold_clean",
+            "sets": 3,
+            "duration_seconds": 8,
+            "sessions_required": 2
+          },
+          "accessories": [
+            {
+              "name": "Straddle back lever",
+              "volume_target": {
+                "sets": 3,
+                "duration_seconds": 8
+              },
+              "rationale": "Segura a força da alavanca anterior enquanto a nova ainda cai."
+            }
+          ],
+          "equipment": [],
+          "video_reference": null
+        },
+        {
+          "level": 6,
           "name": "Full Back Lever",
           "description": "Corpo totalmente estendido e paralelo ao chão abaixo da barra, pernas juntas.",
           "form_flags": [
@@ -921,6 +952,38 @@
         },
         {
           "level": 5,
+          "name": "One-Arm Push-up Elevado",
+          "description": "Flexão com um braço com as mãos num banco ou degrau. A inclinação tira carga e deixa treinar o padrão do one-arm antes do chão.",
+          "form_flags": [
+            "corpo rígido sem rodar",
+            "cotovelo junto ao corpo",
+            "peito até a borda"
+          ],
+          "criteria": {
+            "type": "reps_rir",
+            "sets": 3,
+            "reps": 5,
+            "rir_max": 2,
+            "unilateral": true,
+            "sessions_required": 2
+          },
+          "accessories": [
+            {
+              "name": "Archer push-up",
+              "volume_target": {
+                "sets": 3,
+                "reps": 6
+              },
+              "rationale": "Mantém a carga unilateral no chão enquanto a altura desce."
+            }
+          ],
+          "equipment": [
+            "bench"
+          ],
+          "video_reference": null
+        },
+        {
+          "level": 6,
           "name": "One-Arm Push-up",
           "description": "Flexão com um braço, pés afastados para estabilidade, corpo rígido sem rotação excessiva.",
           "form_flags": [
@@ -1087,11 +1150,12 @@
         },
         {
           "level": 5,
-          "name": "Weighted / Korean Dip",
-          "description": "Dip com peso adicional, ou Korean dip (barra atrás do corpo) para quem busca amplitude/força extrema. Escolher conforme objetivo.",
+          "name": "Dip com Peso",
+          "description": "Dip completo nas paralelas com carga presa ao corpo (cinto ou mochila), começando por volta de 20% do peso corporal.",
           "form_flags": [
-            "carga estável",
-            "amplitude total"
+            "amplitude completa",
+            "ombro abaixo do cotovelo no fundo",
+            "sem balanço"
           ],
           "criteria": {
             "type": "reps_rir",
@@ -1102,12 +1166,12 @@
           },
           "accessories": [
             {
-              "name": "Dip completo alto volume",
+              "name": "Dip completo",
               "volume_target": {
                 "sets": 2,
-                "reps": 12
+                "reps": 10
               },
-              "rationale": "Base de volume que sustenta o trabalho pesado."
+              "rationale": "Volume sem carga pra sustentar a força nova."
             }
           ],
           "equipment": [
@@ -1678,27 +1742,58 @@
         },
         {
           "level": 7,
-          "name": "Handstand com Pirueta (variações)",
-          "description": "Giros de 90-180° e caminhada nas mãos. Controle avançado sobre o equilíbrio.",
+          "name": "Straddle Handstand com Transferência de Peso",
+          "description": "Handstand livre em straddle, levando o peso de uma mão pra outra até a mão leve quase sair do chão. É a porta do one-arm handstand.",
           "form_flags": [
-            "giro controlado",
-            "sem quebrar o equilíbrio"
+            "quadril sobre a mão de apoio",
+            "ombro empurrando o chão",
+            "sem dobrar o braço"
           ],
           "criteria": {
-            "type": "skill_consistency",
+            "type": "hold_clean",
             "sets": 3,
-            "attempts": 3,
-            "consistency_ratio": 1.0,
+            "duration_seconds": 10,
+            "unilateral": true,
             "sessions_required": 2
           },
           "accessories": [
             {
-              "name": "Handstand hold longo",
+              "name": "Handstand livre",
               "volume_target": {
                 "sets": 3,
                 "duration_seconds": 30
               },
-              "rationale": "Estabilidade prolongada é pré-requisito de qualquer variação dinâmica."
+              "rationale": "Equilíbrio de base pras transferências."
+            }
+          ],
+          "equipment": [],
+          "video_reference": null
+        },
+        {
+          "level": 8,
+          "name": "One-Arm Handstand",
+          "description": "Handstand em um braço, pernas em straddle ou juntas, segurado sem tocar a outra mão.",
+          "form_flags": [
+            "sem tocar a outra mão",
+            "quadril sobre a mão",
+            "corpo estável"
+          ],
+          "criteria": {
+            "type": "skill_consistency",
+            "sets": 1,
+            "attempts": 5,
+            "min_hold_seconds": 5,
+            "consistency_ratio": 0.6,
+            "sessions_required": 2
+          },
+          "accessories": [
+            {
+              "name": "Straddle handstand com transferência",
+              "volume_target": {
+                "sets": 3,
+                "duration_seconds": 10
+              },
+              "rationale": "Mantém o peso no braço de apoio sem a saída completa."
             }
           ],
           "equipment": [],
@@ -1708,9 +1803,9 @@
     },
     {
       "id": "press_handstand",
-      "name": "Press Handstand",
+      "name": "Press Handstand (Braço Estendido)",
       "group": "push",
-      "source": "Overcoming Gravity — Steven Low; Gymnastic Bodies — Coach Sommer",
+      "source": "Overcoming Gravity 2 (coluna Straight Arm Press HS) — Steven Low; Gymnastic Bodies — Coach Sommer",
       "equipment_required": [],
       "equipment_alternatives": {
         "parallettes": "Recomendado para maior amplitude e clearance"
@@ -1754,11 +1849,12 @@
         },
         {
           "level": 2,
-          "name": "Tuck Press Negativo",
-          "description": "Do handstand, descer controlado em tuck até o chão. Aprende o padrão do press ao contrário.",
+          "name": "Straddle Press Negativo na Parede",
+          "description": "De costas pra parede em handstand, descer abrindo as pernas em straddle, quadril alto e braços travados, até os pés tocarem o chão. Ensina o caminho do press ao contrário.",
           "form_flags": [
-            "descida lenta em tuck",
-            "controle"
+            "braços estendidos",
+            "descida lenta",
+            "quadril sobre as mãos"
           ],
           "criteria": {
             "type": "reps_rir",
@@ -1769,12 +1865,12 @@
           },
           "accessories": [
             {
-              "name": "Straddle compression",
+              "name": "Compressão em straddle",
               "volume_target": {
                 "sets": 3,
                 "duration_seconds": 20
               },
-              "rationale": "Continua abrindo a compressão necessária para a fase concêntrica."
+              "rationale": "Sem compressão ativa o quadril não sobe sobre as mãos."
             }
           ],
           "equipment": [],
@@ -1782,37 +1878,12 @@
         },
         {
           "level": 3,
-          "name": "Tuck Press Handstand",
-          "description": "Do tuck, pressionar e elevar o quadril até o handstand. Primeira versão concêntrica completa.",
+          "name": "Straddle Press com Pés Elevados",
+          "description": "Pés numa caixa ou banco, mãos no chão, inclinar os ombros à frente e erguer o quadril em straddle até o handstand. A altura dos pés tira parte da carga.",
           "form_flags": [
-            "subida controlada em tuck"
-          ],
-          "criteria": {
-            "type": "reps_rir",
-            "sets": 3,
-            "reps": 3,
-            "rir_max": 2,
-            "sessions_required": 2
-          },
-          "accessories": [
-            {
-              "name": "Tuck press negativo",
-              "volume_target": {
-                "sets": 2,
-                "reps": 3
-              },
-              "rationale": "Excêntrico reforça a força que a subida ainda não tem."
-            }
-          ],
-          "equipment": [],
-          "video_reference": null
-        },
-        {
-          "level": 4,
-          "name": "Straddle Press Handstand",
-          "description": "Do straddle L, pressionar e elevar o quadril passando pelas pernas abertas até o handstand.",
-          "form_flags": [
-            "subida controlada em straddle"
+            "braços estendidos",
+            "ombros à frente das mãos",
+            "sem pular"
           ],
           "criteria": {
             "type": "reps_rir",
@@ -1828,7 +1899,36 @@
                 "sets": 2,
                 "reps": 3
               },
-              "rationale": "Excêntrico da alavanca de straddle."
+              "rationale": "O excêntrico continua dando a força que a subida ainda não tem."
+            }
+          ],
+          "equipment": [],
+          "video_reference": null
+        },
+        {
+          "level": 4,
+          "name": "Straddle Press em Pé",
+          "description": "Em pé em straddle, mãos no chão, inclinar os ombros à frente e erguer o quadril com braços estendidos até o handstand. É o primeiro press completo do chão.",
+          "form_flags": [
+            "braços estendidos",
+            "subida controlada",
+            "sem pular"
+          ],
+          "criteria": {
+            "type": "reps_rir",
+            "sets": 3,
+            "reps": 2,
+            "rir_max": 2,
+            "sessions_required": 2
+          },
+          "accessories": [
+            {
+              "name": "Straddle press com pés elevados",
+              "volume_target": {
+                "sets": 2,
+                "reps": 3
+              },
+              "rationale": "Volume na variação mais leve enquanto a do chão ainda sai pouca."
             }
           ],
           "equipment": [],
@@ -1836,11 +1936,153 @@
         },
         {
           "level": 5,
-          "name": "Pike Press Handstand (Full)",
-          "description": "Do pike com pernas juntas, pressionar e elevar até o handstand. Máxima exigência de compressão e força.",
+          "name": "Pike Press em Pé",
+          "description": "O mesmo press com as pernas juntas e estendidas. Alavanca mais longa: pede mais compressão e mais força de ombro.",
           "form_flags": [
-            "pike fechado",
+            "pernas juntas",
+            "braços estendidos",
+            "subida controlada"
+          ],
+          "criteria": {
+            "type": "reps_rir",
+            "sets": 3,
+            "reps": 2,
+            "rir_max": 2,
+            "sessions_required": 2
+          },
+          "accessories": [
+            {
+              "name": "Pike compression lift",
+              "volume_target": {
+                "sets": 3,
+                "reps": 10
+              },
+              "rationale": "A compressão em pike é o limite mais comum dessa variação."
+            }
+          ],
+          "equipment": [],
+          "video_reference": null
+        },
+        {
+          "level": 6,
+          "name": "Straddle Press do L-sit",
+          "description": "Partindo do L-sit ou straddle-L, levar o quadril pra trás e pra cima, passando pelas pernas abertas até o handstand, sem apoiar os pés.",
+          "form_flags": [
+            "braços estendidos",
+            "sem tocar os pés",
             "controle"
+          ],
+          "criteria": {
+            "type": "reps_rir",
+            "sets": 3,
+            "reps": 1,
+            "rir_max": 2,
+            "sessions_required": 2
+          },
+          "accessories": [
+            {
+              "name": "Straddle press em pé",
+              "volume_target": {
+                "sets": 3,
+                "reps": 2
+              },
+              "rationale": "Mantém a força do press enquanto a saída do L-sit ainda falha."
+            }
+          ],
+          "equipment": [
+            "parallettes"
+          ],
+          "video_reference": null
+        },
+        {
+          "level": 7,
+          "name": "Pike Press do L-sit",
+          "description": "Do L-sit, erguer o quadril com as pernas juntas até o handstand. O press completo do chão.",
+          "form_flags": [
+            "pernas juntas",
+            "braços estendidos",
+            "controle"
+          ],
+          "criteria": {
+            "type": "reps_rir",
+            "sets": 3,
+            "reps": 1,
+            "rir_max": 2,
+            "sessions_required": 2
+          },
+          "accessories": [
+            {
+              "name": "Pike press em pé",
+              "volume_target": {
+                "sets": 3,
+                "reps": 2
+              },
+              "rationale": "A variação em pé segura o padrão enquanto a do L-sit não sai."
+            }
+          ],
+          "equipment": [
+            "parallettes"
+          ],
+          "video_reference": null
+        }
+      ]
+    },
+    {
+      "id": "bent_arm_press",
+      "name": "Push to Handstand (Braço Flexionado)",
+      "group": "push",
+      "source": "Overcoming Gravity 2 (coluna Press Handstands) — Steven Low; Lost Art of Hand Balancing",
+      "equipment_required": [],
+      "equipment_alternatives": {
+        "parallettes": "Dão mais espaço pros pés no frog e no L-sit"
+      },
+      "prerequisites": [
+        {
+          "skill_id": "handstand_hold",
+          "min_level": 5
+        },
+        {
+          "skill_id": "hspu",
+          "min_level": 3
+        }
+      ],
+      "progressions": [
+        {
+          "level": 1,
+          "name": "Frog Stand",
+          "description": "Agachado, mãos no chão, joelhos apoiados atrás dos cotovelos, inclinar à frente até os pés saírem do chão. É a posição de onde o press começa.",
+          "form_flags": [
+            "cotovelos sob os joelhos",
+            "olhar à frente",
+            "sem tocar os pés"
+          ],
+          "criteria": {
+            "type": "hold_clean",
+            "sets": 3,
+            "duration_seconds": 15,
+            "sessions_required": 2
+          },
+          "accessories": [
+            {
+              "name": "Planche lean",
+              "volume_target": {
+                "sets": 3,
+                "duration_seconds": 20
+              },
+              "rationale": "Acostuma o ombro a ficar à frente das mãos, como no press."
+            }
+          ],
+          "equipment": [],
+          "video_reference": null
+        },
+        {
+          "level": 2,
+          "name": "Frog to Handstand Negativa",
+          "description": "Do handstand, descer devagar com os braços flexionando até apoiar os joelhos nos cotovelos no frog stand. O press ao contrário.",
+          "form_flags": [
+            "descida lenta",
+            "cotovelos fechados",
+            "quadril alto"
           ],
           "criteria": {
             "type": "reps_rir",
@@ -1851,12 +2093,159 @@
           },
           "accessories": [
             {
-              "name": "Pike compression + straddle press",
+              "name": "HSPU negativa na parede",
+              "volume_target": {
+                "sets": 3,
+                "reps": 3
+              },
+              "rationale": "Dá a força de empurrar com o braço flexionado de cabeça pra baixo."
+            }
+          ],
+          "equipment": [],
+          "video_reference": null
+        },
+        {
+          "level": 3,
+          "name": "Frog Press to Handstand",
+          "description": "Do frog stand, inclinar mais à frente e empurrar até o handstand, estendendo os braços enquanto as pernas sobem.",
+          "form_flags": [
+            "tronco parado enquanto as pernas sobem",
+            "sem chutar",
+            "braços estendem no fim"
+          ],
+          "criteria": {
+            "type": "reps_rir",
+            "sets": 3,
+            "reps": 2,
+            "rir_max": 2,
+            "sessions_required": 2
+          },
+          "accessories": [
+            {
+              "name": "Frog to handstand negativa",
+              "volume_target": {
+                "sets": 3,
+                "reps": 3
+              },
+              "rationale": "O excêntrico dá força na faixa onde a subida trava."
+            }
+          ],
+          "equipment": [],
+          "video_reference": null
+        },
+        {
+          "level": 4,
+          "name": "Headstand to Handstand",
+          "description": "Do tripé (cabeça e mãos no chão, pernas pra cima), empurrar o chão até estender os braços no handstand. Mãos mais abertas facilitam.",
+          "form_flags": [
+            "corpo alinhado",
+            "empurrar sem arquear",
+            "sem chutar"
+          ],
+          "criteria": {
+            "type": "reps_rir",
+            "sets": 3,
+            "reps": 2,
+            "rir_max": 2,
+            "sessions_required": 2
+          },
+          "accessories": [
+            {
+              "name": "HSPU na parede",
               "volume_target": {
                 "sets": 3,
                 "reps": 5
               },
-              "rationale": "Une flexibilidade ativa e força na alavanca mais difícil."
+              "rationale": "Mesmo empurrar vertical, com a parede segurando o equilíbrio."
+            }
+          ],
+          "equipment": [],
+          "video_reference": null
+        },
+        {
+          "level": 5,
+          "name": "L-sit to Handstand (Braço Flexionado)",
+          "description": "Do L-sit, levar o quadril pra trás e pra cima com os braços flexionando e empurrar até o handstand.",
+          "form_flags": [
+            "sem tocar os pés",
+            "quadril alto",
+            "braços estendem no fim"
+          ],
+          "criteria": {
+            "type": "reps_rir",
+            "sets": 3,
+            "reps": 1,
+            "rir_max": 2,
+            "sessions_required": 2
+          },
+          "accessories": [
+            {
+              "name": "Frog press to handstand",
+              "volume_target": {
+                "sets": 3,
+                "reps": 2
+              },
+              "rationale": "Mantém o padrão do press enquanto a saída do L-sit ainda falha."
+            }
+          ],
+          "equipment": [
+            "parallettes"
+          ],
+          "video_reference": null
+        },
+        {
+          "level": 6,
+          "name": "Tiger Bend (Corpo Reto)",
+          "description": "Do apoio de antebraços, passar o peso pras mãos com o corpo reto e empurrar até o handstand, como o fundo de uma HSPU livre.",
+          "form_flags": [
+            "corpo reto",
+            "cotovelos fechados",
+            "sem arquear"
+          ],
+          "criteria": {
+            "type": "reps_rir",
+            "sets": 3,
+            "reps": 1,
+            "rir_max": 2,
+            "sessions_required": 2
+          },
+          "accessories": [
+            {
+              "name": "HSPU livre",
+              "volume_target": {
+                "sets": 3,
+                "reps": 2
+              },
+              "rationale": "Força de braço flexionado com o equilíbrio do handstand livre."
+            }
+          ],
+          "equipment": [],
+          "video_reference": null
+        },
+        {
+          "level": 7,
+          "name": "Handstand → Elbow Lever → Handstand",
+          "description": "Do handstand, descer até o elbow lever e voltar a empurrar até o handstand, sem apoiar os pés.",
+          "form_flags": [
+            "corpo reto",
+            "cotovelos no quadril no elbow lever",
+            "subida sem impulso"
+          ],
+          "criteria": {
+            "type": "reps_rir",
+            "sets": 3,
+            "reps": 1,
+            "rir_max": 2,
+            "sessions_required": 2
+          },
+          "accessories": [
+            {
+              "name": "Tiger bend",
+              "volume_target": {
+                "sets": 3,
+                "reps": 1
+              },
+              "rationale": "O mesmo empurrar de corpo reto, com menos amplitude."
             }
           ],
           "equipment": [],
@@ -1958,31 +2347,30 @@
         },
         {
           "level": 4,
-          "name": "L-sit Elevado / Parallettes (20s+)",
-          "description": "L-sit em parallettes ou barras com holds longos. Base para o V-sit e o press handstand.",
+          "name": "Straddle L-sit",
+          "description": "Pernas estendidas e abertas em V, na horizontal, quadril fora do chão. Pede mais compressão que o L-sit e prepara o straddle press e o V-sit.",
           "form_flags": [
-            "pernas retas e paralelas"
+            "pernas na horizontal",
+            "joelhos estendidos",
+            "ombros deprimidos"
           ],
           "criteria": {
             "type": "hold_clean",
             "sets": 3,
-            "duration_seconds": 20,
+            "duration_seconds": 10,
             "sessions_required": 2
           },
           "accessories": [
             {
-              "name": "L-sit para tuck (raise)",
+              "name": "Pike compression lift",
               "volume_target": {
                 "sets": 3,
-                "reps": 8
+                "reps": 10
               },
-              "rationale": "Componente dinâmico que abre caminho para o V-sit."
+              "rationale": "A compressão ativa é o que segura as pernas abertas no alto."
             }
           ],
-          "equipment": [
-            "parallel_bars",
-            "parallettes"
-          ],
+          "equipment": [],
           "video_reference": null
         }
       ]

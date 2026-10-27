@@ -214,7 +214,7 @@ describe("exportForAI — degraus fora do equipamento", () => {
 
   it("na praça, o próximo do Dip Completo pula o Ring Dip", () => {
     const n = neighborSteps(dips, at(dips, 3), "praca");
-    expect(n.proximo).toBe("Weighted / Korean Dip");
+    expect(n.proximo).toBe("Dip com Peso");
     expect(n.fora).toEqual(["Ring Dip"]);
   });
 
@@ -222,10 +222,16 @@ describe("exportForAI — degraus fora do equipamento", () => {
     expect(neighborSteps(dips, at(dips, 5), "praca").anterior).toBe("Dip Completo");
   });
 
-  it("topo alcançável: MU estrito na praça não tem próximo, e diz por quê", () => {
+  it("v3.1: na praça, depois do MU estrito vem o MU em L (as argolas saíram da escada)", () => {
     const n = neighborSteps(mu, at(mu, 5), "praca");
+    expect(n.proximo).toBe("L-sit Muscle-up (Barra)");
+    expect(n.fora).toEqual([]);
+  });
+
+  it("topo da escada não tem próximo", () => {
+    const n = neighborSteps(mu, at(mu, 6), "praca");
     expect(n.proximo).toBeNull();
-    expect(n.fora).toEqual(["Muscle-up em Argolas (Estrito)"]);
+    expect(n.fora).toEqual([]);
   });
 
   it("sem perfil declarado, a escada crua", () => {

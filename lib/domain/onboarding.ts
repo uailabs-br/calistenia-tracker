@@ -8,7 +8,7 @@ export type SeedId = "iniciante-sem-barra" | "iniciante-com-barra" | "intermedia
 export type Equipment = "chao" | "casa_barra" | "praca" | "academia";
 
 /**
- * O que a pessoa quer, em uma palavra. Geral de propósito: o app tem 16 skills e
+ * O que a pessoa quer, em uma palavra. Geral de propósito: o app tem 17 skills e
  * uma lista de objetivos por skill nunca cobriria todas (quem quer planche não
  * acharia a opção). A skill específica fica em Ajustes → "Meus objetivos", que já
  * lista todas e vai pro prompt da IA; aqui só se diz a direção.

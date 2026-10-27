@@ -356,7 +356,10 @@
             },
             {
               "id": "hs-frog-to-hs-negativa",
-              "skill_ref": null,
+              "skill_ref": {
+                "skill_id": "bent_arm_press",
+                "level": 2
+              },
               "name": "Frog to HS negativa",
               "target": "5 rep",
               "parsed": { "sets": 1, "target": 5, "unit": "reps", "per_side": false },

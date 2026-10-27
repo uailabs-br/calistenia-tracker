@@ -66,8 +66,15 @@ async function logMu(
 describe("mapeamento exercício → nível", () => {
   it("skill_ref: null no plano desliga o mapeamento (pistol não é o nível Bulgarian)", () => {
     expect(exerciseSkillMapping("legs-pistol-split-squat")).toBeNull();
-    expect(exerciseSkillMapping("hs-frog-to-hs-negativa")).toBeNull();
     expect(exerciseSkillMapping("hs-kickup-controlado")).toBeNull();
+  });
+
+  it("skill_ref declarado no plano vence o legado (a negativa do frog é do press de braço flexionado)", () => {
+    expect(exerciseSkillMapping("hs-frog-to-hs-negativa")).toEqual({
+      skill_id: "bent_arm_press",
+      level: 2,
+      criteria_type: "reps_rir",
+    });
   });
 
   it("exercícios sem declaração seguem o mapeamento legado", () => {
@@ -76,7 +83,8 @@ describe("mapeamento exercício → nível", () => {
       level: 3,
       criteria_type: "reps_rir",
     });
-    expect(exerciseSkillMapping("mu-straight-bar-dip")?.skill_id).toBe("dips");
+    // v3.1: straight bar dip deixou de valer como dip nas paralelas
+    expect(exerciseSkillMapping("mu-straight-bar-dip")).toBeNull();
   });
 });
 
