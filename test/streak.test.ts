@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { streakWithFreeze } from "@/lib/domain/streak";
+import { longestStreakWithFreeze, streakWithFreeze } from "@/lib/domain/streak";
 
 const T = true;
 const F = false;
@@ -29,5 +29,21 @@ describe("streakWithFreeze", () => {
 
   it("lista vazia → 0", () => {
     expect(streakWithFreeze([])).toBe(0);
+  });
+});
+
+describe("longestStreakWithFreeze", () => {
+  it("semana protegida não quebra o recorde (nunca fica abaixo da streak atual)", () => {
+    const weeks = [T, T, T, T, F, T, T, T];
+    expect(streakWithFreeze(weeks)).toBe(7);
+    expect(longestStreakWithFreeze(weeks)).toBe(7);
+  });
+
+  it("guarda o pico de antes de uma quebra", () => {
+    expect(longestStreakWithFreeze([T, T, T, T, T, F, F, T])).toBe(5);
+  });
+
+  it("lista vazia → 0", () => {
+    expect(longestStreakWithFreeze([])).toBe(0);
   });
 });

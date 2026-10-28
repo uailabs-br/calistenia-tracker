@@ -13,7 +13,21 @@ const MAX_FREEZES = 2;
  * - semana falha sem proteção zera a streak.
  */
 export function streakWithFreeze(weeksMet: boolean[]): number {
+  return walkStreak(weeksMet).streak;
+}
+
+/**
+ * Recorde de semanas: o maior valor que a streak (com proteção) já alcançou.
+ * Contar só semanas batidas em sequência, sem proteção, deixava o recorde
+ * abaixo da streak atual sempre que uma proteção tinha segurado uma semana.
+ */
+export function longestStreakWithFreeze(weeksMet: boolean[]): number {
+  return walkStreak(weeksMet).best;
+}
+
+function walkStreak(weeksMet: boolean[]): { streak: number; best: number } {
   let streak = 0;
+  let best = 0;
   let protections = 0;
   let sinceFreeze = 0;
 
@@ -31,6 +45,7 @@ export function streakWithFreeze(weeksMet: boolean[]): number {
       protections = 0;
       sinceFreeze = 0;
     }
+    best = Math.max(best, streak);
   }
-  return streak;
+  return { streak, best };
 }

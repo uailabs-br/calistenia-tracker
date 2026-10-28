@@ -3,7 +3,7 @@ import { getExerciseById, uniqueExercises, plan } from "@/lib/plan/loader";
 import { resolveLogExercise } from "@/lib/plan/resolve";
 import { totalVolume, effectiveSets } from "@/lib/domain/volume";
 import { unitOf } from "@/lib/domain/parseTarget";
-import { streakWithFreeze } from "@/lib/domain/streak";
+import { longestStreakWithFreeze, streakWithFreeze } from "@/lib/domain/streak";
 import { getWeekGoal } from "@/lib/utils/profile";
 import {
   daysBetween,
@@ -80,11 +80,7 @@ export async function getOverview(): Promise<Overview> {
     if (metOf(currentWeek)) weeksMet.push(true);
 
     currentStreak = streakWithFreeze(weeksMet);
-    let run = 0;
-    for (const met of weeksMet) {
-      run = met ? run + 1 : 0;
-      longestStreak = Math.max(longestStreak, run);
-    }
+    longestStreak = longestStreakWithFreeze(weeksMet);
   }
 
   // RPE médio 4 semanas

@@ -20,6 +20,12 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-10-28, recorde de semanas nunca abaixo da streak — 641 testes):**
+> o recorde contava só semanas batidas em sequência, sem proteção, e a streak usa proteção: com
+> uma semana fraca protegida, a Evolução mostrava 10 semanas seguidas e recorde 7. O recorde
+> agora é o maior valor que a streak já alcançou (`longestStreakWithFreeze`, mesma passada da
+> streak), e os selos de constância passam a ler esse número.
+>
 > **Atualização (pós-v1.8, 2026-10-28, advanced tuck e skin the cat contam na escada — 638 testes):**
 > a troca de domínio pro Gravks abriu o app com o banco vazio (IndexedDB é por origem) e o
 > histórico foi reconstruído fora do app, a partir do backup de 12/10 e do export pra IA. Ao
