@@ -93,6 +93,11 @@ describe("LEVEL_EXERCISE (via exerciseSkillMapping)", () => {
     });
   });
 
+  it("advanced tuck e skin the cat têm nível na escada (sem isso o treino feito não conta)", () => {
+    expect(exerciseSkillMapping("fl-adv-tuck-hold")).toMatchObject({ skill_id: "front_lever", level: 2 });
+    expect(exerciseSkillMapping("skin-the-cat")).toMatchObject({ skill_id: "back_lever", level: 1 });
+  });
+
   it("remapeamento v1→v3: mu-negativa-transicao aponta pro nível 3", () => {
     expect(exerciseSkillMapping("mu-negativa-transicao")?.level).toBe(3);
   });

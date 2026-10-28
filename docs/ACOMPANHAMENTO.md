@@ -20,6 +20,14 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-10-28, advanced tuck e skin the cat contam na escada — 638 testes):**
+> a troca de domínio pro Gravks abriu o app com o banco vazio (IndexedDB é por origem) e o
+> histórico foi reconstruído fora do app, a partir do backup de 12/10 e do export pra IA. Ao
+> conferir as escadas, o nível 2 do front lever e o 1 do back lever não tinham exercício em
+> `LEVEL_EXERCISE`, então treino feito nesses degraus nunca virava conquista e a posição
+> parava no advanced tuck. Ligados a `fl-adv-tuck-hold` e `skin-the-cat`, os ids do catálogo.
+> O script `merge-exercise-ids.mjs` rodou no backup reconstruído.
+>
 > **Atualização (pós-v1.8, 2026-10-27, marca Gravks: ícone e abertura — 637 testes):**
 > o app vai se chamar Gravks. Símbolo escolhido numa página de opções (artifact
 > `M62t5r2wxhZP8fuWMDC7pN`): um A sem barra reta, com barra em V e pernas que afinam do pé até

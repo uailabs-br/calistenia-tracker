@@ -58,7 +58,9 @@ const LEVEL_EXERCISE: Record<string, Record<number, string>> = {
   },
   // o 3 é o hold de uma perna do plano pessoal: sem ele, o objetivo de front
   // lever nunca anda (a campanha só lê nível com exercício mapeado)
-  front_lever: { 1: "fl-tuck-hold", 3: "fl-single-leg-hold" },
+  front_lever: { 1: "fl-tuck-hold", 2: "fl-adv-tuck-hold", 3: "fl-single-leg-hold" },
+  // sem ele o skin the cat feito não aparece na escada do back lever
+  back_lever: { 1: "skin-the-cat" },
   push_up: { 2: "push-up-com-pausa" },
   hspu: { 2: "hs-pike-pushup-elevado", 3: "hs-wall-hspu-negativa" },
   // v3.1: a negativa do frog saiu do nível 4 (sair da parede pela ponta do pé,
