@@ -20,6 +20,13 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-10-28, "apagar todos os dados" recarrega o app — 642 testes):**
+> o banco era apagado, mas o plano e os ajustes ficavam em memória desde o boot: a tela seguia
+> com o plano, a meta e o nome de antes, e parecia que nada tinha acontecido. Agora recarrega
+> (o recado atravessa via `setFlash`) e o boot leva pra primeira visita. O reset também passou a
+> levar o nome, as marcas de "já vi" do histórico (selos, progressões, semana, feedback) e o
+> fluxo, objetivos e notas da IA; tema, lembrete e o aviso de instalação ficam.
+>
 > **Atualização (pós-v1.8, 2026-10-28, recorde de semanas nunca abaixo da streak — 641 testes):**
 > o recorde contava só semanas batidas em sequência, sem proteção, e a streak usa proteção: com
 > uma semana fraca protegida, a Evolução mostrava 10 semanas seguidas e recorde 7. O recorde

@@ -281,6 +281,16 @@ const RESET_KEYS = [
   "calistenia:week-goal",
   "calistenia:plan-applied-at",
   "calistenia:plan-swap-ack",
+  // o nome vem do onboarding; o resto é marca de "já vi" de coisas do histórico
+  // apagado, e sobrar faria o selo ou a semana voltarem sem o aviso de novo
+  "calistenia:profile-name",
+  "calistenia:badges-seen",
+  "calistenia:progression-acks",
+  "calistenia:week-review-seen",
+  "calistenia:feedback-ack",
+  "calistenia:ai-flow",
+  "calistenia:ai-goals",
+  "calistenia:ai-notes",
 ];
 
 export function sessionsSinceExport(currentCompleted: number): number {
