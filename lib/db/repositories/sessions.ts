@@ -195,6 +195,15 @@ export async function setPartialSets(
  * do histórico e das métricas.
  */
 export async function discardSession(id: string): Promise<void> {
+  await deleteSession(id);
+}
+
+/**
+ * Apaga um treino do histórico (concluído ou não): soft-delete da sessão e dos
+ * registros dela, no mesmo carimbo. Devolve o carimbo, que é o que
+ * `restoreSession` usa pra desfazer.
+ */
+export async function deleteSession(id: string): Promise<number> {
   const ts = now();
   await db.transaction("rw", db.sessions, db.exerciseLogs, async () => {
     const logs = await db.exerciseLogs
@@ -207,5 +216,26 @@ export async function discardSession(id: string): Promise<void> {
       }
     }
     await db.sessions.update(id, { deleted_at: ts, updated_at: ts });
+  });
+  return ts;
+}
+
+/**
+ * Desfaz `deleteSession`. Só volta o que saiu naquele carimbo: um registro
+ * apagado antes (exercício desfeito durante o treino) continua apagado.
+ */
+export async function restoreSession(id: string, deletedAt: number): Promise<void> {
+  const ts = now();
+  await db.transaction("rw", db.sessions, db.exerciseLogs, async () => {
+    const logs = await db.exerciseLogs
+      .where("session_id")
+      .equals(id)
+      .toArray();
+    for (const l of logs) {
+      if (l.deleted_at === deletedAt) {
+        await db.exerciseLogs.update(l.id, { deleted_at: null, updated_at: ts });
+      }
+    }
+    await db.sessions.update(id, { deleted_at: null, updated_at: ts });
   });
 }

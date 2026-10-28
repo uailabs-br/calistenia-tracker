@@ -1,9 +1,14 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useLiveQuery } from "dexie-react-hooks";
 import type { ExerciseLog } from "@/lib/db/schema";
 import { getSessionDetail } from "@/lib/db/queries/sessions";
+import { deleteSession, restoreSession } from "@/lib/db/repositories/sessions";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/Toast";
+import { haptic } from "@/lib/utils/haptics";
 import { getWorkoutById } from "@/lib/plan/loader";
 import { getCatalogExercise } from "@/lib/plan/catalog";
 import { resolveLogExercise } from "@/lib/plan/resolve";
@@ -22,6 +27,9 @@ export default function SessionDetailPage({
   const { id } = use(params);
 
   const data = useLiveQuery(() => getSessionDetail(id), [id]);
+  const router = useRouter();
+  const { toast } = useToast();
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const backLink = <BackLink href="/historico" label="Histórico" />;
 
@@ -74,6 +82,22 @@ export default function SessionDetailPage({
     });
   const addedRows = outsideRows.filter((r) => r.added);
   const otherRows = outsideRows.filter((r) => !r.added);
+
+  const handleDelete = async () => {
+    setConfirmDelete(false);
+    try {
+      const deletedAt = await deleteSession(session.id);
+      haptic(20);
+      // Volta antes do toast: a página do treino apagado ficaria "não encontrada".
+      router.push("/historico");
+      toast({
+        message: "Treino apagado",
+        action: { label: "Desfazer", onClick: () => void restoreSession(session.id, deletedAt) },
+      });
+    } catch {
+      toast({ message: "Não deu pra apagar o treino", variant: "error" });
+    }
+  };
 
   return (
     <div className="px-4 pb-8">
@@ -156,6 +180,31 @@ export default function SessionDetailPage({
             accent={accent}
           />
         </>
+      )}
+
+      {/* No fim e sozinho, como o "apagar tudo" em Ajustes: longe do toque distraído. */}
+      <div className="mt-8">
+        <button
+          type="button"
+          onClick={() => setConfirmDelete(true)}
+          className="tap w-full rounded-xl border border-danger/45 py-3 font-medium text-danger"
+        >
+          Apagar este treino
+        </button>
+        <p className="mt-2 px-0.5 text-xs leading-snug text-muted">
+          Sai do histórico, das métricas e da progressão.
+        </p>
+      </div>
+
+      {confirmDelete && (
+        <ConfirmDialog
+          title="Apagar este treino?"
+          message={`O treino ${isFreeform ? "avulso" : (day?.label ?? "")} de ${longDate(session.date)} sai do histórico, das métricas e da progressão.`}
+          confirmLabel="Apagar"
+          danger
+          onConfirm={handleDelete}
+          onCancel={() => setConfirmDelete(false)}
+        />
       )}
     </div>
   );

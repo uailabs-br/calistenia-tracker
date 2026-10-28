@@ -20,6 +20,15 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-10-28, apagar um treino do histórico — 644 testes):**
+> "Apagar este treino" no fim da tela de detalhe, escolhido em protótipo (artifact
+> `2etWz4HM8juBdZz5rqh5nj`) entre botão no fim, menu ⋯ no topo e deslizar na lista: fica longe
+> do toque distraído, como o "apagar tudo" em Ajustes. Confirma num `ConfirmDialog`, volta pra
+> lista e oferece Desfazer no toast. `deleteSession` faz soft-delete da sessão e dos registros
+> no mesmo carimbo (o descarte de treino em andamento passou a usá-lo), e `restoreSession` só
+> devolve o que saiu naquele carimbo: exercício desfeito durante o treino continua apagado.
+> Apagar um exercício solto de dentro do treino ficou de fora.
+>
 > **Atualização (pós-v1.8, 2026-10-28, "apagar todos os dados" recarrega o app — 642 testes):**
 > o banco era apagado, mas o plano e os ajustes ficavam em memória desde o boot: a tela seguia
 > com o plano, a meta e o nome de antes, e parecia que nada tinha acontecido. Agora recarrega
