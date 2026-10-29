@@ -299,6 +299,7 @@ const WORKOUT_SKILL_TO_ID: Record<string, string> = {
   "Parada de mão": "handstand_hold",
   Dips: "dips",
   Agachamento: "pistol_squat",
+  "Front lever": "front_lever",
 };
 
 export function skillIdForWorkout(daySkill: string): string | undefined {

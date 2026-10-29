@@ -4,6 +4,7 @@
  */
 import {
   levelFromLegacy,
+  normalizeEquipment,
   type LegacyAnswers,
   type OnboardingAnswers,
 } from "@/lib/domain/onboarding";
@@ -17,12 +18,16 @@ interface Stored {
   at: string;
 }
 
-/** Respostas gravadas antes da pergunta de nível ganham o nível que elas implicam. */
-function withLevel(answers: unknown): OnboardingAnswers | null {
+/**
+ * Respostas de versões anteriores: as gravadas antes da pergunta de nível ganham
+ * o nível que elas implicam, e as gravadas quando a pergunta era o lugar
+ * ("praca") ganham a lista que o lugar implicava.
+ */
+function upgrade(answers: unknown): OnboardingAnswers | null {
   if (!answers || typeof answers !== "object") return null;
   const a = answers as Partial<OnboardingAnswers> & Partial<LegacyAnswers>;
-  if (a.level) return a as OnboardingAnswers;
-  return { ...(a as object), level: levelFromLegacy(a as LegacyAnswers) } as OnboardingAnswers;
+  const level = a.level ?? levelFromLegacy(a as LegacyAnswers);
+  return { ...(a as object), level, equipment: normalizeEquipment(a.equipment) } as OnboardingAnswers;
 }
 
 function read(): Stored | null {
@@ -30,7 +35,7 @@ function read(): Stored | null {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY) ?? "null");
     if (!raw || raw.done !== true) return null;
-    return { ...raw, answers: withLevel(raw.answers) } as Stored;
+    return { ...raw, answers: upgrade(raw.answers) } as Stored;
   } catch {
     return null;
   }

@@ -375,7 +375,8 @@ export default function PlanoPage() {
 
         {view.step === "pronto" && (
           <SettingsGroup>
-            {seeds.map((seed) => (
+            {/* A semente em uso aparece mesmo fora da lista, pra o "em uso" não sumir. */}
+            {seeds.filter((s) => s.listed !== false || s.plan.id === activePlan?.id).map((seed) => (
               <SettingsRow
                 key={seed.id}
                 icon={ListIcon}

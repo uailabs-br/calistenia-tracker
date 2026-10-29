@@ -2,6 +2,8 @@ import {
   hasBar,
   hasParallels,
   type Equipment,
+  type GearItem,
+  type Place,
   type Goal,
   type Level,
   type LevelSkill,
@@ -19,12 +21,29 @@ export interface Option<V extends string> {
   hint?: string;
 }
 
-export const EQUIPMENT_OPTIONS: Option<Equipment>[] = [
-  { value: "chao", label: "Em casa, só o chão", hint: "Uma parede ajuda, mas não precisa de mais nada." },
-  { value: "casa_barra", label: "Em casa, com barra", hint: "Barra fixa na porta ou na parede." },
-  { value: "praca", label: "Na praça", hint: "Barra e paralelas." },
-  { value: "academia", label: "Academia", hint: "Barra e paralelas à vontade." },
+/** Atalho de lugar: pré-marca a lista (ver PLACE_GEAR). */
+export const PLACE_OPTIONS: Option<Place>[] = [
+  { value: "casa", label: "Em casa" },
+  { value: "praca", label: "Na praça" },
+  { value: "academia", label: "Academia" },
 ];
+
+/** O que a pessoa marca. O chão não entra: todo mundo tem. */
+export const GEAR_OPTIONS: Option<GearItem>[] = [
+  { value: "parede", label: "Parede livre", hint: "pra parada de mão" },
+  { value: "barra", label: "Barra fixa", hint: "porta, parede ou praça" },
+  { value: "paralelas", label: "Paralelas", hint: "barras de dip" },
+  { value: "banco", label: "Banco ou degrau", hint: "flexão e dip inclinados" },
+  { value: "argolas", label: "Argolas", hint: "penduradas" },
+  { value: "paralettes", label: "Paralettes", hint: "mini paralelas de chão" },
+  { value: "elastico", label: "Elástico", hint: "de resistência" },
+  { value: "peso", label: "Peso", hint: "anilha, halter ou colete" },
+];
+
+/** "chão, parede livre, barra fixa": o resumo do que foi marcado. */
+export function gearSummary(e: Equipment): string {
+  return ["chão", ...GEAR_OPTIONS.filter((o) => e.includes(o.value)).map((o) => o.label.toLowerCase())].join(", ");
+}
 
 /**
  * Nível: a frase de baixo cita CONQUISTAS da escada do app (progressions.json),

@@ -108,7 +108,8 @@ export interface AiObservedFrequency {
  * vem dos registros, assim que houver histórico.
  */
 export interface AiDeclaredProfile {
-  equipamento: string;
+  /** O que a pessoa tem além de chão e porta (ver GearItem). */
+  equipamento: string[];
   /** Autodeclarado: iniciante, intermediario ou avancado (definidos pela escada do app). */
   nivel: string;
   dias_por_semana: number;
@@ -127,7 +128,7 @@ export interface AiDeclaredProfile {
 export function buildDeclaredProfile(a: OnboardingAnswers): AiDeclaredProfile {
   const levels = mapAnswersToSkillLevels(a);
   return {
-    equipamento: a.equipment,
+    equipamento: [...a.equipment],
     nivel: a.level,
     dias_por_semana: a.days_per_week,
     // Opcionais: quem respondeu antes da versão que passou a perguntar não tem

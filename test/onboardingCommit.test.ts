@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import type { OnboardingAnswers } from "@/lib/domain/onboarding";
+import { LEGACY_GEAR } from "@/lib/domain/onboarding";
 import { getSeed } from "@/lib/plan/seeds";
 import { PLAN_OVERRIDE_KEY } from "@/lib/plan/loader";
 
@@ -16,7 +17,7 @@ beforeEach(() => {
 });
 
 const answers = (over: Partial<OnboardingAnswers> = {}): OnboardingAnswers => ({
-  equipment: "praca",
+  equipment: LEGACY_GEAR.praca,
   level: "intermediario",
   days_per_week: 4,
   ...over,
@@ -44,7 +45,7 @@ describe("commitOnboarding", () => {
   });
 
   it("com plano, aplica o override (e é a última escrita)", async () => {
-    await commit(answers({ equipment: "chao" }), "Ana", "iniciante-sem-barra");
+    await commit(answers({ equipment: LEGACY_GEAR.chao }), "Ana", "iniciante-sem-barra");
     expect(JSON.parse(store[PLAN_OVERRIDE_KEY]).id).toBe("seed-iniciante-sem-barra");
   });
 
@@ -70,7 +71,7 @@ describe("commitOnboarding", () => {
   it("trocar pra 'só o chão' limpa barra e dips: o nível antigo não pode ficar grudado", async () => {
     await commit(answers({ level: "avancado" }));
     expect(levels()).toMatchObject({ pull_up: 5, dips: 3 });
-    await commit(answers({ equipment: "chao", level: "avancado" }));
+    await commit(answers({ equipment: LEGACY_GEAR.chao, level: "avancado" }));
     expect(levels().pull_up).toBeUndefined();
     expect(levels().dips).toBeUndefined();
     // o que o equipamento ainda permite continua valendo
@@ -98,7 +99,7 @@ describe("commitOnboarding", () => {
       done: true,
       at: "2026-10-08",
       answers: {
-        equipment: "praca",
+        equipment: LEGACY_GEAR.praca,
         push_up: "16+",
         pull_up: "8+",
         handstand_hold: "solto",

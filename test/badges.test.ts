@@ -24,9 +24,18 @@ describe("evaluateBadges — consistência", () => {
 });
 
 describe("evaluateBadges — famílias", () => {
-  it("só jornada e consistência (sem técnica)", () => {
+  it("jornada, consistência e volta (sem técnica)", () => {
     const families = new Set(evaluateBadges(base).map((b) => b.family));
-    expect([...families].sort()).toEqual(["consistencia", "jornada"]);
+    expect([...families].sort()).toEqual(["consistencia", "jornada", "volta"]);
+  });
+
+  it("'De volta' sai na primeira volta depois de pausa", () => {
+    expect(earnedIds({ ...base, returns: 0 }).has("de-volta")).toBe(false);
+    expect(earnedIds({ ...base, returns: 1 }).has("de-volta")).toBe(true);
+  });
+
+  it("a volta nunca é o destaque da home", () => {
+    expect(highlightBadge({ ...base, returns: 3 })).toBeNull();
   });
 });
 

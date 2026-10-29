@@ -26,6 +26,9 @@ import {
   type CustomExerciseInput,
 } from "@/lib/db/repositories/customExercises";
 import { getCatalogExercise } from "@/lib/plan/catalog";
+import { countCompletedSessions } from "@/lib/db/queries/metrics";
+import { queueFrom } from "@/lib/domain/nextWorkout";
+import { plan } from "@/lib/plan/loader";
 import { getRecentExerciseIds } from "@/lib/db/queries/recentExercises";
 import { resolveAddedExercise } from "@/lib/plan/addedExercises";
 import { formatValue, parseRestSeconds } from "@/lib/domain/parseTarget";
@@ -53,6 +56,7 @@ import { PRMoment } from "./PRMoment";
 import { SessionSummary } from "./SessionSummary";
 import { CollapsibleTip } from "./CollapsibleTip";
 import { WarmupCard } from "./WarmupCard";
+import { FirstWorkoutNext } from "./FirstWorkoutNext";
 
 export function SessionRunner({
   session,
@@ -144,6 +148,7 @@ export function SessionRunner({
   const [showRpe, setShowRpe] = useState(false);
   const [showExit, setShowExit] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
+  const [showNext, setShowNext] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   // Recém-adicionado: abre o cartão dele assim que entrar na lista.
   const [focusId, setFocusId] = useState<string | null>(null);
@@ -727,9 +732,16 @@ export function SessionRunner({
           }))}
           onClose={() => {
             setShowSummary(false);
-            onFinished();
+            // Primeiro treino da vida no app: antes da home, marcar o próximo.
+            void countCompletedSessions()
+              .then((n) => (n === 1 ? setShowNext(true) : onFinished()))
+              .catch(onFinished);
           }}
         />
+      )}
+
+      {showNext && (
+        <FirstWorkoutNext next={queueFrom(workout.id, plan.workouts)[0] ?? null} onDone={onFinished} />
       )}
 
       {showExit && (

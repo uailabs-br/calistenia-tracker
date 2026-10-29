@@ -5,10 +5,11 @@ import { SparkleIcon, ChevronRightIcon } from "@/components/ui/icons";
 
 /**
  * Porta de entrada pro criador de treino com IA. Aparece só enquanto o plano é
- * um dos prontos (ver `isSeedPlanId`): quem já tem plano próprio acha a entrada
- * na aba Treino, e a home não vira painel de avisos.
+ * um dos prontos (ver `isSeedPlanId`) e depois do primeiro treino: antes disso
+ * ela tiraria do app justo quem precisa treinar. Quem já tem plano próprio acha
+ * a entrada na aba Treino, e a home não vira painel de avisos.
  */
-export function PlanBuilderCard({ first }: { first: boolean }) {
+export function PlanBuilderCard() {
   return (
     <Link
       href="/config/plano"
@@ -22,7 +23,7 @@ export function PlanBuilderCard({ first }: { first: boolean }) {
       </span>
       <span className="min-w-0 flex-1">
         <span className="block text-sm font-medium">
-          {first ? "Crie seu primeiro treino com IA" : "Monte seu treino com IA"}
+          Monte seu treino com IA
         </span>
         <span className="block text-xs text-muted">
           Copie o pedido, cole na IA e traga o treino pronto.

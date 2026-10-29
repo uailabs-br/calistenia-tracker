@@ -8,24 +8,26 @@ import {
   type BadgeStats,
 } from "@/lib/domain/badges";
 import { getLatestRecord, type LatestRecord } from "./pr";
+import { countReturns } from "@/lib/domain/returnNudge";
 
 /**
- * Selos derivados dos logs (6.1). Famílias: jornada (nº de treinos) e
- * consistência (streak de semanas, de 2.2).
+ * Selos derivados dos logs (6.1). Famílias: jornada (nº de treinos),
+ * consistência (streak de semanas, de 2.2) e volta (pausa de 7+ dias encerrada).
  */
 export async function getBadges(): Promise<Badge[]> {
   return evaluateBadges(await getBadgeStats());
 }
 
 async function getBadgeStats(): Promise<BadgeStats> {
-  const totalWorkouts = (await db.sessions.toArray()).filter(
+  const completed = (await db.sessions.toArray()).filter(
     (s) => s.status === "completed" && !s.deleted_at
-  ).length;
+  );
   const overview = await getOverview();
   return {
-    totalWorkouts,
+    totalWorkouts: completed.length,
     longestStreak: overview.longestStreak,
     currentStreak: overview.currentStreak,
+    returns: countReturns(completed.map((s) => s.date)),
   };
 }
 

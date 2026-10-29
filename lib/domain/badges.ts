@@ -1,4 +1,4 @@
-export type BadgeFamily = "jornada" | "consistencia";
+export type BadgeFamily = "jornada" | "consistencia" | "volta";
 
 export interface Badge {
   id: string;
@@ -16,6 +16,8 @@ export interface BadgeStats {
   longestStreak: number;
   /** sequência atual — é dela que sai o próximo selo de consistência. Sem ela, a maior. */
   currentStreak?: number;
+  /** voltas depois de pausa de 7+ dias (ver countReturns) */
+  returns?: number;
 }
 
 function badge(
@@ -31,9 +33,12 @@ function badge(
 
 /**
  * Cataloga os selos e resolve "ganho/bloqueado" a partir de fatos do log.
- * Zero pontos/moeda: cada selo mapeia 1:1 a um fato verificável. Duas famílias:
- * jornada (nº de treinos) e consistência (streak de semanas). Dentro da família,
- * do mais fácil pro mais difícil.
+ * Zero pontos/moeda: cada selo mapeia 1:1 a um fato verificável. Três famílias:
+ * jornada (nº de treinos), consistência (streak de semanas) e volta (treinar de
+ * novo depois de uma pausa). Dentro da família, do mais fácil pro mais difícil.
+ *
+ * A volta existe porque, no megaestudo de academias (Milkman et al., 2021), o
+ * prêmio por voltar depois de faltar foi o que mais aumentou a frequência.
  */
 export function evaluateBadges(stats: BadgeStats): Badge[] {
   const w = stats.totalWorkouts;
@@ -46,6 +51,7 @@ export function evaluateBadges(stats: BadgeStats): Badge[] {
     badge("constancia-4", "consistencia", "1 mês seguido", "4 semanas batendo a meta.", 4, s),
     badge("constancia-8", "consistencia", "2 meses seguidos", "8 semanas batendo a meta.", 8, s),
     badge("constancia-12", "consistencia", "3 meses seguidos", "12 semanas batendo a meta.", 12, s),
+    badge("de-volta", "volta", "De volta", "Treinou de novo depois de 7 dias ou mais parado.", 1, stats.returns ?? 0),
   ];
 }
 
@@ -89,9 +95,11 @@ function nextLine(next: Badge, stats: BadgeStats): string {
 /**
  * O selo mais difícil já ganho, pro card da home. Empate de dificuldade fica com
  * a consistência: sequência é o que mais custa manter. Null sem nenhum ganho.
+ * A volta fica de fora: o momento dela é o fim do treino em que aconteceu, e no
+ * card da home ela disputaria com "olha até onde você chegou".
  */
 export function highlightBadge(stats: BadgeStats): BadgeHighlight | null {
-  const all = evaluateBadges(stats);
+  const all = evaluateBadges(stats).filter((b) => b.family !== "volta");
   const best = all
     .filter((b) => b.earned)
     .sort((a, b) => weeksToEarn(b) - weeksToEarn(a) || (a.family === "consistencia" ? -1 : 1))[0];

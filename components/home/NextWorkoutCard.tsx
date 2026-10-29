@@ -10,6 +10,8 @@ import { remainingSessions, shortSkillName, statusLabel } from "@/lib/domain/cam
 import { getWorkoutCampaign } from "@/lib/db/queries/campaign";
 import { getAiGoals } from "@/lib/utils/aiPersona";
 import { useDurationFactor } from "@/lib/utils/useDurationFactor";
+import { getNextSession } from "@/lib/utils/nextSession";
+import { localDateKey, shiftDays } from "@/lib/utils/date";
 import { StreakBar } from "@/components/session/StreakBar";
 import {
   ChevronDownIcon,
@@ -23,6 +25,8 @@ export function NextWorkoutCard({
   workout,
   activeHere,
   doneToday,
+  first = false,
+  returning = false,
 }: {
   /** próximo treino da fila; null enquanto o histórico carrega. */
   workout: Workout | null;
@@ -30,6 +34,10 @@ export function NextWorkoutCard({
   activeHere: boolean;
   /** rótulos dos treinos do plano já concluídos hoje, para o aviso discreto */
   doneToday: string[];
+  /** nenhum treino concluído ainda: o card diz que é o primeiro */
+  first?: boolean;
+  /** volta depois de uma pausa (ver ReturnCard): o botão fala em voltar */
+  returning?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
@@ -37,6 +45,22 @@ export function NextWorkoutCard({
   // Objetivos vêm do localStorage: só depois do mount (regra 10).
   const [goals, setGoals] = useState<string[]>([]);
   useEffect(() => setGoals(getAiGoals()), []);
+  // Dia marcado no fim do primeiro treino (ver FirstWorkoutNext), enquanto não passou.
+  const [scheduled, setScheduled] = useState<string | null>(null);
+  useEffect(() => {
+    const n = getNextSession();
+    const today = localDateKey();
+    if (!n || n.date < today) return;
+    const day =
+      n.date === today
+        ? "hoje"
+        : n.date === shiftDays(today, 1)
+          ? "amanhã"
+          : new Date(n.date + "T00:00:00")
+              .toLocaleDateString("pt-BR", { weekday: "long" })
+              .replace("-feira", "");
+    setScheduled(`${day}, ${Number(n.time.slice(0, 2))}h`);
+  }, []);
   const campaign = useLiveQuery(
     async () => (workout ? getWorkoutCampaign(workout, goals) : []),
     [workout, goals]
@@ -67,6 +91,8 @@ export function NextWorkoutCard({
       </div>
 
       <h2 className="display mt-2 text-3xl leading-tight">{workout.title}</h2>
+      {first && <p className="mt-1 text-sm text-muted">Seu primeiro treino.</p>}
+      {!first && scheduled && <p className="mt-1 text-sm text-muted">Marcado pra {scheduled}.</p>}
 
       {/* Objetivos que este treino move; o que ele não toca não aparece. */}
       {campaign && campaign.length > 0 && (
@@ -117,7 +143,7 @@ export function NextWorkoutCard({
           className="btn-primary tap mt-4 flex w-full items-center justify-center rounded-xl py-3.5 text-center font-semibold"
           style={accentVars(workout.accent)}
         >
-          Começar treino
+          {returning ? `Voltar com o treino ${workout.label}` : "Começar treino"}
         </button>
       )}
 

@@ -20,6 +20,25 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-10-28, equipamento como lista, primeira semana e "De volta" — 700
+> testes):** a pergunta de equipamento virou "O que você tem pra treinar?": o lugar pré-marca a
+> lista e a pessoa tira o que não tem. `Equipment` agora é a lista (`GearItem[]`); respostas
+> gravadas como lugar são convertidas na leitura e o export pra IA manda a lista. Na home, "Sua
+> primeira semana" substitui a constância até a pessoa fazer todos os treinos do plano ou passar
+> uma semana. Selo "De volta" (pausa de 7+ dias encerrada) em Evolução e como momento no resumo do
+> treino da volta; quem volta vê o treino no topo. Detalhes em `docs/PLAN-ativacao.md`.
+>
+> **Atualização (pós-v1.8, 2026-10-28, ativação do estreante — 685 testes):** decisões em
+> `docs/PLAN-ativacao.md`. Home sem treino concluído mostra só o treino, no topo; o aviso "Sem
+> objetivo marcado" espera o primeiro treino; onboarding com o nome no fim, sem "Pular" e com
+> subtítulo só onde evita erro (`docs/onboarding-copy.md`). Quatro planos prontos de corpo
+> inteiro (cada grupo 2+ vezes por semana, ACSM 2026) viram a sugestão de iniciante e de
+> intermediário sem paralelas; as divididas de iniciante saem das listas. Duas puxadas sem barra
+> no catálogo (`remada-toalha-porta`, `puxada-deslizante-chao`). No fim do primeiro treino,
+> `FirstWorkoutNext` marca o próximo como evento `.ics` com alarme e pede a instalação; com 7+
+> dias sem treino, a home mostra a volta com uma meta que ainda cabe na semana. Sem teste em
+> celular.
+>
 > **Atualização (pós-v1.8, 2026-10-28, apagar um treino do histórico — 644 testes):**
 > "Apagar este treino" no fim da tela de detalhe, escolhido em protótipo (artifact
 > `2etWz4HM8juBdZz5rqh5nj`) entre botão no fim, menu ⋯ no topo e deslizar na lista: fica longe

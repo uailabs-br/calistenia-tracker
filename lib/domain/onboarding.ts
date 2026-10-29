@@ -3,9 +3,72 @@
  * plano-semente. Puro: sem React, sem Dexie, sem localStorage.
  */
 
-export type SeedId = "iniciante-sem-barra" | "iniciante-com-barra" | "intermediario";
+export type SeedId =
+  | "iniciante-sem-barra"
+  | "iniciante-com-barra"
+  | "intermediario"
+  | "iniciante-corpo-inteiro-sem-barra"
+  | "iniciante-corpo-inteiro-com-barra"
+  | "intermediario-sem-barra"
+  | "intermediario-com-barra";
 
-export type Equipment = "chao" | "casa_barra" | "praca" | "academia";
+/**
+ * O que a pessoa tem pra treinar, além do chão e da porta (que todo mundo tem).
+ * Antes era o LUGAR (chão, casa com barra, praça, academia), e o lugar decidia o
+ * equipamento: "praça" assumia paralelas, e uma praça só com barra recebia o
+ * plano intermediário, que depende delas. Agora o lugar só pré-marca a lista.
+ */
+export type GearItem =
+  | "parede"
+  | "barra"
+  | "paralelas"
+  | "banco"
+  | "argolas"
+  | "paralettes"
+  | "elastico"
+  | "peso";
+
+export const GEAR_ITEMS: GearItem[] = [
+  "parede",
+  "barra",
+  "paralelas",
+  "banco",
+  "argolas",
+  "paralettes",
+  "elastico",
+  "peso",
+];
+
+export type Equipment = readonly GearItem[];
+
+/** Atalho da pergunta: tocar no lugar pré-marca a lista, e a pessoa tira o que não tem. */
+export type Place = "casa" | "praca" | "academia";
+
+export const PLACE_GEAR: Record<Place, GearItem[]> = {
+  casa: ["parede"],
+  praca: ["parede", "barra", "paralelas", "banco"],
+  academia: ["parede", "barra", "paralelas", "banco", "argolas", "elastico", "peso"],
+};
+
+/**
+ * Respostas gravadas quando a pergunta era o lugar. Cada lugar vira o que ele
+ * implicava naquela época — "academia" incluía peso, como dizia o pedido pra IA.
+ */
+export type LegacyEquipment = "chao" | "casa_barra" | "praca" | "academia";
+
+export const LEGACY_GEAR: Record<LegacyEquipment, GearItem[]> = {
+  chao: ["parede"],
+  casa_barra: ["parede", "barra"],
+  praca: ["parede", "barra", "paralelas", "banco"],
+  academia: ["parede", "barra", "paralelas", "banco", "peso"],
+};
+
+/** Lista válida a partir do que estiver gravado (lista nova ou lugar antigo). */
+export function normalizeEquipment(raw: unknown): Equipment {
+  if (typeof raw === "string") return LEGACY_GEAR[raw as LegacyEquipment] ?? ["parede"];
+  if (Array.isArray(raw)) return GEAR_ITEMS.filter((g) => raw.includes(g));
+  return ["parede"];
+}
 
 /**
  * O que a pessoa quer, em uma palavra. Geral de propósito: o app tem 17 skills e
@@ -45,55 +108,60 @@ export interface OnboardingAnswers {
 /** Skills que o nível posiciona no mapa. Só as que o equipamento permite. */
 export type LevelSkill = "push_up" | "pull_up" | "handstand_hold" | "dips";
 
-const HAS_BAR: Equipment[] = ["casa_barra", "praca", "academia"];
-const HAS_PARALLELS: Equipment[] = ["praca", "academia"];
-
 export function hasBar(e: Equipment): boolean {
-  return HAS_BAR.includes(e);
+  return e.includes("barra");
 }
 
 export function hasParallels(e: Equipment): boolean {
-  return HAS_PARALLELS.includes(e);
+  return e.includes("paralelas");
 }
 
-/**
- * O que cada setup oferece. Uma semente serve se tudo que ela pede está aqui:
- * quem treina na praça também consegue fazer a semente que só usa o chão (ela
- * pede MENOS, não outra coisa).
- */
-const TAGS: Record<Equipment, string[]> = {
-  chao: ["chão", "parede"],
-  casa_barra: ["chão", "parede", "barra"],
-  praca: ["chão", "parede", "barra", "paralelas"],
-  academia: ["chão", "parede", "barra", "paralelas"],
+/** Item da lista → tags de equipamento do catálogo de exercícios. */
+const CATALOG_TAGS: Record<GearItem, string[]> = {
+  parede: ["parede"],
+  barra: ["barra"],
+  paralelas: ["paralelas"],
+  banco: ["banco"],
+  argolas: ["argolas"],
+  paralettes: ["paralettes"],
+  elastico: ["banda elástica"],
+  peso: ["lastro", "halter"],
 };
 
 /**
- * O mesmo setup nas chaves de equipamento das escadas (progressions.json). Só o
- * que dá pra afirmar do setup: argola, parallettes e poste ninguém declara, então
- * degrau que pede só isso fica fora pra todo mundo — melhor a IA saber que o
- * degrau não cabe do que mandar subir pra um Ring Dip na praça.
+ * Item da lista → chaves de equipamento das escadas (progressions.json). Poste
+ * ninguém declara, então degrau que pede só isso fica fora pra todo mundo:
+ * melhor a IA saber que o degrau não cabe do que mandar subir pra ele.
  */
-const LADDER_EQUIPMENT: Record<Equipment, string[]> = {
-  chao: [],
-  casa_barra: ["pull_up_bar"],
-  praca: ["pull_up_bar", "parallel_bars", "bench"],
-  academia: ["pull_up_bar", "parallel_bars", "bench"],
+const LADDER_KEYS: Partial<Record<GearItem, string>> = {
+  barra: "pull_up_bar",
+  paralelas: "parallel_bars",
+  banco: "bench",
+  argolas: "rings",
+  paralettes: "parallettes",
 };
 
 /** Degrau cabe no setup: não pede nada, ou pede algo (qualquer um da lista) que o setup tem. */
 export function stepFitsEquipment(stepEquipment: readonly string[], e: Equipment): boolean {
   if (stepEquipment.length === 0) return true;
-  const have = LADDER_EQUIPMENT[e];
+  const have = e.flatMap((g) => LADDER_KEYS[g] ?? []);
   return stepEquipment.some((x) => have.includes(x));
 }
 
+/**
+ * O que o setup oferece em tags do catálogo. Chão e porta todo mundo tem: a
+ * porta é o que a remada com toalha usa no lugar da barra.
+ */
 export function availableTags(e: Equipment): string[] {
-  return TAGS[e];
+  return ["chão", "porta", ...e.flatMap((g) => CATALOG_TAGS[g])];
 }
 
+/**
+ * Uma semente serve se tudo que ela pede está no setup. Quem tem barra também
+ * consegue a semente que só usa o chão: ela pede MENOS, não outra coisa.
+ */
 export function seedFits(seedTags: readonly string[], e: Equipment): boolean {
-  const have = new Set(TAGS[e]);
+  const have = new Set(availableTags(e));
   return seedTags.every((t) => have.has(t));
 }
 
@@ -135,14 +203,22 @@ export function mapAnswersToSkillLevels(a: OnboardingAnswers): Record<string, nu
 }
 
 /**
- * Semente sugerida (o usuário pode trocar). `intermediario` exige paralelas, que
- * é o equipamento da semente; quem tem só barra em casa fica na de iniciante,
- * que erra pra baixo.
+ * Semente sugerida (o usuário pode trocar). As de corpo inteiro vêm primeiro: com
+ * empurrar, puxar (quando há barra), pernas e core em todo treino, cada grupo é
+ * treinado 2+ vezes por semana a partir de 2 treinos semanais — o mínimo do
+ * position stand do ACSM de 2026. As divididas antigas (um padrão por treino)
+ * só passam disso com 6 treinos por semana, por isso saíram da sugestão.
+ *
+ * `intermediario` (dividido) continua sendo a sugestão de quem tem paralelas: é
+ * a única semente com dips. Avançado cai na semente do topo do seu equipamento.
  */
 export function suggestSeed(a: Pick<OnboardingAnswers, "equipment" | "level">): SeedId {
-  if (!hasBar(a.equipment)) return "iniciante-sem-barra";
-  if (a.level !== "iniciante" && hasParallels(a.equipment)) return "intermediario";
-  return "iniciante-com-barra";
+  const bar = hasBar(a.equipment);
+  if (a.level === "iniciante") {
+    return bar ? "iniciante-corpo-inteiro-com-barra" : "iniciante-corpo-inteiro-sem-barra";
+  }
+  if (!bar) return "intermediario-sem-barra";
+  return hasParallels(a.equipment) ? "intermediario" : "intermediario-com-barra";
 }
 
 /**
@@ -156,27 +232,13 @@ export function aboveTopSeed(a: Pick<OnboardingAnswers, "level">): boolean {
 }
 
 /**
- * Semente aplicada quando a pessoa PULA o onboarding.
- *
- * Pular não é responder: o nível fica no menor. Mas o equipamento, se já foi
- * respondido, vale — aplicar a semente com barra pra quem acabou de marcar "só
- * o chão" entregava um plano que ele não tem como executar.
- */
-export function skipSeed(s: { equipmentAnswered: boolean; equipment: Equipment }): SeedId {
-  // Sem equipamento respondido não há o que inferir: cai no padrão do bundle
-  // (DEFAULT_SEED_ID; `seeds.ts` importa deste módulo, não o contrário).
-  if (!s.equipmentAnswered) return "iniciante-com-barra";
-  return suggestSeed({ equipment: s.equipment, level: "iniciante" });
-}
-
-/**
  * Respostas gravadas antes da pergunta de nível tinham 4 perguntas de capacidade.
  * Convertidas aqui pra quem as fez não perder o que respondeu: o nível é o MAIOR
  * cuja faixa de posições a pessoa alcança em TODA skill perguntada. Exigir todas
  * erra pra baixo, que é o lado barato de errar.
  */
 export interface LegacyAnswers {
-  equipment: Equipment;
+  equipment: LegacyEquipment | Equipment;
   push_up: "0" | "1-5" | "6-15" | "16+";
   pull_up?: "nunca" | "ainda_nao" | "1-2" | "3-7" | "8+";
   handstand_hold: "nunca" | "segundos" | "30s" | "solto";
@@ -191,12 +253,13 @@ const LEGACY_INDEX = {
 } as const;
 
 export function levelFromLegacy(a: LegacyAnswers): Level {
+  const equipment = normalizeEquipment(a.equipment);
   const had: Partial<Record<LevelSkill, number>> = {
     push_up: LEGACY_INDEX.push_up[a.push_up],
     handstand_hold: LEGACY_INDEX.handstand_hold[a.handstand_hold],
   };
-  if (hasBar(a.equipment) && a.pull_up) had.pull_up = LEGACY_INDEX.pull_up[a.pull_up];
-  if (hasParallels(a.equipment) && a.dips) had.dips = LEGACY_INDEX.dips[a.dips];
+  if (hasBar(equipment) && a.pull_up) had.pull_up = LEGACY_INDEX.pull_up[a.pull_up];
+  if (hasParallels(equipment) && a.dips) had.dips = LEGACY_INDEX.dips[a.dips];
   const reaches = (level: Level) =>
     (Object.keys(had) as LevelSkill[]).every((k) => had[k]! >= LEVEL_POSITIONS[level][k]);
   return [...LEVELS].reverse().find(reaches) ?? "iniciante";

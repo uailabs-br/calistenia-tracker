@@ -37,8 +37,8 @@ pra formatação, e indentar um plano inteiro quase dobra o tamanho da resposta 
 
 \`perfil_declarado\` — autodeclarado no onboarding, ANTES de qualquer treino.
 Ponto de partida; onde \`progressao\` discordar, \`progressao\` ganha.
-- \`equipamento\`: \`chao\` (chão e parede) · \`casa_barra\` (+ barra fixa) ·
-  \`praca\` (+ paralelas) · \`academia\` (+ paralelas e peso).
+- \`equipamento\`: lista do que ele tem além de chão e porta: \`parede\`, \`barra\`,
+  \`paralelas\`, \`banco\`, \`argolas\`, \`paralettes\`, \`elastico\`, \`peso\`.
 - \`nivel\`: iniciante | intermediario | avancado — pela sequência de progressões do app (ter skill,
   não contar repetição). Grava a faixa BAIXA do nível: pode estar subestimado.
 - \`dias_por_semana\`: sessões por semana que ele pretende fazer. Onde

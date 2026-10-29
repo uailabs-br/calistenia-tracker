@@ -1,4 +1,5 @@
 import { db, type Session, type ExerciseLog } from "@/lib/db/schema";
+import { returnAt } from "@/lib/domain/returnNudge";
 
 /**
  * Leituras básicas de sessões e registros, com o filtro de soft delete num lugar
@@ -64,4 +65,16 @@ export function groupBySession(logs: ExerciseLog[]): Map<string, ExerciseLog[]> 
     else map.set(l.session_id, [l]);
   }
   return map;
+}
+
+/**
+ * A sessão encerrou uma pausa de 7+ dias? Pausa em dias e qual volta foi, pro
+ * momento "De volta" do fim do treino. Null se não encerrou (ou não existe).
+ */
+export async function getSessionReturn(
+  sessionId: string
+): Promise<{ days: number; nth: number } | null> {
+  const all = await getCompletedSessions();
+  const me = all.find((s) => s.id === sessionId);
+  return me ? returnAt(all.map((s) => s.date), me.date) : null;
 }

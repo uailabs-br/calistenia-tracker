@@ -291,6 +291,7 @@ const RESET_KEYS = [
   "calistenia:ai-flow",
   "calistenia:ai-goals",
   "calistenia:ai-notes",
+  "calistenia:next-session",
 ];
 
 export function sessionsSinceExport(currentCompleted: number): number {

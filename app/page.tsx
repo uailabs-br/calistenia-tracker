@@ -2,12 +2,18 @@
 
 import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { getCompletedSessionsOn, hadCompletedSession } from "@/lib/db/queries/sessions";
+import {
+  getCompletedSessions,
+  getCompletedSessionsOn,
+  hadCompletedSession,
+} from "@/lib/db/queries/sessions";
 import { getWorkoutById, plan } from "@/lib/plan/loader";
 import { getActiveSession, getLastPlanWorkoutId } from "@/lib/db/repositories/sessions";
 import { getOverview, getWeekStatus } from "@/lib/db/queries/metrics";
 import { queueFrom } from "@/lib/domain/nextWorkout";
-import { localDateKey, shiftDays } from "@/lib/utils/date";
+import { daysBetween, localDateKey, shiftDays } from "@/lib/utils/date";
+import { RETURN_AFTER_DAYS } from "@/lib/domain/returnNudge";
+import { firstWeek } from "@/lib/domain/firstWeek";
 import type { LoggableDay } from "@/components/home/FreeformLogModal";
 import { HomeGreeting } from "@/components/home/HomeGreeting";
 import { ResumeBanner } from "@/components/home/ResumeBanner";
@@ -19,6 +25,8 @@ import { FreeformLogCard } from "@/components/home/FreeformLogCard";
 import { PlanSwapCard } from "@/components/home/PlanSwapCard";
 import { PlanBuilderCard } from "@/components/home/PlanBuilderCard";
 import { FeedbackCard } from "@/components/home/FeedbackCard";
+import { ReturnCard } from "@/components/home/ReturnCard";
+import { FirstWeekCard } from "@/components/home/FirstWeekCard";
 import { InstallPrompt } from "@/components/ui/InstallPrompt";
 import { isSeedPlanId } from "@/lib/plan/seeds";
 import { getPlanSwapSignal } from "@/lib/db/queries/planSwap";
@@ -40,6 +48,7 @@ export default function HomePage() {
   const overview = useLiveQuery(() => getOverview(), []);
   const weekStatus = useLiveQuery(() => getWeekStatus(), []);
   const achievements = useLiveQuery(() => getHomeAchievements(), []);
+  const completed = useLiveQuery(() => getCompletedSessions(), []);
 
   // Último treino do plano concluído (undefined = ainda carregando). Ele define a fila.
   const lastPlanId = useLiveQuery(() => getLastPlanWorkoutId(), []);
@@ -78,13 +87,16 @@ export default function HomePage() {
           ),
         ];
 
+  // Antes do primeiro treino a home é só o treino: tudo que tira a pessoa dele
+  // (criar plano com IA, registrar avulso, instalar) espera o primeiro concluído.
+  const firstWorkout = overview?.totalWorkouts === 0;
+
   // Card de avulso: mostra o estado de hoje e/ou o CTA pra dias em aberto;
   // nunca durante uma sessão do plano em andamento.
   const showFreeformCard =
-    !active && ((loggableDays?.length ?? 0) > 0 || freeformToday !== null);
+    !active && !firstWorkout && ((loggableDays?.length ?? 0) > 0 || freeformToday !== null);
 
-  // Criador com IA: só com plano pronto e fora de sessão. Sem nenhum treino
-  // feito é a primeira ação (sobe acima do próximo treino); depois, desce.
+  // Criador com IA: só com plano pronto, fora de sessão e depois do primeiro treino.
   // Se o aviso de troca está na tela, ele já leva ao criador: o card genérico sai.
   const [swapAckVersion, setSwapAckVersion] = useState(0);
   const swap = useLiveQuery(
@@ -101,8 +113,20 @@ export default function HomePage() {
     overview !== undefined &&
     isSeedPlanId(plan.id) &&
     swap !== undefined &&
-    !showSwap;
-  const firstWorkout = overview?.totalWorkouts === 0;
+    !showSwap &&
+    !firstWorkout;
+
+  // Primeira semana: a lista "montar o plano + cada treino" toma o lugar da constância.
+  const week =
+    planReady && completed !== undefined
+      ? firstWeek({ sessions: completed, workouts: plan.workouts, today: todayKey })
+      : null;
+
+  // Pausa longa: o card de volta aparece e o botão do treino fala em voltar.
+  const returning =
+    !active &&
+    !!overview?.lastWorkoutDate &&
+    daysBetween(overview.lastWorkoutDate, todayKey) >= RETURN_AFTER_DAYS;
 
   // Tudo que a tela mostra de cima a baixo entra junto: card por card, a home
   // montava em degraus e o próximo treino pulava de lugar quando a constância chegava.
@@ -112,7 +136,8 @@ export default function HomePage() {
     overview === undefined ||
     weekStatus === undefined ||
     lastPlanId === undefined ||
-    achievements === undefined;
+    achievements === undefined ||
+    completed === undefined;
   const showSkeleton = useDelayedFlag(loading);
 
   if (loading) {
@@ -128,9 +153,25 @@ export default function HomePage() {
     <div className="flex flex-col gap-6 px-4 pb-8">
       <HomeGreeting />
 
-      <InstallPrompt />
+      {/* A instalação é pedida no fim do primeiro treino, com o motivo; daí em diante, aqui. */}
+      {!firstWorkout && <InstallPrompt />}
 
       {active && activeWorkout && <ResumeBanner workout={activeWorkout} />}
+
+      {returning && (
+        <ReturnCard lastWorkoutDate={overview.lastWorkoutDate} planTotal={weekStatus.planTotal} />
+      )}
+
+      {/* Estreante e quem volta de pausa: o treino sobe pro topo, antes dos números */}
+      {(firstWorkout || returning) && (
+        <NextWorkoutCard
+          workout={next}
+          activeHere={active?.workout_id === next?.id}
+          doneToday={doneTodayLabels}
+          first={firstWorkout}
+          returning={returning}
+        />
+      )}
 
       {/* Semana passada: até tocar em "Começar nova semana" ou concluir o 1º treino da semana */}
       <WeekReviewCard
@@ -139,19 +180,23 @@ export default function HomePage() {
         next={next}
       />
 
-      {/* Constância primeiro: resultado atual em 1 olhada */}
-      <ConsistencyCard streak={overview.currentStreak} weekStatus={weekStatus} />
+      {/* Constância primeiro: resultado atual em 1 olhada. Na primeira semana, a lista. */}
+      {week ? (
+        <FirstWeekCard week={week} />
+      ) : (
+        <ConsistencyCard streak={overview.currentStreak} weekStatus={weekStatus} />
+      )}
 
       {/* Logo abaixo da constância: a semana diz como vai, isto diz até onde chegou */}
       <AchievementsCard data={achievements} />
 
-      {showPlanBuilder && firstWorkout && <PlanBuilderCard first />}
-
-      <NextWorkoutCard
-        workout={next}
-        activeHere={active?.workout_id === next?.id}
-        doneToday={doneTodayLabels}
-      />
+      {!firstWorkout && !returning && (
+        <NextWorkoutCard
+          workout={next}
+          activeHere={active?.workout_id === next?.id}
+          doneToday={doneTodayLabels}
+        />
+      )}
 
       {showSwap && swap && (
         <PlanSwapCard
@@ -163,7 +208,7 @@ export default function HomePage() {
         />
       )}
 
-      {showPlanBuilder && !firstWorkout && <PlanBuilderCard first={false} />}
+      {showPlanBuilder && <PlanBuilderCard />}
 
       {showFreeformCard && (
         <FreeformLogCard

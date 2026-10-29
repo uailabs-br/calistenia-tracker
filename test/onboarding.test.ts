@@ -10,18 +10,21 @@ import {
   planIdFromPlanDayId,
   seedFits,
   shouldRunOnboarding,
-  skipSeed,
   suggestSeed,
+  LEGACY_GEAR,
+  normalizeEquipment,
+  stepFitsEquipment,
   type Equipment,
   type Level,
   type OnboardingAnswers,
 } from "@/lib/domain/onboarding";
 import { getSkillById } from "@/lib/plan/skills";
-import { DEFAULT_SEED_ID, getSeed } from "@/lib/plan/seeds";
+import { getSeed } from "@/lib/plan/seeds";
+import { getCatalogExercise } from "@/lib/plan/catalog";
 
-const EQUIPMENTS: Equipment[] = ["chao", "casa_barra", "praca", "academia"];
+const EQUIPMENTS: Equipment[] = Object.values(LEGACY_GEAR);
 
-const base: OnboardingAnswers = { equipment: "praca", level: "intermediario", days_per_week: 3 };
+const base: OnboardingAnswers = { equipment: LEGACY_GEAR.praca, level: "intermediario", days_per_week: 3 };
 const with_ = (p: Partial<OnboardingAnswers>): OnboardingAnswers => ({ ...base, ...p });
 
 describe("mapAnswersToSkillLevels", () => {
@@ -57,11 +60,11 @@ describe("mapAnswersToSkillLevels", () => {
   });
 
   it("só devolve as skills que o equipamento permite", () => {
-    expect(Object.keys(mapAnswersToSkillLevels(with_({ equipment: "chao" }))).sort()).toEqual([
+    expect(Object.keys(mapAnswersToSkillLevels(with_({ equipment: LEGACY_GEAR.chao }))).sort()).toEqual([
       "handstand_hold",
       "push_up",
     ]);
-    expect(Object.keys(mapAnswersToSkillLevels(with_({ equipment: "casa_barra" }))).sort()).toEqual([
+    expect(Object.keys(mapAnswersToSkillLevels(with_({ equipment: LEGACY_GEAR.casa_barra }))).sort()).toEqual([
       "handstand_hold",
       "pull_up",
       "push_up",
@@ -77,35 +80,51 @@ describe("mapAnswersToSkillLevels", () => {
 
 describe("levelSkillsFor", () => {
   it("só o chão → 2 skills; barra → 3; paralelas → 4, na ordem do resumo", () => {
-    expect(levelSkillsFor("chao")).toEqual(["push_up", "handstand_hold"]);
-    expect(levelSkillsFor("casa_barra")).toEqual(["push_up", "pull_up", "handstand_hold"]);
-    expect(levelSkillsFor("praca")).toEqual(["push_up", "pull_up", "handstand_hold", "dips"]);
-    expect(levelSkillsFor("academia")).toEqual(["push_up", "pull_up", "handstand_hold", "dips"]);
+    expect(levelSkillsFor(LEGACY_GEAR.chao)).toEqual(["push_up", "handstand_hold"]);
+    expect(levelSkillsFor(LEGACY_GEAR.casa_barra)).toEqual(["push_up", "pull_up", "handstand_hold"]);
+    expect(levelSkillsFor(LEGACY_GEAR.praca)).toEqual(["push_up", "pull_up", "handstand_hold", "dips"]);
+    expect(levelSkillsFor(LEGACY_GEAR.academia)).toEqual(["push_up", "pull_up", "handstand_hold", "dips"]);
   });
 });
 
 describe("suggestSeed", () => {
-  it("sem barra → iniciante-sem-barra, em qualquer nível", () => {
-    for (const level of LEVELS) {
-      expect(suggestSeed({ equipment: "chao", level })).toBe("iniciante-sem-barra");
+  it("iniciante → corpo inteiro, com ou sem barra conforme o equipamento", () => {
+    expect(suggestSeed({ equipment: LEGACY_GEAR.chao, level: "iniciante" })).toBe("iniciante-corpo-inteiro-sem-barra");
+    for (const equipment of [LEGACY_GEAR.casa_barra, LEGACY_GEAR.praca, LEGACY_GEAR.academia] as const) {
+      expect(suggestSeed({ equipment, level: "iniciante" })).toBe("iniciante-corpo-inteiro-com-barra");
     }
   });
 
-  it("iniciante com barra → iniciante-com-barra, mesmo com paralelas", () => {
-    for (const equipment of ["casa_barra", "praca", "academia"] as const) {
-      expect(suggestSeed({ equipment, level: "iniciante" })).toBe("iniciante-com-barra");
-    }
+  it("intermediário ou avançado sem barra → intermediario-sem-barra", () => {
+    expect(suggestSeed({ equipment: LEGACY_GEAR.chao, level: "intermediario" })).toBe("intermediario-sem-barra");
+    expect(suggestSeed({ equipment: LEGACY_GEAR.chao, level: "avancado" })).toBe("intermediario-sem-barra");
   });
 
-  it("intermediário e avançado com paralelas → intermediario", () => {
-    for (const equipment of ["praca", "academia"] as const) {
+  it("intermediário ou avançado só com barra → intermediario-com-barra", () => {
+    expect(suggestSeed({ equipment: LEGACY_GEAR.casa_barra, level: "intermediario" })).toBe("intermediario-com-barra");
+    expect(suggestSeed({ equipment: LEGACY_GEAR.casa_barra, level: "avancado" })).toBe("intermediario-com-barra");
+  });
+
+  it("intermediário e avançado com paralelas → intermediario (a única com dips)", () => {
+    for (const equipment of [LEGACY_GEAR.praca, LEGACY_GEAR.academia] as const) {
       expect(suggestSeed({ equipment, level: "intermediario" })).toBe("intermediario");
       expect(suggestSeed({ equipment, level: "avancado" })).toBe("intermediario");
     }
   });
 
-  it("forte mas só com barra em casa (sem paralelas) erra pra baixo", () => {
-    expect(suggestSeed({ equipment: "casa_barra", level: "avancado" })).toBe("iniciante-com-barra");
+  it("iniciante recebe corpo inteiro: empurrar, pernas e core (e puxar, com barra) em todo treino", () => {
+    for (const equipment of EQUIPMENTS) {
+      const seed = getSeed(suggestSeed({ equipment, level: "iniciante" }))!;
+      const need = seed.tags.includes("barra")
+        ? ["Empurrar", "Pernas", "Core", "Puxar"]
+        : ["Empurrar", "Pernas", "Core"];
+      for (const w of seed.plan.workouts) {
+        const cats = new Set(
+          w.blocks.flatMap((b) => b.exercises.map((e) => getCatalogExercise(e.id)?.category))
+        );
+        for (const c of need) expect(cats.has(c as never), `${seed.id}/${w.id} sem ${c}`).toBe(true);
+      }
+    }
   });
 
   it("a semente sugerida sempre serve ao equipamento informado", () => {
@@ -163,24 +182,24 @@ describe("seedFits", () => {
   const INTERMEDIARIO = ["chão", "parede", "barra", "paralelas"];
 
   it("semente que pede menos serve a quem tem mais", () => {
-    expect(seedFits(SEM_BARRA, "praca")).toBe(true);
-    expect(seedFits(SEM_BARRA, "casa_barra")).toBe(true);
-    expect(seedFits(COM_BARRA, "academia")).toBe(true);
+    expect(seedFits(SEM_BARRA, LEGACY_GEAR.praca)).toBe(true);
+    expect(seedFits(SEM_BARRA, LEGACY_GEAR.casa_barra)).toBe(true);
+    expect(seedFits(COM_BARRA, LEGACY_GEAR.academia)).toBe(true);
   });
 
   it("semente que pede mais não serve a quem tem menos", () => {
-    expect(seedFits(COM_BARRA, "chao")).toBe(false);
-    expect(seedFits(INTERMEDIARIO, "casa_barra")).toBe(false);
-    expect(seedFits(INTERMEDIARIO, "chao")).toBe(false);
+    expect(seedFits(COM_BARRA, LEGACY_GEAR.chao)).toBe(false);
+    expect(seedFits(INTERMEDIARIO, LEGACY_GEAR.casa_barra)).toBe(false);
+    expect(seedFits(INTERMEDIARIO, LEGACY_GEAR.chao)).toBe(false);
   });
 
   it("cada setup serve a si mesmo", () => {
-    expect(seedFits(SEM_BARRA, "chao")).toBe(true);
-    expect(seedFits(INTERMEDIARIO, "praca")).toBe(true);
+    expect(seedFits(SEM_BARRA, LEGACY_GEAR.chao)).toBe(true);
+    expect(seedFits(INTERMEDIARIO, LEGACY_GEAR.praca)).toBe(true);
   });
 
   it("a semente sugerida sempre serve ao equipamento informado", () => {
-    expect(seedFits(availableTags("chao"), "chao")).toBe(true);
+    expect(seedFits(availableTags(LEGACY_GEAR.chao), LEGACY_GEAR.chao)).toBe(true);
   });
 });
 
@@ -195,28 +214,6 @@ describe("aboveTopSeed", () => {
     expect(aboveTopSeed({ level: "avancado" })).toBe(true);
     expect(aboveTopSeed({ level: "intermediario" })).toBe(false);
     expect(aboveTopSeed({ level: "iniciante" })).toBe(false);
-  });
-});
-
-describe("skipSeed", () => {
-  it("pular antes de responder o equipamento aplica o padrão do bundle", () => {
-    for (const equipment of EQUIPMENTS) {
-      expect(skipSeed({ equipmentAnswered: false, equipment })).toBe(DEFAULT_SEED_ID);
-    }
-  });
-
-  it("pular depois de marcar 'só o chão' NÃO aplica um plano que pede barra", () => {
-    const id = skipSeed({ equipmentAnswered: true, equipment: "chao" });
-    expect(id).toBe("iniciante-sem-barra");
-    expect(seedFits(getSeed(id)!.tags, "chao")).toBe(true);
-  });
-
-  it("pular nunca aplica o intermediario: o nível não respondido é o menor", () => {
-    for (const equipment of EQUIPMENTS) {
-      const id = skipSeed({ equipmentAnswered: true, equipment });
-      expect(id).not.toBe("intermediario");
-      expect(seedFits(getSeed(id)!.tags, equipment)).toBe(true);
-    }
   });
 });
 
@@ -258,7 +255,7 @@ describe("levelFromLegacy", () => {
   it("só considera as skills que o equipamento perguntava", () => {
     // só o chão: barra e dips nunca foram perguntadas, não podem reprovar
     expect(
-      levelFromLegacy({ equipment: "chao", push_up: "16+", handstand_hold: "solto" })
+      levelFromLegacy({ equipment: LEGACY_GEAR.chao, push_up: "16+", handstand_hold: "solto" })
     ).toBe("avancado");
   });
 });
@@ -282,5 +279,34 @@ describe("planIdFromPlanDayId", () => {
     expect(planIdFromPlanDayId(undefined)).toBeNull();
     expect(planIdFromPlanDayId("semdoispontos")).toBeNull();
     expect(planIdFromPlanDayId(":A")).toBeNull();
+  });
+});
+
+describe("equipamento como lista", () => {
+  it("resposta gravada como lugar vira a lista que o lugar implicava", () => {
+    expect(normalizeEquipment("praca")).toEqual(["parede", "barra", "paralelas", "banco"]);
+    expect(normalizeEquipment("academia")).toContain("peso");
+    expect(normalizeEquipment("chao")).toEqual(["parede"]);
+  });
+
+  it("lista gravada passa limpa, sem item desconhecido e na ordem canônica", () => {
+    expect(normalizeEquipment(["barra", "trampolim", "parede"])).toEqual(["parede", "barra"]);
+  });
+
+  it("lixo vira o mínimo (só parede), nunca quebra", () => {
+    expect(normalizeEquipment(null)).toEqual(["parede"]);
+    expect(normalizeEquipment(42)).toEqual(["parede"]);
+  });
+
+  it("argolas declaradas liberam degrau de argola; sem elas, ficam fora", () => {
+    expect(stepFitsEquipment(["rings"], ["parede", "argolas"])).toBe(true);
+    expect(stepFitsEquipment(["rings"], LEGACY_GEAR.praca)).toBe(false);
+  });
+
+  it("paralelas sem barra: tem dips no mapa, mas a semente é sem barra", () => {
+    expect(levelSkillsFor(["parede", "paralelas"])).toEqual(["push_up", "handstand_hold", "dips"]);
+    expect(suggestSeed({ equipment: ["parede", "paralelas"], level: "intermediario" })).toBe(
+      "intermediario-sem-barra"
+    );
   });
 });

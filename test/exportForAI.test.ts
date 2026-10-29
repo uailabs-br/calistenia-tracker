@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
+import { LEGACY_GEAR } from "@/lib/domain/onboarding";
 import { db, type ExerciseLog, type Session } from "@/lib/db/schema";
 import { createSession, completeSession } from "@/lib/db/repositories/sessions";
 import { upsertLog } from "@/lib/db/repositories/logs";
@@ -153,11 +154,11 @@ describe("buildPersonaText", () => {
 describe("exportForAI — perfil_declarado", () => {
   it("traduz o nível pra nome de skill e etapa em foco, sem jargão de índice", () => {
     const perfil = buildDeclaredProfile({
-      equipment: "praca",
+      equipment: LEGACY_GEAR.praca,
       level: "intermediario",
       days_per_week: 4,
     });
-    expect(perfil.equipamento).toBe("praca");
+    expect(perfil.equipamento).toEqual(LEGACY_GEAR.praca);
     expect(perfil.nivel).toBe("intermediario");
     expect(perfil.dias_por_semana).toBe(4);
     expect(perfil.skills).toContainEqual({ skill: "Pull-up", etapa_em_foco: "Pull-up (Pronado)" });
@@ -166,13 +167,13 @@ describe("exportForAI — perfil_declarado", () => {
   });
 
   it("só lista as skills que o equipamento permite", () => {
-    const perfil = buildDeclaredProfile({ equipment: "chao", level: "iniciante", days_per_week: 3 });
+    const perfil = buildDeclaredProfile({ equipment: LEGACY_GEAR.chao, level: "iniciante", days_per_week: 3 });
     expect(perfil.skills.map((s) => s.skill).sort()).toEqual(["Handstand (Equilíbrio)", "Push-up"]);
   });
 
   it("objetivo e limitações entram no perfil", () => {
     const perfil = buildDeclaredProfile({
-      equipment: "praca",
+      equipment: LEGACY_GEAR.praca,
       level: "avancado",
       goal: "skills",
       limitations: ["ombro", "punho"],
@@ -185,7 +186,7 @@ describe("exportForAI — perfil_declarado", () => {
 
   it("lista de limitações vazia é 'nada declarado': campo ausente, não [] no prompt", () => {
     const perfil = buildDeclaredProfile({
-      equipment: "chao",
+      equipment: LEGACY_GEAR.chao,
       level: "iniciante",
       goal: "forca",
       limitations: [],
@@ -196,7 +197,7 @@ describe("exportForAI — perfil_declarado", () => {
   });
 
   it("respostas sem objetivo nem limitações não ganham campo inventado", () => {
-    const perfil = buildDeclaredProfile({ equipment: "chao", level: "iniciante", days_per_week: 3 });
+    const perfil = buildDeclaredProfile({ equipment: LEGACY_GEAR.chao, level: "iniciante", days_per_week: 3 });
     expect("objetivo" in perfil).toBe(false);
     expect("limitacoes" in perfil).toBe(false);
   });
@@ -213,23 +214,23 @@ describe("exportForAI — degraus fora do equipamento", () => {
   const at = (s: typeof dips, level: number) => s.steps.findIndex((st) => st.level === level);
 
   it("na praça, o próximo do Dip Completo pula o Ring Dip", () => {
-    const n = neighborSteps(dips, at(dips, 3), "praca");
+    const n = neighborSteps(dips, at(dips, 3), LEGACY_GEAR.praca);
     expect(n.proximo).toBe("Dip com Peso");
     expect(n.fora).toEqual(["Ring Dip"]);
   });
 
   it("regredir do Weighted Dip na praça também pula o Ring Dip", () => {
-    expect(neighborSteps(dips, at(dips, 5), "praca").anterior).toBe("Dip Completo");
+    expect(neighborSteps(dips, at(dips, 5), LEGACY_GEAR.praca).anterior).toBe("Dip Completo");
   });
 
   it("v3.1: na praça, depois do MU estrito vem o MU em L (as argolas saíram da escada)", () => {
-    const n = neighborSteps(mu, at(mu, 5), "praca");
+    const n = neighborSteps(mu, at(mu, 5), LEGACY_GEAR.praca);
     expect(n.proximo).toBe("L-sit Muscle-up (Barra)");
     expect(n.fora).toEqual([]);
   });
 
   it("topo da escada não tem próximo", () => {
-    const n = neighborSteps(mu, at(mu, 6), "praca");
+    const n = neighborSteps(mu, at(mu, 6), LEGACY_GEAR.praca);
     expect(n.proximo).toBeNull();
     expect(n.fora).toEqual([]);
   });

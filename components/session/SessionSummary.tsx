@@ -10,10 +10,11 @@ import { getAiGoals } from "@/lib/utils/aiPersona";
 import { countAt, easeOutCubic, progressAt, revealStyle as reveal } from "@/lib/domain/timeline";
 import { sessionOutcome } from "@/lib/domain/campaign";
 import { Portal } from "@/components/ui/Portal";
-import { CheckIcon, TrophyIcon } from "@/components/ui/icons";
+import { CheckIcon, MedalIcon, TrophyIcon } from "@/components/ui/icons";
 import { accentVars, themedAccent } from "@/components/ui/accent";
 import type { PRResult } from "@/lib/db/queries/pr";
 import { getSessionCampaign, type SessionCampaignItem } from "@/lib/db/queries/campaign";
+import { getSessionReturn } from "@/lib/db/queries/sessions";
 import { ProgressionNudge } from "./ProgressionNudge";
 import { CampaignResult, campaignDuration } from "./CampaignResult";
 import { LevelUpMoment } from "./LevelUpMoment";
@@ -71,16 +72,18 @@ export function SessionSummary(props: SummaryProps) {
     () => getSessionCampaign(props.workout, goals, props.sessionId),
     [props.workout, goals, props.sessionId]
   );
+  // Treino que encerrou uma pausa de 7+ dias ganha o momento "De volta".
+  const comeback = useLiveQuery(() => getSessionReturn(props.sessionId), [props.sessionId]);
   // A linha do tempo depende de quantos objetivos entram: espera a consulta (ms)
   // em vez de reiniciar a animação quando ela chega.
-  if (campaign === undefined) {
+  if (campaign === undefined || comeback === undefined) {
     return (
       <Portal>
         <div className="fixed inset-0 z-40 bg-bg" />
       </Portal>
     );
   }
-  return <SummaryScreen {...props} campaign={campaign} />;
+  return <SummaryScreen {...props} campaign={campaign} comeback={comeback} />;
 }
 
 function SummaryScreen({
@@ -95,7 +98,11 @@ function SummaryScreen({
   minutes,
   onClose,
   campaign,
-}: SummaryProps & { campaign: SessionCampaignItem[] }) {
+  comeback,
+}: SummaryProps & {
+  campaign: SessionCampaignItem[];
+  comeback: { days: number; nth: number } | null;
+}) {
   const router = useRouter();
   const ref = useModalA11y<HTMLDivElement>(onClose);
   const titleId = useId();
@@ -237,6 +244,25 @@ function SummaryScreen({
                 ))}
               </div>
             </section>
+
+            {comeback && (
+              <section
+                aria-label="De volta"
+                className="rounded-card border border-ac/40 bg-ac/14 px-4 py-3"
+                style={reveal(t, T.delta)}
+              >
+                <p className="flex items-center gap-1.5 font-mono text-2xs uppercase tracking-wide text-ac">
+                  <MedalIcon className="h-3.5 w-3.5" />
+                  Conquista · De volta
+                </p>
+                <p className="mt-1 font-semibold">Voltou depois de {comeback.days} dias</p>
+                <p className="mt-0.5 text-sm text-muted">
+                  {comeback.nth === 1
+                    ? "Selo De volta desbloqueado."
+                    : `É a sua ${comeback.nth}ª volta depois de uma pausa.`}
+                </p>
+              </section>
+            )}
 
             {prs.length > 0 && (
               <section aria-label="Recordes" style={reveal(t, T.pr)}>

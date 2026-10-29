@@ -9,27 +9,29 @@ import {
   mapAnswersToSkillLevels,
   levelSkillsFor,
   seedFits,
-  skipSeed,
   suggestSeed,
+  PLACE_GEAR,
   type Equipment,
+  type Place,
   type Goal,
   type Limitation,
   type OnboardingAnswers,
   type Level,
   type SeedId,
 } from "@/lib/domain/onboarding";
-import { getSeed, seeds } from "@/lib/plan/seeds";
+import { getSeed, listedSeeds } from "@/lib/plan/seeds";
 import { getSkillById } from "@/lib/plan/skills";
 import { durationLabel } from "@/lib/domain/estimateDuration";
 import { plan } from "@/lib/plan/loader";
-import { applyPlan } from "@/lib/plan/importPlan";
-import { getOnboardingAnswers, saveOnboarding } from "@/lib/utils/onboarding";
+import { getOnboardingAnswers } from "@/lib/utils/onboarding";
 import { commitOnboarding } from "@/lib/utils/onboardingCommit";
 import { getProfileName } from "@/lib/utils/profile";
 import { usePlanReady } from "@/lib/utils/usePlanReady";
 import {
   DAYS_OPTIONS,
-  EQUIPMENT_OPTIONS,
+  GEAR_OPTIONS,
+  PLACE_OPTIONS,
+  gearSummary,
   GOAL_LABEL,
   GOAL_OPTIONS,
   LIMITATION_OPTIONS,
@@ -48,13 +50,14 @@ type Step =
   | "frequencia"
   | "resumo";
 
+// O nome vem no fim: é a pergunta que menos muda o que o app entrega.
 const STEPS: Step[] = [
-  "nome",
   "equipamento",
   "nivel",
   "limitacoes",
   "objetivo",
   "frequencia",
+  "nome",
   "resumo",
 ];
 
@@ -64,12 +67,15 @@ type View = "step" | "plano";
 const SAVE_ERROR =
   "Não consegui salvar neste navegador. Confira se o armazenamento do site está liberado.";
 
-/** Pergunta do passo e a explicação embaixo. */
-function StepHeading({ title, children }: { title: string; children: React.ReactNode }) {
+/**
+ * Pergunta do passo e, quando precisa, uma linha embaixo. Só tem linha onde ela
+ * evita um erro ou uma expectativa errada (docs/onboarding-copy.md).
+ */
+function StepHeading({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
     <>
       <h1 className="display text-display leading-[1.1]">{title}</h1>
-      <p className="mt-2.5 text-md leading-relaxed text-muted">{children}</p>
+      {children && <p className="mt-2.5 text-md leading-relaxed text-muted">{children}</p>}
     </>
   );
 }
@@ -153,7 +159,9 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
   const [index, setIndex] = useState(0);
   const [view, setView] = useState<View>("step");
   const [name, setName] = useState("");
-  const [equipment, setEquipment] = useState<Equipment>("chao");
+  const [equipment, setEquipment] = useState<Equipment>(["parede"]);
+  // Lugar tocado por último: só pré-marca a lista, não é gravado.
+  const [place, setPlace] = useState<Place | null>(null);
   const [level, setLevel] = useState<Level>("iniciante");
   const [days, setDays] = useState<number>(3);
   const [goal, setGoal] = useState<Goal>("forca");
@@ -240,28 +248,11 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
     }
   };
 
-  /** "Pular" só existe na primeira vez; aplica a semente padrão. Ao refazer, cancela. */
-  const skip = () => {
-    if (redo) {
-      router.push("/plano");
-      return;
-    }
-    setFinishing(true);
-    try {
-      saveOnboarding(null);
-      // Pular não grava respostas, mas o equipamento já respondido manda na
-      // escolha da semente — ver skipSeed.
-      const id = skipSeed({
-        equipmentAnswered: index > STEPS.indexOf("equipamento"),
-        equipment,
-      });
-      applyPlan(getSeed(id)!.plan);
-      window.location.assign("/");
-    } catch {
-      setFinishing(false);
-      setError(SAVE_ERROR);
-    }
-  };
+  /**
+   * Só quem refaz pode sair no meio ("Cancelar"). Na primeira vez não há
+   * "Pular": sem equipamento respondido, o plano aplicado seria um palpite.
+   */
+  const cancel = () => router.push("/plano");
 
   const next = () => (isLast ? finish() : setIndex((i) => i + 1));
   const back = () => setIndex((i) => Math.max(0, i - 1));
@@ -287,20 +278,17 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
 
       <div
         className={`flex shrink-0 items-center justify-end ${
-          view === "step" && (redo || step !== "resumo") ? "h-7" : "h-2"
+          view === "step" && redo ? "h-7" : "h-2"
         }`}
       >
-        {/* No resumo não existe "pular": tudo já foi respondido, e pular dali
-            jogaria fora o que está na tela pra aplicar o plano padrão.
-            "Cancelar" (refazer) continua fazendo sentido até o fim. */}
-        {view === "step" && (redo || step !== "resumo") && (
+        {view === "step" && redo && (
           <button
             type="button"
-            onClick={skip}
+            onClick={cancel}
             disabled={finishing}
             className="tap px-2 text-sm text-muted active:opacity-70"
           >
-            {redo ? "Cancelar" : "Pular"}
+            Cancelar
           </button>
         )}
       </div>
@@ -317,9 +305,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
         {view === "plano" && (
           <>
             <StepHeading title="Escolher o plano">
-              {redo
-                ? "Trocar de plano não apaga nada do histórico, mas muda os treinos daqui pra frente."
-                : "São planos escritos à mão. O sugerido combina com o que você respondeu."}
+              {redo ? "Muda só os próximos treinos. O histórico fica." : null}
             </StepHeading>
             <div role="radiogroup" aria-label="Plano" className="mt-4 flex flex-col gap-2">
               {redo && (
@@ -334,7 +320,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
                   }
                 />
               )}
-              {seeds.map((s) => {
+              {listedSeeds().map((s) => {
                 const fits = seedFits(s.tags, equipment);
                 return (
                   <OptionButton
@@ -352,16 +338,12 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
 
         {view === "step" && step === "nome" && (
           <>
-            <StepHeading title={redo ? "Refazer suas respostas" : "Como te chamo?"}>
-              {redo
-                ? "Seu histórico fica intacto — vamos só reconferir seu nível e seu equipamento."
-                : "Aparece só na sua saudação. Pode deixar em branco."}
-            </StepHeading>
+            <StepHeading title="Como te chamo?" />
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Seu nome"
+              placeholder="Seu nome (opcional)"
               aria-label="Seu nome"
               maxLength={30}
               autoComplete="given-name"
@@ -372,16 +354,49 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
 
         {view === "step" && step === "equipamento" && (
           <>
-            <StepHeading title="Onde você treina?">
-              Montamos seu treino com o que você tem à mão.
+            {/* Ao refazer, esta é a primeira tela: é aqui que o medo de perder o
+                histórico aparece, e a lista já vem com as respostas de antes. */}
+            <StepHeading title="O que você tem pra treinar?">
+              {redo ? "Seu histórico fica como está." : "Escolha o lugar e tire o que ele não tem."}
             </StepHeading>
-            <div className="mt-4">
-              <Choices
-                label="Onde você treina"
-                options={EQUIPMENT_OPTIONS}
-                value={equipment}
-                onChange={setEquipment}
-              />
+            <div role="radiogroup" aria-label="Onde você treina" className="mt-4 flex flex-wrap gap-2">
+              {PLACE_OPTIONS.map((o) => (
+                <button
+                  key={o.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={place === o.value}
+                  onClick={() => {
+                    setPlace(o.value);
+                    setEquipment(PLACE_GEAR[o.value]);
+                  }}
+                  className="option tap rounded-full px-4 py-2.5 text-sm font-medium active:scale-[0.98]"
+                >
+                  {o.label}
+                </button>
+              ))}
+            </div>
+            <div role="group" aria-label="Equipamento" className="mt-3 grid grid-cols-2 gap-2">
+              {GEAR_OPTIONS.map((o) => {
+                const on = equipment.includes(o.value);
+                return (
+                  <button
+                    key={o.value}
+                    type="button"
+                    role="checkbox"
+                    aria-checked={on}
+                    onClick={() =>
+                      setEquipment((e) =>
+                        on ? e.filter((g) => g !== o.value) : [...e, o.value]
+                      )
+                    }
+                    className="option tap rounded-card px-3 py-2 text-left active:scale-[0.99]"
+                  >
+                    <span className="block text-sm font-medium">{o.label}</span>
+                    <span className="block text-xs text-muted">{o.hint}</span>
+                  </button>
+                );
+              })}
             </div>
           </>
         )}
@@ -389,7 +404,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
         {view === "step" && step === "nivel" && (
           <>
             <StepHeading title="Qual seu nível atual?">
-              Na dúvida, fique com o menor — seu treino sobe de nível sozinho conforme você evolui.
+              Na dúvida, escolha o menor. O treino sobe com você.
             </StepHeading>
             <div className="mt-4">
               <Choices
@@ -405,8 +420,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
         {view === "step" && step === "limitacoes" && (
           <>
             <StepHeading title="Alguma dor ou limitação hoje?">
-              Pode marcar mais de uma. Nada sai do seu treino — serve pra você, e
-              pra IA do próximo ciclo, pegar leve na região.
+              O treino não muda. A IA pega leve nessa região no próximo plano.
             </StepHeading>
             <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Dor ou limitação">
               <button
@@ -447,8 +461,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
         {view === "step" && step === "objetivo" && (
           <>
             <StepHeading title="Qual seu foco principal?">
-              Pra onde você quer evoluir primeiro. Guia a IA no próximo ciclo e não
-              muda o plano de agora — skills específicas você escolhe em Treino.
+              Guia a IA no seu próximo plano.
             </StepHeading>
             <div
               role="radiogroup"
@@ -474,7 +487,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
 
         {view === "step" && step === "frequencia" && (
           <>
-            <StepHeading title="Quantos dias por semana?">Escolha o que cabe na sua rotina de verdade.</StepHeading>
+            <StepHeading title="Quantos dias por semana?" />
             <div className="mt-6 flex justify-center gap-3" role="radiogroup" aria-label="Dias por semana">
               {DAYS_OPTIONS.map((d) => (
                 <button
@@ -497,11 +510,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
 
         {view === "step" && step === "resumo" && (
           <>
-            <StepHeading title={redo ? "Tudo certo" : "Seu ponto de partida"}>
-              {redo
-                ? "É assim que o app passa a te ver. Seu histórico não muda."
-                : "Pronto — é daqui que você começa."}
-            </StepHeading>
+            <StepHeading title={redo ? "Tudo certo" : "Seu ponto de partida"} />
 
             <div className="card mt-3 p-3.5">
               <p className="eyebrow-lg">Onde você começa</p>
@@ -520,6 +529,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
                           .join(", ")
                   }
                 />
+                <SummaryRow label="Equipamento" value={gearSummary(equipment)} />
                 <SummaryRow label="Meta semanal" value={`${days} treinos`} />
               </ul>
             </div>

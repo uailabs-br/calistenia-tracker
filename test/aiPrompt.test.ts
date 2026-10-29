@@ -122,9 +122,9 @@ describe("buildAiPrompt — método de progressão", () => {
     expect(text).toContain("`tracking`");
   });
 
-  it("traduz os tokens do perfil declarado (a IA vê 'casa_barra' cru no JSON)", () => {
+  it("traduz os tokens do perfil declarado (a IA vê 'paralettes' cru no JSON)", () => {
     const text = buildAiPrompt("", EMPTY);
-    for (const token of ["chao", "casa_barra", "praca", "academia"]) {
+    for (const token of ["parede", "barra", "paralelas", "banco", "argolas", "paralettes", "elastico", "peso"]) {
       expect(text).toContain(`\`${token}\``);
     }
     expect(text).toContain("limitacoes");

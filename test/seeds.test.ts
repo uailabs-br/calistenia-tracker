@@ -2,9 +2,10 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { planSchema } from "@/lib/plan/schema";
-import { DEFAULT_SEED_ID, getSeed, isSeedPlanId, seeds } from "@/lib/plan/seeds";
+import { DEFAULT_SEED_ID, getSeed, isSeedPlanId, listedSeeds, seeds } from "@/lib/plan/seeds";
 import { getKnownPlan, knownPlanIds } from "@/lib/plan/plans";
 import { seedFits, suggestSeed } from "@/lib/domain/onboarding";
+import { LEGACY_GEAR } from "@/lib/domain/onboarding";
 import { skillIdForWorkout } from "@/lib/plan/skills";
 import { planWarnings } from "@/lib/plan/diffPlan";
 
@@ -93,7 +94,7 @@ describe("registro de sementes", () => {
   });
 
   it("toda semente sugerida por suggestSeed existe no registro", () => {
-    for (const equipment of ["chao", "casa_barra", "praca", "academia"] as const) {
+    for (const equipment of [LEGACY_GEAR.chao, LEGACY_GEAR.casa_barra, LEGACY_GEAR.praca, LEGACY_GEAR.academia] as const) {
       for (const level of ["iniciante", "intermediario", "avancado"] as const) {
         const id = suggestSeed({ equipment, level });
         expect(getSeed(id), id).toBeDefined();
@@ -101,19 +102,33 @@ describe("registro de sementes", () => {
     }
   });
 
-  it("as sementes cobrem todos os equipamentos", () => {
-    const covered = new Set(seeds.flatMap((s) => s.equipment));
-    expect([...covered].sort()).toEqual(["academia", "casa_barra", "chao", "praca"]);
+  it("toda semente sugerida está na lista de escolha", () => {
+    const listed = new Set(listedSeeds().map((s) => s.id));
+    for (const equipment of [LEGACY_GEAR.chao, LEGACY_GEAR.casa_barra, LEGACY_GEAR.praca, LEGACY_GEAR.academia] as const)
+      for (const level of ["iniciante", "intermediario", "avancado"] as const)
+        expect(listed.has(suggestSeed({ equipment, level })), `${equipment.join("+")}/${level}`).toBe(true);
+  });
+
+  it("as divididas antigas saem da lista mas seguem conhecidas pelo histórico", () => {
+    for (const id of ["iniciante-sem-barra", "iniciante-com-barra"] as const) {
+      expect(listedSeeds().some((s) => s.id === id)).toBe(false);
+      expect(getKnownPlan(getSeed(id)!.plan.id)).toBeDefined();
+    }
+  });
+
+  it("praça só com barra recebe o intermediário sem paralelas, não o que depende delas", () => {
+    const pracaSoBarra = ["parede", "barra", "banco"] as const;
+    expect(suggestSeed({ equipment: pracaSoBarra, level: "intermediario" })).toBe("intermediario-com-barra");
   });
 });
 
 describe("tags das sementes x equipamento", () => {
   it("a semente sugerida sempre é executável com o equipamento informado", () => {
-    const combos = ["chao", "casa_barra", "praca", "academia"] as const;
+    const combos = [LEGACY_GEAR.chao, LEGACY_GEAR.casa_barra, LEGACY_GEAR.praca, LEGACY_GEAR.academia] as const;
     for (const equipment of combos)
       for (const level of ["iniciante", "intermediario", "avancado"] as const) {
         const id = suggestSeed({ equipment, level });
-        expect(seedFits(getSeed(id)!.tags, equipment), `${equipment}/${level} → ${id}`).toBe(true);
+        expect(seedFits(getSeed(id)!.tags, equipment), `${equipment.join("+")}/${level} → ${id}`).toBe(true);
       }
   });
 });

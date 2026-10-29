@@ -14,6 +14,7 @@ import {
 import { durationLabel } from "@/lib/domain/estimateDuration";
 import { focusLabel, workoutFocus } from "@/lib/domain/workoutFocus";
 import { getLastWorkoutRun } from "@/lib/db/queries/previousWorkout";
+import { countCompletedSessions } from "@/lib/db/queries/metrics";
 import { focusEntries } from "@/lib/plan/focus";
 import { relativeDay } from "@/lib/utils/date";
 import { exerciseSkillMapping, getLevelFlags } from "@/lib/plan/skills";
@@ -68,6 +69,10 @@ export function MissionIntro({
   const items = useLiveQuery(() => getWorkoutCampaign(workout, goals), [workout, goals]);
   // null = primeira vez neste treino; undefined = carregando
   const last = useLiveQuery(async () => (await getLastWorkoutRun(workout.id)) ?? null, [workout.id]);
+  // No primeiro treino o aviso de objetivo atrapalha: a pessoa acabou de responder
+  // o onboarding, e "Sem objetivo marcado" soa como se o app não tivesse ouvido.
+  const completed = useLiveQuery(() => countCompletedSessions(), []);
+  const showNoGoal = goals.length === 0 && completed !== undefined && completed > 0;
   const [leaving, setLeaving] = useState(false);
   const ref = useModalA11y<HTMLDivElement>(() => setLeaving(true));
 
@@ -95,7 +100,7 @@ export function MissionIntro({
         },
       ].filter((t): t is { value: number; label: string } => Boolean(t))
     : [];
-  const offAt = goals.length === 0 ? 350 : 250;
+  const offAt = showNoGoal ? 350 : 250;
 
   return (
     <Portal>
@@ -132,7 +137,7 @@ export function MissionIntro({
             </p>
           </header>
 
-          {goals.length === 0 && (
+          {showNoGoal && (
             <p className="card anim-rise px-4 py-3.5 text-sm leading-snug text-muted" style={at(250)}>
               <span className="font-medium text-text">Sem objetivo marcado.</span> Em Treino →
               Meus objetivos você escolhe uma skill, e cada treino passa a mostrar o quanto ela
