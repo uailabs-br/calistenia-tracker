@@ -39,3 +39,17 @@ recortado de cima pra baixo, em cascata. Com `backwards`, o recorte sai ao termi
 - Os rótulos de HUD do protótipo que não existem no app (semana do ano, "1 de 5") ficaram de
   fora; o card de constância ganhou "faltam N treinos pra fechar a semana", que é dado real.
 - O sucesso (`--color-success`) vira a cor ativa, como no tático.
+
+## Revisão (2026-10-30, à tarde)
+
+Visto no app, ele achou o tema longe do protótipo e não gostou da varredura. Mudou:
+
+- **Vidro com desfoque, como no protótipo.** Cards, destaque, exercício da sessão e caixa
+  do descanso ganharam `backdrop-filter`, filete de luz no topo e borda translúcida; o
+  destaque leva o véu na cor. A decisão de cima (sem desfoque, por peso no celular) caiu:
+  o risco fica, a conferir em celular mais velho com o timer rodando.
+- **Chakra onde o protótipo usa:** botões, títulos de seção, séries, `h3` em caixa alta;
+  abas e links em mono caixa alta. Peso 600, não 700.
+- **Onda do botão vira halo** (`filter`), como no protótipo.
+- **Sem varredura.** A tela entra com a animação do padrão.
+

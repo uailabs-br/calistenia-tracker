@@ -83,7 +83,10 @@ export function ConsistencyHeatmap({ weeks }: { weeks: HeatmapDay[][] }) {
             <div
               key={d.date}
               title={describe(d)}
-              className="anim-fade-in aspect-square rounded-[5px]"
+              // data-level/data-today: o tema espaço desenha o dia como estrela
+              data-level={heatLevel(d)}
+              data-today={d.isToday || undefined}
+              className="heat-cell anim-fade-in aspect-square rounded-[5px]"
               style={{
                 ...heatStyle(heatLevel(d), d.isToday),
                 animationDelay: `${w * 25}ms`,
@@ -102,7 +105,7 @@ export function ConsistencyHeatmap({ weeks }: { weeks: HeatmapDay[][] }) {
           ] as const
         ).map(([level, label]) => (
           <span key={level} className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-[3px]" style={heatStyle(level, false)} />
+            <span className="heat-cell h-3 w-3 rounded-[3px]" data-level={level} style={heatStyle(level, false)} />
             {label}
           </span>
         ))}

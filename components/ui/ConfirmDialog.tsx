@@ -46,7 +46,7 @@ export function ConfirmDialog({
           {secondaryLabel}
         </button>
       )}
-      <div className={`${secondaryLabel ? "mt-2" : "mt-5"} flex gap-2`}>
+      <div className={`dialog-actions ${secondaryLabel ? "mt-2" : "mt-5"} flex gap-2`}>
         <button
           type="button"
           onClick={onCancel}

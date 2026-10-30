@@ -87,6 +87,16 @@ describe("preferência de tema", () => {
   });
 });
 
+describe("tema espaço", () => {
+  it("marca só o tema: cor única, sem tom nem scanlines", () => {
+    const el = fakeEl();
+    el.setAttribute("data-tone", "ciano");
+    el.setAttribute("data-scanlines", "");
+    applyThemePref(el, { ...DEFAULT_THEME, style: "espaco", scanlines: true });
+    expect(Object.fromEntries(el.attrs)).toEqual({ "data-theme": "espaco" });
+  });
+});
+
 describe("boot script do <head>", () => {
   // Ele repete parseThemePref + applyThemePref em JS puro: se divergirem, a tela
   // abre num tema e o React repinta em outro.
@@ -100,6 +110,8 @@ describe("boot script do <head>", () => {
     JSON.stringify({ style: "futurista" }),
     JSON.stringify({ style: "futurista", futureTone: "laranja", scanlines: true }),
     JSON.stringify({ style: "futurista", futureTone: "verde", tone: "ambar" }),
+    JSON.stringify({ style: "espaco" }),
+    JSON.stringify({ style: "espaco", tone: "ambar", futureTone: "lilas", scanlines: true }),
   ];
   it.each(cases)("dá o mesmo resultado que a versão TS para %s", (raw) => {
     const expected = fakeEl();

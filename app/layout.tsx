@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, DM_Mono, Barlow_Condensed, Chakra_Petch } from "next/font/google";
+import { DM_Sans, DM_Mono, Barlow_Condensed, Chakra_Petch, Exo_2 } from "next/font/google";
 import "./globals.css";
 import { BottomNav } from "@/components/ui/BottomNav";
 import { SwUpdater } from "@/components/ui/SwUpdater";
@@ -8,6 +8,7 @@ import { ToastProvider } from "@/components/ui/Toast";
 import { PlanBoot } from "@/components/ui/PlanBoot";
 import { AppMain } from "@/components/ui/AppMain";
 import { Splash } from "@/components/ui/Splash";
+import { SpaceSky } from "@/components/ui/SpaceSky";
 import { APP_NAME } from "@/lib/appInfo";
 import { THEME_BOOT_SCRIPT } from "@/lib/utils/theme";
 
@@ -40,6 +41,15 @@ const chakra = Chakra_Petch({
   subsets: ["latin"],
   weight: ["600", "700"],
   variable: "--font-chakra",
+  display: "swap",
+  preload: false,
+});
+
+// Display do tema espaço, no mesmo esquema da Chakra: só baixa com o tema ligado.
+const exo = Exo_2({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  variable: "--font-exo",
   display: "swap",
   preload: false,
 });
@@ -80,13 +90,14 @@ export default function RootLayout({
     // então os atributos dele divergem do HTML estático de propósito (só este nível).
     <html
       lang="pt-BR"
-      className={`${dmSans.variable} ${dmMono.variable} ${barlow.variable} ${chakra.variable}`}
+      className={`${dmSans.variable} ${dmMono.variable} ${barlow.variable} ${chakra.variable} ${exo.variable}`}
       suppressHydrationWarning
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
       </head>
       <body>
+        <SpaceSky />
         <ToastProvider>
           <SwUpdater />
           <PlanBoot />

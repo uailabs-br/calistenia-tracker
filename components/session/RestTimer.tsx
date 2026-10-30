@@ -68,7 +68,9 @@ export function RestTimer({
 
   // Anel fino por fora + disco que enche de líquido conforme o descanso passa.
   // Cheio = descansado: o líquido vira verde e o número dá lugar a um check.
-  // O tema futurista esconde o líquido e mostra a régua (classes `rest-*`).
+  // Futurista e espaço desenham como nos protótipos (classes `rest-*`): sem o
+  // líquido, com régua, anel maior e título em cima; o espaço põe um satélite
+  // na ponta do arco.
   const size = 176;
   const stroke = 3;
   const radius = (size - stroke) / 2 - 1;
@@ -86,6 +88,10 @@ export function RestTimer({
   // legível com qualquer accent por baixo. No fim, cor cheia sob o check escuro.
   const liquidFront = finished ? color : `color-mix(in oklab, ${color} 55%, transparent)`;
   const liquidBack = `color-mix(in oklab, ${color} 28%, transparent)`;
+  // Ponta do arco (0° = topo, horário): onde o satélite do espaço fica.
+  const head = (pct / 100) * 2 * Math.PI;
+  const satX = size / 2 + radius * Math.sin(head);
+  const satY = size / 2 - radius * Math.cos(head);
 
   if (minimized) {
     return (
@@ -122,11 +128,18 @@ export function RestTimer({
       <div
         ref={modalRef}
         onClick={(e) => e.stopPropagation()}
-        className="anim-scale-in flex flex-col items-center gap-4 rounded-2xl border bg-surface2 px-7 py-6 shadow-2xl outline-none"
+        className="rest-card glass glass-key anim-scale-in flex flex-col items-center gap-4 rounded-2xl border bg-surface2 px-7 py-6 shadow-2xl outline-none"
         style={{ borderColor: color }}
       >
-        <div className="relative" style={{ width: size, height: size }}>
-          <svg width={size} height={size} className="overflow-visible" aria-hidden="true">
+        <p className="rest-title eyebrow-lg hidden">{finished ? "Pronto" : "Descanso"}</p>
+        <div className="rest-ring relative" style={{ width: size, height: size }}>
+          <svg
+            width="100%"
+            height="100%"
+            viewBox={`0 0 ${size} ${size}`}
+            className="overflow-visible"
+            aria-hidden="true"
+          >
             <defs>
               <clipPath id={CLIP_ID}>
                 <circle cx={size / 2} cy={size / 2} r={disc} />
@@ -140,6 +153,13 @@ export function RestTimer({
               className="rest-ticks hidden"
             />
             <circle className="rest-disc" cx={size / 2} cy={size / 2} r={disc} fill="var(--color-bg)" />
+            <circle
+              className="rest-core hidden"
+              cx={size / 2}
+              cy={size / 2}
+              r={size * 0.26}
+              fill="color-mix(in oklab, var(--ac) 6%, transparent)"
+            />
             <g className="rest-liquid" clipPath={`url(#${CLIP_ID})`}>
               <g
                 className="transition-transform duration-150 ease-linear"
@@ -180,15 +200,26 @@ export function RestTimer({
               strokeDasharray={circ}
               strokeDashoffset={finished ? 0 : circ * (1 - pct / 100)}
               transform={`rotate(-90 ${size / 2} ${size / 2})`}
-              className="rest-arc transition-[stroke-dashoffset] duration-150 ease-linear"
+              className={`rest-arc transition-[stroke-dashoffset] duration-150 ease-linear ${finished ? "rest-arc-done" : ""}`}
               style={{
                 // overflow-visible no svg: o arco encosta na borda e cortaria o brilho.
                 filter: `drop-shadow(0 0 4px color-mix(in oklab, ${color} 50%, transparent)) drop-shadow(0 0 10px color-mix(in oklab, ${color} 22%, transparent))`,
               }}
             />
+            {!finished && (
+              <circle
+                className="rest-sat hidden"
+                cx={satX}
+                cy={satY}
+                r={6}
+                fill={color}
+              />
+            )}
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             {finished ? (
+              <>
+              <span className="rest-ok display hidden">OK</span>
               <svg
                 viewBox="0 0 24 24"
                 className="rest-check h-[72px] w-[72px]"
@@ -202,6 +233,7 @@ export function RestTimer({
               >
                 <path d="M5 12.5l4.5 4.5L19 7.5" className="check-draw" />
               </svg>
+              </>
             ) : (
               <>
                 <span
@@ -210,7 +242,7 @@ export function RestTimer({
                 >
                   {formatClock(remaining)}
                 </span>
-                <span className="eyebrow-lg mt-1.5">
+                <span className="rest-label eyebrow-lg mt-1.5">
                   descanso
                 </span>
               </>
@@ -218,42 +250,37 @@ export function RestTimer({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {!finished && (
-            <>
-              <button
-                type="button"
-                onClick={() => adjust(-5)}
-                aria-label="Diminuir 5 segundos"
-                className="tap flex items-center gap-1 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium"
-              >
-                <MinusIcon className="h-4 w-4" />
-                5s
-              </button>
-              <button
-                type="button"
-                onClick={() => adjust(5)}
-                aria-label="Aumentar 5 segundos"
-                className="tap flex items-center gap-1 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium"
-              >
-                <PlusIcon className="h-4 w-4" />
-                5s
-              </button>
-            </>
-          )}
-          <button
-            type="button"
-            onClick={onDone}
-            className="tap rounded-xl px-5 py-2.5 text-sm font-semibold"
-            style={
-              finished
-                ? { background: color, color: "var(--color-on-accent)" }
-                : { color: ac }
-            }
-          >
-            {finished ? "ok" : "pular"}
-          </button>
-        </div>
+        {/* No fim não tem botão: ele fecha sozinho em 1,4s. */}
+        {!finished && (
+          <div className="rest-btns flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => adjust(-5)}
+              aria-label="Diminuir 5 segundos"
+              className="tap flex items-center gap-1 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium"
+            >
+              <MinusIcon className="h-4 w-4" />
+              5s
+            </button>
+            <button
+              type="button"
+              onClick={() => adjust(5)}
+              aria-label="Aumentar 5 segundos"
+              className="tap flex items-center gap-1 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium"
+            >
+              <PlusIcon className="h-4 w-4" />
+              5s
+            </button>
+            <button
+              type="button"
+              onClick={onDone}
+              className="rest-skip tap rounded-xl px-5 py-2.5 text-sm font-semibold"
+              style={{ color: ac }}
+            >
+              pular
+            </button>
+          </div>
+        )}
       </div>
     </div>
     </Portal>

@@ -22,7 +22,7 @@ export function UpNext({ queue }: { queue: Workout[] }) {
 
   return (
     <section>
-      <h2 className="mb-2 text-sm font-semibold">Depois</h2>
+      <h2 className="section-title mb-2 text-sm font-semibold">Depois</h2>
       <ul className="flex flex-col gap-2">
         {visible.map((w) => (
           <li key={w.id}>
@@ -53,7 +53,7 @@ export function UpNext({ queue }: { queue: Workout[] }) {
           type="button"
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
-          className="tap mt-2 flex w-full items-center justify-center gap-1 py-2 text-sm text-muted"
+          className="more-link tap mt-2 flex w-full items-center justify-center gap-1 py-2 text-sm text-muted"
         >
           {expanded ? "Mostrar menos" : `Mostrar mais ${hidden}`}
           <ChevronDownIcon

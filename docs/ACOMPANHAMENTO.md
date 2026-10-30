@@ -20,6 +20,18 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-10-30, tema espaço e descanso dos protótipos — 718 testes):**
+> quarto estilo em Ajustes → Aparência, escolhido no protótipo de temas: o vidro do futurista
+> sobre um céu com nebulosa no roxo do app e estrelas em canvas, títulos em Exo 2 (sem
+> preload), cor gelo pra todos os treinos. Trocar de tela é viajar no eixo z: as abas são
+> profundidades na ordem da nav, a sessão é a mais funda, e a tela velha passa pela câmera
+> (ou recua) enquanto a nova chega, com as estrelas virando riscos. O céu só anima na viagem.
+> Constância em órbita (uma lua por treino), satélite no descanso, dias da Evolução como
+> estrelas e um trilho na nav. No futurista e no espaço o descanso ficou como nos protótipos
+> (título, anel de 220px, botões em grade, "OK" no fim); em todos os temas o fim do descanso
+> perdeu o botão "ok", porque ele fecha sozinho. Decisões em `docs/PLAN-tema-espaco.md`. Sem
+> teste em celular.
+>
 > **Atualização (pós-v1.8, 2026-10-30, tema futurista — 704 testes):** terceiro estilo em
 > Ajustes → Aparência, escolhido num protótipo com três superfícies (vidro, industrial, linha
 > fina) depois de uma pesquisa de referências. Vidro: cards translúcidos sobre um brilho na cor,

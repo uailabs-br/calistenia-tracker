@@ -969,11 +969,13 @@ a {
 
 /* ── Tema futurista (Ajustes → Aparência) ───────────────────────────────
    Vidro: cards translúcidos sobre um brilho na cor, título em Chakra Petch,
-   uma cor pra todos os treinos e varredura ao abrir cada tela. Mesmo esquema
+   uma cor pra todos os treinos; a tela entra como no padrão. Mesmo esquema
    do tático (só CSS sobre atributos do <html>). Constância e descanso trocam
    de desenho: os componentes renderizam as duas versões e as classes
    `consistency-*` e `rest-*` escolhem qual aparece. Decisão em
-   docs/PLAN-tema-futurista.md. */
+   docs/PLAN-tema-futurista.md.
+   O tema espaço reaproveita quase tudo daqui (seletor com :is) e, no bloco
+   dele mais abaixo, troca só o que é seu. */
 :root {
   --ftone-ciano: #3de7ff;
   --ftone-lilas: #a99bff;
@@ -987,7 +989,8 @@ a {
   /* sólidas: sheet, diálogo e toast precisam esconder o que está atrás */
   --color-surface: #0b0f18;
   --color-surface2: #121826;
-  --color-border: #1f2738;
+  /* borda translúcida: no vidro o brilho de trás aparece no contorno */
+  --color-border: rgb(170 195 255 / 0.15);
   --color-text: #e8eef6;
   --color-muted: #8c97a8;
   --color-gold: #ffc857;
@@ -1010,7 +1013,7 @@ a {
     var(--color-bg);
   background-attachment: fixed;
 }
-:root[data-theme="futurista"] body {
+:root:is([data-theme="futurista"], [data-theme="espaco"]) body {
   background: transparent;
 }
 :root[data-theme="futurista"][data-tone="lilas"] { --theme-ac: var(--ftone-lilas); }
@@ -1019,52 +1022,135 @@ a {
 :root[data-theme="futurista"][data-tone="laranja"] { --theme-ac: var(--ftone-laranja); --color-gold: #ffe08a; }
 :root[data-theme="futurista"][data-tone="gelo"] { --theme-ac: var(--ftone-gelo); }
 
-/* Caixa alta em título e botão; texto corrido segue normal. O nome do
-   exercício (h3) fica fora: a Chakra é larga e em caixa alta cortava
-   "Kick-up livre" no meio. Pelo mesmo motivo ele quebra linha em vez de cortar. */
-:root[data-theme="futurista"] :is(h1, h2).display {
+/* Título, número e botão na Chakra 600, como no protótipo; texto corrido segue
+   na sans. O nome do exercício (h3) quebra linha em vez de cortar: em caixa
+   alta a Chakra é larga e cortava "Kick-up livre" no meio. */
+/* A escala display foi feita pra Barlow condensada; a Chakra é bem mais larga
+   e, no mesmo tamanho, título comprido quebra em celular estreito. O
+   font-size-adjust encolhe ~12% por igual (x-height da Chakra = 0,498) sem
+   mexer em cada classe de tamanho, e vale pro fallback enquanto ela carrega. */
+:root:is([data-theme="futurista"], [data-theme="espaco"]) :is(.display, .display-caps) {
+  font-weight: 600;
+  font-size-adjust: 0.44;
+}
+:root:is([data-theme="futurista"], [data-theme="espaco"]) :is(h1, h2, h3).display {
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
-:root[data-theme="futurista"] h3.display.truncate {
+:root:is([data-theme="futurista"], [data-theme="espaco"]) h3.display.truncate {
   white-space: normal;
 }
-:root[data-theme="futurista"] :is(.btn-primary, .btn-secondary, .btn-outline, .btn-neutral, .btn-danger, .btn-inverse) {
+:root:is([data-theme="futurista"], [data-theme="espaco"]) :is(.btn-primary, .btn-secondary, .btn-outline, .btn-neutral, .btn-danger, .btn-inverse) {
+  font-family: var(--font-display);
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
 }
-/* Primário com luz embaixo. A onda (.anim-ring) troca a sombra enquanto pulsa. */
-:root[data-theme="futurista"] .btn-primary {
+/* Primário com luz embaixo. */
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .btn-primary {
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.35),
     0 8px 28px color-mix(in oklab, var(--ac) 35%, transparent);
 }
-
-/* Vidro: card translúcido com a luz batendo na borda de cima. Sem desfoque
-   (backdrop-filter) no card: o fundo atrás é um degradê liso, e o desfoque em
-   cada card pesaria no celular com o timer rodando. Fica só na barra de baixo. */
-:root[data-theme="futurista"] .card {
-  background: rgb(150 175 255 / 0.05);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07);
+/* Onda do protótipo: um halo que acende e se espalha. Anima o filter, não a
+   sombra, então a luz de baixo do primário fica parada enquanto pulsa. */
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .anim-ring {
+  animation-name: future-ring;
 }
-:root[data-theme="futurista"] .glow {
+@keyframes future-ring {
+  0% {
+    filter: drop-shadow(0 0 0 color-mix(in oklab, var(--ac) 90%, transparent));
+  }
+  40% {
+    filter: drop-shadow(0 0 10px color-mix(in oklab, var(--ac) 55%, transparent));
+  }
+  100% {
+    filter: drop-shadow(0 0 18px color-mix(in oklab, var(--ac) 0%, transparent));
+  }
+}
+
+/* Rótulos e links no mono espaçado do protótipo. */
+:root:is([data-theme="futurista"], [data-theme="espaco"]) :is(.eyebrow, .eyebrow-lg) {
+  letter-spacing: 0.12em;
+}
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .section-title {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text);
+}
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .more-link {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .stat-num {
+  font-size: 2.625rem;
+}
+/* Dois botões lado a lado no diálogo: na Chakra espaçada, "Sair sem salvar"
+   quebrava em duas linhas. Cada um ocupa conforme o próprio texto. */
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .dialog-actions > button {
+  flex: 1 1 auto;
+  padding-inline: 8px;
+  font-size: 0.8125rem;
+  letter-spacing: 0.05em;
+}
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .stat-unit {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+}
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .letter-chip {
+  border-radius: 6px;
+}
+
+/* Vidro: card fosco e translúcido, com a luz batendo na borda de cima.
+   `glass` é o gancho de quem tem cara de card sem usar a classe `card` (o
+   exercício da sessão, as conquistas). O desfoque pesa em celular mais velho;
+   foi pedido assim, igual ao protótipo. */
+:root:is([data-theme="futurista"], [data-theme="espaco"]) :is(.card, .glow, .glass) {
+  background: rgb(150 175 255 / 0.05);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+}
+/* O filete precisa do card posicionado; quem já é fixed/sticky/absolute fica. */
+:root:is([data-theme="futurista"], [data-theme="espaco"]) :is(.card, .glow, .glass):not(.fixed, .absolute, .sticky) {
+  position: relative;
+}
+:root:is([data-theme="futurista"], [data-theme="espaco"]) :is(.card, .glow, .glass)::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.35), transparent);
+  pointer-events: none;
+}
+/* Destaque (próximo treino, exercício ativo): a cor desce como um véu.
+   `!important` porque o próximo treino traz o fundo da cor do treino inline. */
+:root:is([data-theme="futurista"], [data-theme="espaco"]) :is(.glow, .glass-key) {
   border-color: color-mix(in oklab, var(--ac) 45%, transparent);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1);
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--ac) 12%, transparent),
+    rgb(150 175 255 / 0.03)
+  ) !important;
 }
 
 /* Constância: o medidor em segmentos à esquerda e quanto falta pra semana. */
-:root[data-theme="futurista"] .consistency-gauge,
-:root[data-theme="futurista"] .consistency-left {
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .consistency-gauge,
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .consistency-left {
   display: block;
 }
-:root[data-theme="futurista"] .consistency-ring {
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .consistency-ring {
   display: none;
 }
-:root[data-theme="futurista"] .consistency-head {
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .consistency-head {
   justify-content: flex-start;
   gap: 14px;
 }
-:root[data-theme="futurista"] .consistency-title {
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .consistency-title {
   font-family: var(--font-mono);
   font-size: var(--text-2xs);
   font-weight: 500;
@@ -1072,56 +1158,83 @@ a {
   letter-spacing: 0.12em;
   color: var(--ac);
 }
-:root[data-theme="futurista"] .consistency-sub {
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .consistency-sub {
   margin-top: 4px;
   font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text);
 }
-:root[data-theme="futurista"] .consistency-days {
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .consistency-days {
   gap: 5px;
 }
-:root[data-theme="futurista"] .consistency-day {
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .consistency-day {
   flex: 1;
   width: auto;
   height: 30px;
   border-radius: 6px;
 }
-:root[data-theme="futurista"] .consistency-day[data-done]:not(.border-dashed),
-:root[data-theme="futurista"] :is(.set-chip[data-state="done"], .done-mark) {
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .consistency-day[data-done]:not(.border-dashed),
+:root:is([data-theme="futurista"], [data-theme="espaco"]) :is(.set-chip[data-state="done"], .done-mark) {
   box-shadow: 0 0 12px color-mix(in oklab, var(--ac) 45%, transparent);
 }
-:root[data-theme="futurista"] .gauge-on {
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .gauge-on {
   filter: drop-shadow(0 0 4px color-mix(in oklab, var(--ac) 50%, transparent));
 }
 
 /* Série atual acesa por dentro; trilho da sessão com brilho. */
-:root[data-theme="futurista"] .set-chip[data-state="cur"] {
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .set-chip {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-md);
+}
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .set-chip[data-state="cur"] {
   box-shadow: inset 0 0 12px color-mix(in oklab, var(--ac) 25%, transparent);
 }
-:root[data-theme="futurista"] .session-progress > * {
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .session-progress > * {
   box-shadow: 0 0 8px color-mix(in oklab, var(--ac) 60%, transparent);
 }
 
-/* Descanso: sem o líquido; régua de 60 marcas por fora e arco mais grosso. */
-:root[data-theme="futurista"] .rest-ticks {
+/* Descanso: sem o líquido; régua de 60 marcas por fora e arco mais grosso.
+   O svg tem viewBox: a 220px tudo cresce 1,25×, daí o traço de 4,8 dar os 6px
+   do protótipo. */
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .rest-ticks {
   display: inline;
 }
-:root[data-theme="futurista"] :is(.rest-disc, .rest-liquid) {
+:root:is([data-theme="futurista"], [data-theme="espaco"]) :is(.rest-disc, .rest-liquid) {
   display: none;
 }
-:root[data-theme="futurista"] :is(.rest-track, .rest-arc) {
-  stroke-width: 6px;
+:root:is([data-theme="futurista"], [data-theme="espaco"]) :is(.rest-track, .rest-arc) {
+  stroke-width: 4.8px;
 }
-:root[data-theme="futurista"] .rest-check {
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .rest-check {
   stroke: var(--color-success);
 }
+/* Pular vira botão cheio na cor. `!important` vence a cor inline do componente. */
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .rest-skip {
+  background: var(--theme-ac) !important;
+  color: var(--color-on-accent) !important;
+  font-family: var(--font-display);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
 
-/* Navegação: aba ativa na cor, com um traço aceso em cima. */
-:root[data-theme="futurista"] .app-nav a[aria-current="page"] {
+/* Navegação: vidro mais fundo, rótulo em caixa alta e aba ativa na cor, com
+   um traço aceso em cima. */
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .app-nav {
+  background: color-mix(in oklab, var(--color-bg) 86%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .app-nav a span {
+  font-size: var(--text-3xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .app-nav a[aria-current="page"] {
   color: var(--theme-ac);
 }
-:root[data-theme="futurista"] .app-nav a[aria-current="page"]::before {
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .app-nav a[aria-current="page"]::before {
   content: "";
   position: absolute;
   top: -1px;
@@ -1133,26 +1246,251 @@ a {
   box-shadow: 0 0 10px var(--theme-ac);
 }
 
-/* Varredura ao abrir: cada bloco da tela aparece de cima pra baixo, em cascata.
-   `backwards` e não `both`: depois de entrar o recorte sai, senão cortaria a
-   sombra do botão e a onda dele. */
-:root[data-theme="futurista"] .anim-page {
+/* Descanso como nos protótipos (futurista e espaço): título em cima, anel de
+   220px, botões numa grade da largura do card e, no fim, "OK" na cor no lugar
+   do check, sem o arco cheio. */
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .rest-title {
+  display: block;
+  color: var(--theme-ac);
+}
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .rest-label {
+  display: none;
+}
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .rest-card {
+  width: min(330px, 100%);
+  padding: 22px 18px 18px;
+}
+/* `!important`: o tamanho do padrão vem inline do componente. */
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .rest-ring {
+  width: 220px !important;
+  height: 220px !important;
+}
+:root:is([data-theme="futurista"], [data-theme="espaco"]) :is(.rest-check, .rest-arc-done) {
+  display: none;
+}
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .rest-ok {
+  display: block;
+  font-size: var(--text-display-lg);
+  line-height: 1;
+  color: var(--theme-ac);
+}
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .rest-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.3fr;
+  width: 100%;
+}
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .rest-btns > button {
+  justify-content: center;
+  min-height: 48px;
+  font-family: var(--font-mono);
+}
+:root:is([data-theme="futurista"], [data-theme="espaco"]) .rest-btns > .rest-skip {
+  font-family: var(--font-display);
+}
+
+/* ── Tema espaço (Ajustes → Aparência) ──────────────────────────────────
+   O vidro do futurista sobre um céu: nebulosa no roxo do app, estrelas num
+   canvas (SpaceSky) e trocar de tela é viajar no eixo z (PageTransition).
+   Título em Exo 2, cor gelo pra todos os treinos, formas em pílula. Herda as
+   regras compartilhadas do bloco futurista; aqui só o que muda. Decisão em
+   docs/PLAN-tema-espaco.md. */
+:root[data-theme="espaco"] {
+  --color-bg: #02030a;
+  --color-surface: #0a0e1c;
+  --color-surface2: #10152a;
+  --color-border: rgb(170 190 255 / 0.14);
+  --color-text: #e9eefa;
+  --color-muted: #8b95ad;
+  --color-gold: #ffd27a;
+  --color-on-accent: #03050a;
+
+  --theme-ac: #bfd7ff;
+  --theme-ac-bg: color-mix(in oklab, var(--theme-ac) 10%, transparent);
+  --ac: var(--theme-ac);
+  --ac-bg: var(--theme-ac-bg);
+  --color-success: var(--theme-ac);
+
+  --font-display: var(--font-exo), var(--font-barlow), ui-sans-serif, system-ui, sans-serif;
+  --radius-card: 20px;
+  background: var(--color-bg);
+}
+
+/* Céu: atrás de tudo (z -1 sobre o fundo do <html>, que pinta antes). */
+.space-sky {
+  display: none;
+}
+:root[data-theme="espaco"] .space-sky {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.space-sky canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+/* A nuvem cresce com a profundidade da tela (--space-d, do SpaceSky): voltar
+   pra uma aba devolve o céu como estava. */
+.space-neb {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(55% 32% at 28% 78%, rgb(124 92 255 / 0.34), transparent 70%),
+    radial-gradient(45% 26% at 62% 70%, rgb(169 155 255 / 0.2), transparent 72%),
+    radial-gradient(70% 44% at 72% 22%, rgb(54 98 255 / 0.24), transparent 72%),
+    radial-gradient(38% 26% at 26% 30%, rgb(72 206 222 / 0.1), transparent 70%),
+    radial-gradient(30% 20% at 80% 88%, rgb(196 104 255 / 0.14), transparent 70%);
+  filter: blur(6px);
+  transform: scale(calc(1 + var(--space-d, 0) * 0.14)) translateY(calc(var(--space-d, 0) * -1.5%));
+  transition: transform var(--space-travel, 0ms) cubic-bezier(0.65, 0, 0.25, 1);
+  will-change: transform;
+}
+
+/* Viagem: a cópia da tela que sai. Indo, passa na frente; voltando, recua atrás. */
+.space-ghost {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  overflow: hidden;
+  pointer-events: none;
+}
+.space-ghost[data-behind] {
+  z-index: -1;
+}
+:root[data-theme="espaco"] .anim-page {
   animation: none;
 }
-:root[data-theme="futurista"] .anim-page > * > * {
-  animation: future-scan 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+
+/* Vidro mais escuro que o do futurista: as estrelas atrás são claras. */
+:root[data-theme="espaco"] :is(.card, .glow, .glass) {
+  background: rgb(10 14 32 / 0.55);
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
 }
-:root[data-theme="futurista"] .anim-page > * > :nth-child(2) { animation-delay: 60ms; }
-:root[data-theme="futurista"] .anim-page > * > :nth-child(3) { animation-delay: 120ms; }
-:root[data-theme="futurista"] .anim-page > * > :nth-child(4) { animation-delay: 180ms; }
-:root[data-theme="futurista"] .anim-page > * > :nth-child(n + 5) { animation-delay: 240ms; }
-@keyframes future-scan {
-  from {
-    clip-path: inset(0 0 100% 0);
-    opacity: 0.2;
-  }
-  to {
-    clip-path: inset(0 0 0 0);
-    opacity: 1;
+:root[data-theme="espaco"] :is(.glow, .glass-key) {
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--ac) 11%, rgb(10 14 32 / 0.55)),
+    rgb(10 14 32 / 0.55)
+  ) !important;
+  box-shadow: 0 0 40px color-mix(in oklab, var(--ac) 10%, transparent);
+}
+
+/* Pílula no que se toca; o primário com a luz vindo de cima. */
+:root[data-theme="espaco"] :is(.btn-primary, .btn-secondary, .btn-outline, .btn-neutral, .btn-danger, .btn-inverse, .letter-chip, .set-chip, .consistency-day, .rest-btns > button) {
+  border-radius: 9999px;
+}
+:root[data-theme="espaco"] .btn-primary {
+  background: radial-gradient(120% 140% at 50% 0%, color-mix(in oklab, var(--ac) 70%, white), var(--ac) 60%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.4),
+    0 8px 30px color-mix(in oklab, var(--ac) 35%, transparent);
+}
+
+/* Constância: a órbita no lugar dos segmentos. */
+:root[data-theme="espaco"] .consistency-gauge {
+  display: none;
+}
+:root[data-theme="espaco"] .consistency-orbit {
+  display: block;
+}
+
+/* Descanso: órbita fina, satélite na ponta do arco e um núcleo leve atrás do número. */
+:root[data-theme="espaco"] .rest-track {
+  stroke-width: 1px;
+}
+:root[data-theme="espaco"] .rest-arc {
+  stroke-width: 2.4px;
+}
+:root[data-theme="espaco"] :is(.rest-sat, .rest-core) {
+  display: inline;
+}
+:root[data-theme="espaco"] .rest-sat {
+  filter: drop-shadow(0 0 6px color-mix(in oklab, var(--theme-ac) 70%, transparent));
+}
+
+/* Evolução: cada dia é uma estrela; treinado acende. */
+:root[data-theme="espaco"] .heat-cell {
+  position: relative;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+:root[data-theme="espaco"] .heat-cell::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3px;
+  height: 3px;
+  margin: -1.5px;
+  border-radius: 50%;
+  background: var(--color-muted);
+  opacity: 0.45;
+}
+:root[data-theme="espaco"] .heat-cell[data-level="trained"]::after {
+  width: 7px;
+  height: 7px;
+  margin: -3.5px;
+  background: var(--theme-ac);
+  opacity: 1;
+  box-shadow: 0 0 6px var(--theme-ac);
+}
+:root[data-theme="espaco"] .heat-cell[data-today]:not([data-level="trained"])::after {
+  width: 5px;
+  height: 5px;
+  margin: -2.5px;
+  background: var(--color-text);
+  opacity: 0.9;
+}
+:root[data-theme="espaco"] .heat-cell[data-level="future"]::after {
+  display: none;
+}
+
+/* Navegação: no lugar do traço da aba, um trilho com um ponto por aba e um
+   marcador que anda até a aba acesa (a posição vem do BottomNav, --tab-i). */
+:root[data-theme="espaco"] .app-nav a[aria-current="page"]::before {
+  content: none;
+}
+:root[data-theme="espaco"] .app-nav ul {
+  position: relative;
+}
+:root[data-theme="espaco"] .app-nav ul::before {
+  content: "";
+  position: absolute;
+  left: calc(12.5% - 2.5px);
+  right: calc(12.5% - 2.5px);
+  top: -3px;
+  height: 5px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle, var(--color-muted) 0 1.5px, transparent 2px) 0 50% / 5px 5px no-repeat,
+    radial-gradient(circle, var(--color-muted) 0 1.5px, transparent 2px) 33.333% 50% / 5px 5px no-repeat,
+    radial-gradient(circle, var(--color-muted) 0 1.5px, transparent 2px) 66.667% 50% / 5px 5px no-repeat,
+    radial-gradient(circle, var(--color-muted) 0 1.5px, transparent 2px) 100% 50% / 5px 5px no-repeat,
+    linear-gradient(90deg, var(--color-border), color-mix(in oklab, var(--theme-ac) 40%, var(--color-border)), var(--color-border)) 50% 50% / 100% 1px no-repeat;
+}
+:root[data-theme="espaco"] .app-nav ul[data-tab]::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: calc(12.5% + var(--tab-i) * 25%);
+  width: 28px;
+  height: 7px;
+  margin-left: -14px;
+  border-radius: 4px;
+  background: var(--theme-ac);
+  box-shadow: 0 0 12px var(--theme-ac);
+  pointer-events: none;
+  transition: left 0.7s cubic-bezier(0.65, 0, 0.25, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .space-neb,
+  :root[data-theme="espaco"] .app-nav ul[data-tab]::after {
+    transition: none;
   }
 }

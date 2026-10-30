@@ -21,11 +21,12 @@ const STYLE_LABEL: Record<ThemeStyle, string> = {
   padrao: "Padrão",
   tatico: "Tático",
   futurista: "Futurista",
+  espaco: "Espaço",
 };
 
 /**
  * "Aparência": o estilo e, no tático e no futurista, a cor única (e as scanlines
- * do tático). A troca vale na hora (atributos do <html>), sem recarregar.
+ * do tático). O espaço tem cor fixa. A troca vale na hora (atributos do <html>), sem recarregar.
  */
 export function ThemeSettings() {
   // null até o mount: a preferência mora no localStorage (regra 10).
@@ -46,9 +47,11 @@ export function ThemeSettings() {
     <SettingsGroup
       title="Aparência"
       footer={
-        style && style !== "padrao"
-          ? `No ${STYLE_LABEL[style].toLowerCase()}, todos os treinos ficam na cor escolhida.`
-          : undefined
+        style === "espaco"
+          ? "No espaço, todos os treinos ficam na mesma cor."
+          : style && style !== "padrao"
+            ? `No ${STYLE_LABEL[style].toLowerCase()}, todos os treinos ficam na cor escolhida.`
+            : undefined
       }
     >
       <div className="border-b border-border px-4 py-3">

@@ -40,7 +40,7 @@ export function AchievementsCard({ data }: { data: HomeAchievements }) {
     >
       <Link
         href="/metricas"
-        className="tap flex flex-col rounded-card border border-ac/40 bg-ac/14 px-3.5 py-2.5 active:scale-[0.99]"
+        className="glass tap flex flex-col rounded-card border border-ac/40 bg-ac/14 px-3.5 py-2.5 active:scale-[0.99]"
       >
         <span className="flex items-center gap-1.5 font-mono text-2xs uppercase tracking-wide text-ac">
           <MedalIcon className="h-3.5 w-3.5" />
@@ -48,13 +48,13 @@ export function AchievementsCard({ data }: { data: HomeAchievements }) {
         </span>
         <span className="mt-1 flex items-baseline gap-1.5">
           <span
-            className="display tnum inline-block text-display leading-none text-ac"
+            className="stat-num display tnum inline-block text-display leading-none text-ac"
             style={bump(t, BADGE_COUNT.start + BADGE_COUNT.ms)}
             aria-label={`${badge.value} ${badge.unit}`}
           >
             {countAt(t, badge.value, BADGE_COUNT.start, BADGE_COUNT.ms)}
           </span>
-          <span className="text-sm font-semibold">{badge.unit}</span>
+          <span className="stat-unit text-sm font-semibold">{badge.unit}</span>
         </span>
         {badge.next && <span className="mt-1 text-xs text-muted">{badge.next}</span>}
       </Link>
@@ -62,7 +62,7 @@ export function AchievementsCard({ data }: { data: HomeAchievements }) {
       {record && (
         <Link
           href="/metricas"
-          className="tap flex min-w-0 flex-col rounded-card border px-3.5 py-2.5 active:scale-[0.99]"
+          className="glass tap flex min-w-0 flex-col rounded-card border px-3.5 py-2.5 active:scale-[0.99]"
           style={{
             borderColor: "color-mix(in oklab, var(--color-gold) 25%, var(--color-border))",
             background: "color-mix(in oklab, var(--color-gold) 5%, var(--color-surface))",
@@ -74,13 +74,13 @@ export function AchievementsCard({ data }: { data: HomeAchievements }) {
           </span>
           <span className="mt-1 flex items-baseline gap-1.5">
             <span
-              className="display tnum inline-block text-display leading-none text-gold"
+              className="stat-num display tnum inline-block text-display leading-none text-gold"
               style={bump(t, RECORD_COUNT.start + RECORD_COUNT.ms)}
               aria-label={`${record.value}${u ? " segundos" : " reps"}`}
             >
               {countAt(t, record.value, RECORD_COUNT.start, RECORD_COUNT.ms, record.previous)}
             </span>
-            <span className="text-sm font-semibold">{u || "reps"}</span>
+            <span className="stat-unit text-sm font-semibold">{u || "reps"}</span>
             <span
               className="ml-auto rounded-full bg-gold/14 px-2 py-0.5 font-mono text-2xs text-gold transition-opacity"
               style={{ opacity: t >= RECORD_COUNT.start + RECORD_COUNT.ms ? 1 : 0 }}

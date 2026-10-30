@@ -17,7 +17,7 @@ export function SettingsGroup({
   return (
     <section className={`mb-6 ${className}`}>
       {title && (
-        <h2 className="eyebrow-lg mb-2 px-1">
+        <h2 className="section-title eyebrow-lg mb-2 px-1">
           {title}
         </h2>
       )}

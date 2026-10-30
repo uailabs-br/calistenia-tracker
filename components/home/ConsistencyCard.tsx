@@ -6,13 +6,15 @@ import type { WeekStatus } from "@/lib/db/queries/metrics";
 import { getWeekGoal } from "@/lib/utils/profile";
 import { ProgressRing } from "@/components/ui/ProgressRing";
 import { SegmentGauge } from "@/components/ui/SegmentGauge";
+import { OrbitGauge } from "@/components/ui/OrbitGauge";
 
 const DAY_LETTERS = ["S", "T", "Q", "Q", "S", "S", "D"]; // Seg→Dom
 
 /**
  * Constância: anel da meta semanal + streak + mini-calendário da semana.
  * O tema futurista troca o anel pelo SegmentGauge, à esquerda, e mostra quanto
- * falta: os dois desenhos vão no HTML e o CSS escolhe (classes `consistency-*`).
+ * falta; o espaço, pela OrbitGauge. Os desenhos vão todos no HTML e o CSS
+ * escolhe (classes `consistency-*`).
  */
 export function ConsistencyCard({
   streak,
@@ -35,15 +37,16 @@ export function ConsistencyCard({
       className="card tap block px-4 py-3 active:scale-[0.99]"
     >
       <div className="consistency-head flex items-center justify-between">
-        <SegmentGauge value={weekStatus.done} total={goal} className="consistency-gauge hidden" />
+        <SegmentGauge value={weekStatus.done} total={goal} size={84} className="consistency-gauge hidden" />
+        <OrbitGauge value={weekStatus.done} total={goal} size={84} className="consistency-orbit hidden" />
         <div>
           <p className="consistency-title text-sm font-semibold">Constância</p>
           <p className="consistency-sub mt-0.5 text-xs text-muted">
             {complete
-              ? "meta da semana batida 🎉"
+              ? "meta da semana batida"
               : streak > 0
-                ? `${streak} ${streak === 1 ? "semana" : "semanas"} seguidas 🔥`
-                : "sua sequência começa aqui 💪"}
+                ? `${streak} ${streak === 1 ? "semana" : "semanas"} seguidas`
+                : "sua sequência começa aqui"}
           </p>
           {left > 0 && (
             <p className="consistency-left mt-0.5 hidden text-xs text-muted">

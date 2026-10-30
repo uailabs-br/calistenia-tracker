@@ -24,12 +24,18 @@ export function BottomNav() {
   // Onboarding e landing são tela cheia: sem navegação até a pessoa ter um plano.
   if (isChromeless(pathname)) return null;
   const current = activeTab(pathname);
+  // Posição da aba acesa: o tema espaço anda com um marcador num trilho por cima.
+  const index = items.findIndex((i) => i.href === current);
   return (
     <nav
       className="app-nav fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface/95 backdrop-blur"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <ul className="mx-auto flex max-w-md">
+      <ul
+        className="mx-auto flex max-w-md"
+        data-tab={index >= 0 ? "" : undefined}
+        style={{ "--tab-i": Math.max(0, index) } as React.CSSProperties}
+      >
         {items.map(({ href, label, Icon }) => {
           const active = current === href;
           return (

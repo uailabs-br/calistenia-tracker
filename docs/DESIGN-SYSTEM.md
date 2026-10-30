@@ -148,22 +148,26 @@ cheia entra por opacidade, nunca com flash ou corte seco: no celular isso lê co
 
 ## Temas
 
-Três estilos, escolhidos em Ajustes → Aparência: **padrão** (o de sempre), **tático**
-(escuro militar, cantos retos, caixa alta, scanlines) e **futurista** (vidro translúcido
-sobre brilho na cor, Chakra Petch, varredura ao abrir). Decisões em
-[PLAN-tema-tatico.md](PLAN-tema-tatico.md) e [PLAN-tema-futurista.md](PLAN-tema-futurista.md).
+Quatro estilos, escolhidos em Ajustes → Aparência: **padrão** (o de sempre), **tático**
+(escuro militar, cantos retos, caixa alta, scanlines), **futurista** (vidro translúcido
+sobre brilho na cor, Chakra Petch em título, número e botão) e **espaço** (o vidro do
+futurista sobre um céu com nebulosa e estrelas, Exo 2, e trocar de tela é viajar no eixo z).
+Decisões em [PLAN-tema-tatico.md](PLAN-tema-tatico.md),
+[PLAN-tema-futurista.md](PLAN-tema-futurista.md) e [PLAN-tema-espaco.md](PLAN-tema-espaco.md).
 
-- O tema mora em atributos do `<html>`: `data-theme` (`tatico` ou `futurista`), `data-tone`
+- O tema mora em atributos do `<html>`: `data-theme` (`tatico`, `futurista` ou `espaco`), `data-tone`
   (no tático: verde, ciano, ambar, oliva, gelo; no futurista: ciano, lilas, limao, laranja,
-  gelo) e `data-scanlines` (só tático). No padrão não há atributo nenhum.
+  gelo; o espaço não tem) e `data-scanlines` (só tático). No padrão não há atributo nenhum.
 - Quem marca é o boot script do `<head>` (`THEME_BOOT_SCRIPT` em `lib/utils/theme.ts`), antes
   da primeira pintura. Ajustes chama `setThemePref`, que grava e reaplica na hora.
 - **Nenhum componente decide nada pelo tema.** Cada tema é um bloco no fim de `globals.css`
   que redefine os tokens (cor, raio, fonte display) e restiliza utilitários e alguns ganchos
   de classe. Componente não lê o tema em JS: o HTML estático tem que ser o mesmo em todos
   (regra 10). Onde o futurista troca o desenho (constância, descanso), o componente
-  renderiza as duas versões e o CSS escolhe.
-- **Cor do treino trocável:** no tático e no futurista todos os treinos (e as categorias de
+  renderiza as duas versões e o CSS escolhe. Exceção do espaço: `SpaceSky` e
+  `PageTransition` leem o `data-theme` em JS, mas só depois do mount (efeito e ref), pra
+  ligar o céu e a viagem; o render não muda.
+- **Cor do treino trocável:** no tático, no futurista e no espaço todos os treinos (e as categorias de
   skill) ficam na cor do tom. Por isso toda cor de treino passa por `accentVars`, `themedAccent` ou
   `themedAccentBg`, que escrevem `var(--theme-ac, <hex do plano>)`. No padrão
   `--theme-ac` não existe e vale o hex.
@@ -190,7 +194,23 @@ No futurista, além de `set-chip`, `done-mark`, `session-progress` e `app-nav` (
 | `consistency-gauge` / `consistency-ring` | `ConsistencyCard` | mostra o `SegmentGauge` à esquerda e esconde o anel |
 | `consistency-title` / `-sub` / `-left` / `-days` / `-day` | `ConsistencyCard` | rótulo mono na cor, "faltam N treinos", dias quadrados de largura cheia |
 | `rest-ticks` / `rest-disc` / `rest-liquid` / `rest-track` / `rest-arc` / `rest-check` | `RestTimer` | régua de 60 marcas, sem líquido, arco grosso, check na cor |
-| `anim-page` | `PageTransition` | varredura de cima pra baixo nos blocos da tela |
+| `glass` / `glass-key` | exercício da sessão, conquistas, caixa do descanso | vidro fosco com filete de luz; `-key` com o véu na cor (o mesmo de `card` e `glow`) |
+| `section-title` | `SettingsGroup`, "Depois" | título de seção em Chakra, caixa alta |
+| `more-link` | "Ver exercícios", "Mostrar mais" | mono em caixa alta |
+| `stat-unit` / `letter-chip` | unidade das conquistas / letra do próximo treino | caixa alta / quadrado arredondado |
+| `rest-skip` | "Pular" do descanso | botão cheio na cor |
+| `rest-title` / `rest-label` / `rest-card` / `rest-ring` / `rest-ok` / `rest-arc-done` / `rest-btns` | `RestTimer` | descanso do protótipo: título em cima, anel de 220px, "OK" no fim, botões em grade |
+
+O espaço herda tudo isso (os seletores do futurista valem pros dois) e troca:
+
+| Classe | Onde | No espaço |
+|---|---|---|
+| `space-sky` / `space-neb` | `SpaceSky` | céu fixo atrás de tudo; a nebulosa cresce com a profundidade da tela |
+| `space-ghost` | `PageTransition` | cópia da tela que sai, durante a viagem |
+| `consistency-orbit` | `ConsistencyCard` | mostra a `OrbitGauge` (uma lua por treino da meta) no lugar dos segmentos |
+| `rest-sat` / `rest-core` | `RestTimer` | satélite na ponta do arco e núcleo atrás do número |
+| `heat-cell` + `data-level` | `ConsistencyHeatmap` | cada dia vira estrela; treinado acende |
+| `app-nav ul` + `data-tab` / `--tab-i` | `BottomNav` | trilho com um ponto por aba e marcador que anda até a acesa |
 
 A landing usa a cor fixa (`DEFAULT_ACCENT` literal): quem chega nela ainda não escolheu tema.
 

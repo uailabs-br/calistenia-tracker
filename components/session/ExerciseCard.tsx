@@ -368,7 +368,7 @@ export function ExerciseCard({
   if (!active) {
     return (
       <div
-        className={`flex items-stretch rounded-card border bg-surface transition-colors duration-200 ${
+        className={`glass flex items-stretch rounded-card border bg-surface transition-colors duration-200 ${
           done ? "border-ac" : "border-border"
         } ${kick === "on" ? "anim-kick" : ""}`}
         style={accentVars(accent)}
@@ -436,7 +436,7 @@ export function ExerciseCard({
   return (
     <div
       ref={cardRef}
-      className={`scroll-mt-20 rounded-card border border-ac bg-surface px-4 py-4 ${kick === "on" ? "anim-kick" : kick === "done" ? "" : "anim-fade-in-up"}`}
+      className={`glass glass-key scroll-mt-20 rounded-card border border-ac bg-surface px-4 py-4 ${kick === "on" ? "anim-kick" : kick === "done" ? "" : "anim-fade-in-up"}`}
       style={accentVars(accent)}
       {...kickProps}
     >

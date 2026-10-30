@@ -79,7 +79,7 @@ export function NextWorkoutCard({
     >
       <div className="flex items-center gap-2">
         <span
-          className="rounded-full px-2 py-0.5 font-mono text-xs"
+          className="letter-chip rounded-full px-2 py-0.5 font-mono text-xs"
           style={{ background: themedAccent(workout.accent), color: "var(--color-on-accent)" }}
         >
           {workout.label}
@@ -151,7 +151,7 @@ export function NextWorkoutCard({
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="tap mt-2 flex w-full items-center justify-center gap-1 py-2 text-sm text-muted"
+        className="more-link tap mt-2 flex w-full items-center justify-center gap-1 py-2 text-sm text-muted"
       >
         {open ? "Ocultar exercícios" : "Ver exercícios"}
         <ChevronDownIcon

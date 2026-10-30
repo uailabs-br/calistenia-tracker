@@ -9,7 +9,7 @@
 
 export const THEME_KEY = "calistenia:theme";
 
-export const THEME_STYLES = ["padrao", "tatico", "futurista"] as const;
+export const THEME_STYLES = ["padrao", "tatico", "futurista", "espaco"] as const;
 export type ThemeStyle = (typeof THEME_STYLES)[number];
 
 /** Cor única do tema tático. Os valores ficam no CSS (`--tone-*`), aqui só o id. */
@@ -88,10 +88,14 @@ interface AttrTarget {
   removeAttribute(name: string): void;
 }
 
-/** Escreve os atributos que o CSS lê. No padrão, nenhum: o <html> fica como sempre foi. */
+/**
+ * Escreve os atributos que o CSS lê. No padrão, nenhum: o <html> fica como sempre foi.
+ * O espaço tem uma cor só (gelo), então não marca tom.
+ */
 export function applyThemePref(el: AttrTarget, pref: ThemePref): void {
-  if (pref.style === "padrao") {
-    el.removeAttribute("data-theme");
+  if (pref.style === "padrao" || pref.style === "espaco") {
+    if (pref.style === "espaco") el.setAttribute("data-theme", "espaco");
+    else el.removeAttribute("data-theme");
     el.removeAttribute("data-tone");
     el.removeAttribute("data-scanlines");
     return;
@@ -128,4 +132,4 @@ export const THEME_BOOT_SCRIPT = `(function(){try{var p=JSON.parse(localStorage.
   FUTURE_TONES
 )};d.setAttribute("data-theme","futurista");d.setAttribute("data-tone",f.indexOf(p.futureTone)>=0?p.futureTone:${JSON.stringify(
   DEFAULT_THEME.futureTone
-)});}}catch(e){}})();`;
+)});}else if(p.style==="espaco"){d.setAttribute("data-theme","espaco");}}catch(e){}})();`;
