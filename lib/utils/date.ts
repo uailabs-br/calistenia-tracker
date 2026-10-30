@@ -14,11 +14,6 @@ export function shortDate(input: string | number): string {
   return `${day}/${m}`;
 }
 
-/** Dia da semana 0-6 (0 = domingo), local. */
-export function weekdayOf(d: Date = new Date()): number {
-  return d.getDay();
-}
-
 /** Diferença em dias entre duas dateKeys (b - a). */
 export function daysBetween(a: string, b: string): number {
   const da = new Date(a + "T00:00:00").getTime();

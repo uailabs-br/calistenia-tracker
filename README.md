@@ -144,7 +144,7 @@ lib/domain/           # parseTarget, volume, nextWorkout (sequência de treinos)
 lib/plan/             # plan.json (fonte de verdade), schema Zod, loader, resolve, legacyPlan (formato antigo),
                       # catalog.json (catálogo de exercícios), skills/progressions, import/export pra IA
 lib/utils/            # date, id, profile, hooks (wake lock, a11y de modal)
-scripts/              # validate-plan, generate-icons
+scripts/              # validate-plan, merge-exercise-ids
 test/                 # Vitest (unitários) + fixtures/ (backups de exemplo pra teste manual)
 public/               # ícones e manifest do PWA (sw.js é gerado no build)
 docs/                 # PRD, planos, decisões por feature e acompanhamento — ver docs/README.md

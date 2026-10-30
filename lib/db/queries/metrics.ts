@@ -10,7 +10,6 @@ import {
   localDateKey,
   shiftDays,
   weekStartKey,
-  weekdayOf,
 } from "@/lib/utils/date";
 
 /** Treinos concluídos (plano + avulso), sem os apagados. */
@@ -289,7 +288,7 @@ export async function getWeekStatus(): Promise<WeekStatus> {
   const sessions = await getCompletedSessions();
   const today = localDateKey();
   const monday = weekStartKey(today);
-  const todayWeekday = weekdayOf();
+  const todayWeekday = new Date().getDay();
 
   const thisWeek = sessions.filter((s) => {
     const diff = daysBetween(monday, s.date);
@@ -300,7 +299,7 @@ export async function getWeekStatus(): Promise<WeekStatus> {
   // prioridade sobre avulso quando o mesmo dia tem os dois).
   const doneWeekdays = new Map<number, "plan" | "freeform">();
   for (const s of thisWeek) {
-    const wd = weekdayOf(new Date(s.date + "T00:00:00"));
+    const wd = new Date(s.date + "T00:00:00").getDay();
     const src: "plan" | "freeform" = s.source === "freeform" ? "freeform" : "plan";
     if (doneWeekdays.get(wd) !== "plan") doneWeekdays.set(wd, src);
   }

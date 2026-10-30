@@ -121,13 +121,9 @@ export async function getLatestRecord(): Promise<LatestRecord | null> {
 /**
  * Recordes batidos entre duas datas (dateKey, inclusivo), um por exercício: o
  * maior valor do período, partindo do melhor de ANTES do período (o salto da
- * semana inteira, não o da última sessão).
+ * semana inteira, não o da última sessão). Recebe o histórico já refeito: o
+ * histórico de semanas refaz uma vez só.
  */
-export async function getRecordsBetween(from: string, to: string): Promise<LatestRecord[]> {
-  return recordsBetween(await replayRecords(), from, to);
-}
-
-/** O mesmo sobre um histórico já refeito (o histórico de semanas refaz uma vez só). */
 export function recordsBetween(all: LatestRecord[], from: string, to: string): LatestRecord[] {
   const byExercise = new Map<string, LatestRecord>();
   for (const r of all) {

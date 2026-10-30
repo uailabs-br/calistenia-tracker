@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { db, type Session, type ExerciseLog, type CustomExercise } from "@/lib/db/schema";
-import { plan, PLAN_OVERRIDE_KEY } from "@/lib/plan/loader";
+import { plan, parseStoredPlan, readPlanOverrideRaw } from "@/lib/plan/loader";
+import { applyPlan, hasPlanOverride, hasRecoveryOptOut } from "@/lib/plan/importPlan";
 import { legacyWeekdayMapFromStorage } from "@/lib/plan/legacyPlan";
 import { SKILL_CATEGORIES } from "@/lib/plan/skills";
 
@@ -119,6 +120,9 @@ const backupSchema = z.object({
   exerciseLogs: z.array(logSchema),
   // backups anteriores aos exercícios criados pelo usuário não têm.
   customExercises: z.array(customExerciseSchema).optional().default([]),
+  // Plano em vigor (o override do localStorage, cru). Sem ele, quem montou o treino
+  // com a IA e restaura em outro aparelho recebe o histórico mas perde o plano.
+  plan_override: z.string().nullable().optional().default(null),
 });
 
 export type Backup = z.infer<typeof backupSchema>;
@@ -145,6 +149,7 @@ export async function exportAll(): Promise<Backup> {
       extra_sets: l.extra_sets ?? null,
     })),
     customExercises,
+    plan_override: readPlanOverrideRaw(),
   };
 }
 
@@ -165,6 +170,8 @@ export interface ImportResult {
   sessionsUpdated: number;
   logsAdded: number;
   logsUpdated: number;
+  /** O plano do backup foi aplicado: quem chamou precisa recarregar o app. */
+  planRestored: boolean;
 }
 
 /** Sessão de backup antigo ganha `workout_id` pela mesma regra da migração do banco. */
@@ -180,13 +187,18 @@ function normalizeSession(
   return { ...rest, workout_id: workoutId } as Session;
 }
 
-function readPlanOverrideRaw(): string | null {
-  if (typeof window === "undefined") return null;
-  try {
-    return localStorage.getItem(PLAN_OVERRIDE_KEY);
-  } catch {
-    return null;
-  }
+/**
+ * Aplica o plano do backup só se este aparelho não tem plano próprio: um
+ * override local é escolha de quem está aqui, e voltar ao padrão de propósito
+ * também (mesma regra do PlanBoot).
+ */
+function restorePlan(raw: string | null): boolean {
+  if (!raw || typeof window === "undefined") return false;
+  if (hasPlanOverride() || hasRecoveryOptOut()) return false;
+  const restored = parseStoredPlan(raw);
+  if (!restored) return false;
+  applyPlan(restored, { recovered: true });
+  return true;
 }
 
 /**
@@ -209,6 +221,7 @@ export async function importMerge(raw: unknown): Promise<ImportResult> {
     sessionsUpdated: 0,
     logsAdded: 0,
     logsUpdated: 0,
+    planRestored: false,
   };
 
   await db.transaction("rw", db.sessions, db.exerciseLogs, db.customExercises, async () => {
@@ -240,6 +253,8 @@ export async function importMerge(raw: unknown): Promise<ImportResult> {
     }
   });
 
+  // Depois do banco: se a transação falhar, o plano não muda sozinho.
+  result.planRestored = restorePlan(data.plan_override);
   return result;
 }
 

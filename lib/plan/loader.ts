@@ -12,20 +12,29 @@ export const PLAN_OVERRIDE_KEY = "calistenia:plan-override";
  * veio de fora do build. Formato antigo (agenda por weekday) é convertido.
  */
 function loadPlan(): Plan {
-  if (typeof window !== "undefined") {
-    try {
-      const raw = localStorage.getItem(PLAN_OVERRIDE_KEY);
-      if (raw) {
-        const json: unknown = JSON.parse(raw);
-        const candidate = isLegacyPlan(json) ? convertLegacyPlan(json) : json;
-        const result = planSchema.safeParse(candidate);
-        if (result.success) return result.data;
-      }
-    } catch {
-      /* override corrompido — cai pro plano padrão */
-    }
+  const raw = readPlanOverrideRaw();
+  return (raw && parseStoredPlan(raw)) || (planData as unknown as Plan);
+}
+
+/** Override de plano do localStorage, cru. Ausente fora do navegador. */
+export function readPlanOverrideRaw(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem(PLAN_OVERRIDE_KEY);
+  } catch {
+    return null;
   }
-  return planData as unknown as Plan;
+}
+
+/** Plano guardado (override ou backup) validado; corrompido ou inválido vira null. */
+export function parseStoredPlan(raw: string): Plan | null {
+  try {
+    const json: unknown = JSON.parse(raw);
+    const result = planSchema.safeParse(isLegacyPlan(json) ? convertLegacyPlan(json) : json);
+    return result.success ? result.data : null;
+  } catch {
+    return null;
+  }
 }
 
 export const plan = loadPlan();

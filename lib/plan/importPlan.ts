@@ -1,5 +1,5 @@
 import { planSchema, type Plan } from "./schema";
-import { PLAN_OVERRIDE_KEY } from "./loader";
+import { PLAN_OVERRIDE_KEY, readPlanOverrideRaw } from "./loader";
 import { convertLegacyPlan, isLegacyPlan } from "./legacyPlan";
 import { markPlanApplied } from "@/lib/utils/planSwap";
 
@@ -199,6 +199,5 @@ export function hasRecoveryOptOut(): boolean {
 }
 
 export function hasPlanOverride(): boolean {
-  if (typeof window === "undefined") return false;
-  return localStorage.getItem(PLAN_OVERRIDE_KEY) !== null;
+  return readPlanOverrideRaw() !== null;
 }

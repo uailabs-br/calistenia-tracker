@@ -9,14 +9,13 @@ Serwist (PWA), Zod. Visão geral em [README.md](README.md); documentação em [d
 
 ```bash
 npm run dev            # http://localhost:3000
-npm test               # Vitest (629 testes) — o gate principal
+npm test               # Vitest — o gate principal
 npx tsc --noEmit       # typecheck (strict)
 npm run validate:plan  # valida plan.json + catalog.json contra o schema Zod
-npm run build          # valida o plano e depois builda (o build falha se o plano estiver inválido)
+npm run build          # valida o plano e depois builda (falha se o plano estiver inválido)
 ```
 
-`npm run lint` está no `package.json` mas **não há config de ESLint** no repo — não use.
-Os gates reais são `npm test`, `npx tsc --noEmit` e `npm run validate:plan`.
+`npm run lint` não funciona: não há config de ESLint no repo.
 
 ## Regras que não se quebram
 
@@ -47,13 +46,14 @@ Se for ler um exercício de um log, use o resolver — não re-derive do plano v
 
 **6. Treinos são identificados por letra** (A, B, C…), não por dia da semana. A ordem do plano
 *é* a sequência: o próximo é o seguinte ao último concluído, em ciclo, sem limite de treinos.
-Não existe mais `weekday` no modelo (removido na migração Dexie v5) nem "dia de folga". Se
-encontrar `weekday` ou `getDayByWeekday` em algum documento, é registro histórico — ver a nota
-sobre docs vivos vs. registros em [docs/README.md](docs/README.md).
+Não existe `weekday` no modelo nem "dia de folga". Onde `weekday` ainda aparece, é legado:
+conversão de plano e backup antigos no código, registro histórico nos docs (ver
+[docs/README.md](docs/README.md)).
 
-**7. Migração de Dexie é append-only.** Hoje na **v5**. Campo opcional sem índice não precisa
-de `.upgrade()` (IndexedDB não indexa `undefined`); campo indexado ou renomeado precisa, e
-precisa de teste em `test/migration.test.ts`. Nunca editar uma `version()` já publicada.
+**7. Migração de Dexie é append-only** (versão atual em `lib/db/schema.ts`). Campo opcional sem
+índice não precisa de `.upgrade()` (IndexedDB não indexa `undefined`); campo indexado ou
+renomeado precisa, e precisa de teste em `test/migration.test.ts`. Nunca editar uma `version()`
+já publicada.
 
 **8. Série extra conta em volume e recorde, mas não na progressão.** Deliberado: uma série
 cansada a mais não deve reprovar um treino que cumpriu o plano.
@@ -61,15 +61,40 @@ cansada a mais não deve reprovar um treino que cumpriu o plano.
 **9. O `plan.json` bundlado é o plano genérico (`iniciante-com-barra`), não o do autor.** O plano
 pessoal está em `lib/plan/plans/` e as sementes em `lib/plan/seeds/`; `PlanBoot` reaplica o plano
 certo lendo o `plan_day_id` do histórico. Duas armadilhas: o `vitest.config.ts` **aponta
-`plan.json` pro plano pessoal** (seis testes e o `PLAN_SKILL_REFS` dependem das declarações de
-`skill_ref` dele), então `test/seeds.test.ts` lê o bundlado do disco; e a posição de skill é
-`max(logs, manual)`, então um palpite alto do onboarding **não se corrige sozinho**: na dúvida,
-grave a menor etapa.
+`plan.json` pro plano pessoal** (os testes de skill e o `PLAN_SKILL_REFS` dependem das
+declarações de `skill_ref` dele), então `test/seeds.test.ts` lê o bundlado do disco; e a posição
+de skill é `max(logs, manual)`, então um palpite alto do onboarding **não se corrige sozinho**:
+na dúvida, grave a menor etapa.
 
 **10. Nada derivado do plano pode ser renderizado antes do mount.** `loadPlan()` lê o override do
 localStorage, que não existe no HTML estático: renderizar nome, número de treinos ou conteúdo do
 plano no primeiro render quebra a hidratação (React #418) e repinta a tela. Use
 `lib/utils/usePlanReady.ts` ou estado preenchido em `useEffect`.
+
+## Escrever o mínimo
+
+Antes de escrever código, pare no primeiro degrau que resolve por inteiro:
+
+1. Precisa existir? Opção, flexibilidade ou código "pra depois" que ninguém pediu fica de fora;
+   diga em uma linha o que deixou.
+2. Já existe no repo (query, repositório, componente de `components/ui/`, helper)? Use do jeito
+   que o código ao redor usa.
+3. A plataforma resolve (input nativo, `Intl`, CSS)? Use, a não ser que exista componente da casa.
+4. Uma dependência já instalada resolve? Use. Nunca adicione dependência por poucas linhas.
+5. Só então, o mínimo que funciona.
+
+- Mínimo na solução, completo na mudança: quem chama, testes e fixtures que a mudança quebra
+  entram junto.
+- Bug: antes de editar, procure todo lugar que chama a função e corrija a causa uma vez, no
+  código compartilhado.
+- Nunca entra no corte: validação de import e backup, tratamento de erro que evita perda de
+  dado, acessibilidade e as regras acima.
+- Feche cada resposta que mexe em código com uma ou duas linhas: o que ficou de fora ou não foi
+  checado, e o risco que importa.
+- Parece excesso, mas é de propósito — não corte nem sugira cortar: a camada de repositórios
+  (regra 2), UUID/`updated_at`/`deleted_at` (regra 3), o `snapshot` nos logs (regra 5), a
+  conversão de `weekday` legado (regra 6), as `version()` antigas do Dexie (regra 7) e o
+  `PlanBoot` (regra 9).
 
 ## Guard-rails de produto
 

@@ -11,7 +11,6 @@ import { upsertLog, addExtraSet } from "@/lib/db/repositories/logs";
 import {
   cleanExerciseName,
   createCustomExercise,
-  customToTemplate,
   deleteCustomExercise,
   getCustomExercises,
   CUSTOM_NAME_MAX,
@@ -159,7 +158,7 @@ describe("resolveAddedExercise", () => {
     await deleteCustomExercise(c.id);
     const all = await db.customExercises.toArray();
     expect(resolveAddedExercise(c.id, all)).toBeNull();
-    const snap = snapshotOf(templateToPlanExercise(customToTemplate(c)));
+    const snap = snapshotOf(templateToPlanExercise(c));
     expect(resolveAddedExercise(c.id, all, snap)?.name).toBe("Meu");
   });
 

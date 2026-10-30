@@ -55,10 +55,6 @@ export function saveOnboarding(answers: OnboardingAnswers | null): void {
   localStorage.setItem(KEY, JSON.stringify(value));
 }
 
-export function clearOnboarding(): void {
-  localStorage.removeItem(KEY);
-}
-
 /** Já avisamos que o plano deste id se perdeu? Evita repetir o aviso a cada abertura. */
 export function wasPlanLostNotified(planId: string): boolean {
   if (typeof window === "undefined") return true;

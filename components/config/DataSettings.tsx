@@ -8,6 +8,7 @@ import { SettingsRow } from "@/components/ui/SettingsRow";
 import { useToast } from "@/components/ui/Toast";
 import { DownloadIcon, UploadIcon } from "@/components/ui/icons";
 import { haptic } from "@/lib/utils/haptics";
+import { setFlash } from "@/lib/utils/flash";
 
 /** "Seus dados": backup e restauração. Apagar tudo fica em `ResetSettings`, no fim da tela. */
 export function DataSettings() {
@@ -28,10 +29,14 @@ export function DataSettings() {
       const raw = JSON.parse(await file.text());
       const r = await importMerge(raw);
       haptic();
-      toast({
-        message: `Backup restaurado: +${r.sessionsAdded} sessões, +${r.logsAdded} registros`,
-        variant: "success",
-      });
+      const message = `Backup restaurado: +${r.sessionsAdded} sessões, +${r.logsAdded} registros`;
+      if (r.planRestored) {
+        // o plano é lido uma vez na carga do app: só aparece depois de recarregar
+        setFlash({ message: `${message} e o treino que você usava`, variant: "success" });
+        window.location.reload();
+        return;
+      }
+      toast({ message, variant: "success" });
     } catch (err) {
       setImportError(err instanceof Error ? err.message : "Esse arquivo não é um backup do app.");
       toast({ message: "Não deu pra restaurar esse arquivo", variant: "error" });

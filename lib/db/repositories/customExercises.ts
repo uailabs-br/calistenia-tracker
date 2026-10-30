@@ -1,6 +1,6 @@
 import { db, type CustomExercise } from "@/lib/db/schema";
 import type { SkillCategory } from "@/lib/plan/skills";
-import { normalizeSearch, type ExerciseTemplate } from "@/lib/plan/catalog";
+import { normalizeSearch } from "@/lib/plan/catalog";
 import { uuid, now } from "@/lib/utils/id";
 
 /** Toda escrita de CustomExercise passa por aqui (convenção: repositório único). */
@@ -71,18 +71,6 @@ export async function createCustomExercise(
 export async function deleteCustomExercise(id: string): Promise<void> {
   const ts = now();
   await db.customExercises.update(id, { deleted_at: ts, updated_at: ts });
-}
-
-export function customToTemplate(c: CustomExercise): ExerciseTemplate {
-  return {
-    id: c.id,
-    name: c.name,
-    unit: c.unit,
-    per_side: c.per_side,
-    sets: c.sets,
-    target: c.target,
-    rest: c.rest,
-  };
 }
 
 function clampInt(v: number | undefined, fallback: number, min: number, max: number): number {

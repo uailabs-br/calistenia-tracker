@@ -1,7 +1,7 @@
 import Dexie, { type EntityTable } from "dexie";
 import type { Parsed } from "@/lib/plan/schema";
 import type { SkillCategory } from "@/lib/plan/skills";
-import { PLAN_OVERRIDE_KEY } from "@/lib/plan/loader";
+import { readPlanOverrideRaw } from "@/lib/plan/loader";
 import { legacyWeekdayMapFromStorage } from "@/lib/plan/legacyPlan";
 
 /** Modelo de dados - PRD seção 5. Convenções: UUID, updated_at, soft delete. */
@@ -182,16 +182,6 @@ export class TrackerDB extends Dexie {
             delete s.weekday;
           });
       });
-  }
-}
-
-/** Override de plano do localStorage, cru. Ausente fora do navegador. */
-function readPlanOverrideRaw(): string | null {
-  if (typeof window === "undefined") return null;
-  try {
-    return localStorage.getItem(PLAN_OVERRIDE_KEY);
-  } catch {
-    return null;
   }
 }
 
