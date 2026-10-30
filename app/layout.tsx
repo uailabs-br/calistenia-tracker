@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, DM_Mono, Barlow_Condensed } from "next/font/google";
+import { DM_Sans, DM_Mono, Barlow_Condensed, Chakra_Petch } from "next/font/google";
 import "./globals.css";
 import { BottomNav } from "@/components/ui/BottomNav";
 import { SwUpdater } from "@/components/ui/SwUpdater";
@@ -32,6 +32,16 @@ const barlow = Barlow_Condensed({
   weight: ["600", "700"],
   variable: "--font-barlow",
   display: "swap",
+});
+
+// Display do tema futurista. Sem preload: o arquivo só baixa quando o tema
+// está ligado e alguma tela usa a fonte, então o padrão não paga por ela.
+const chakra = Chakra_Petch({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  variable: "--font-chakra",
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -70,7 +80,7 @@ export default function RootLayout({
     // então os atributos dele divergem do HTML estático de propósito (só este nível).
     <html
       lang="pt-BR"
-      className={`${dmSans.variable} ${dmMono.variable} ${barlow.variable}`}
+      className={`${dmSans.variable} ${dmMono.variable} ${barlow.variable} ${chakra.variable}`}
       suppressHydrationWarning
     >
       <head>

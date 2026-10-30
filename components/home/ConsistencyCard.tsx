@@ -5,10 +5,15 @@ import Link from "next/link";
 import type { WeekStatus } from "@/lib/db/queries/metrics";
 import { getWeekGoal } from "@/lib/utils/profile";
 import { ProgressRing } from "@/components/ui/ProgressRing";
+import { SegmentGauge } from "@/components/ui/SegmentGauge";
 
 const DAY_LETTERS = ["S", "T", "Q", "Q", "S", "S", "D"]; // Seg→Dom
 
-/** Constância: anel da meta semanal + streak + mini-calendário da semana. */
+/**
+ * Constância: anel da meta semanal + streak + mini-calendário da semana.
+ * O tema futurista troca o anel pelo SegmentGauge, à esquerda, e mostra quanto
+ * falta: os dois desenhos vão no HTML e o CSS escolhe (classes `consistency-*`).
+ */
 export function ConsistencyCard({
   streak,
   weekStatus,
@@ -22,24 +27,33 @@ export function ConsistencyCard({
   }, [weekStatus.planTotal]);
 
   const complete = weekStatus.done >= goal;
+  const left = Math.max(0, goal - weekStatus.done);
 
   return (
     <Link
       href="/metricas"
       className="card tap block px-4 py-3 active:scale-[0.99]"
     >
-      <div className="flex items-center justify-between">
+      <div className="consistency-head flex items-center justify-between">
+        <SegmentGauge value={weekStatus.done} total={goal} className="consistency-gauge hidden" />
         <div>
-          <p className="text-sm font-semibold">Constância</p>
-          <p className="mt-0.5 text-xs text-muted">
+          <p className="consistency-title text-sm font-semibold">Constância</p>
+          <p className="consistency-sub mt-0.5 text-xs text-muted">
             {complete
               ? "meta da semana batida 🎉"
               : streak > 0
                 ? `${streak} ${streak === 1 ? "semana" : "semanas"} seguidas 🔥`
                 : "sua sequência começa aqui 💪"}
           </p>
+          {left > 0 && (
+            <p className="consistency-left mt-0.5 hidden text-xs text-muted">
+              {left === 1 ? "falta 1 treino" : `faltam ${left} treinos`} pra fechar a semana
+            </p>
+          )}
         </div>
-        <ProgressRing value={weekStatus.done} total={goal} size={60} stroke={5} />
+        <div className="consistency-ring">
+          <ProgressRing value={weekStatus.done} total={goal} size={60} stroke={5} />
+        </div>
       </div>
 
       {weekStatus.freeformCount > 0 && (
@@ -50,11 +64,12 @@ export function ConsistencyCard({
         </p>
       )}
 
-      <div className="mt-3 flex justify-between">
+      <div className="consistency-days mt-3 flex justify-between">
         {weekStatus.days.map((d, i) => {
           const base =
-            "flex h-7 w-7 items-center justify-center rounded-full text-2xs font-mono transition-colors";
+            "consistency-day flex h-7 w-7 items-center justify-center rounded-full text-2xs font-mono transition-colors";
           let cls: string;
+          // data-done: o futurista acende o dia feito sem ler a cor inline.
           let style: React.CSSProperties | undefined;
           if (d.source === "freeform") {
             cls = `${base} border-2 border-dashed font-semibold`;
@@ -69,7 +84,7 @@ export function ConsistencyCard({
             cls = `${base} border border-border text-muted`;
           }
           return (
-            <span key={d.weekday} className={cls} style={style}>
+            <span key={d.weekday} className={cls} style={style} data-done={d.done || undefined}>
               {DAY_LETTERS[i]}
             </span>
           );

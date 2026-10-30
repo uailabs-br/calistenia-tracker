@@ -966,3 +966,193 @@ a {
     linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
   background-size: 100% 100%, 100% 3px, 3px 100%;
 }
+
+/* ── Tema futurista (Ajustes → Aparência) ───────────────────────────────
+   Vidro: cards translúcidos sobre um brilho na cor, título em Chakra Petch,
+   uma cor pra todos os treinos e varredura ao abrir cada tela. Mesmo esquema
+   do tático (só CSS sobre atributos do <html>). Constância e descanso trocam
+   de desenho: os componentes renderizam as duas versões e as classes
+   `consistency-*` e `rest-*` escolhem qual aparece. Decisão em
+   docs/PLAN-tema-futurista.md. */
+:root {
+  --ftone-ciano: #3de7ff;
+  --ftone-lilas: #a99bff;
+  --ftone-limao: #c8ff3d;
+  --ftone-laranja: #ff7a2e;
+  --ftone-gelo: #dce8ff;
+}
+
+:root[data-theme="futurista"] {
+  --color-bg: #04060c;
+  /* sólidas: sheet, diálogo e toast precisam esconder o que está atrás */
+  --color-surface: #0b0f18;
+  --color-surface2: #121826;
+  --color-border: #1f2738;
+  --color-text: #e8eef6;
+  --color-muted: #8c97a8;
+  --color-gold: #ffc857;
+  --color-on-accent: #03050a;
+
+  --theme-ac: var(--ftone-ciano);
+  /* tinta translúcida: o fundo do próximo treino deixa o brilho passar */
+  --theme-ac-bg: color-mix(in oklab, var(--theme-ac) 10%, transparent);
+  --ac: var(--theme-ac);
+  --ac-bg: var(--theme-ac-bg);
+  --color-success: var(--theme-ac);
+
+  --font-display: var(--font-chakra), var(--font-barlow), ui-sans-serif, system-ui, sans-serif;
+  --radius-card: 18px;
+
+  /* O brilho mora no <html>: no body, o fundo cobriria a camada de trás. */
+  background:
+    radial-gradient(120% 45% at 50% -8%, color-mix(in oklab, var(--theme-ac) 18%, transparent), transparent 62%),
+    radial-gradient(80% 40% at 100% 100%, color-mix(in oklab, var(--theme-ac) 7%, transparent), transparent 70%),
+    var(--color-bg);
+  background-attachment: fixed;
+}
+:root[data-theme="futurista"] body {
+  background: transparent;
+}
+:root[data-theme="futurista"][data-tone="lilas"] { --theme-ac: var(--ftone-lilas); }
+:root[data-theme="futurista"][data-tone="limao"] { --theme-ac: var(--ftone-limao); }
+/* no laranja o recorde clareia, senão encosta na cor ativa */
+:root[data-theme="futurista"][data-tone="laranja"] { --theme-ac: var(--ftone-laranja); --color-gold: #ffe08a; }
+:root[data-theme="futurista"][data-tone="gelo"] { --theme-ac: var(--ftone-gelo); }
+
+/* Caixa alta em título e botão; texto corrido segue normal. O nome do
+   exercício (h3) fica fora: a Chakra é larga e em caixa alta cortava
+   "Kick-up livre" no meio. Pelo mesmo motivo ele quebra linha em vez de cortar. */
+:root[data-theme="futurista"] :is(h1, h2).display {
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+:root[data-theme="futurista"] h3.display.truncate {
+  white-space: normal;
+}
+:root[data-theme="futurista"] :is(.btn-primary, .btn-secondary, .btn-outline, .btn-neutral, .btn-danger, .btn-inverse) {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+/* Primário com luz embaixo. A onda (.anim-ring) troca a sombra enquanto pulsa. */
+:root[data-theme="futurista"] .btn-primary {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.35),
+    0 8px 28px color-mix(in oklab, var(--ac) 35%, transparent);
+}
+
+/* Vidro: card translúcido com a luz batendo na borda de cima. Sem desfoque
+   (backdrop-filter) no card: o fundo atrás é um degradê liso, e o desfoque em
+   cada card pesaria no celular com o timer rodando. Fica só na barra de baixo. */
+:root[data-theme="futurista"] .card {
+  background: rgb(150 175 255 / 0.05);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07);
+}
+:root[data-theme="futurista"] .glow {
+  border-color: color-mix(in oklab, var(--ac) 45%, transparent);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1);
+}
+
+/* Constância: o medidor em segmentos à esquerda e quanto falta pra semana. */
+:root[data-theme="futurista"] .consistency-gauge,
+:root[data-theme="futurista"] .consistency-left {
+  display: block;
+}
+:root[data-theme="futurista"] .consistency-ring {
+  display: none;
+}
+:root[data-theme="futurista"] .consistency-head {
+  justify-content: flex-start;
+  gap: 14px;
+}
+:root[data-theme="futurista"] .consistency-title {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ac);
+}
+:root[data-theme="futurista"] .consistency-sub {
+  margin-top: 4px;
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-text);
+}
+:root[data-theme="futurista"] .consistency-days {
+  gap: 5px;
+}
+:root[data-theme="futurista"] .consistency-day {
+  flex: 1;
+  width: auto;
+  height: 30px;
+  border-radius: 6px;
+}
+:root[data-theme="futurista"] .consistency-day[data-done]:not(.border-dashed),
+:root[data-theme="futurista"] :is(.set-chip[data-state="done"], .done-mark) {
+  box-shadow: 0 0 12px color-mix(in oklab, var(--ac) 45%, transparent);
+}
+:root[data-theme="futurista"] .gauge-on {
+  filter: drop-shadow(0 0 4px color-mix(in oklab, var(--ac) 50%, transparent));
+}
+
+/* Série atual acesa por dentro; trilho da sessão com brilho. */
+:root[data-theme="futurista"] .set-chip[data-state="cur"] {
+  box-shadow: inset 0 0 12px color-mix(in oklab, var(--ac) 25%, transparent);
+}
+:root[data-theme="futurista"] .session-progress > * {
+  box-shadow: 0 0 8px color-mix(in oklab, var(--ac) 60%, transparent);
+}
+
+/* Descanso: sem o líquido; régua de 60 marcas por fora e arco mais grosso. */
+:root[data-theme="futurista"] .rest-ticks {
+  display: inline;
+}
+:root[data-theme="futurista"] :is(.rest-disc, .rest-liquid) {
+  display: none;
+}
+:root[data-theme="futurista"] :is(.rest-track, .rest-arc) {
+  stroke-width: 6px;
+}
+:root[data-theme="futurista"] .rest-check {
+  stroke: var(--color-success);
+}
+
+/* Navegação: aba ativa na cor, com um traço aceso em cima. */
+:root[data-theme="futurista"] .app-nav a[aria-current="page"] {
+  color: var(--theme-ac);
+}
+:root[data-theme="futurista"] .app-nav a[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 32%;
+  right: 32%;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--theme-ac);
+  box-shadow: 0 0 10px var(--theme-ac);
+}
+
+/* Varredura ao abrir: cada bloco da tela aparece de cima pra baixo, em cascata.
+   `backwards` e não `both`: depois de entrar o recorte sai, senão cortaria a
+   sombra do botão e a onda dele. */
+:root[data-theme="futurista"] .anim-page {
+  animation: none;
+}
+:root[data-theme="futurista"] .anim-page > * > * {
+  animation: future-scan 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+:root[data-theme="futurista"] .anim-page > * > :nth-child(2) { animation-delay: 60ms; }
+:root[data-theme="futurista"] .anim-page > * > :nth-child(3) { animation-delay: 120ms; }
+:root[data-theme="futurista"] .anim-page > * > :nth-child(4) { animation-delay: 180ms; }
+:root[data-theme="futurista"] .anim-page > * > :nth-child(n + 5) { animation-delay: 240ms; }
+@keyframes future-scan {
+  from {
+    clip-path: inset(0 0 100% 0);
+    opacity: 0.2;
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}

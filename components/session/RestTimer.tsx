@@ -68,6 +68,7 @@ export function RestTimer({
 
   // Anel fino por fora + disco que enche de líquido conforme o descanso passa.
   // Cheio = descansado: o líquido vira verde e o número dá lugar a um check.
+  // O tema futurista esconde o líquido e mostra a régua (classes `rest-*`).
   const size = 176;
   const stroke = 3;
   const radius = (size - stroke) / 2 - 1;
@@ -131,8 +132,15 @@ export function RestTimer({
                 <circle cx={size / 2} cy={size / 2} r={disc} />
               </clipPath>
             </defs>
-            <circle cx={size / 2} cy={size / 2} r={disc} fill="var(--color-bg)" />
-            <g clipPath={`url(#${CLIP_ID})`}>
+            <path
+              d={restTicks(size / 2, radius)}
+              stroke="var(--color-muted)"
+              strokeWidth={1}
+              opacity={0.55}
+              className="rest-ticks hidden"
+            />
+            <circle className="rest-disc" cx={size / 2} cy={size / 2} r={disc} fill="var(--color-bg)" />
+            <g className="rest-liquid" clipPath={`url(#${CLIP_ID})`}>
               <g
                 className="transition-transform duration-150 ease-linear"
                 style={{ transform: `translateY(${level}px)` }}
@@ -159,6 +167,7 @@ export function RestTimer({
               fill="none"
               stroke="var(--color-border)"
               strokeWidth={stroke}
+              className="rest-track"
             />
             <circle
               cx={size / 2}
@@ -171,7 +180,7 @@ export function RestTimer({
               strokeDasharray={circ}
               strokeDashoffset={finished ? 0 : circ * (1 - pct / 100)}
               transform={`rotate(-90 ${size / 2} ${size / 2})`}
-              className="transition-[stroke-dashoffset] duration-150 ease-linear"
+              className="rest-arc transition-[stroke-dashoffset] duration-150 ease-linear"
               style={{
                 // overflow-visible no svg: o arco encosta na borda e cortaria o brilho.
                 filter: `drop-shadow(0 0 4px color-mix(in oklab, ${color} 50%, transparent)) drop-shadow(0 0 10px color-mix(in oklab, ${color} 22%, transparent))`,
@@ -182,7 +191,7 @@ export function RestTimer({
             {finished ? (
               <svg
                 viewBox="0 0 24 24"
-                className="h-[72px] w-[72px]"
+                className="rest-check h-[72px] w-[72px]"
                 fill="none"
                 stroke="var(--color-on-accent)"
                 strokeWidth={3}
@@ -249,6 +258,20 @@ export function RestTimer({
     </div>
     </Portal>
   );
+}
+
+/** Régua do futurista por fora do anel: 60 marcas, a cada 5 uma mais longa. */
+function restTicks(c: number, ring: number): string {
+  const outer = ring + 13;
+  let d = "";
+  for (let i = 0; i < 60; i++) {
+    const rad = (i * 6 * Math.PI) / 180;
+    const inner = i % 5 === 0 ? ring + 6 : ring + 9;
+    const s = Math.sin(rad);
+    const k = Math.cos(rad);
+    d += `M${(c + inner * s).toFixed(2)} ${(c - inner * k).toFixed(2)}L${(c + outer * s).toFixed(2)} ${(c - outer * k).toFixed(2)}`;
+  }
+  return d;
 }
 
 // Só existe um timer montado por vez, então o id do clip pode ser fixo.

@@ -38,11 +38,20 @@ describe("preferência de tema", () => {
       style: "tatico",
       tone: "verde",
       scanlines: true,
+      futureTone: "ciano",
     });
     expect(parseThemePref(JSON.stringify({ style: "neon", tone: "gelo", scanlines: false }))).toEqual({
       style: "padrao",
       tone: "gelo",
       scanlines: false,
+      futureTone: "ciano",
+    });
+    // tom do tático não vale no futurista, e vice-versa
+    expect(parseThemePref(JSON.stringify({ style: "futurista", tone: "lilas", futureTone: "verde" }))).toEqual({
+      style: "futurista",
+      tone: "verde",
+      scanlines: true,
+      futureTone: "ciano",
     });
   });
 
@@ -57,14 +66,24 @@ describe("preferência de tema", () => {
 
   it("no tático marca tema, tom e scanlines", () => {
     const el = fakeEl();
-    applyThemePref(el, { style: "tatico", tone: "ambar", scanlines: true });
+    applyThemePref(el, { ...DEFAULT_THEME, style: "tatico", tone: "ambar", scanlines: true });
     expect(Object.fromEntries(el.attrs)).toEqual({
       "data-theme": "tatico",
       "data-tone": "ambar",
       "data-scanlines": "",
     });
-    applyThemePref(el, { style: "tatico", tone: "ambar", scanlines: false });
+    applyThemePref(el, { ...DEFAULT_THEME, style: "tatico", tone: "ambar", scanlines: false });
     expect(el.attrs.has("data-scanlines")).toBe(false);
+  });
+
+  it("no futurista marca tema e o tom dele, sem scanlines mesmo ligadas", () => {
+    const el = fakeEl();
+    el.setAttribute("data-scanlines", "");
+    applyThemePref(el, { style: "futurista", tone: "ambar", scanlines: true, futureTone: "limao" });
+    expect(Object.fromEntries(el.attrs)).toEqual({
+      "data-theme": "futurista",
+      "data-tone": "limao",
+    });
   });
 });
 
@@ -78,6 +97,9 @@ describe("boot script do <head>", () => {
     JSON.stringify({ style: "tatico" }),
     JSON.stringify({ style: "tatico", tone: "oliva", scanlines: false }),
     JSON.stringify({ style: "tatico", tone: "rosa", scanlines: true }),
+    JSON.stringify({ style: "futurista" }),
+    JSON.stringify({ style: "futurista", futureTone: "laranja", scanlines: true }),
+    JSON.stringify({ style: "futurista", futureTone: "verde", tone: "ambar" }),
   ];
   it.each(cases)("dá o mesmo resultado que a versão TS para %s", (raw) => {
     const expected = fakeEl();

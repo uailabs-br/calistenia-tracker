@@ -148,25 +148,29 @@ cheia entra por opacidade, nunca com flash ou corte seco: no celular isso lê co
 
 ## Temas
 
-Dois estilos, escolhidos em Ajustes → Aparência: **padrão** (o de sempre) e **tático**
-(escuro militar, cantos retos, caixa alta, scanlines). Decisão em
-[PLAN-tema-tatico.md](PLAN-tema-tatico.md).
+Três estilos, escolhidos em Ajustes → Aparência: **padrão** (o de sempre), **tático**
+(escuro militar, cantos retos, caixa alta, scanlines) e **futurista** (vidro translúcido
+sobre brilho na cor, Chakra Petch, varredura ao abrir). Decisões em
+[PLAN-tema-tatico.md](PLAN-tema-tatico.md) e [PLAN-tema-futurista.md](PLAN-tema-futurista.md).
 
-- O tema mora em atributos do `<html>`: `data-theme="tatico"`, `data-tone` (verde, ciano,
-  ambar, oliva, gelo) e `data-scanlines`. No padrão não há atributo nenhum.
+- O tema mora em atributos do `<html>`: `data-theme` (`tatico` ou `futurista`), `data-tone`
+  (no tático: verde, ciano, ambar, oliva, gelo; no futurista: ciano, lilas, limao, laranja,
+  gelo) e `data-scanlines` (só tático). No padrão não há atributo nenhum.
 - Quem marca é o boot script do `<head>` (`THEME_BOOT_SCRIPT` em `lib/utils/theme.ts`), antes
   da primeira pintura. Ajustes chama `setThemePref`, que grava e reaplica na hora.
-- **Nenhum componente decide nada pelo tema.** O tático é um bloco no fim de `globals.css`
-  que redefine os tokens (cor, raio) e restiliza utilitários e alguns ganchos de classe.
-  Componente não lê o tema em JS: o HTML estático tem que ser o mesmo nos dois (regra 10).
-- **Cor do treino trocável:** no tático todos os treinos (e as categorias de skill) ficam na
-  cor do tom. Por isso toda cor de treino passa por `accentVars`, `themedAccent` ou
+- **Nenhum componente decide nada pelo tema.** Cada tema é um bloco no fim de `globals.css`
+  que redefine os tokens (cor, raio, fonte display) e restiliza utilitários e alguns ganchos
+  de classe. Componente não lê o tema em JS: o HTML estático tem que ser o mesmo em todos
+  (regra 10). Onde o futurista troca o desenho (constância, descanso), o componente
+  renderiza as duas versões e o CSS escolhe.
+- **Cor do treino trocável:** no tático e no futurista todos os treinos (e as categorias de
+  skill) ficam na cor do tom. Por isso toda cor de treino passa por `accentVars`, `themedAccent` ou
   `themedAccentBg`, que escrevem `var(--theme-ac, <hex do plano>)`. No padrão
   `--theme-ac` não existe e vale o hex.
 - `--rest-color`: cor do descanso no tático (laranja de alerta); no padrão não existe e o
   cronômetro segue o treino.
 
-Ganchos de classe que só o tático usa (no padrão não fazem nada):
+Ganchos de classe que só os temas usam (no padrão não fazem nada):
 
 | Classe | Onde | No tático |
 |---|---|---|
@@ -178,6 +182,15 @@ Ganchos de classe que só o tático usa (no padrão não fazem nada):
 | `mission-screen` | fundo das telas cheias da campanha | grade e varredura |
 | `load-bar` | barra da tela de carregamento | blocos |
 | `ladder-node` + `data-state` | degrau da `SkillLadder` | vencido com brilho |
+
+No futurista, além de `set-chip`, `done-mark`, `session-progress` e `app-nav` (brilho na cor):
+
+| Classe | Onde | No futurista |
+|---|---|---|
+| `consistency-gauge` / `consistency-ring` | `ConsistencyCard` | mostra o `SegmentGauge` à esquerda e esconde o anel |
+| `consistency-title` / `-sub` / `-left` / `-days` / `-day` | `ConsistencyCard` | rótulo mono na cor, "faltam N treinos", dias quadrados de largura cheia |
+| `rest-ticks` / `rest-disc` / `rest-liquid` / `rest-track` / `rest-arc` / `rest-check` | `RestTimer` | régua de 60 marcas, sem líquido, arco grosso, check na cor |
+| `anim-page` | `PageTransition` | varredura de cima pra baixo nos blocos da tela |
 
 A landing usa a cor fixa (`DEFAULT_ACCENT` literal): quem chega nela ainda não escolheu tema.
 

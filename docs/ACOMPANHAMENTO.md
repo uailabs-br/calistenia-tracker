@@ -20,6 +20,15 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-10-30, tema futurista — 704 testes):** terceiro estilo em
+> Ajustes → Aparência, escolhido num protótipo com três superfícies (vidro, industrial, linha
+> fina) depois de uma pesquisa de referências. Vidro: cards translúcidos sobre um brilho na cor,
+> títulos em Chakra Petch (sem preload), uma cor pra todos os treinos e varredura ao abrir cada
+> tela. A constância vira um medidor em segmentos com "faltam N treinos" e o descanso perde o
+> líquido e ganha uma régua de 60 marcas; os dois componentes renderizam as duas versões e o CSS
+> escolhe (regra 10). Em Ajustes, a cor do tático e a do futurista ficam recolhidas numa linha.
+> Decisões em `docs/PLAN-tema-futurista.md`. Sem teste em celular.
+>
 > **Atualização (pós-v1.8, 2026-10-30, botão que pulsa e treinos em fila — 700 testes):** na
 > home, o botão de começar (ou continuar) o treino solta uma onda na cor do treino, sem mudar de
 > tamanho (`.anim-ring`, parada com "reduzir movimento"). Na aba Treino, a lista vertical virou

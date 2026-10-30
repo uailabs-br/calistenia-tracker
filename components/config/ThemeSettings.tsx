@@ -4,19 +4,28 @@ import { useEffect, useState } from "react";
 import { SettingsGroup } from "@/components/ui/SettingsGroup";
 import { SettingsRow } from "@/components/ui/SettingsRow";
 import { Switch } from "@/components/ui/Switch";
-import { MonitorIcon, ScanlinesIcon } from "@/components/ui/icons";
+import { ChevronDownIcon, MonitorIcon, ScanlinesIcon } from "@/components/ui/icons";
 import { haptic } from "@/lib/utils/haptics";
 import {
+  FUTURE_TONE_LABEL,
+  FUTURE_TONES,
   getThemePref,
   setThemePref,
   TACTICAL_TONES,
   TONE_LABEL,
   type ThemePref,
+  type ThemeStyle,
 } from "@/lib/utils/theme";
 
+const STYLE_LABEL: Record<ThemeStyle, string> = {
+  padrao: "Padrão",
+  tatico: "Tático",
+  futurista: "Futurista",
+};
+
 /**
- * "Aparência": estilo padrão ou tático e, no tático, a cor única e as scanlines.
- * A troca vale na hora (atributos do <html>), sem recarregar.
+ * "Aparência": o estilo e, no tático e no futurista, a cor única (e as scanlines
+ * do tático). A troca vale na hora (atributos do <html>), sem recarregar.
  */
 export function ThemeSettings() {
   // null até o mount: a preferência mora no localStorage (regra 10).
@@ -31,59 +40,50 @@ export function ThemeSettings() {
     setThemePref(next);
   };
 
-  const tactical = pref?.style === "tatico";
+  const style = pref?.style;
 
   return (
     <SettingsGroup
       title="Aparência"
-      footer={tactical ? "No tático, todos os treinos ficam na cor escolhida." : undefined}
+      footer={
+        style && style !== "padrao"
+          ? `No ${STYLE_LABEL[style].toLowerCase()}, todos os treinos ficam na cor escolhida.`
+          : undefined
+      }
     >
-      <SettingsRow
-        icon={MonitorIcon}
-        label="Estilo"
-        trailing={
-          <span className="flex shrink-0 gap-1.5" role="group" aria-label="Estilo">
-            {(["padrao", "tatico"] as const).map((style) => (
-              <button
-                key={style}
-                type="button"
-                aria-pressed={pref?.style === style}
-                disabled={!pref}
-                onClick={() => update({ style })}
-                className="toggle tap rounded-full px-3 text-sm text-muted"
-              >
-                {style === "padrao" ? "Padrão" : "Tático"}
-              </button>
-            ))}
+      <div className="border-b border-border px-4 py-3">
+        <p className="flex items-center gap-3 text-md font-medium">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface2">
+            <MonitorIcon className="h-[18px] w-[18px]" />
           </span>
-        }
-      />
+          Estilo
+        </p>
+        <div className="mt-2 flex gap-1.5" role="group" aria-label="Estilo">
+          {(Object.keys(STYLE_LABEL) as ThemeStyle[]).map((s) => (
+            <button
+              key={s}
+              type="button"
+              aria-pressed={style === s}
+              disabled={!pref}
+              onClick={() => update({ style: s })}
+              className="toggle tap flex-1 rounded-full px-3 py-1.5 text-sm text-muted"
+            >
+              {STYLE_LABEL[s]}
+            </button>
+          ))}
+        </div>
+      </div>
 
-      {tactical && pref && (
+      {pref && style === "tatico" && (
         <>
-          <div className="border-b border-border px-4 py-3">
-            <p className="text-md font-medium">Cor</p>
-            <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Cor do tema tático">
-              {TACTICAL_TONES.map((tone) => (
-                <button
-                  key={tone}
-                  type="button"
-                  aria-pressed={pref.tone === tone}
-                  onClick={() => update({ tone })}
-                  className="toggle tap flex items-center gap-2 rounded-full px-3 text-sm text-muted"
-                >
-                  {/* a amostra vem do mesmo token que pinta o tema; a borda segue o
-                      texto pra não sumir no chip marcado, que tem o mesmo fundo */}
-                  <span
-                    aria-hidden="true"
-                    className="h-3 w-3 shrink-0 border border-current"
-                    style={{ background: `var(--tone-${tone})` }}
-                  />
-                  {TONE_LABEL[tone]}
-                </button>
-              ))}
-            </div>
-          </div>
+          <TonePicker
+            label="Cor do tema tático"
+            tones={TACTICAL_TONES}
+            labels={TONE_LABEL}
+            swatch={(t) => `var(--tone-${t})`}
+            value={pref.tone}
+            onPick={(tone) => update({ tone })}
+          />
           <SettingsRow
             icon={ScanlinesIcon}
             label="Scanlines"
@@ -98,6 +98,89 @@ export function ThemeSettings() {
           />
         </>
       )}
+
+      {pref && style === "futurista" && (
+        <TonePicker
+          label="Cor do tema futurista"
+          tones={FUTURE_TONES}
+          labels={FUTURE_TONE_LABEL}
+          swatch={(t) => `var(--ftone-${t})`}
+          value={pref.futureTone}
+          onPick={(futureTone) => update({ futureTone })}
+        />
+      )}
     </SettingsGroup>
+  );
+}
+
+/**
+ * Cor recolhida numa linha (amostra + nome); o toque abre as opções e escolher
+ * fecha de novo. Aberta o tempo todo, a lista de chips ocupava meia tela.
+ */
+function TonePicker<T extends string>({
+  label,
+  tones,
+  labels,
+  swatch,
+  value,
+  onPick,
+}: {
+  label: string;
+  tones: readonly T[];
+  labels: Record<T, string>;
+  swatch: (tone: T) => string;
+  value: T;
+  onPick: (tone: T) => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="border-b border-border last:border-b-0">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="tap flex w-full items-center gap-3 px-4 py-3 text-left active:bg-surface2"
+      >
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface2">
+          <span
+            aria-hidden="true"
+            className="h-3.5 w-3.5 rounded-full"
+            style={{ background: swatch(value) }}
+          />
+        </span>
+        <span className="min-w-0 flex-1 text-md font-medium">Cor</span>
+        <span className="shrink-0 text-sm text-muted">{labels[value]}</span>
+        <ChevronDownIcon
+          className={`h-4 w-4 shrink-0 text-muted transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {open && (
+        <div className="anim-fade-in flex flex-wrap gap-2 px-4 pb-3" role="group" aria-label={label}>
+          {tones.map((tone) => (
+            <button
+              key={tone}
+              type="button"
+              aria-pressed={value === tone}
+              onClick={() => {
+                onPick(tone);
+                setOpen(false);
+              }}
+              className="toggle tap flex items-center gap-2 rounded-full px-3 text-sm text-muted"
+            >
+              {/* a amostra vem do mesmo token que pinta o tema; a borda segue o
+                  texto pra não sumir no chip marcado, que tem o mesmo fundo */}
+              <span
+                aria-hidden="true"
+                className="h-3 w-3 shrink-0 rounded-full border border-current"
+                style={{ background: swatch(tone) }}
+              />
+              {labels[tone]}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
