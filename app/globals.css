@@ -1364,6 +1364,12 @@ a {
 :root[data-theme="espaco"] .anim-page {
   animation: none;
 }
+/* Durante a viagem a tela aumentada não pode esticar o layout (no celular a nav
+   fixa sumia na volta). clip, não hidden: não vira contêiner de rolagem e o
+   sticky de dentro segue preso à tela. */
+:root.space-traveling main {
+  overflow: clip;
+}
 
 /* Vidro mais escuro que o do futurista: as estrelas atrás são claras. */
 :root[data-theme="espaco"] :is(.card, .glow, .glass) {

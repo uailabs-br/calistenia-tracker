@@ -39,6 +39,8 @@ interface Ghost {
 }
 
 let ghost: Ghost | null = null;
+/** Viagem em curso: com troca rápida, só a última tira o corte do `main`. */
+let trip = 0;
 
 const spaceOn = () => document.documentElement.dataset.theme === "espaco";
 /** Onde fica o "olho" da câmera: um pouco acima do meio, como no protótipo. */
@@ -107,6 +109,12 @@ function arrive(el: HTMLElement) {
     .finished.finally(() => layer.remove())
     .catch(() => {});
 
+  // Voltando, a tela nova chega aumentada e fica mais larga que a tela: no
+  // celular o layout cresce pra caber e a nav fixa sai de vista. Durante a
+  // viagem o `main` corta o que passa da borda (classe no <html>, ver globals.css).
+  const html = document.documentElement;
+  const id = ++trip;
+  html.classList.add("space-traveling");
   el.style.transformOrigin = eyeY(el.getBoundingClientRect().top);
   el.animate(
     [
@@ -116,6 +124,9 @@ function arrive(el: HTMLElement) {
     ],
     { duration: t.ms, easing }
   )
-    .finished.finally(() => (el.style.transformOrigin = ""))
+    .finished.finally(() => {
+      el.style.transformOrigin = "";
+      if (id === trip) html.classList.remove("space-traveling");
+    })
     .catch(() => {});
 }

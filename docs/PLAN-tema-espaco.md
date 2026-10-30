@@ -77,3 +77,9 @@ um pouco. Sai junto o custo do desfoque de 6px na tela inteira durante a viagem.
 
 Os botões de estilo em Ajustes viraram uma grade 2×2: com quatro numa linha, "Futurista"
 estourava o botão em tela de 360px.
+
+Na volta, a nav sumia por um instante e a tela desarrumava (só no celular): a tela nova
+chega aumentada, fica mais larga que a tela, e o celular alarga o layout pra caber, levando
+a nav fixa pra fora da vista. Durante a viagem o `main` ganha `overflow: clip` (classe
+`space-traveling` no `<html>`); `clip` e não `hidden`, pra não virar contêiner de
+rolagem e não soltar o sticky.
