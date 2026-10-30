@@ -20,6 +20,13 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-10-30, botão que pulsa e treinos em fila — 700 testes):** na
+> home, o botão de começar (ou continuar) o treino solta uma onda na cor do treino, sem mudar de
+> tamanho (`.anim-ring`, parada com "reduzir movimento"). Na aba Treino, a lista vertical virou
+> uma fila horizontal de cards curtos que abre no próximo treino; os exercícios sobem numa
+> `Sheet`. Escolhidos no protótipo entre quatro pulsos e três layouts: os cards com exercícios
+> embaixo e o carrossel largo ocupavam mais altura que a lista fechada. Sem teste em celular.
+>
 > **Atualização (pós-v1.8, 2026-10-28, equipamento como lista, primeira semana e "De volta" — 700
 > testes):** a pergunta de equipamento virou "O que você tem pra treinar?": o lugar pré-marca a
 > lista e a pessoa tira o que não tem. `Equipment` agora é a lista (`GearItem[]`); respostas

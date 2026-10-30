@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { plan } from "@/lib/plan/loader";
 import { clearPlanOverride, hasPlanOverride } from "@/lib/plan/importPlan";
@@ -14,7 +14,7 @@ import { SettingsGroup } from "@/components/ui/SettingsGroup";
 import { SettingsRow } from "@/components/ui/SettingsRow";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/Toast";
-import { WorkoutCard } from "@/components/plan/WorkoutCard";
+import { WorkoutCard, WorkoutSheet } from "@/components/plan/WorkoutCard";
 import {
   FlagIcon,
   HistoryIcon,
@@ -37,6 +37,8 @@ export default function PlanoPage() {
   const [hasOverride, setHasOverride] = useState(false);
   const [aiGoalsCount, setAiGoalsCount] = useState(0);
   const [confirmRestore, setConfirmRestore] = useState(false);
+  const [openId, setOpenId] = useState<string | null>(null);
+  const rowRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
     setHasOverride(hasPlanOverride());
@@ -47,6 +49,16 @@ export default function PlanoPage() {
   const customCount = useLiveQuery(async () => (await getCustomExercises()).length, []);
   const nextId =
     ready && lastPlanId !== undefined ? queueFrom(lastPlanId, plan.workouts)[0]?.id : undefined;
+  const openWorkout = openId ? plan.workouts.find((w) => w.id === openId) : undefined;
+
+  // A fila abre no próximo treino (o snap deixa a ponta do anterior no recuo,
+  // e ela mostra que rola pros dois lados). Sem animação: é a posição inicial.
+  useEffect(() => {
+    const row = rowRef.current;
+    const el = nextId ? row?.querySelector<HTMLElement>(`[data-workout="${nextId}"]`) : null;
+    if (!row || !el) return;
+    row.scrollLeft = el.offsetLeft - row.offsetLeft - 16;
+  }, [nextId]);
 
   const restore = () => {
     setConfirmRestore(false);
@@ -62,10 +74,21 @@ export default function PlanoPage() {
     <div className="px-4">
       <PageHeader title="Treino" subtitle={ready ? plan.name : undefined} />
 
-      {/* altura mínima: os cards só chegam depois do mount */}
-      <ul className="mb-2 flex min-h-[8rem] flex-col gap-2">
+      {/* Fila horizontal: o plano inteiro numa linha, os exercícios abrem na folha.
+          Altura mínima porque os cards só chegam depois do mount. */}
+      <ul
+        ref={rowRef}
+        className="no-scrollbar -mx-4 mb-2 flex min-h-[7.5rem] snap-x snap-mandatory scroll-px-4 gap-2 overflow-x-auto px-4 pb-1 [&>li]:snap-start"
+      >
         {ready &&
-          plan.workouts.map((w) => <WorkoutCard key={w.id} workout={w} next={w.id === nextId} />)}
+          plan.workouts.map((w) => (
+            <WorkoutCard
+              key={w.id}
+              workout={w}
+              next={w.id === nextId}
+              onOpen={() => setOpenId(w.id)}
+            />
+          ))}
       </ul>
       <p className="mb-6 px-1 text-xs text-muted">
         {ready
@@ -116,6 +139,14 @@ export default function PlanoPage() {
           />
         )}
       </SettingsGroup>
+
+      {openWorkout && (
+        <WorkoutSheet
+          workout={openWorkout}
+          next={openWorkout.id === nextId}
+          onClose={() => setOpenId(null)}
+        />
+      )}
 
       {confirmRestore && (
         <ConfirmDialog

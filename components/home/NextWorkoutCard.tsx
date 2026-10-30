@@ -123,7 +123,7 @@ export function NextWorkoutCard({
       {activeHere ? (
         <Link
           href={`/treino/${workout.id}`}
-          className="btn-primary tap mt-4 flex w-full items-center justify-center rounded-xl py-3.5 text-center font-semibold"
+          className="btn-primary anim-ring tap mt-4 flex w-full items-center justify-center rounded-xl py-3.5 text-center font-semibold"
           style={accentVars(workout.accent)}
         >
           Continuar treino
@@ -140,7 +140,7 @@ export function NextWorkoutCard({
             const y = Math.round(r.top + r.height / 2);
             router.push(`/treino/${workout.id}?start=${x},${y}`);
           }}
-          className="btn-primary tap mt-4 flex w-full items-center justify-center rounded-xl py-3.5 text-center font-semibold"
+          className="btn-primary anim-ring tap mt-4 flex w-full items-center justify-center rounded-xl py-3.5 text-center font-semibold"
           style={accentVars(workout.accent)}
         >
           {returning ? `Voltar com o treino ${workout.label}` : "Começar treino"}
