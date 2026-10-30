@@ -8,10 +8,11 @@ import { travelBetween } from "@/lib/utils/spaceTravel";
  * Refaz um fade-up sutil a cada troca de rota (chave = pathname).
  * O movimento é anulado sob prefers-reduced-motion (ver globals.css).
  *
- * No tema espaço a troca é uma viagem no eixo z: a tela velha passa pela câmera
- * (ou recua pro fundo) enquanto a nova chega. O React tira a tela velha do DOM
- * na troca, então uma cópia dela é tirada na limpeza do ref (React 19 roda a
- * limpeza com o nó ainda no lugar) e anima por cima, sem React e sem toque.
+ * No tema espaço a troca é uma viagem no eixo z (deriva): a tela velha vem um
+ * pouco pra perto e some (ou recua pro fundo) enquanto a nova chega. O React
+ * tira a tela velha do DOM na troca, então uma cópia dela é tirada na limpeza
+ * do ref (React 19 roda a limpeza com o nó ainda no lugar) e anima por cima,
+ * sem React e sem toque.
  */
 export function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -87,19 +88,19 @@ function arrive(el: HTMLElement) {
   layer.appendChild(node);
   document.body.appendChild(layer);
 
-  const near = 560;
-  const far = 1500;
+  const near = 160;
+  const far = 380;
   const zOut = t.dir > 0 ? near : -far;
   const zIn = t.dir > 0 ? -far : near;
-  const easing = "cubic-bezier(0.7, 0, 0.2, 1)";
+  const easing = "cubic-bezier(0.3, 0, 0.2, 1)";
   const z = (px: number) => `perspective(900px) translateZ(${px}px)`;
 
   node
     .animate(
       [
-        { transform: z(0), opacity: 1, filter: "blur(0)" },
+        { transform: z(0), opacity: 1 },
         { transform: z(zOut * 0.5), opacity: 0.35, offset: 0.5 },
-        { transform: z(zOut), opacity: 0, filter: "blur(6px)" },
+        { transform: z(zOut), opacity: 0 },
       ],
       { duration: t.ms * 0.85, easing, fill: "forwards" }
     )
@@ -109,9 +110,9 @@ function arrive(el: HTMLElement) {
   el.style.transformOrigin = eyeY(el.getBoundingClientRect().top);
   el.animate(
     [
-      { transform: z(zIn), opacity: 0, filter: "blur(6px)" },
+      { transform: z(zIn), opacity: 0 },
       { opacity: 0.4, offset: 0.45 },
-      { transform: z(0), opacity: 1, filter: "blur(0)" },
+      { transform: z(0), opacity: 1 },
     ],
     { duration: t.ms, easing }
   )

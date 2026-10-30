@@ -2,9 +2,9 @@ import { activeTab } from "./routes";
 
 /**
  * Tema espaço: cada tela tem uma profundidade no eixo z e trocar de tela é
- * viajar. As abas, na ordem da nav, são o perto → longe; uma subtela (Histórico,
- * Skills, um treino antigo) fica um passo atrás da aba dela; a sessão de treino
- * é o ponto mais fundo. Decisão em docs/PLAN-tema-espaco.md.
+ * viajar (a deriva: a tela afunda ou volta de leve). As abas, na ordem da nav,
+ * são o perto → longe; uma subtela (Histórico, Skills, um treino antigo) fica um
+ * passo atrás da aba dela; a sessão de treino é o ponto mais fundo. Decisão em docs/PLAN-tema-espaco.md.
  */
 const TAB_DEPTH: Record<string, number> = { "/": 0, "/plano": 1, "/metricas": 2, "/config": 3 };
 const SESSION_DEPTH = 4;
@@ -23,21 +23,21 @@ export function routeDepth(pathname: string): number | null {
 }
 
 export interface Travel {
-  /** 1 = avança (a tela atual passa pela câmera), -1 = volta. */
+  /** 1 = avança (a tela atual vem pra perto e some), -1 = volta. */
   dir: 1 | -1;
-  /** Distância em profundidades; regula a força da dobra. */
-  dist: number;
   ms: number;
 }
 
-/** Viagem mais longa: começar o treino a partir do Início (0 → 4). */
-export const MAX_TRAVEL_MS = 820;
+/**
+ * Duração fixa, qualquer distância. A dobra (mais longa quanto mais longe, até
+ * 0,8 s, com as estrelas em risco) foi trocada pela deriva depois de vista no app.
+ */
+export const TRAVEL_MS = 450;
 
 /** A viagem entre duas rotas, ou null quando não há (mesma profundidade, tela fora do app). */
 export function travelBetween(from: string, to: string): Travel | null {
   const a = routeDepth(from);
   const b = routeDepth(to);
   if (a === null || b === null || a === b) return null;
-  const dist = Math.abs(b - a);
-  return { dir: b > a ? 1 : -1, dist, ms: Math.min(520 + dist * 90, MAX_TRAVEL_MS) };
+  return { dir: b > a ? 1 : -1, ms: TRAVEL_MS };
 }

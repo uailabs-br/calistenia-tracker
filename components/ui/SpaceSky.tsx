@@ -74,6 +74,8 @@ interface Star {
 }
 
 const STARS = 360;
+/** Velocidade máxima no meio da viagem (fração da profundidade por quadro). */
+const PEAK = 0.0056;
 
 function newStar(z?: number): Star {
   const tint = Math.random();
@@ -87,7 +89,7 @@ function newStar(z?: number): Star {
   };
 }
 
-/** Estrelas em perspectiva: na viagem correm no eixo z e, rápidas, viram riscos. */
+/** Estrelas em perspectiva: na viagem andam um pouco no eixo z, pra frente ou pra trás. */
 function createSky(canvas: HTMLCanvasElement): Sky {
   const ctx = canvas.getContext("2d");
   const stars = Array.from({ length: STARS }, () => newStar());
@@ -98,7 +100,7 @@ function createSky(canvas: HTMLCanvasElement): Sky {
   let dpr = 1;
   let raf = 0;
   let last = 0;
-  let trip: (Travel & { peak: number; t0: number }) | null = null;
+  let trip: (Travel & { t0: number }) | null = null;
 
   const resize = () => {
     if (!on) return;
@@ -107,10 +109,10 @@ function createSky(canvas: HTMLCanvasElement): Sky {
     h = window.innerHeight;
     canvas.width = Math.round(w * dpr);
     canvas.height = Math.round(h * dpr);
-    draw(0, false);
+    draw(0);
   };
 
-  function draw(vel: number, streak: boolean) {
+  function draw(vel: number) {
     if (!ctx) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
@@ -118,7 +120,6 @@ function createSky(canvas: HTMLCanvasElement): Sky {
     const cy = h * 0.42;
     const f = Math.min(w, h) * 0.55;
     for (const s of stars) {
-      const pz = s.z;
       s.z -= vel;
       if (s.z <= 0.02) Object.assign(s, newStar(1));
       else if (s.z > 1) Object.assign(s, newStar(0.03 + Math.random() * 0.15));
@@ -128,20 +129,10 @@ function createSky(canvas: HTMLCanvasElement): Sky {
       if (x < -20 || x > w + 20 || y < -20 || y > h + 20) continue;
       const near = 1 - s.z;
       const a = Math.min(1, 0.15 + near * 1.1) * s.mag;
-      if (streak) {
-        const kp = f / Math.max(0.02, pz + vel * 7);
-        ctx.strokeStyle = `rgba(${s.rgb},${a})`;
-        ctx.lineWidth = 0.5 + near * 1.6;
-        ctx.beginPath();
-        ctx.moveTo(cx + s.x * kp, cy + s.y * kp);
-        ctx.lineTo(x, y);
-        ctx.stroke();
-      } else {
-        ctx.fillStyle = `rgba(${s.rgb},${a})`;
-        ctx.beginPath();
-        ctx.arc(x, y, 0.3 + near * near * 1.7 * s.mag, 0, Math.PI * 2);
-        ctx.fill();
-      }
+      ctx.fillStyle = `rgba(${s.rgb},${a})`;
+      ctx.beginPath();
+      ctx.arc(x, y, 0.3 + near * near * 1.7 * s.mag, 0, Math.PI * 2);
+      ctx.fill();
     }
   }
 
@@ -153,12 +144,11 @@ function createSky(canvas: HTMLCanvasElement): Sky {
     const p = (now - trip.t0) / trip.ms;
     if (p >= 1) {
       trip = null;
-      draw(0, false);
+      draw(0);
       return;
     }
     // sobe e desce como um sino: arranca, atinge o pico no meio e freia
-    const vel = trip.dir * trip.peak * Math.sin(Math.PI * p) ** 2;
-    draw(vel * dt, Math.abs(vel) > 0.0035);
+    draw(trip.dir * PEAK * Math.sin(Math.PI * p) ** 2 * dt);
     raf = requestAnimationFrame(frame);
   }
 
@@ -171,7 +161,7 @@ function createSky(canvas: HTMLCanvasElement): Sky {
     },
     warp(t) {
       if (!on || reduced.matches) return;
-      trip = { ...t, peak: 0.004 + 0.0065 * t.dist, t0: performance.now() };
+      trip = { ...t, t0: performance.now() };
       last = 0;
       if (!raf) raf = requestAnimationFrame(frame);
     },

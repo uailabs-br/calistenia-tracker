@@ -67,3 +67,13 @@ a próxima série da sessão pro timer.
   ligando os dias treinados do protótipo.
 - Sem teste em celular: a conferir o peso do vidro sobre o céu e o desfoque da viagem em
   aparelho mais velho.
+
+## Revisão (2026-10-30, noite)
+
+Visto no app, ele não gostou da dobra e trocou pela **deriva**, a segunda opção do
+protótipo: 0,45 s em qualquer distância, a tela afunda ou volta de leve (160/380px no eixo
+z, contra 560/1500px da dobra), sem desfoque e sem as estrelas virarem riscos; o céu só anda
+um pouco. Sai junto o custo do desfoque de 6px na tela inteira durante a viagem.
+
+Os botões de estilo em Ajustes viraram uma grade 2×2: com quatro numa linha, "Futurista"
+estourava o botão em tela de 360px.

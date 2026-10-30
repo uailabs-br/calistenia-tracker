@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { MAX_TRAVEL_MS, routeDepth, travelBetween } from "@/lib/utils/spaceTravel";
+import { TRAVEL_MS, routeDepth, travelBetween } from "@/lib/utils/spaceTravel";
 
 describe("profundidade das telas no tema espaço", () => {
   it("as abas seguem a ordem da nav, e a sessão é o ponto mais fundo", () => {
@@ -26,9 +26,9 @@ describe("viagem entre telas", () => {
     expect(travelBetween("/config", "/plano")?.dir).toBe(-1);
   });
 
-  it("começar o treino é a viagem mais longa, e tem teto", () => {
-    expect(travelBetween("/", "/treino/abc")).toEqual({ dir: 1, dist: 4, ms: MAX_TRAVEL_MS });
-    expect(travelBetween("/plano", "/metricas")!.ms).toBeLessThan(MAX_TRAVEL_MS);
+  it("a viagem dura o mesmo perto ou longe", () => {
+    expect(travelBetween("/", "/treino/abc")).toEqual({ dir: 1, ms: TRAVEL_MS });
+    expect(travelBetween("/plano", "/metricas")).toEqual({ dir: 1, ms: TRAVEL_MS });
   });
 
   it("sem viagem na mesma profundidade ou saindo do app", () => {

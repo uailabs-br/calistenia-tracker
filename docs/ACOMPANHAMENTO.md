@@ -24,8 +24,9 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 > quarto estilo em Ajustes → Aparência, escolhido no protótipo de temas: o vidro do futurista
 > sobre um céu com nebulosa no roxo do app e estrelas em canvas, títulos em Exo 2 (sem
 > preload), cor gelo pra todos os treinos. Trocar de tela é viajar no eixo z: as abas são
-> profundidades na ordem da nav, a sessão é a mais funda, e a tela velha passa pela câmera
-> (ou recua) enquanto a nova chega, com as estrelas virando riscos. O céu só anima na viagem.
+> profundidades na ordem da nav, a sessão é a mais funda, e a tela velha vem pra perto e
+> some (ou recua) enquanto a nova chega, em 0,45 s (a deriva; a dobra, com as estrelas em
+> risco, foi vista no app e trocada). O céu só anima na viagem.
 > Constância em órbita (uma lua por treino), satélite no descanso, dias da Evolução como
 > estrelas e um trilho na nav. No futurista e no espaço o descanso ficou como nos protótipos
 > (título, anel de 220px, botões em grade, "OK" no fim); em todos os temas o fim do descanso

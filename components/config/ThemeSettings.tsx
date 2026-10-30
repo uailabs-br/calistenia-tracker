@@ -61,7 +61,8 @@ export function ThemeSettings() {
           </span>
           Estilo
         </p>
-        <div className="mt-2 flex gap-1.5" role="group" aria-label="Estilo">
+        {/* Grade 2×2: quatro estilos numa linha estouravam "Futurista" em tela de 360px. */}
+        <div className="mt-2 grid grid-cols-2 gap-1.5" role="group" aria-label="Estilo">
           {(Object.keys(STYLE_LABEL) as ThemeStyle[]).map((s) => (
             <button
               key={s}
@@ -69,7 +70,7 @@ export function ThemeSettings() {
               aria-pressed={style === s}
               disabled={!pref}
               onClick={() => update({ style: s })}
-              className="toggle tap flex-1 rounded-full px-3 py-1.5 text-sm text-muted"
+              className="toggle tap rounded-full px-3 py-1.5 text-sm text-muted"
             >
               {STYLE_LABEL[s]}
             </button>

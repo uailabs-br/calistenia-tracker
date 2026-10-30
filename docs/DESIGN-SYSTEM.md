@@ -151,7 +151,8 @@ cheia entra por opacidade, nunca com flash ou corte seco: no celular isso lê co
 Quatro estilos, escolhidos em Ajustes → Aparência: **padrão** (o de sempre), **tático**
 (escuro militar, cantos retos, caixa alta, scanlines), **futurista** (vidro translúcido
 sobre brilho na cor, Chakra Petch em título, número e botão) e **espaço** (o vidro do
-futurista sobre um céu com nebulosa e estrelas, Exo 2, e trocar de tela é viajar no eixo z).
+futurista sobre um céu com nebulosa e estrelas, Exo 2, e trocar de tela é uma deriva no
+eixo z).
 Decisões em [PLAN-tema-tatico.md](PLAN-tema-tatico.md),
 [PLAN-tema-futurista.md](PLAN-tema-futurista.md) e [PLAN-tema-espaco.md](PLAN-tema-espaco.md).
 

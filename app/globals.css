@@ -1485,7 +1485,7 @@ a {
   background: var(--theme-ac);
   box-shadow: 0 0 12px var(--theme-ac);
   pointer-events: none;
-  transition: left 0.7s cubic-bezier(0.65, 0, 0.25, 1);
+  transition: left 0.45s cubic-bezier(0.3, 0, 0.2, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
