@@ -26,7 +26,8 @@ const STYLE_LABEL: Record<ThemeStyle, string> = {
 
 /**
  * "Aparência": o estilo e, no tático e no futurista, a cor única (e as scanlines
- * do tático). O espaço tem cor fixa. A troca vale na hora (atributos do <html>), sem recarregar.
+ * do tático). O espaço tem cor fixa. A troca vale na hora (atributos do <html>),
+ * sem recarregar. Estilo e cor ficam recolhidos numa linha cada.
  */
 export function ThemeSettings() {
   // null até o mount: a preferência mora no localStorage (regra 10).
@@ -44,39 +45,8 @@ export function ThemeSettings() {
   const style = pref?.style;
 
   return (
-    <SettingsGroup
-      title="Aparência"
-      footer={
-        style === "espaco"
-          ? "No espaço, todos os treinos ficam na mesma cor."
-          : style && style !== "padrao"
-            ? `No ${STYLE_LABEL[style].toLowerCase()}, todos os treinos ficam na cor escolhida.`
-            : undefined
-      }
-    >
-      <div className="border-b border-border px-4 py-3">
-        <p className="flex items-center gap-3 text-md font-medium">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface2">
-            <MonitorIcon className="h-[18px] w-[18px]" />
-          </span>
-          Estilo
-        </p>
-        {/* Grade 2×2: quatro estilos numa linha estouravam "Futurista" em tela de 360px. */}
-        <div className="mt-2 grid grid-cols-2 gap-1.5" role="group" aria-label="Estilo">
-          {(Object.keys(STYLE_LABEL) as ThemeStyle[]).map((s) => (
-            <button
-              key={s}
-              type="button"
-              aria-pressed={style === s}
-              disabled={!pref}
-              onClick={() => update({ style: s })}
-              className="toggle tap rounded-full px-3 py-1.5 text-sm text-muted"
-            >
-              {STYLE_LABEL[s]}
-            </button>
-          ))}
-        </div>
-      </div>
+    <SettingsGroup title="Aparência">
+      <StylePicker value={style} onPick={(s) => update({ style: s })} />
 
       {pref && style === "tatico" && (
         <>
@@ -114,6 +84,61 @@ export function ThemeSettings() {
         />
       )}
     </SettingsGroup>
+  );
+}
+
+/**
+ * Estilo recolhido numa linha (nome do atual); o toque abre os quatro e escolher
+ * fecha de novo, como a cor. `value` vazio até o mount (regra 10).
+ */
+function StylePicker({
+  value,
+  onPick,
+}: {
+  value: ThemeStyle | undefined;
+  onPick: (style: ThemeStyle) => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="border-b border-border last:border-b-0">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        disabled={!value}
+        className="tap flex w-full items-center gap-3 px-4 py-3 text-left active:bg-surface2"
+      >
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface2">
+          <MonitorIcon className="h-[18px] w-[18px]" />
+        </span>
+        <span className="min-w-0 flex-1 text-md font-medium">Estilo</span>
+        <span className="shrink-0 text-sm text-muted">{value ? STYLE_LABEL[value] : ""}</span>
+        <ChevronDownIcon
+          className={`h-4 w-4 shrink-0 text-muted transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {open && (
+        // Grade 2×2: quatro estilos numa linha estouravam "Futurista" em tela de 360px.
+        <div className="anim-fade-in grid grid-cols-2 gap-1.5 px-4 pb-3" role="group" aria-label="Estilo">
+          {(Object.keys(STYLE_LABEL) as ThemeStyle[]).map((s) => (
+            <button
+              key={s}
+              type="button"
+              aria-pressed={value === s}
+              onClick={() => {
+                onPick(s);
+                setOpen(false);
+              }}
+              className="toggle tap rounded-full px-3 py-1.5 text-sm text-muted"
+            >
+              {STYLE_LABEL[s]}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
