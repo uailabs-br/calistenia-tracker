@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { APP_NAME, CONTACT_LABEL, CONTACT_URL } from "@/lib/appInfo";
 import { TypedHeadline } from "@/components/landing/TypedHeadline";
+import { OneTapDemo } from "@/components/landing/OneTapDemo";
 import { ProofTiles } from "@/components/landing/ProofTiles";
 import { LevelShowcase } from "@/components/landing/LevelShowcase";
 import { LadderPreview } from "@/components/landing/LadderPreview";
@@ -16,9 +17,10 @@ import { accentVars, DEFAULT_ACCENT } from "@/components/ui/accent";
  * nada de `loadPlan()` aqui (regra 10) e nada de Dexie.
  *
  * O ritmo é alternado de propósito — bloco de texto curto, bloco de app — porque
- * a primeira versão virou textão. Quem carrega o argumento é a interface: a
- * escada, o sinal de progressão. O texto só amarra. A abertura fica só com título
- * e botão: o cartão tocável ao lado poluía o primeiro olhar.
+ * a primeira versão virou textão. Quem carrega o argumento é a interface: o
+ * cartão tocável, a escada, o sinal de progressão. O texto só amarra. A abertura
+ * fica só com título e botão: o cartão ao lado dela poluía o primeiro olhar, e
+ * desceu pra seção que fala do registro.
  */
 export const metadata: Metadata = {
   title: `${APP_NAME} — treino de calistenia com plano e registro`,
@@ -57,12 +59,19 @@ export default function SobrePage() {
       {/* ── Durante o treino ─────────────────────────────────────────── */}
       <section className="border-y border-border bg-surface/40">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10 sm:py-12">
-          <h2 className="display max-w-lg text-2xl leading-tight sm:text-3xl">
-            O treino do dia te espera na tela inicial
-          </h2>
-          <p className="mt-3 max-w-lg leading-relaxed text-muted">
-            Um toque pra começar, um toque por série. Sem teclado, sem formulário.
-          </p>
+          <div className="grid gap-8 lg:grid-cols-[1fr_minmax(0,22rem)] lg:items-center lg:gap-14">
+            <div>
+              <h2 className="display max-w-lg text-2xl leading-tight sm:text-3xl">
+                O treino do dia te espera na tela inicial
+              </h2>
+              <p className="mt-3 max-w-lg leading-relaxed text-muted">
+                Um toque pra começar, um toque por série. Sem teclado, sem formulário.
+              </p>
+            </div>
+            <div className="mx-auto w-full max-w-sm lg:max-w-none">
+              <OneTapDemo />
+            </div>
+          </div>
           <div className="mt-8">
             <ProofTiles />
           </div>

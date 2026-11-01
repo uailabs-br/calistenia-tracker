@@ -22,7 +22,7 @@ const MOUTHS: Record<number, string> = {
 };
 
 /** Carinha de esforço (1 leve → 5 no limite). SVG stroke, currentColor. */
-function EffortFace({ level, className }: { level: number; className?: string }) {
+export function EffortFace({ level, className }: { level: number; className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
       <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
