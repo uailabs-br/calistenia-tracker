@@ -2,13 +2,14 @@ import { ChevronDownIcon } from "@/components/ui/icons";
 import { CONTACT_LABEL, CONTACT_URL } from "@/lib/appInfo";
 
 /** Data da última revisão do texto. Mexeu no conteúdo, mexe aqui. */
-const UPDATED_AT = "23/10/2026";
+const UPDATED_AT = "31/10/2026";
 
 /**
  * Cada item é uma pergunta que esse tipo de documento precisa responder, em uma
  * ou duas linhas. O texto descreve o que o app faz HOJE: sem servidor, sem conta,
- * sem analytics. Se isso mudar (sync, métrica de uso), este arquivo muda antes do
- * código — prometer coleta que não existe é tão errado quanto esconder a que existe.
+ * e a única medição é a contagem de visitas da Vercel. Se isso mudar (sync, eventos
+ * de uso — ver docs/PLAN-instrumentacao.md), este arquivo muda antes do código:
+ * prometer coleta que não existe é tão errado quanto esconder a que existe.
  *
  * `<details>` nativo, e não um componente cliente: a /sobre é a única página
  * prerenderizada de verdade e não deve virar cliente só pra abrir uma seção.
@@ -20,15 +21,19 @@ const ITEMS: { title: string; body: string }[] = [
   },
   {
     title: "Pra onde eles vão",
-    body: "Hoje, pra lugar nenhum. O app não tem servidor, não tem anúncio, não tem rastreador e não vende dado de ninguém.",
+    body: "Os treinos, pra lugar nenhum: ficam neste aparelho. O app não tem servidor, não tem anúncio e não vende dado de ninguém. O que sai é a contagem de visitas, explicada logo abaixo.",
+  },
+  {
+    title: "O que o app mede",
+    body: "A Vercel, que hospeda o app, conta as visitas: qual página foi aberta, de onde a pessoa veio, o país e o tipo de aparelho e navegador. Não usa cookie e não identifica você: cada visita vira um código que é descartado em 24 horas. Nada do treino vai junto.",
   },
   {
     title: "Pra que são usados",
-    body: "Só pra o app funcionar pra você: retomar o treino, mostrar sua evolução e dizer quando dá pra progredir. Se um dia o app passar a medir o uso pra se aprimorar, será só pra isso, e o aviso entra aqui antes.",
+    body: "Os treinos, só pra o app funcionar pra você: retomar o treino, mostrar sua evolução e dizer quando dá pra progredir. A contagem de visitas, pra saber se o app está chegando em quem treina. Se o app passar a medir mais do que isso, o aviso entra aqui antes.",
   },
   {
-    title: "A única conexão externa",
-    body: "As ilustrações dos exercícios vêm do RepDB. Ao carregá-las, esse site enxerga seu IP e seu navegador, como em qualquer imagem na web. Depois de baixadas, ficam no aparelho.",
+    title: "Conexões externas",
+    body: "As ilustrações dos exercícios vêm do RepDB. Ao carregá-las, esse site enxerga seu IP e seu navegador, como em qualquer imagem na web. Depois de baixadas, ficam no aparelho. A outra conexão é a contagem de visitas da Vercel, descrita acima.",
   },
   {
     title: "Quando você usa uma IA",

@@ -13,6 +13,7 @@
     "validate:plan": "node scripts/validate-plan.mjs"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "dexie": "^4.0.11",
     "dexie-react-hooks": "^1.1.7",
     "next": "^15.1.6",

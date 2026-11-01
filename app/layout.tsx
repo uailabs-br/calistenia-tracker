@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { DM_Sans, DM_Mono, Barlow_Condensed, Chakra_Petch, Exo_2 } from "next/font/google";
 import "./globals.css";
 import { BottomNav } from "@/components/ui/BottomNav";
@@ -107,6 +108,9 @@ export default function RootLayout({
           <BottomNav />
           <Splash />
         </ToastProvider>
+        {/* Só pageview por rota: o treino fica no IndexedDB e nunca sai do aparelho.
+            Visita offline não é contada (o envio falha sem rede), então o número fica abaixo do uso real. */}
+        <Analytics />
       </body>
     </html>
   );
