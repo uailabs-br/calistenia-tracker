@@ -2,7 +2,7 @@
 
 Documento **vivo**: se divergir do código, o documento está errado.
 
-O app é dark-only e tem uma cor por treino. O sistema mora em três lugares:
+O app é escuro (só o tema clean tem versão clara) e tem uma cor por treino. O sistema mora em três lugares:
 
 - **Tokens** em [`app/globals.css`](../app/globals.css) (`@theme`): cor, fonte, tamanho, raio.
 - **Utilitários de componente** no mesmo arquivo (`@utility`): botão, card, campo, rótulo, alternância.
@@ -26,7 +26,7 @@ Não há biblioteca de componentes nem de gráficos: num PWA offline, bundle é 
 | `--color-muted` | `text-muted` | texto secundário (5,2:1, passa AA em texto pequeno) |
 | `--color-danger` / `success` / `warn` / `gold` | `text-danger`… | erro, ganho, atenção, recorde |
 | `--color-on-accent` | `text-on-accent` | texto sobre a cor do treino |
-| `--color-brand` | `text-brand`… | lilás do símbolo (ícone e abertura). Fixo: não segue treino nem tema |
+| `--color-brand` | `text-brand`… | gelo do símbolo (ícone e abertura), a cor do tema espaço. Fixo: não segue treino nem tema |
 
 ### Cor do treino
 
@@ -148,17 +148,19 @@ cheia entra por opacidade, nunca com flash ou corte seco: no celular isso lê co
 
 ## Temas
 
-Quatro estilos, escolhidos em Ajustes → Aparência: **padrão** (o de sempre), **tático**
+Cinco estilos, escolhidos em Ajustes → Aparência. Quem nunca escolheu cai no **espaço**
+(`DEFAULT_THEME`, desde 2026-10-31); quem escolheu o padrão continua nele. **padrão** (o de sempre), **tático**
 (escuro militar, cantos retos, caixa alta, scanlines), **futurista** (vidro translúcido
 sobre brilho na cor, Chakra Petch em título, número e botão) e **espaço** (o vidro do
 futurista sobre um céu com nebulosa e estrelas, Exo 2, e trocar de tela é uma deriva no
-eixo z).
+eixo z) e **clean** (monocromático em Geist, card vira filete, fundo papel ou grafite).
 Decisões em [PLAN-tema-tatico.md](PLAN-tema-tatico.md),
-[PLAN-tema-futurista.md](PLAN-tema-futurista.md) e [PLAN-tema-espaco.md](PLAN-tema-espaco.md).
+[PLAN-tema-futurista.md](PLAN-tema-futurista.md), [PLAN-tema-espaco.md](PLAN-tema-espaco.md) e
+[PLAN-tema-clean.md](PLAN-tema-clean.md).
 
-- O tema mora em atributos do `<html>`: `data-theme` (`tatico`, `futurista` ou `espaco`), `data-tone`
+- O tema mora em atributos do `<html>`: `data-theme` (`tatico`, `futurista`, `espaco` ou `clean`), `data-tone`
   (no tático: verde, ciano, ambar, oliva, gelo; no futurista: ciano, lilas, limao, laranja,
-  gelo; o espaço não tem) e `data-scanlines` (só tático). No padrão não há atributo nenhum.
+  gelo; no clean: papel, grafite; o espaço não tem) e `data-scanlines` (só tático). No padrão não há atributo nenhum.
 - Quem marca é o boot script do `<head>` (`THEME_BOOT_SCRIPT` em `lib/utils/theme.ts`), antes
   da primeira pintura. Ajustes chama `setThemePref`, que grava e reaplica na hora.
 - **Nenhum componente decide nada pelo tema.** Cada tema é um bloco no fim de `globals.css`
@@ -168,7 +170,7 @@ Decisões em [PLAN-tema-tatico.md](PLAN-tema-tatico.md),
   renderiza as duas versões e o CSS escolhe. Exceção do espaço: `SpaceSky` e
   `PageTransition` leem o `data-theme` em JS, mas só depois do mount (efeito e ref), pra
   ligar o céu e a viagem; o render não muda.
-- **Cor do treino trocável:** no tático, no futurista e no espaço todos os treinos (e as categorias de
+- **Cor do treino trocável:** no tático, no futurista, no espaço e no clean todos os treinos (e as categorias de
   skill) ficam na cor do tom. Por isso toda cor de treino passa por `accentVars`, `themedAccent` ou
   `themedAccentBg`, que escrevem `var(--theme-ac, <hex do plano>)`. No padrão
   `--theme-ac` não existe e vale o hex.
@@ -213,7 +215,21 @@ O espaço herda tudo isso (os seletores do futurista valem pros dois) e troca:
 | `heat-cell` + `data-level` | `ConsistencyHeatmap` | cada dia vira estrela; treinado acende |
 | `app-nav ul` + `data-tab` / `--tab-i` | `BottomNav` | trilho com um ponto por aba e marcador que anda até a acesa |
 
-A landing usa a cor fixa (`DEFAULT_ACCENT` literal): quem chega nela ainda não escolheu tema.
+O clean usa `card`, `glow`, `glass`, `consistency-*`, `heat-cell`, `rest-*` e `app-nav` do
+seu jeito (filete no lugar da caixa, pontos na semana, descanso em tela inteira) e acrescenta:
+
+| Classe | Onde | No clean |
+|---|---|---|
+| `settings-card` / `settings-icon` | `SettingsGroup`, `SettingsRow`, cor/estilo em Ajustes | linha sem recuo; ícone solto, sem quadrado |
+| `workout-tile` | `WorkoutCard` (fila da aba Treino) | segue cartão com contorno |
+| `rest-back` / `rest-done` | `RestTimer` | fundo vira a página (tela inteira); "Pronto" no fim |
+
+A barra do sistema (`theme-color`) segue o tema só no papel: `barColor` em
+`lib/utils/theme.ts`, aplicada pelo boot script e por `setThemePref`.
+
+A landing usa `accentVars(DEFAULT_ACCENT)`: quem chega nela ainda não escolheu tema, então cai
+no espaço e a cor vira o gelo. O demo (`OneTapDemo`) fica numa moldura de tela, com fundo
+sólido, pra não se misturar com os cards da página.
 
 ---
 

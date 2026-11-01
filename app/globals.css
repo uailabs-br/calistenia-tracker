@@ -19,8 +19,8 @@
   --color-warn: #ff9066;
   --color-gold: #f0b429;
   --color-on-accent: #0e0e0f; /* texto sobre fundo no accent do dia */
-  /* Lilás do símbolo (ícone e abertura). Fixo: a marca não muda com a cor do treino nem com o tema. */
-  --color-brand: #a99bff;
+  /* Gelo do símbolo (ícone e abertura), a cor do tema espaço. Fixo: a marca não muda com a cor do treino nem com o tema. */
+  --color-brand: #bfd7ff;
 
   --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-dm-mono), ui-monospace, monospace;
@@ -1090,9 +1090,10 @@ a {
 :root:is([data-theme="futurista"], [data-theme="espaco"]) .stat-num {
   font-size: 2.625rem;
 }
-/* Dois botões lado a lado no diálogo: na Chakra espaçada, "Sair sem salvar"
-   quebrava em duas linhas. Cada um ocupa conforme o próprio texto. */
-:root:is([data-theme="futurista"], [data-theme="espaco"]) .dialog-actions > button {
+/* Dois botões lado a lado (diálogo, demo da landing): na Chakra e na Exo
+   espaçadas, "Sair sem salvar" e "Fiz como previsto" quebravam em duas linhas.
+   Cada um ocupa conforme o próprio texto. */
+:root:is([data-theme="futurista"], [data-theme="espaco"]) :is(.dialog-actions, .btn-pair) > button {
   flex: 1 1 auto;
   padding-inline: 8px;
   font-size: 0.8125rem;
@@ -1499,4 +1500,327 @@ a {
   :root[data-theme="espaco"] .app-nav ul[data-tab]::after {
     transition: none;
   }
+}
+
+/* ── Tema clean (Ajustes → Aparência) ───────────────────────────────────
+   Monocromático: quase tudo em cinza e a cor ativa é a própria tinta do texto,
+   então só o que se toca pra treinar (começar, registrar, pular) fica cheio.
+   Hierarquia por tamanho e peso, não por borda: card vira bloco com um filete
+   em cima, sem fundo. Uma fonte (Geist) pra tudo, em frase normal. Sem onda no
+   botão e sem animação de entrada de tela. O papel é o único tema claro; o
+   grafite é a mesma ideia no escuro. Decisão em docs/PLAN-tema-clean.md. */
+:root {
+  --ctone-papel: #f4f3ef;
+  --ctone-grafite: #0f0f10;
+}
+
+:root[data-theme="clean"] {
+  --color-bg: var(--ctone-papel);
+  /* sólidas: sheet, diálogo e toast precisam esconder o que está atrás */
+  --color-surface: #ffffff;
+  --color-surface2: #eae9e4;
+  --color-border: #dddcd6;
+  --color-text: #141414;
+  /* 5:1 sobre o papel */
+  --color-muted: #686866;
+  --color-danger: #c4372c;
+  --color-warn: #b4530f;
+  --color-gold: #8a5a00;
+  --color-on-accent: var(--ctone-papel);
+  /* traço apagado: dia não treinado, trilho */
+  --faint: rgb(20 20 20 / 0.12);
+
+  --theme-ac: var(--color-text);
+  --theme-ac-bg: rgb(20 20 20 / 0.05);
+  --ac: var(--theme-ac);
+  --ac-bg: var(--theme-ac-bg);
+  --color-success: var(--theme-ac);
+
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --radius-card: 14px;
+  color-scheme: light;
+}
+:root[data-theme="clean"][data-tone="grafite"] {
+  --color-bg: var(--ctone-grafite);
+  --color-surface: #18181a;
+  --color-surface2: #222224;
+  --color-border: #2a2a2d;
+  --color-text: #ededea;
+  --color-muted: #8e8e93;
+  --color-danger: #ff6b6b;
+  --color-warn: #ff9066;
+  --color-gold: #f0b429;
+  --color-on-accent: var(--ctone-grafite);
+  --faint: rgb(255 255 255 / 0.12);
+  --theme-ac-bg: rgb(255 255 255 / 0.06);
+  color-scheme: dark;
+}
+
+/* Texto: título em frase normal e apertado; número grande em peso leve. */
+:root[data-theme="clean"] :is(.display, .display-caps) {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  text-transform: none;
+}
+:root[data-theme="clean"] :is(.text-display-lg, .text-display-xl, .text-display-hero, .stat-num) {
+  font-weight: 300;
+  letter-spacing: -0.03em;
+}
+:root[data-theme="clean"] :is(.eyebrow, .eyebrow-lg) {
+  font-size: var(--text-xs);
+  text-transform: none;
+  letter-spacing: 0;
+}
+:root[data-theme="clean"] .eyebrow-lg {
+  font-size: 0.8125rem;
+}
+
+/* Bloco: some o fundo e a borda, fica o filete de cima. O destaque (próximo
+   treino) é bloco como os outros: quem chama atenção é o botão. `!important`
+   porque o próximo treino traz o fundo da cor do treino inline. */
+:root[data-theme="clean"] :is(.card, .glow, .glass) {
+  background: transparent !important;
+  border: 0;
+  border-top: 1px solid var(--color-border);
+  border-radius: 0;
+  box-shadow: none;
+}
+/* Sem caixa, sem recuo: o conteúdo alinha com o título da página. Em Ajustes o
+   recuo mora em cada linha (px-4), daí o gancho no grupo. */
+:root[data-theme="clean"] :is(.card, .glow, .glass),
+:root[data-theme="clean"] .settings-card .px-4 {
+  padding-inline: 0;
+}
+:root[data-theme="clean"] .glass > button:first-child {
+  padding-inline: 0;
+}
+:root[data-theme="clean"] .settings-icon {
+  width: 20px;
+  background: none !important;
+  color: var(--color-muted);
+}
+/* Amostra do fundo em Ajustes: o papel sumiria no papel sem contorno. */
+:root[data-theme="clean"] .settings-icon > .rounded-full {
+  box-shadow: 0 0 0 1px var(--color-muted);
+}
+/* A fila horizontal da aba Treino é a exceção: cartão com contorno, como no
+   protótipo. O próximo traz a borda na cor inline. */
+:root[data-theme="clean"] .workout-tile {
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding-inline: 12px;
+}
+/* Exercício da sessão em andamento: o filete vira traço cheio na tinta. */
+:root[data-theme="clean"] .glass-key {
+  border-top-color: var(--color-text);
+}
+
+/* Caixa alta solta pelo app (rótulos, avisos) volta a frase normal. */
+:root[data-theme="clean"] .uppercase {
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Botões chapados, sem gradiente, filete nem onda. */
+:root[data-theme="clean"] .btn-primary {
+  background: var(--ac);
+  box-shadow: none;
+  font-weight: 500;
+}
+:root[data-theme="clean"] .btn-primary:active {
+  opacity: 0.88;
+}
+:root[data-theme="clean"] .btn-secondary {
+  background: transparent;
+  border-color: var(--color-border);
+}
+:root[data-theme="clean"] .btn-neutral {
+  background: transparent;
+}
+:root[data-theme="clean"] .anim-ring {
+  animation: none;
+}
+/* Tecla de série: círculo de traço fino, sem a altura da tecla física. */
+:root[data-theme="clean"] .btn-key,
+:root[data-theme="clean"] .btn-key:active {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 9999px;
+}
+:root[data-theme="clean"] .btn-key:active {
+  background: var(--faint);
+  transform: none;
+}
+
+/* Troca de tela na hora. */
+:root[data-theme="clean"] .anim-page {
+  animation: none;
+}
+
+:root[data-theme="clean"] .letter-chip {
+  border-radius: 7px;
+}
+:root[data-theme="clean"] .session-progress {
+  height: 3px;
+  background: var(--faint);
+}
+:root[data-theme="clean"] .mission-screen {
+  background: var(--color-bg);
+}
+
+/* Constância: a sequência em texto e a semana em pontos, a letra embaixo. Feito
+   é ponto cheio; hoje, anel; avulso, anel tracejado. `!important` vence as cores
+   inline do componente. */
+:root[data-theme="clean"] :is(.consistency-ring, .consistency-title) {
+  display: none;
+}
+:root[data-theme="clean"] .consistency-left {
+  display: block;
+}
+:root[data-theme="clean"] .consistency-sub {
+  margin-top: 0;
+  font-size: var(--text-md);
+  font-weight: 500;
+  color: var(--color-text);
+}
+:root[data-theme="clean"] .consistency-day {
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  width: auto;
+  height: auto;
+  background: none !important;
+  border: 0 !important;
+  border-radius: 0;
+  color: var(--color-muted) !important;
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 400;
+}
+:root[data-theme="clean"] .consistency-day::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--faint);
+}
+:root[data-theme="clean"] .consistency-day[data-done]::before {
+  background: var(--color-text);
+}
+:root[data-theme="clean"] .consistency-day.border-2:not([data-done])::before {
+  background: none;
+  box-shadow: inset 0 0 0 1.5px var(--color-text);
+}
+:root[data-theme="clean"] .consistency-day.border-dashed::before {
+  background: none;
+  border: 1.5px dashed var(--color-text);
+}
+:root[data-theme="clean"] .consistency-day:is(.border-2, [data-done]) {
+  color: var(--color-text) !important;
+  font-weight: 500;
+}
+
+/* Evolução: quadrado cheio é dia treinado, sem relevo. */
+:root[data-theme="clean"] .heat-cell {
+  background: var(--faint) !important;
+  box-shadow: none !important;
+}
+:root[data-theme="clean"] .heat-cell[data-level="trained"] {
+  background: var(--color-text) !important;
+}
+:root[data-theme="clean"] .heat-cell[data-today]:not([data-level="trained"]) {
+  background: transparent !important;
+  box-shadow: inset 0 0 0 1.5px var(--color-text) !important;
+}
+:root[data-theme="clean"] .heat-cell[data-level="future"] {
+  background: transparent !important;
+}
+
+/* Descanso: a tela inteira vira o relógio. Anel fino na tinta, número leve,
+   título em cima e os botões embaixo; no fim, "Pronto" no lugar do número. */
+:root[data-theme="clean"] .rest-back {
+  background: var(--color-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 0;
+}
+:root[data-theme="clean"] .rest-card {
+  width: 100%;
+  height: 100%;
+  justify-content: flex-start;
+  padding: calc(env(safe-area-inset-top) + 48px) 24px calc(env(safe-area-inset-bottom) + 28px);
+  background: transparent !important;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+:root[data-theme="clean"] .rest-title {
+  display: block;
+  align-self: flex-start;
+  font-size: var(--text-sm);
+}
+:root[data-theme="clean"] :is(.rest-label, .rest-disc, .rest-liquid, .rest-ticks, .rest-check, .rest-arc-done) {
+  display: none;
+}
+/* `!important`: o tamanho do padrão vem inline do componente. A margem centra o
+   anel no que sobra, com ou sem os botões embaixo (no fim eles somem). */
+:root[data-theme="clean"] .rest-ring {
+  width: 240px !important;
+  height: 240px !important;
+  margin-block: auto;
+}
+/* No fim o "Pronto" do anel basta; o título repetiria. */
+:root[data-theme="clean"] .rest-card:has(.rest-done) .rest-title {
+  visibility: hidden;
+}
+/* O svg tem viewBox de 176: a 240px tudo cresce 1,36×, daí 1,5 dar ~2px. */
+:root[data-theme="clean"] :is(.rest-track, .rest-arc) {
+  stroke-width: 1.5px;
+}
+:root[data-theme="clean"] .rest-arc {
+  filter: none !important;
+}
+:root[data-theme="clean"] .rest-clock {
+  font-size: 4rem;
+  font-weight: 200;
+  text-shadow: none !important;
+}
+:root[data-theme="clean"] .rest-done {
+  display: block;
+  font-size: 3rem;
+  font-weight: 300;
+  line-height: 1;
+}
+:root[data-theme="clean"] .rest-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.4fr;
+  width: 100%;
+}
+:root[data-theme="clean"] .rest-btns > button {
+  justify-content: center;
+  min-height: 54px;
+  border-radius: 14px;
+  background: transparent;
+}
+:root[data-theme="clean"] .rest-btns > .rest-skip {
+  background: var(--theme-ac) !important;
+  color: var(--color-on-accent) !important;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+/* Navegação: chapada no fundo, a aba atual só fica na tinta. */
+:root[data-theme="clean"] .app-nav {
+  background: var(--color-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+:root[data-theme="clean"] .app-nav a {
+  font-size: var(--text-2xs);
+}
+:root[data-theme="clean"] .app-nav a[aria-current="page"] {
+  color: var(--color-text);
+  font-weight: 500;
 }

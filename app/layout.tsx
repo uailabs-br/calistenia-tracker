@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
-import { DM_Sans, DM_Mono, Barlow_Condensed, Chakra_Petch, Exo_2 } from "next/font/google";
+import { DM_Sans, DM_Mono, Barlow_Condensed, Chakra_Petch, Exo_2, Geist } from "next/font/google";
 import "./globals.css";
 import { BottomNav } from "@/components/ui/BottomNav";
 import { SwUpdater } from "@/components/ui/SwUpdater";
@@ -11,7 +11,7 @@ import { AppMain } from "@/components/ui/AppMain";
 import { Splash } from "@/components/ui/Splash";
 import { SpaceSky } from "@/components/ui/SpaceSky";
 import { APP_NAME } from "@/lib/appInfo";
-import { THEME_BOOT_SCRIPT } from "@/lib/utils/theme";
+import { BAR_COLOR, THEME_BOOT_SCRIPT } from "@/lib/utils/theme";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -55,6 +55,15 @@ const exo = Exo_2({
   preload: false,
 });
 
+// Fonte única do tema clean (texto, título e número), no mesmo esquema: só baixa
+// com o tema ligado. Variável: um arquivo cobre do 200 do cronômetro ao 600 do título.
+const geist = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist",
+  display: "swap",
+  preload: false,
+});
+
 export const metadata: Metadata = {
   title: APP_NAME,
   description: "Registro de treino de calistenia, com plano e progressão.",
@@ -76,7 +85,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0e0e0f", // = --color-bg (metadata não lê variável CSS)
+  themeColor: BAR_COLOR, // = --color-bg (metadata não lê variável CSS); o tema papel troca no boot
   width: "device-width",
   initialScale: 1,
   // zoom liberado (WCAG 1.4.4). Inputs usam 16px p/ evitar auto-zoom do iOS.
@@ -91,7 +100,7 @@ export default function RootLayout({
     // então os atributos dele divergem do HTML estático de propósito (só este nível).
     <html
       lang="pt-BR"
-      className={`${dmSans.variable} ${dmMono.variable} ${barlow.variable} ${chakra.variable} ${exo.variable}`}
+      className={`${dmSans.variable} ${dmMono.variable} ${barlow.variable} ${chakra.variable} ${exo.variable} ${geist.variable}`}
       suppressHydrationWarning
     >
       <head>

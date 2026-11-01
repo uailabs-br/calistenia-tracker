@@ -92,7 +92,8 @@ export function OneTapDemo() {
       <div
         role="group"
         aria-label="Demonstração: um treino do começo ao fim"
-        className="relative flex flex-col lg:min-h-108 lg:justify-center"
+        // Moldura de tela: sem ela os cards da demo se misturavam com os da página.
+        className="relative flex flex-col rounded-3xl border border-border bg-bg p-3 sm:p-4 lg:min-h-108 lg:justify-center"
       >
         {step === "home" && (
           <div ref={stepRef} tabIndex={-1} className="anim-fade-in-up glow rounded-card bg-ac-bg p-5 outline-none">
@@ -235,7 +236,7 @@ export function OneTapDemo() {
                           <PlusIcon className="h-6 w-6" />
                         </button>
                       </div>
-                      <div className="mt-4 flex gap-2">
+                      <div className="btn-pair mt-4 flex gap-2">
                         <button
                           type="button"
                           onClick={() => log(editing)}
@@ -254,7 +255,7 @@ export function OneTapDemo() {
                       </div>
                     </>
                   ) : (
-                    <div className="mt-4 flex gap-2">
+                    <div className="btn-pair mt-4 flex gap-2">
                       <button
                         type="button"
                         onClick={() => log([...ex.sets])}
@@ -295,7 +296,7 @@ export function OneTapDemo() {
         {/* A pergunta de esforço do RpeSheet, presa à caixa da demo: um Sheet de
             verdade cobriria a landing inteira por causa de uma demonstração. */}
         {step === "rate" && (
-          <div className="anim-fade-in absolute -inset-2 flex items-end overflow-hidden rounded-card bg-bg/60 backdrop-blur-sm">
+          <div className="anim-fade-in absolute inset-0 flex items-end overflow-hidden rounded-3xl bg-bg/60 backdrop-blur-sm">
             <div
               ref={stepRef}
               tabIndex={-1}

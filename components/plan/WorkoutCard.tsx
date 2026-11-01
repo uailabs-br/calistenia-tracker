@@ -58,7 +58,7 @@ export function WorkoutCard({
         type="button"
         onClick={onOpen}
         aria-haspopup="dialog"
-        className="card tap flex w-[8.25rem] flex-col gap-2 p-3 text-left active:scale-[0.97]"
+        className="workout-tile card tap flex w-[8.25rem] flex-col gap-2 p-3 text-left active:scale-[0.97]"
         style={{ borderColor: next ? themedAccent(workout.accent) : "var(--color-border)" }}
       >
         <span className="flex w-full items-center justify-between gap-1.5">

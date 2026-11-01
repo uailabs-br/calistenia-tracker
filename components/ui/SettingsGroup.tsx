@@ -21,7 +21,7 @@ export function SettingsGroup({
           {title}
         </h2>
       )}
-      <div className="card overflow-hidden">
+      <div className="settings-card card overflow-hidden">
         {children}
       </div>
       {footer && <p className="mt-2 px-1 text-xs leading-snug text-muted">{footer}</p>}

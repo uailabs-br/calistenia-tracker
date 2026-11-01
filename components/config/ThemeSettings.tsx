@@ -7,6 +7,8 @@ import { Switch } from "@/components/ui/Switch";
 import { ChevronDownIcon, MonitorIcon, ScanlinesIcon } from "@/components/ui/icons";
 import { haptic } from "@/lib/utils/haptics";
 import {
+  CLEAN_TONE_LABEL,
+  CLEAN_TONES,
   FUTURE_TONE_LABEL,
   FUTURE_TONES,
   getThemePref,
@@ -22,11 +24,12 @@ const STYLE_LABEL: Record<ThemeStyle, string> = {
   tatico: "Tático",
   futurista: "Futurista",
   espaco: "Espaço",
+  clean: "Clean",
 };
 
 /**
  * "Aparência": o estilo e, no tático e no futurista, a cor única (e as scanlines
- * do tático). O espaço tem cor fixa. A troca vale na hora (atributos do <html>),
+ * do tático); no clean, o fundo claro ou escuro. O espaço tem cor fixa. A troca vale na hora (atributos do <html>),
  * sem recarregar. Estilo e cor ficam recolhidos numa linha cada.
  */
 export function ThemeSettings() {
@@ -83,12 +86,24 @@ export function ThemeSettings() {
           onPick={(futureTone) => update({ futureTone })}
         />
       )}
+
+      {pref && style === "clean" && (
+        <TonePicker
+          name="Fundo"
+          label="Fundo do tema clean"
+          tones={CLEAN_TONES}
+          labels={CLEAN_TONE_LABEL}
+          swatch={(t) => `var(--ctone-${t})`}
+          value={pref.cleanTone}
+          onPick={(cleanTone) => update({ cleanTone })}
+        />
+      )}
     </SettingsGroup>
   );
 }
 
 /**
- * Estilo recolhido numa linha (nome do atual); o toque abre os quatro e escolher
+ * Estilo recolhido numa linha (nome do atual); o toque abre as opções e escolher
  * fecha de novo, como a cor. `value` vazio até o mount (regra 10).
  */
 function StylePicker({
@@ -109,7 +124,7 @@ function StylePicker({
         disabled={!value}
         className="tap flex w-full items-center gap-3 px-4 py-3 text-left active:bg-surface2"
       >
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface2">
+        <span className="settings-icon flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface2">
           <MonitorIcon className="h-[18px] w-[18px]" />
         </span>
         <span className="min-w-0 flex-1 text-md font-medium">Estilo</span>
@@ -120,8 +135,8 @@ function StylePicker({
       </button>
 
       {open && (
-        // Grade 2×2: quatro estilos numa linha estouravam "Futurista" em tela de 360px.
-        <div className="anim-fade-in grid grid-cols-2 gap-1.5 px-4 pb-3" role="group" aria-label="Estilo">
+        // Grade de 3: todos numa linha estouravam "Futurista" em tela de 360px.
+        <div className="anim-fade-in grid grid-cols-3 gap-1.5 px-4 pb-3" role="group" aria-label="Estilo">
           {(Object.keys(STYLE_LABEL) as ThemeStyle[]).map((s) => (
             <button
               key={s}
@@ -147,6 +162,7 @@ function StylePicker({
  * fecha de novo. Aberta o tempo todo, a lista de chips ocupava meia tela.
  */
 function TonePicker<T extends string>({
+  name = "Cor",
   label,
   tones,
   labels,
@@ -154,6 +170,8 @@ function TonePicker<T extends string>({
   value,
   onPick,
 }: {
+  /** Nome da linha recolhida. */
+  name?: string;
   label: string;
   tones: readonly T[];
   labels: Record<T, string>;
@@ -171,14 +189,14 @@ function TonePicker<T extends string>({
         aria-expanded={open}
         className="tap flex w-full items-center gap-3 px-4 py-3 text-left active:bg-surface2"
       >
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface2">
+        <span className="settings-icon flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface2">
           <span
             aria-hidden="true"
             className="h-3.5 w-3.5 rounded-full"
             style={{ background: swatch(value) }}
           />
         </span>
-        <span className="min-w-0 flex-1 text-md font-medium">Cor</span>
+        <span className="min-w-0 flex-1 text-md font-medium">{name}</span>
         <span className="shrink-0 text-sm text-muted">{labels[value]}</span>
         <ChevronDownIcon
           className={`h-4 w-4 shrink-0 text-muted transition-transform ${open ? "rotate-180" : ""}`}

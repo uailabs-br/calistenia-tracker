@@ -20,6 +20,23 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-10-31, espaço como padrão e marca em gelo — 734 testes):**
+> quem nunca escolheu estilo agora abre no espaço (boot script e `DEFAULT_THEME`); quem
+> escolheu o padrão segue nele. O A da marca saiu do lilás pro gelo do espaço (#bfd7ff) na
+> abertura, no favicon e nos ícones do app. Na landing, o demo ganhou moldura de tela, e o
+> "Fiz como previsto" parou de quebrar em duas linhas no futurista e no espaço (mesma regra
+> dos botões de diálogo, gancho `btn-pair`). Sem teste em celular.
+>
+> **Atualização (pós-v1.8, 2026-10-31, tema clean — 730 testes):** quinto estilo em Ajustes →
+> Aparência, escolhido no protótipo de temas depois de uma pesquisa de referências (Teenage
+> Engineering, Dieter Rams, Things 3, Linear). Monocromático: a cor ativa é a tinta do texto,
+> então só começar, registrar e pular ficam cheios. Card vira bloco com um filete em cima, sem
+> fundo nem recuo; a fila de treinos segue em cartão. Fonte única Geist (sem preload), sem caixa
+> alta, número grande em peso leve, sem onda no botão nem animação de entrada. Dois fundos em
+> Ajustes: papel (o primeiro tema claro, que também clareia a barra do sistema no Android) e
+> grafite. Descanso em tela inteira com anel fino e "Pronto" no fim. Decisões em
+> `docs/PLAN-tema-clean.md`. Sem teste em celular.
+>
 > **Atualização (pós-v1.8, 2026-10-30, tema espaço e descanso dos protótipos — 718 testes):**
 > quarto estilo em Ajustes → Aparência, escolhido no protótipo de temas: o vidro do futurista
 > sobre um céu com nebulosa no roxo do app e estrelas em canvas, títulos em Exo 2 (sem

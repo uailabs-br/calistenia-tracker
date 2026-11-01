@@ -46,7 +46,7 @@ export function SettingsRow({
   const content = (
     <>
       <span
-        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+        className={`settings-icon flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
           danger ? "text-danger" : "bg-surface2 text-text"
         }`}
         style={

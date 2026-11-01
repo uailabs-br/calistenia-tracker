@@ -70,7 +70,7 @@ export function RestTimer({
   // Cheio = descansado: o líquido vira verde e o número dá lugar a um check.
   // Futurista e espaço desenham como nos protótipos (classes `rest-*`): sem o
   // líquido, com régua, anel maior e título em cima; o espaço põe um satélite
-  // na ponta do arco.
+  // na ponta do arco. O clean ocupa a tela inteira, com anel fino e sem cor.
   const size = 176;
   const stroke = 3;
   const radius = (size - stroke) / 2 - 1;
@@ -120,7 +120,7 @@ export function RestTimer({
   return (
     <Portal>
     <div
-      className="anim-fade-in fixed inset-0 z-40 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
+      className="rest-back anim-fade-in fixed inset-0 z-40 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
       role="status"
       aria-live="polite"
       onClick={() => setMinimized(true)}
@@ -220,6 +220,7 @@ export function RestTimer({
             {finished ? (
               <>
               <span className="rest-ok display hidden">OK</span>
+              <span className="rest-done display hidden">Pronto</span>
               <svg
                 viewBox="0 0 24 24"
                 className="rest-check h-[72px] w-[72px]"
