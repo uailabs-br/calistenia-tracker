@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { APP_NAME, CONTACT_LABEL, CONTACT_URL } from "@/lib/appInfo";
 import { TypedHeadline } from "@/components/landing/TypedHeadline";
-import { OneTapDemo } from "@/components/landing/OneTapDemo";
 import { ProofTiles } from "@/components/landing/ProofTiles";
 import { LevelShowcase } from "@/components/landing/LevelShowcase";
 import { LadderPreview } from "@/components/landing/LadderPreview";
@@ -17,8 +16,9 @@ import { accentVars, DEFAULT_ACCENT } from "@/components/ui/accent";
  * nada de `loadPlan()` aqui (regra 10) e nada de Dexie.
  *
  * O ritmo é alternado de propósito — bloco de texto curto, bloco de app — porque
- * a primeira versão virou textão. Quem carrega o argumento é a interface: o
- * cartão tocável, a escada, o sinal de progressão. O texto só amarra.
+ * a primeira versão virou textão. Quem carrega o argumento é a interface: a
+ * escada, o sinal de progressão. O texto só amarra. A abertura fica só com título
+ * e botão: o cartão tocável ao lado poluía o primeiro olhar.
  */
 export const metadata: Metadata = {
   title: `${APP_NAME} — treino de calistenia com plano e registro`,
@@ -39,8 +39,8 @@ export default function SobrePage() {
               "radial-gradient(70% 100% at 50% 0%, color-mix(in oklab, var(--ac) 20%, transparent), transparent)",
           }}
         />
-        <div className="relative mx-auto grid max-w-5xl gap-8 px-4 sm:px-6 pt-10 pb-12 lg:grid-cols-[1fr_minmax(0,22rem)] lg:items-start lg:gap-14 lg:pt-20 lg:pb-16">
-          <div className="lg:col-start-1 lg:row-start-1">
+        <div className="relative mx-auto grid max-w-5xl gap-8 px-4 sm:px-6 pt-10 pb-12 lg:pt-20 lg:pb-16">
+          <div>
             <p className="font-mono text-xs text-muted">{APP_NAME}</p>
             <TypedHeadline />
             <p className="mt-5 max-w-md text-lg leading-relaxed text-muted">
@@ -48,11 +48,7 @@ export default function SobrePage() {
             </p>
           </div>
 
-          <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1">
-            <OneTapDemo />
-          </div>
-
-          <div className="lg:col-start-1 lg:row-start-2 lg:max-w-xs">
+          <div className="lg:max-w-xs">
             <LandingCta />
           </div>
         </div>
