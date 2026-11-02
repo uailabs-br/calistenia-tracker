@@ -184,6 +184,12 @@ describe("exportForAI — perfil_declarado", () => {
     expect(perfil.limitacoes).toEqual(["ombro", "punho"]);
   });
 
+  it("grupos do foco entram no perfil, e sem eles o campo não existe", () => {
+    const base = { equipment: LEGACY_GEAR.chao, level: "iniciante", goal: "definir", days_per_week: 3 } as const;
+    expect(buildDeclaredProfile({ ...base, focus_groups: ["abdomen"] }).grupos_foco).toEqual(["abdomen"]);
+    expect("grupos_foco" in buildDeclaredProfile(base)).toBe(false);
+  });
+
   it("lista de limitações vazia é 'nada declarado': campo ausente, não [] no prompt", () => {
     const perfil = buildDeclaredProfile({
       equipment: LEGACY_GEAR.chao,

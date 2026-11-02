@@ -228,7 +228,7 @@ A barra do sistema (`theme-color`) segue o tema só no papel: `barColor` em
 `lib/utils/theme.ts`, aplicada pelo boot script e por `setThemePref`.
 
 A landing usa `accentVars(DEFAULT_ACCENT)`: quem chega nela ainda não escolheu tema, então cai
-no espaço e a cor vira o gelo. O demo (`OneTapDemo`) fica numa moldura de tela, com fundo
+no futurista gelo e a cor vira o gelo. O demo (`OneTapDemo`) fica numa moldura de tela, com fundo
 sólido, pra não se misturar com os cards da página.
 
 ---

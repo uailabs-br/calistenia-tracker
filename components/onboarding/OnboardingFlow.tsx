@@ -5,7 +5,10 @@ import { useRouter } from "next/navigation";
 import { hasLiveSessions } from "@/lib/db/queries/sessions";
 import {
   aboveTopSeed,
+  focusKind,
   GOALS,
+  MAX_FOCUS_GROUPS,
+  MAX_FOCUS_SKILLS,
   mapAnswersToSkillLevels,
   levelSkillsFor,
   seedFits,
@@ -17,6 +20,7 @@ import {
   type Limitation,
   type OnboardingAnswers,
   type Level,
+  type MuscleGroup,
   type SeedId,
 } from "@/lib/domain/onboarding";
 import { getSeed, listedSeeds } from "@/lib/plan/seeds";
@@ -27,10 +31,14 @@ import { getOnboardingAnswers } from "@/lib/utils/onboarding";
 import { commitOnboarding } from "@/lib/utils/onboardingCommit";
 import { getProfileName } from "@/lib/utils/profile";
 import { usePlanReady } from "@/lib/utils/usePlanReady";
+import { CheckIcon } from "@/components/ui/icons";
 import {
   DAYS_OPTIONS,
   GEAR_OPTIONS,
+  MUSCLE_GROUP_OPTIONS,
   PLACE_OPTIONS,
+  focusSkillOptions,
+  focusSummary,
   gearSummary,
   GOAL_LABEL,
   GOAL_OPTIONS,
@@ -47,6 +55,7 @@ type Step =
   | "nivel"
   | "limitacoes"
   | "objetivo"
+  | "foco"
   | "frequencia"
   | "resumo";
 
@@ -56,6 +65,7 @@ const STEPS: Step[] = [
   "nivel",
   "limitacoes",
   "objetivo",
+  "foco",
   "frequencia",
   "nome",
   "resumo",
@@ -131,6 +141,60 @@ function Choices<V extends string>({
   );
 }
 
+/**
+ * Lista do foco: múltipla até `max`, e a primeira opção é "nada em especial" (a
+ * lista vazia), já marcada, pra quem não liga passar com um toque.
+ */
+function FocusChips<V extends string>({
+  label,
+  noneLabel,
+  options,
+  value,
+  max,
+  onChange,
+}: {
+  label: string;
+  noneLabel: string;
+  options: Option<V>[];
+  value: readonly V[];
+  max: number;
+  onChange: (v: V[]) => void;
+}) {
+  const chip =
+    "toggle tap flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium text-text active:scale-[0.97] disabled:opacity-40";
+  return (
+    <div role="group" aria-label={label} className="mt-2.5 flex flex-wrap gap-2">
+      <button
+        type="button"
+        aria-pressed={value.length === 0}
+        onClick={() => onChange([])}
+        className={chip}
+      >
+        {value.length === 0 && <CheckIcon className="h-3.5 w-3.5" />}
+        {noneLabel}
+      </button>
+      {options.map((o) => {
+        const on = value.includes(o.value);
+        return (
+          <button
+            key={o.value}
+            type="button"
+            aria-pressed={on}
+            disabled={!on && value.length >= max}
+            onClick={() =>
+              onChange(on ? value.filter((v) => v !== o.value) : [...value, o.value])
+            }
+            className={chip}
+          >
+            {on && <CheckIcon className="h-3.5 w-3.5" />}
+            {o.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 /** Linha "rótulo → valor" do resumo. */
 function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
@@ -165,6 +229,8 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
   const [level, setLevel] = useState<Level>("iniciante");
   const [days, setDays] = useState<number>(3);
   const [goal, setGoal] = useState<Goal>("forca");
+  const [focusGroups, setFocusGroups] = useState<MuscleGroup[]>([]);
+  const [focusSkills, setFocusSkills] = useState<string[]>([]);
   const [limitations, setLimitations] = useState<Limitation[]>([]);
   // null = padrão do modo: a sugerida (first) ou "manter meu plano" (redo)
   const [chosenSeed, setChosenSeed] = useState<SeedId | "current" | null>(null);
@@ -192,10 +258,15 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
     setDays(prev.days_per_week);
     // Respostas gravadas por versão anterior tinham outros valores de objetivo
     if (prev.goal && GOALS.includes(prev.goal)) setGoal(prev.goal);
+    if (prev.focus_groups) setFocusGroups(prev.focus_groups);
+    if (prev.focus_skills) setFocusSkills(prev.focus_skills);
     if (prev.limitations) setLimitations(prev.limitations);
   }, [redo, router]);
 
-  const step = STEPS[Math.min(index, STEPS.length - 1)];
+  // O objetivo só muda na tela dele, antes do foco: o índice não salta com a troca.
+  const kind = focusKind(goal);
+  const steps = kind ? STEPS : STEPS.filter((s) => s !== "foco");
+  const step = steps[Math.min(index, steps.length - 1)];
   const isLast = step === "resumo" && view === "step";
 
   // Toda troca de tela começa do topo. O miolo é remontado (key), o que já
@@ -206,9 +277,25 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
     window.scrollTo({ top: 0 });
   }, [index, view]);
 
+  // Voltar e tirar a barra pode deixar marcada uma habilidade que não cabe mais.
+  const skillOptions = useMemo(() => focusSkillOptions(equipment), [equipment]);
+  const liveSkills = useMemo(
+    () => focusSkills.filter((id) => skillOptions.some((o) => o.value === id)),
+    [focusSkills, skillOptions]
+  );
+
   const answers: OnboardingAnswers = useMemo(
-    () => ({ equipment, level, goal, limitations, days_per_week: days }),
-    [equipment, level, goal, limitations, days]
+    () => ({
+      equipment,
+      level,
+      goal,
+      // Só a lista que o objetivo pediu: as marcações da outra ficam na tela, não no dado.
+      ...(kind === "grupos" && focusGroups.length > 0 ? { focus_groups: focusGroups } : {}),
+      ...(kind === "habilidades" && liveSkills.length > 0 ? { focus_skills: liveSkills } : {}),
+      limitations,
+      days_per_week: days,
+    }),
+    [equipment, level, goal, kind, focusGroups, liveSkills, limitations, days]
   );
   const suggested = suggestSeed(answers);
   const acimaDasSementes = aboveTopSeed(answers);
@@ -266,13 +353,13 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
         className="h-1 shrink-0 overflow-hidden rounded-full bg-surface2"
         role="progressbar"
         aria-valuemin={1}
-        aria-valuemax={STEPS.length}
+        aria-valuemax={steps.length}
         aria-valuenow={index + 1}
         aria-label="Progresso do onboarding"
       >
         <div
           className="h-full rounded-full bg-ac transition-all duration-500"
-          style={{ width: `${((index + 1) / STEPS.length) * 100}%` }}
+          style={{ width: `${((index + 1) / steps.length) * 100}%` }}
         />
       </div>
 
@@ -461,7 +548,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
         {view === "step" && step === "objetivo" && (
           <>
             <StepHeading title="Qual seu foco principal?">
-              Guia a IA no seu próximo plano.
+              Guia o Gravks no seu próximo plano.
             </StepHeading>
             <div
               role="radiogroup"
@@ -475,13 +562,50 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
                   role="radio"
                   aria-checked={o.value === goal}
                   onClick={() => setGoal(o.value)}
-                  className="option tap flex min-h-[7rem] flex-col items-center justify-center gap-1 rounded-card px-4 py-5 text-center active:scale-[0.99]"
+                  className={`option tap flex flex-col items-center justify-center gap-1 rounded-card px-4 text-center active:scale-[0.99] ${
+                    o.value === "definir" ? "col-span-2 min-h-[5.5rem] py-4" : "min-h-[7rem] py-5"
+                  }`}
                 >
                   <span className="block text-lg font-semibold">{o.label}</span>
                   <span className="block text-sm leading-snug text-muted">{o.hint}</span>
                 </button>
               ))}
             </div>
+          </>
+        )}
+
+        {view === "step" && step === "foco" && kind === "grupos" && (
+          <>
+            <StepHeading title="Quais grupos quer focar?">
+              {/* Quem escolhe abdômen pra perder peso espera secar a barriga. */}
+              {goal === "definir"
+                ? "Gordura sai do corpo todo. Aqui você só diz onde quer mais treino."
+                : null}
+            </StepHeading>
+            <p className="mt-3.5 text-sm text-muted">Escolha até {MAX_FOCUS_GROUPS}.</p>
+            <FocusChips
+              label="Grupos musculares"
+              noneLabel="Todos"
+              options={MUSCLE_GROUP_OPTIONS}
+              value={focusGroups}
+              max={MAX_FOCUS_GROUPS}
+              onChange={setFocusGroups}
+            />
+          </>
+        )}
+
+        {view === "step" && step === "foco" && kind === "habilidades" && (
+          <>
+            <StepHeading title="Quais habilidades quer treinar?" />
+            <p className="mt-3.5 text-sm text-muted">Escolha até {MAX_FOCUS_SKILLS}.</p>
+            <FocusChips
+              label="Habilidades"
+              noneLabel="Ainda não sei"
+              options={skillOptions}
+              value={liveSkills}
+              max={MAX_FOCUS_SKILLS}
+              onChange={setFocusSkills}
+            />
           </>
         )}
 
@@ -519,6 +643,12 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
                   <SummaryRow key={r.key} label={SKILL_SHORT_LABEL[r.key]} value={r.label} />
                 ))}
                 <SummaryRow label="Objetivo" value={GOAL_LABEL[goal]} />
+                {kind && (
+                  <SummaryRow
+                    label="Foco"
+                    value={focusSummary(kind, kind === "grupos" ? focusGroups : liveSkills)}
+                  />
+                )}
                 <SummaryRow
                   label="Cuidados"
                   value={

@@ -45,8 +45,10 @@ Ponto de partida; onde \`progressao\` discordar, \`progressao\` ganha.
   \`frequencia_observada\` discordar, vale ela: é o que ele faz de fato.
 - \`skills[].etapa_em_foco\`: degrau que ele diz estar trabalhando (os anteriores
   ele já faz).
-- \`objetivo\`: forca | resistencia | skills | mobilidade. Todo o resto diz o que
-  ele consegue; só este diz pra onde ir.
+- \`objetivo\`: forca | resistencia | skills | mobilidade | definir. Todo o resto
+  diz o que ele consegue; só este diz pra onde ir.
+- \`grupos_foco\`: grupos que ele quer treinar mais (peito, costas, ombros, bracos,
+  abdomen, pernas, gluteos). Ausente = corpo todo.
 - \`limitacoes\`: articulações que incomodam hoje. NADA foi tirado do plano por
   isso — adaptar é seu trabalho.
 
@@ -133,6 +135,10 @@ variação e qualidade no degrau atual.
     resistencia → 8-20 reps ou holds longos, descanso curto. skills → mais
     frequência de prática (um treino com \`is_practice: true\`) e menos volume de
     força. mobilidade → ROM completo, hold nas posições finais, aquecimento maior.
+    definir → superséries ou circuito, 8-15 reps, descanso de 30-60s, mantendo os
+    básicos pesados pra não perder força. Com \`grupos_foco\`, mais séries neles e
+    o resto em manutenção; não existe perda de gordura localizada, não escreva
+    como se o foco fizesse isso.
 13. CONTINUIDADE. Guarde ao menos uns dois terços dos exercícios do
     \`plano_atual\`, com o mesmo \`id\`. Plano novo inteiro = histórico zerado na
     leitura do app.

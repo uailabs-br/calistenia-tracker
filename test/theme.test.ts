@@ -28,8 +28,9 @@ function boot(raw: string | null) {
 }
 
 describe("preferência de tema", () => {
-  it("sem nada gravado, ou gravado quebrado, é o tema padrão (o espaço)", () => {
-    expect(DEFAULT_THEME.style).toBe("espaco");
+  it("sem nada gravado, ou gravado quebrado, é o tema padrão (o futurista gelo)", () => {
+    expect(DEFAULT_THEME.style).toBe("futurista");
+    expect(DEFAULT_THEME.futureTone).toBe("gelo");
     expect(parseThemePref(null)).toEqual(DEFAULT_THEME);
     expect(parseThemePref("{quebrado")).toEqual(DEFAULT_THEME);
     expect(parseThemePref('"tatico"')).toEqual(DEFAULT_THEME);
@@ -40,14 +41,14 @@ describe("preferência de tema", () => {
       style: "tatico",
       tone: "verde",
       scanlines: true,
-      futureTone: "ciano",
+      futureTone: "gelo",
       cleanTone: "papel",
     });
     expect(parseThemePref(JSON.stringify({ style: "neon", tone: "gelo", scanlines: false }))).toEqual({
-      style: "espaco",
+      style: "futurista",
       tone: "gelo",
       scanlines: false,
-      futureTone: "ciano",
+      futureTone: "gelo",
       cleanTone: "papel",
     });
     // tom do tático não vale no futurista, e vice-versa
@@ -55,7 +56,7 @@ describe("preferência de tema", () => {
       style: "futurista",
       tone: "verde",
       scanlines: true,
-      futureTone: "ciano",
+      futureTone: "gelo",
       cleanTone: "papel",
     });
   });
@@ -187,7 +188,7 @@ describe("boot script do <head>", () => {
     expect(() =>
       new Function("localStorage", "document", THEME_BOOT_SCRIPT)(localStorage, { documentElement: el })
     ).not.toThrow();
-    expect(Object.fromEntries(el.attrs)).toEqual({ "data-theme": "espaco" });
+    expect(Object.fromEntries(el.attrs)).toEqual({ "data-theme": "futurista", "data-tone": "gelo" });
   });
 });
 

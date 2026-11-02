@@ -80,9 +80,34 @@ export function normalizeEquipment(raw: unknown): Equipment {
  * por objetivo seria gerar treino, fora da tese) — vai pro `perfil_declarado` do
  * export, que é o que a IA lê pra escrever o próximo ciclo.
  */
-export type Goal = "forca" | "resistencia" | "skills" | "mobilidade";
+export type Goal = "forca" | "resistencia" | "skills" | "mobilidade" | "definir";
 
-export const GOALS: Goal[] = ["forca", "resistencia", "skills", "mobilidade"];
+export const GOALS: Goal[] = ["forca", "resistencia", "skills", "mobilidade", "definir"];
+
+/**
+ * Grupos que a pessoa reconhece, juntando os 13 músculos do catálogo. É o que
+ * ela diz querer treinar mais, e vai só pro pedido da IA: não filtra exercício.
+ */
+export type MuscleGroup = "peito" | "costas" | "ombros" | "bracos" | "abdomen" | "pernas" | "gluteos";
+
+/**
+ * Teto de cada lista: se tudo é prioridade, a IA não tem o que priorizar. Menor
+ * nas habilidades, que disputam mais a recuperação entre si.
+ */
+export const MAX_FOCUS_GROUPS = 3;
+export const MAX_FOCUS_SKILLS = 2;
+
+export type FocusKind = "grupos" | "habilidades";
+
+/**
+ * O que a tela seguinte ao objetivo pergunta. A pergunta sai da resposta anterior
+ * pra não fazer a pessoa dizer duas vezes o que quer. Mobilidade não tem: grupo
+ * muscular não diz nada sobre ela, e o null pula a tela.
+ */
+export function focusKind(goal: Goal): FocusKind | null {
+  if (goal === "mobilidade") return null;
+  return goal === "skills" ? "habilidades" : "grupos";
+}
 
 /** Articulação que incomoda hoje. Autodeclarado, múltipla escolha, nunca filtra o plano. */
 export type Limitation = "ombro" | "punho" | "cotovelo" | "joelho" | "lombar";
@@ -101,6 +126,10 @@ export interface OnboardingAnswers {
   equipment: Equipment;
   level: Level;
   goal?: Goal;
+  /** Só com objetivo de grupos. Ausente ou vazio = corpo todo ("Todos"). */
+  focus_groups?: MuscleGroup[];
+  /** Só com objetivo skills: ids das skills. Ausente ou vazio = "Ainda não sei". */
+  focus_skills?: string[];
   limitations?: Limitation[];
   days_per_week: number;
 }

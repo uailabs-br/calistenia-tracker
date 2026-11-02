@@ -4,7 +4,8 @@ import {
 } from "@/lib/domain/onboarding";
 import type { Plan } from "@/lib/plan/schema";
 import { applyPlan } from "@/lib/plan/importPlan";
-import { saveOnboarding } from "@/lib/utils/onboarding";
+import { getAiGoals, setAiGoals } from "@/lib/utils/aiPersona";
+import { getOnboardingAnswers, saveOnboarding } from "@/lib/utils/onboarding";
 import { clearSkillLevel, setSkillLevel } from "@/lib/utils/skillLevel";
 import { setProfileName, setWeekGoal } from "@/lib/utils/profile";
 
@@ -22,6 +23,11 @@ const CAPACITY_SKILLS = ["push_up", "pull_up", "handstand_hold", "dips"] as cons
  * refazer, quem agora diz "nunca tentei" precisa perder o ajuste que o
  * onboarding anterior deixou, senão `max(logs, manual)` o manteria alto. Os
  * logs continuam valendo: só a parte declarada é refeita.
+ *
+ * Habilidade marcada vira objetivo (a mesma lista de "Meus objetivos", que já vai
+ * pro pedido da IA e pra home). Ao refazer sai só o que o onboarding anterior
+ * marcou: o que a pessoa escolheu em "Meus objetivos" fica. Precisa ler as respostas
+ * antigas antes de `saveOnboarding` sobrescrever.
  *
  * `plan = null` mantém o plano em uso (refazer sem trocar de plano).
  */
@@ -42,6 +48,12 @@ export function commitOnboarding(input: {
     else clearSkillLevel(skillId);
   }
   setWeekGoal(answers.days_per_week);
+  const before = getOnboardingAnswers()?.focus_skills ?? [];
+  const chosen = answers.focus_skills ?? [];
+  if (before.length > 0 || chosen.length > 0) {
+    const kept = getAiGoals().filter((id) => !before.includes(id));
+    setAiGoals([...new Set([...kept, ...chosen])]);
+  }
   saveOnboarding(answers);
   if (plan) applyPlan(plan);
 }

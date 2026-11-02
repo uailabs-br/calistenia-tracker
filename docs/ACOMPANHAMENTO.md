@@ -20,6 +20,15 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-11-02, futurista gelo como padrão e foco no onboarding — 742 testes):**
+> quem nunca escolheu estilo agora abre no futurista com a cor gelo; quem já escolheu segue no
+> seu. No onboarding entrou o objetivo "Perder peso / definir", e depois do objetivo uma tela que
+> depende da resposta: força, resistência e definir escolhem grupos (até 3, "Todos" já marcado),
+> skills escolhe habilidades que cabem no equipamento (até 2, "Ainda não sei" já marcado) e
+> mobilidade pula a tela. Grupos vão pro `perfil_declarado` como `grupos_foco`; habilidades entram
+> em "Meus objetivos". O plano sugerido não muda: quem usa isso é a IA, que ganhou a regra de
+> formato do `definir`. Visto em Chrome headless, sem teste em celular.
+>
 > **Atualização (pós-v1.8, 2026-10-31, espaço como padrão e marca em gelo — 734 testes):**
 > quem nunca escolheu estilo agora abre no espaço (boot script e `DEFAULT_THEME`); quem
 > escolheu o padrão segue nele. O A da marca saiu do lilás pro gelo do espaço (#bfd7ff) na

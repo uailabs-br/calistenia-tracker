@@ -69,14 +69,14 @@ export interface ThemePref {
 }
 
 /**
- * Quem nunca escolheu estilo cai no espaço (desde 31/10/2026). Quem escolheu o
- * padrão continua nele: a escolha fica gravada.
+ * Quem nunca escolheu estilo cai no futurista gelo (desde 02/11/2026). Quem já
+ * escolheu qualquer estilo continua nele: a escolha fica gravada.
  */
 export const DEFAULT_THEME: ThemePref = {
-  style: "espaco",
+  style: "futurista",
   tone: "verde",
   scanlines: true,
-  futureTone: "ciano",
+  futureTone: "gelo",
   cleanTone: "papel",
 };
 

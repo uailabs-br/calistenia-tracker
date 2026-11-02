@@ -116,11 +116,13 @@ export interface AiDeclaredProfile {
   /** Etapa que a pessoa disse estar trabalhando; as anteriores ela já faz. */
   skills: { skill: string; etapa_em_foco: string }[];
   /**
-   * O que ela QUER, em uma palavra (forca, resistencia, skills, mobilidade).
+   * O que ela QUER, em uma palavra (forca, resistencia, skills, mobilidade, definir).
    * Todo o resto do export diz o que ela consegue; só isto diz pra onde ir. A
    * skill específica não está aqui: vem de "Meus objetivos" (persona).
    */
   objetivo?: string;
+  /** Grupos que ela quer treinar mais. Ausente = corpo todo. */
+  grupos_foco?: string[];
   /** Articulações que ela declarou incomodadas. Nenhum exercício foi tirado por isso. */
   limitacoes?: string[];
 }
@@ -134,6 +136,7 @@ export function buildDeclaredProfile(a: OnboardingAnswers): AiDeclaredProfile {
     // Opcionais: quem respondeu antes da versão que passou a perguntar não tem
     // os campos, e campo ausente é melhor que campo inventado.
     ...(a.goal ? { objetivo: a.goal } : {}),
+    ...(a.focus_groups?.length ? { grupos_foco: a.focus_groups } : {}),
     ...(a.limitations?.length ? { limitacoes: a.limitations } : {}),
     skills: Object.entries(levels).flatMap(([id, idx]) => {
       const skill = skills.find((s) => s.id === id);

@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
+  GEAR_ITEMS,
   GOALS,
+  focusKind,
   LEVELS,
   aboveTopSeed,
   availableTags,
@@ -26,6 +28,9 @@ const EQUIPMENTS: Equipment[] = Object.values(LEGACY_GEAR);
 
 const base: OnboardingAnswers = { equipment: LEGACY_GEAR.praca, level: "intermediario", days_per_week: 3 };
 const with_ = (p: Partial<OnboardingAnswers>): OnboardingAnswers => ({ ...base, ...p });
+
+import { focusSkillOptions, focusSummary } from "@/components/onboarding/questions";
+import { skills } from "@/lib/plan/skills";
 
 describe("mapAnswersToSkillLevels", () => {
   // Trava as posições contra a escada real: se o progressions.json for
@@ -205,7 +210,43 @@ describe("seedFits", () => {
 
 describe("GOALS", () => {
   it("são gerais: nenhum objetivo depende de equipamento nem aponta uma skill", () => {
-    expect(GOALS).toEqual(["forca", "resistencia", "skills", "mobilidade"]);
+    expect(GOALS).toEqual(["forca", "resistencia", "skills", "mobilidade", "definir"]);
+  });
+});
+
+describe("focusKind", () => {
+  it("a tela seguinte sai do objetivo, e mobilidade não tem", () => {
+    expect(focusKind("forca")).toBe("grupos");
+    expect(focusKind("resistencia")).toBe("grupos");
+    expect(focusKind("definir")).toBe("grupos");
+    expect(focusKind("skills")).toBe("habilidades");
+    expect(focusKind("mobilidade")).toBeNull();
+  });
+});
+
+describe("opções do foco", () => {
+  const ids = (e: Equipment) => focusSkillOptions(e).map((o) => o.value);
+
+  it("habilidade que pede equipamento só aparece com ele marcado", () => {
+    expect(ids(["parede"])).toContain("planche");
+    expect(ids(["parede"])).not.toContain("muscle_up");
+    expect(ids(["parede", "barra"])).toContain("muscle_up");
+    expect(ids(["parede"])).not.toContain("dips");
+    expect(ids(["parede", "paralelas"])).toContain("dips");
+  });
+
+  it("toda skill do catálogo tem opção, menos a human flag, que pede poste", () => {
+    const every = focusSkillOptions(GEAR_ITEMS);
+    expect(every.map((o) => o.value).sort()).toEqual(
+      skills.map((s) => s.id).filter((id) => id !== "human_flag").sort()
+    );
+  });
+
+  it("o resumo usa o nome curto, e nada marcado é a opção de cima da tela", () => {
+    expect(focusSummary("grupos", [])).toBe("Todos os grupos");
+    expect(focusSummary("habilidades", [])).toBe("Ainda não sei");
+    expect(focusSummary("grupos", ["bracos", "peito"])).toBe("Peito, Braços");
+    expect(focusSummary("habilidades", ["handstand_hold"])).toBe("Parada de mão");
   });
 });
 

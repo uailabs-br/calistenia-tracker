@@ -199,6 +199,11 @@ export function formatCriteria(criteria: Criteria): string {
 }
 
 /** Equipamento que o nível pede (chaves de progressions.json; qualquer um serve). */
+/** O que a skill inteira pede, seja qual for o nível (chaves de progressions.json). */
+export function getSkillEquipment(skillId: string): string[] {
+  return rawSkills.find((s) => s.id === skillId)?.equipment_required ?? [];
+}
+
 export function getLevelEquipment(skillId: string, level: number): string[] {
   return (
     rawSkills.find((s) => s.id === skillId)?.progressions.find((p) => p.level === level)

@@ -93,6 +93,25 @@ describe("commitOnboarding", () => {
     expect(levels()).toEqual({ push_up: 2, pull_up: 3, handstand_hold: 2, dips: 2 });
   });
 
+  it("grupos do foco ficam nas respostas e não viram objetivo de skill", async () => {
+    await commit(answers({ goal: "forca", focus_groups: ["peito", "costas"] }));
+    expect(JSON.parse(store["calistenia:onboarding"]).answers.focus_groups).toEqual(["peito", "costas"]);
+    expect(store["calistenia:ai-goals"]).toBeUndefined();
+  });
+
+  it("habilidade do foco vira objetivo, sem apagar o que já estava em Meus objetivos", async () => {
+    store["calistenia:ai-goals"] = '["planche","muscle_up"]';
+    await commit(answers({ goal: "skills", focus_skills: ["muscle_up", "l_sit"] }));
+    expect(JSON.parse(store["calistenia:ai-goals"])).toEqual(["planche", "muscle_up", "l_sit"]);
+  });
+
+  it("refazer tira só o que o onboarding anterior marcou", async () => {
+    store["calistenia:ai-goals"] = '["planche"]';
+    await commit(answers({ goal: "skills", focus_skills: ["l_sit"] }));
+    await commit(answers({ goal: "forca" }));
+    expect(JSON.parse(store["calistenia:ai-goals"])).toEqual(["planche"]);
+  });
+
   it("respostas gravadas ANTES da pergunta de nível são lidas como o nível que implicam", async () => {
     const { getOnboardingAnswers } = await import("@/lib/utils/onboarding");
     store["calistenia:onboarding"] = JSON.stringify({

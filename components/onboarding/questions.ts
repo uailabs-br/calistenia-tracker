@@ -1,14 +1,18 @@
 import {
   hasBar,
   hasParallels,
+  stepFitsEquipment,
   type Equipment,
+  type FocusKind,
   type GearItem,
   type Place,
   type Goal,
   type Level,
   type LevelSkill,
   type Limitation,
+  type MuscleGroup,
 } from "@/lib/domain/onboarding";
+import { getSkillEquipment } from "@/lib/plan/skills";
 
 /**
  * Textos do onboarding. Linguagem de quem nunca ouviu "RIR" nem "etapa de
@@ -100,6 +104,7 @@ export const GOAL_OPTIONS: Option<Goal>[] = [
   { value: "resistencia", label: "Resistência", hint: "Mais repetições" },
   { value: "skills", label: "Skills", hint: "Movimentos avançados" },
   { value: "mobilidade", label: "Mobilidade", hint: "Flexibilidade ativa" },
+  { value: "definir", label: "Perder peso / definir", hint: "Menos gordura, corpo mais marcado" },
 ];
 
 export const GOAL_LABEL: Record<Goal, string> = {
@@ -107,7 +112,56 @@ export const GOAL_LABEL: Record<Goal, string> = {
   resistencia: "Resistência",
   skills: "Skills",
   mobilidade: "Mobilidade",
+  definir: "Perder peso / definir",
 };
+
+export const MUSCLE_GROUP_OPTIONS: Option<MuscleGroup>[] = [
+  { value: "peito", label: "Peito" },
+  { value: "costas", label: "Costas" },
+  { value: "ombros", label: "Ombros" },
+  { value: "bracos", label: "Braços" },
+  { value: "abdomen", label: "Abdômen" },
+  { value: "pernas", label: "Pernas" },
+  { value: "gluteos", label: "Glúteos" },
+];
+
+/**
+ * Habilidades com o nome curto, as mais conhecidas primeiro. Human flag fica de
+ * fora: pede poste, que ninguém declara, então nunca caberia no equipamento.
+ */
+const FOCUS_SKILL_OPTIONS: Option<string>[] = [
+  { value: "handstand_hold", label: "Parada de mão" },
+  { value: "push_up", label: "Flexão" },
+  { value: "l_sit", label: "L-sit" },
+  { value: "pistol_squat", label: "Pistol" },
+  { value: "pull_up", label: "Barra" },
+  { value: "muscle_up", label: "Muscle-up" },
+  { value: "front_lever", label: "Front lever" },
+  { value: "back_lever", label: "Back lever" },
+  { value: "planche", label: "Planche" },
+  { value: "hspu", label: "HSPU" },
+  { value: "v_sit", label: "V-sit" },
+  { value: "press_handstand", label: "Press handstand" },
+  { value: "bent_arm_press", label: "Push to handstand" },
+  { value: "dips", label: "Dips" },
+  { value: "dragon_flag", label: "Dragon flag" },
+  { value: "manna", label: "Manna" },
+];
+
+/** Só o que cabe no que a pessoa marcou: sem barra, muscle-up nem aparece. */
+export function focusSkillOptions(equipment: Equipment): Option<string>[] {
+  return FOCUS_SKILL_OPTIONS.filter((o) => stepFitsEquipment(getSkillEquipment(o.value), equipment));
+}
+
+/** Linha "Foco" do resumo. Nada marcado é a opção de cima da tela. */
+export function focusSummary(kind: FocusKind, picks: readonly string[]): string {
+  if (picks.length === 0) return kind === "grupos" ? "Todos os grupos" : "Ainda não sei";
+  const options: Option<string>[] = kind === "grupos" ? MUSCLE_GROUP_OPTIONS : FOCUS_SKILL_OPTIONS;
+  return options
+    .filter((o) => picks.includes(o.value))
+    .map((o) => o.label)
+    .join(", ");
+}
 
 /** Limitações: múltipla escolha, e "nada" é a lista vazia. */
 export const LIMITATION_OPTIONS: { value: Limitation; label: string }[] = [
