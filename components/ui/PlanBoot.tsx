@@ -10,6 +10,7 @@ import {
   markPlanLostNotified,
   wasPlanLostNotified,
 } from "@/lib/utils/onboarding";
+import { revealAfterBoot } from "@/lib/utils/bootCover";
 import { isLandingSeen } from "@/lib/utils/landing";
 import { setFlash } from "@/lib/utils/flash";
 import { showReloadWait } from "@/lib/utils/reloadWait";
@@ -33,7 +34,11 @@ export function PlanBoot() {
   useEffect(() => {
     // Sem decidir nas rotas sem chrome: lá a pessoa já está no fluxo de entrada,
     // e sair sem marcar `decided` deixa a decisão pra quando ela entrar no app.
-    if (isChromeless(pathname) || decided.current) return;
+    if (isChromeless(pathname)) {
+      revealAfterBoot(); // é aqui que o redirect do boot termina
+      return;
+    }
+    if (decided.current) return;
     decided.current = true;
     let cancelled = false;
 
@@ -50,6 +55,7 @@ export function PlanBoot() {
         try {
           applyPlan(decision.plan, { recovered: true });
         } catch {
+          revealAfterBoot();
           return; // sem storage: não adianta recarregar
         }
         // Se o storage engoliu a escrita, recarregar daria loop.
@@ -57,8 +63,11 @@ export function PlanBoot() {
           setFlash({ message: "Treino recuperado.", variant: "success" });
           showReloadWait("Recuperando seu treino");
           window.location.reload();
+        } else {
+          revealAfterBoot();
         }
       } else if (decision.action === "lost") {
+        revealAfterBoot();
         if (wasPlanLostNotified(decision.planId)) return;
         markPlanLostNotified(decision.planId);
         toast({
@@ -70,6 +79,8 @@ export function PlanBoot() {
         // Quem nunca viu o app merece saber o que ele é antes de responder
         // perguntas; quem já passou pela landing vai direto pro onboarding.
         router.replace(isLandingSeen() ? ONBOARDING_ROUTE : LANDING_ROUTE);
+      } else {
+        revealAfterBoot();
       }
     })();
 

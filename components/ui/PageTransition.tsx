@@ -2,11 +2,13 @@
 
 import { useCallback } from "react";
 import { usePathname } from "next/navigation";
+import { isLanding } from "@/lib/utils/routes";
 import { travelBetween } from "@/lib/utils/spaceTravel";
 
 /**
  * Refaz um fade-up sutil a cada troca de rota (chave = pathname).
- * O movimento é anulado sob prefers-reduced-motion (ver globals.css).
+ * O movimento é anulado sob prefers-reduced-motion (ver globals.css). A landing
+ * fica de fora: é a primeira coisa que a pessoa vê, e o hero subindo parece um tranco.
  *
  * No tema espaço a troca é uma viagem no eixo z (deriva): a tela velha vem um
  * pouco pra perto e some (ou recua pro fundo) enquanto a nova chega. O React
@@ -23,7 +25,7 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
     return () => leave(el);
   }, []);
   return (
-    <div key={pathname} ref={ref} data-path={pathname} className="anim-page">
+    <div key={pathname} ref={ref} data-path={pathname} className={isLanding(pathname) ? undefined : "anim-page"}>
       {children}
     </div>
   );

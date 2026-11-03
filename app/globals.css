@@ -619,6 +619,16 @@ a {
   animation: check-draw 0.35s 0.1s ease-out forwards;
 }
 
+/* Até o boot decidir pra onde vai quem não tem rastro (ver lib/utils/bootCover.ts). */
+:root[data-boot-pending] :is(main, nav) {
+  opacity: 0;
+  pointer-events: none;
+  animation: boot-reveal 1ms 4s forwards;
+}
+@keyframes boot-reveal {
+  to { opacity: 1; pointer-events: auto; }
+}
+
 /* Espera das recargas (ReloadWait.tsx). Some sozinha depois de 15 s: se a recarga
    não vier (service worker que não troca, hidratação que falha), a tela não pode
    prender a pessoa. */

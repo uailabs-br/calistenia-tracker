@@ -12,6 +12,7 @@ import { ReloadWait } from "@/components/ui/ReloadWait";
 import { Splash } from "@/components/ui/Splash";
 import { SpaceSky } from "@/components/ui/SpaceSky";
 import { APP_NAME } from "@/lib/appInfo";
+import { BOOT_COVER_SCRIPT } from "@/lib/utils/bootCover";
 import { RELOAD_WAIT_BOOT_SCRIPT } from "@/lib/utils/reloadWait";
 import { SPLASH_BOOT_SCRIPT } from "@/lib/utils/splash";
 import { BAR_COLOR, THEME_BOOT_SCRIPT } from "@/lib/utils/theme";
@@ -99,7 +100,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    // suppressHydrationWarning: os boot scripts marcam tema, abertura e espera no <html> antes do
+    // suppressHydrationWarning: os boot scripts marcam tema, abertura, espera e cobertura no <html> antes do
     // React, então os atributos dele divergem do HTML estático de propósito (só este nível).
     <html
       lang="pt-BR"
@@ -110,6 +111,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: SPLASH_BOOT_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: RELOAD_WAIT_BOOT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: BOOT_COVER_SCRIPT }} />
       </head>
       <body>
         <SpaceSky />
