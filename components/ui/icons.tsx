@@ -65,7 +65,6 @@ export const ArrowUpIcon = stroke("M12 19V5M6 11l6-6 6 6", 2.2);
 export const OfflineIcon = stroke(
   "M3 3l18 18M8.5 16.5a4 4 0 0 1 .9-7.4M12 5a7 7 0 0 1 6.9 5.8A3.5 3.5 0 0 1 18 17.5h-6"
 );
-export const ResumeIcon = stroke("M3 12a9 9 0 1 0 2.6-6.3M3 4v5h5M12 8v4.5l3 1.8");
 export const TimerIcon = stroke("M12 22a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM12 10v4l2.5 1.5M9 2h6");
 export const TrophyIcon = stroke(
   "M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2Z"

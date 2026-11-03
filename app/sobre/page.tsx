@@ -32,7 +32,7 @@ export default function SobrePage() {
   return (
     <div className="w-full" style={accentVars(DEFAULT_ACCENT)}>
       {/* ── Abertura ─────────────────────────────────────────────────── */}
-      <header className="relative overflow-hidden">
+      <header className="relative flex min-h-[85svh] items-center overflow-hidden">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-72"
@@ -41,12 +41,12 @@ export default function SobrePage() {
               "radial-gradient(70% 100% at 50% 0%, color-mix(in oklab, var(--ac) 20%, transparent), transparent)",
           }}
         />
-        <div className="relative mx-auto grid max-w-5xl gap-8 px-4 sm:px-6 pt-10 pb-12 lg:pt-20 lg:pb-16">
+        <div className="relative mx-auto grid w-full max-w-5xl gap-8 px-4 sm:px-6 py-10 lg:py-16">
           <div>
             <p className="font-mono text-xs text-muted">{APP_NAME}</p>
             <TypedHeadline />
             <p className="mt-5 max-w-md text-lg leading-relaxed text-muted">
-              Plano, registro e progressão no mesmo app. É o que eu uso para evoluir na calistenia.
+              Plano, registro e progressão de treino personalizados. É o que eu uso para evoluir na calistenia.
             </p>
           </div>
 
@@ -62,10 +62,10 @@ export default function SobrePage() {
           <div className="grid gap-8 lg:grid-cols-[1fr_minmax(0,22rem)] lg:items-center lg:gap-14">
             <div>
               <h2 className="display max-w-lg text-2xl leading-tight sm:text-3xl">
-                O treino do dia te espera na tela inicial
+                Saiba o que treinar, sem complicação
               </h2>
               <p className="mt-3 max-w-lg leading-relaxed text-muted">
-                Um toque pra começar, um toque por série. Sem teclado, sem formulário.
+                Um toque pra começar, um toque por série.
               </p>
             </div>
             <div className="mx-auto w-full max-w-sm lg:max-w-none">
@@ -86,7 +86,7 @@ export default function SobrePage() {
               Do iniciante ao avançado
             </h2>
             <p className="mt-4 leading-relaxed text-muted">
-              Já segue um programa? Sobe ele aqui. Ainda não tem? O app monta um com IA, a
+              Já segue um programa de treinamento? Sobe ele aqui. Ainda não tem? O Gravks monta um personalizado, a
               partir do seu nível e do que você tem pra treinar.
             </p>
           </div>
@@ -98,14 +98,14 @@ export default function SobrePage() {
       <section className="border-y border-border bg-surface/40">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
           <h2 className="display max-w-lg text-2xl leading-tight sm:text-3xl">
-            A evolução vem em níveis, e o app sabe em qual você está
+            A evolução vem em níveis e o Gravks te guia nessa jornada
           </h2>
 
           <div className="mt-8 grid gap-8 sm:grid-cols-2 sm:gap-10">
             <div>
               <p className="leading-relaxed text-muted">
-                Cada movimento tem uma sequência de progressões. O app traz 16 delas e marca onde
-                você está em cada uma, conforme você registra.
+                Cada movimento tem uma sequência de progressões. O Gravks traz 16 delas e marca onde
+                você está em cada uma, conforme você treina e registra.
               </p>
               <div className="mt-5">
                 <LadderPreview />
@@ -114,7 +114,7 @@ export default function SobrePage() {
 
             <div>
               <p className="leading-relaxed text-muted">
-                Bateu o alvo duas sessões seguidas, com execução limpa? Ele avisa que dá
+                Bateu a meta definida? Ele avisa que dá
                 pra subir de nível. O que trava a maioria não é força, é técnica e progressão.
               </p>
               <div className="mt-5">
@@ -142,20 +142,18 @@ export default function SobrePage() {
             <div>
               <h2 className="display text-2xl leading-tight sm:text-3xl">Quem fez isso</h2>
               <p className="mt-4 leading-relaxed text-muted">
-                Treino calistenia por conta própria desde o começo de 2024 e estudei muito
-                atleta de elite pra aprender execução e progressão. Sou engenheiro, há 10
-                anos na área de tecnologia, e usei IA pra construir a ferramenta que eu
-                queria ter.
+                Treino calistenia por conta própria desde o começo de 2024 e estudei muitos
+                atletas de elite pra aprender execuções e progressões. Sou engenheiro e construí o Gravks para me ajudar a organizar os treinos e desenvolver movimentos avançados da calistenia.
               </p>
             </div>
 
             <div>
               <h2 className="display text-2xl leading-tight sm:text-3xl">
-                Isso aqui não é empresa
+                Esse é um projeto sem fins lucrativos
               </h2>
               <p className="mt-4 leading-relaxed text-muted">
-                Comecei em julho de 2026 e mudo o app quase toda semana. É de graça e sem
-                anúncio — se um dia tiver plano pago, é pra pagar o servidor. Sentiu falta
+                Comecei em julho de 2026 e estou sempre atualizando o app. É de graça e sem
+                anúncio. Meu objetivo é ajudar mais pessoas a progredir (se um dia tiver plano pago, é pra pagar o servidor). Se sentir falta
                 de alguma coisa,{" "}
                 {CONTACT_URL ? (
                   <a

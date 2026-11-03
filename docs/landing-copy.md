@@ -34,11 +34,7 @@ Plano, registro e progressão no mesmo app. É o que eu uso para evoluir na cali
 
 [Botão]
 
-Começar
-
-[Link discreto]
-
-Ver o app primeiro
+Começar grátis
 
 [Ao lado, no desktop: o cartão de treino tocável. Legenda embaixo dele:]
 
@@ -60,7 +56,7 @@ Um toque pra começar, um toque por série. Sem teclado, sem formulário.
 
 Descanso automático — O cronômetro começa quando você fecha a série.
 Sem internet — Academia com sinal ruim ou barra da praça, tanto faz.
-Volta de onde parou — Fechou o app no meio do treino? Nada se perde.
+Te diz quando subir de nível — Mostra quantas sessões faltam pro próximo nível e avisa quando você chegar lá.
 
 ---
 
@@ -88,6 +84,12 @@ Cada movimento é uma escada de etapas. O app traz 16 delas e marca onde você e
 [Coluna 2 — sobre o aviso de subir de nível]
 
 Bateu o alvo duas sessões seguidas, com execução limpa? Ele avisa que dá pra subir. O que trava a maioria não é força, é técnica e progressão.
+
+[Cartão de exemplo embaixo]
+
+Próximo nível · desbloqueado
+Pull-up negativo → Pull-up pronado
+Você bateu a meta em 2 sessões seguidas, com execução limpa.
 
 ---
 
@@ -119,7 +121,7 @@ Comecei em julho de 2026 e mudo o app quase toda semana. É de graça e sem anú
 
 [Botão final]
 
-Começar
+Começar grátis
 
 [Rodapé, crédito obrigatório das ilustrações]
 

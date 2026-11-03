@@ -1,13 +1,13 @@
-import { OfflineIcon, ResumeIcon, TimerIcon } from "@/components/ui/icons";
+import { ArrowUpIcon, OfflineIcon, TimerIcon } from "@/components/ui/icons";
 
 /**
- * As três promessas de "não atrapalhar o treino", em uma linha cada. Eram três
- * parágrafos — viraram tiles porque ninguém lê prosa em pé, esperando o descanso.
+ * Duas promessas de "não atrapalhar o treino" e o diferencial, a progressão, em
+ * uma linha cada. Viraram tiles porque ninguém lê prosa em pé, esperando o descanso.
  */
 const TILES = [
+  { Icon: ArrowUpIcon, title: "Te diz quando subir de nível", line: "Mostra quantas sessões faltam pro próximo nível e avisa quando você chegar lá." },
   { Icon: TimerIcon, title: "Descanso automático", line: "O cronômetro começa quando você fecha a série." },
-  { Icon: OfflineIcon, title: "Sem internet", line: "Academia com sinal ruim ou barra da praça, tanto faz." },
-  { Icon: ResumeIcon, title: "Volta de onde parou", line: "Fechou o app no meio do treino? Nada se perde." },
+  { Icon: OfflineIcon, title: "Funciona sem internet", line: "Pra você conseguir treinar de qualquer lugar." },
 ] as const;
 
 export function ProofTiles() {
