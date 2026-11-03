@@ -25,9 +25,8 @@ import { buildConvertPrompt } from "@/lib/plan/aiConvertPrompt";
 import { buildFixPrompt } from "@/lib/plan/aiFixPrompt";
 import { localDateKey } from "@/lib/utils/date";
 import { exportForAI, exportSummary, type ExportSummary } from "@/lib/plan/exportForAI";
-import { getLastPlanWorkoutId } from "@/lib/db/repositories/sessions";
-import { queueFrom } from "@/lib/domain/nextWorkout";
 import { setFlash } from "@/lib/utils/flash";
+import { showReloadWait } from "@/lib/utils/reloadWait";
 import { getSkillById } from "@/lib/plan/skills";
 import { seeds } from "@/lib/plan/seeds";
 import { getAiGoals, getAiNotes, buildPersonaText } from "@/lib/utils/aiPersona";
@@ -277,19 +276,16 @@ export default function PlanoPage() {
     }
   };
 
-  const handleApplyPlan = async () => {
+  const handleApplyPlan = () => {
     if (!pendingPlan) return;
     haptic();
-    const next = queueFrom(await getLastPlanWorkoutId(), pendingPlan.plan.workouts)[0];
     applyPlan(pendingPlan.plan);
     clearAiFlow();
     // O plano é lido uma vez no boot (lib/plan/loader), então recarregar é o que
     // garante que nenhuma tela fique com o treino antigo em memória. Toast aqui
     // morreria no recarregamento: ele vai junto e aparece na home.
-    setFlash({
-      message: next ? `Plano trocado. O próximo é o treino ${next.label}.` : "Plano trocado.",
-      variant: "success",
-    });
+    setFlash({ message: "Plano trocado.", variant: "success" });
+    showReloadWait("Trocando o plano");
     window.location.assign("/");
   };
 

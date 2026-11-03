@@ -25,23 +25,6 @@ export function markLandingSeen(): void {
   }
 }
 
-/**
- * "Ver o app primeiro": vale só pra esta carga do app, em memória de propósito.
- * Quem abre /sobre direto não passou pelo boot, então ao entrar em "/" o boot
- * decide pela primeira vez e, sem isso, mandaria a pessoa pro onboarding que ela
- * acabou de recusar. Recarregou, a pergunta volta — mesmo comportamento de quem
- * chega à landing pelo redirect do boot.
- */
-let peeking = false;
-
-export function startPeek(): void {
-  peeking = true;
-}
-
-export function isPeeking(): boolean {
-  return peeking;
-}
-
 export function clearLandingSeen(): void {
   try {
     localStorage.removeItem(KEY);

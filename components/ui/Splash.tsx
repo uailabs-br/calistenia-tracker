@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
-import { isLanding } from "@/lib/utils/routes";
 
 /** Tempo com a abertura inteira na tela antes de sumir, pra dar tempo de ver completa. */
 const HOLD_MS = 1000;
@@ -20,19 +18,20 @@ type Phase = "in" | "out" | "gone";
 /**
  * Tela de abertura: o A se desenha e o nome sobe, e ela some sozinha.
  *
- * Fica no layout, que não remonta entre rotas, então só aparece quando a página
- * carrega do zero — trocar de aba ou voltar pro app não mostra de novo. O app
- * monta por baixo enquanto isso, então a retomada de um treino não espera por ela.
- * Um toque pula.
- *
- * A fase inicial é decidida no primeiro render (mesmo valor no HTML estático e
- * no cliente, sem quebrar a hidratação) e nunca volta pra "in": quem entra pela
- * landing e navega pro app não vê a abertura no meio do caminho.
+ * Só ao abrir o app, como a splash de um app nativo: quem decide é o boot script
+ * do <head> (ver lib/utils/splash.ts), que liga o `data-splash` no <html>. Recarga
+ * no meio do uso, landing e onboarding ficam sem ela. O app monta por baixo enquanto
+ * isso, então a retomada de um treino não espera por ela. Um toque pula.
  */
 export function Splash() {
-  const pathname = usePathname();
-  const [phase, setPhase] = useState<Phase>(() => (isLanding(pathname) ? "gone" : "in"));
+  const [phase, setPhase] = useState<Phase>("in");
   const nameRef = useRef<HTMLDivElement>(null);
+
+  // O HTML estático traz a abertura sempre, escondida pelo CSS: tirar no primeiro
+  // render quebraria a hidratação. Sem o atributo, ela sai do DOM aqui.
+  useEffect(() => {
+    if (!document.documentElement.hasAttribute("data-splash")) setPhase("gone");
+  }, []);
 
   useEffect(() => {
     if (phase === "gone") return;

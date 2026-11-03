@@ -9,7 +9,7 @@ import {
   type OnboardingAnswers,
 } from "@/lib/domain/onboarding";
 
-const KEY = "calistenia:onboarding";
+export const ONBOARDING_KEY = "calistenia:onboarding";
 const LOST_KEY = "calistenia:plan-lost";
 
 interface Stored {
@@ -33,7 +33,7 @@ function upgrade(answers: unknown): OnboardingAnswers | null {
 function read(): Stored | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = JSON.parse(localStorage.getItem(KEY) ?? "null");
+    const raw = JSON.parse(localStorage.getItem(ONBOARDING_KEY) ?? "null");
     if (!raw || raw.done !== true) return null;
     return { ...raw, answers: upgrade(raw.answers) } as Stored;
   } catch {
@@ -52,7 +52,7 @@ export function getOnboardingAnswers(): OnboardingAnswers | null {
 /** `answers = null` quando a pessoa pulou. */
 export function saveOnboarding(answers: OnboardingAnswers | null): void {
   const value: Stored = { done: true, answers, at: new Date().toISOString() };
-  localStorage.setItem(KEY, JSON.stringify(value));
+  localStorage.setItem(ONBOARDING_KEY, JSON.stringify(value));
 }
 
 /** Já avisamos que o plano deste id se perdeu? Evita repetir o aviso a cada abertura. */

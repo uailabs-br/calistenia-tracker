@@ -8,9 +8,12 @@ import { PageTransition } from "@/components/ui/PageTransition";
 import { ToastProvider } from "@/components/ui/Toast";
 import { PlanBoot } from "@/components/ui/PlanBoot";
 import { AppMain } from "@/components/ui/AppMain";
+import { ReloadWait } from "@/components/ui/ReloadWait";
 import { Splash } from "@/components/ui/Splash";
 import { SpaceSky } from "@/components/ui/SpaceSky";
 import { APP_NAME } from "@/lib/appInfo";
+import { RELOAD_WAIT_BOOT_SCRIPT } from "@/lib/utils/reloadWait";
+import { SPLASH_BOOT_SCRIPT } from "@/lib/utils/splash";
 import { BAR_COLOR, THEME_BOOT_SCRIPT } from "@/lib/utils/theme";
 
 const dmSans = DM_Sans({
@@ -96,8 +99,8 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    // suppressHydrationWarning: o boot script marca o tema no <html> antes do React,
-    // então os atributos dele divergem do HTML estático de propósito (só este nível).
+    // suppressHydrationWarning: os boot scripts marcam tema, abertura e espera no <html> antes do
+    // React, então os atributos dele divergem do HTML estático de propósito (só este nível).
     <html
       lang="pt-BR"
       className={`${dmSans.variable} ${dmMono.variable} ${barlow.variable} ${chakra.variable} ${exo.variable} ${geist.variable}`}
@@ -105,6 +108,8 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: SPLASH_BOOT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: RELOAD_WAIT_BOOT_SCRIPT }} />
       </head>
       <body>
         <SpaceSky />
@@ -116,6 +121,7 @@ export default function RootLayout({
           </AppMain>
           <BottomNav />
           <Splash />
+          <ReloadWait />
         </ToastProvider>
         {/* Só pageview por rota: o treino fica no IndexedDB e nunca sai do aparelho.
             Visita offline não é contada (o envio falha sem rede), então o número fica abaixo do uso real. */}

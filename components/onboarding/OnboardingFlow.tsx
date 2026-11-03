@@ -29,6 +29,7 @@ import { durationLabel } from "@/lib/domain/estimateDuration";
 import { plan } from "@/lib/plan/loader";
 import { getOnboardingAnswers } from "@/lib/utils/onboarding";
 import { commitOnboarding } from "@/lib/utils/onboardingCommit";
+import { showReloadWait } from "@/lib/utils/reloadWait";
 import { getProfileName } from "@/lib/utils/profile";
 import { usePlanReady } from "@/lib/utils/usePlanReady";
 import { CheckIcon } from "@/components/ui/icons";
@@ -328,6 +329,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
     setError(null);
     try {
       commitOnboarding({ answers, name, plan: chosen?.plan ?? null });
+      showReloadWait("Preparando seu treino");
       window.location.assign(dest ?? (redo ? "/plano" : "/"));
     } catch {
       setFinishing(false);

@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/Toast";
 import { TrashIcon } from "@/components/ui/icons";
 import { haptic } from "@/lib/utils/haptics";
 import { setFlash } from "@/lib/utils/flash";
+import { hideReloadWait, showReloadWait } from "@/lib/utils/reloadWait";
 import { useBackupExport } from "./useBackupExport";
 
 /** Apagar tudo, por último e sozinho: longe do toque distraído no backup. */
@@ -19,15 +20,17 @@ export function ResetSettings() {
 
   const handleReset = async () => {
     setShow(false);
+    showReloadWait("Apagando dados");
     try {
       await resetAll();
       haptic(20);
       // O plano e os ajustes vivem em memória desde o boot: sem recarregar, a
       // tela seguia com o plano e a meta de antes e parecia que nada tinha sido
       // apagado. Toast aqui morreria no recarregamento, então vai de recado.
-      setFlash({ message: "Dados apagados. Tudo começa do zero." });
+      setFlash({ message: "Dados apagados." });
       window.location.assign("/");
     } catch {
+      hideReloadWait();
       toast({ message: "Não deu pra apagar os dados", variant: "error" });
     }
   };

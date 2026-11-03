@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { setFlash } from "@/lib/utils/flash";
+import { showReloadWait } from "@/lib/utils/reloadWait";
 
 /**
  * Registra o service worker e mostra um prompt de reload quando há
@@ -8,6 +10,9 @@ import { useEffect, useState } from "react";
  */
 export function SwUpdater() {
   const [waiting, setWaiting] = useState<ServiceWorker | null>(null);
+  // A troca de service worker também acontece sem ninguém pedir (primeira visita,
+  // outra aba). O recado só vale quando a pessoa tocou em Atualizar.
+  const accepted = useRef(false);
 
   useEffect(() => {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
@@ -66,6 +71,7 @@ export function SwUpdater() {
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       if (refreshing) return;
       refreshing = true;
+      if (accepted.current) setFlash({ message: "App atualizado.", variant: "success" });
       window.location.reload();
     });
 
@@ -81,7 +87,11 @@ export function SwUpdater() {
     <div className="fixed inset-x-3 top-3 z-50 flex items-center justify-between gap-3 rounded-xl border border-border bg-surface2 px-4 py-3 text-sm shadow-lg">
       <span>Nova versão disponível.</span>
       <button
-        onClick={() => waiting.postMessage({ type: "SKIP_WAITING" })}
+        onClick={() => {
+          accepted.current = true;
+          showReloadWait("Atualizando o app");
+          waiting.postMessage({ type: "SKIP_WAITING" });
+        }}
         className="tap rounded-lg bg-text px-3 py-1.5 font-medium text-bg"
       >
         Atualizar

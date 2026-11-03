@@ -10,7 +10,9 @@ import {
   markPlanLostNotified,
   wasPlanLostNotified,
 } from "@/lib/utils/onboarding";
-import { isLandingSeen, isPeeking } from "@/lib/utils/landing";
+import { isLandingSeen } from "@/lib/utils/landing";
+import { setFlash } from "@/lib/utils/flash";
+import { showReloadWait } from "@/lib/utils/reloadWait";
 import { LANDING_ROUTE, ONBOARDING_ROUTE, isChromeless } from "@/lib/utils/routes";
 import { useToast } from "@/components/ui/Toast";
 
@@ -51,7 +53,11 @@ export function PlanBoot() {
           return; // sem storage: não adianta recarregar
         }
         // Se o storage engoliu a escrita, recarregar daria loop.
-        if (hasPlanOverride()) window.location.reload();
+        if (hasPlanOverride()) {
+          setFlash({ message: "Treino recuperado.", variant: "success" });
+          showReloadWait("Recuperando seu treino");
+          window.location.reload();
+        }
       } else if (decision.action === "lost") {
         if (wasPlanLostNotified(decision.planId)) return;
         markPlanLostNotified(decision.planId);
@@ -61,7 +67,6 @@ export function PlanBoot() {
           duration: 9000,
         });
       } else if (decision.action === "onboarding") {
-        if (isPeeking()) return;
         // Quem nunca viu o app merece saber o que ele é antes de responder
         // perguntas; quem já passou pela landing vai direto pro onboarding.
         router.replace(isLandingSeen() ? ONBOARDING_ROUTE : LANDING_ROUTE);

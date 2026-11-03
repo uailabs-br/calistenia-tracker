@@ -13,7 +13,8 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { SettingsGroup } from "@/components/ui/SettingsGroup";
 import { SettingsRow } from "@/components/ui/SettingsRow";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { useToast } from "@/components/ui/Toast";
+import { setFlash } from "@/lib/utils/flash";
+import { showReloadWait } from "@/lib/utils/reloadWait";
 import { WorkoutCard, WorkoutSheet } from "@/components/plan/WorkoutCard";
 import {
   FlagIcon,
@@ -31,7 +32,6 @@ import {
  * treino morava em Ajustes, misturada com backup e instalação.
  */
 export default function PlanoPage() {
-  const { toast } = useToast();
   // `plan` vem do localStorage: nada derivado dele antes do mount (regra 10).
   const ready = usePlanReady();
   const [hasOverride, setHasOverride] = useState(false);
@@ -63,9 +63,10 @@ export default function PlanoPage() {
   const restore = () => {
     setConfirmRestore(false);
     clearPlanOverride();
-    toast({ message: "Voltando ao treino original", variant: "success" });
     // O plano é lido uma vez no boot: só recarregando ele troca de verdade.
-    setTimeout(() => window.location.assign("/plano"), 450);
+    setFlash({ message: "Treino original de volta.", variant: "success" });
+    showReloadWait("Voltando ao treino original");
+    window.location.assign("/plano");
   };
 
   const count = plan.workouts.length;
