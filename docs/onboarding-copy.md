@@ -10,28 +10,32 @@
 
 ## Primeira vez
 
-| Tela | Subtítulo | Por que fica |
+A ordem está em `docs/PLAN-onboarding-ordem.md`. Só ficou frase onde ela evita um erro.
+
+| Tela | Texto | Por que fica |
 | --- | --- | --- |
-| Qual seu nível atual? | Na dúvida, escolha o menor. O treino sobe com você. | Palpite alto não se corrige depois: a etapa exibida é a maior entre a declarada e a feita. |
-| Alguma dor ou limitação hoje? | O treino não muda. A IA pega leve nessa região no próximo plano. | Quem marca "ombro" espera que o treino mude. |
 | Qual seu foco principal? | Guia o Gravks no seu próximo plano. | Quem escolhe "Mobilidade" espera outro plano já. |
+| O que você tem disponível? | Tire o que não tiver. | Sem isso não dá pra saber que a lista vem marcada. |
+| Já tenho quase tudo. | Com o que você tem disponível e o seu nível, começamos pelo Treino A, 28 min. Só mais três perguntas. | O treino e os minutos vêm do plano; "três" conta dor, dias e nome. |
+| Alguma dor ou limitação hoje? | O Gravks pega leve nessa região no próximo plano de treino. | Quem marca "ombro" espera que algo mude. |
 | Quais grupos quer focar? (só em Perder peso / definir) | Gordura sai do corpo todo. Aqui você só diz onde quer mais treino. | Quem marca abdômen pra perder peso espera secar a barriga. |
-| O que você tem pra treinar? | Escolha o lugar e tire o que ele não tem. | Sem isso não dá pra saber que a lista vem marcada. |
 
-Sem subtítulo:
+Tela final: "Seu caminho até a sua primeira barra" (com o nome, "Ana, seu caminho até..."), e o botão
+"Começar Treino A · 28 min". Embaixo da escada: "Em 2 semanas já é possível subir de nível."
+Frase só em três objetivos:
 
-- Quais grupos quer focar? (em Força e Resistência; o "Escolha até 3." continua)
-- Quais habilidades quer treinar? (o "Escolha até 2." continua)
-- Quantos dias por semana? (a frase embaixo dos números continua)
-- Como te chamo? (o campo diz "Seu nome (opcional)")
-- Seu ponto de partida
-- Escolher o plano (a etiqueta "sugerido" já faz o trabalho)
+- Perder peso / definir: O que a balança mostra também depende da comida. O treino cuida da força e do músculo.
+- Mobilidade: Mobilidade entra no seu próximo plano. Este aqui constrói a base.
+- Skills: Essa fica nos seus objetivos, e o Gravks marca cada etapa que você bater.
+
+Sem frase: Onde você treina?, Qual seu nível atual?, Quantos dias por semana? (a frase embaixo dos
+números continua), Como te chamo?, e as outras telas de foco (o "Escolha até N." continua).
 
 ## Refazer (Ajustes → refazer onboarding)
 
 | Tela | Subtítulo | Por que fica |
 | --- | --- | --- |
-| O que você tem pra treinar? (primeira tela ao refazer) | Seu histórico fica como está. | Quem já tem histórico tem medo de perder. |
+| O que você tem disponível? (primeira tela ao refazer) | Seu histórico fica como está. | Quem já tem histórico tem medo de perder. |
 | Escolher o plano | Muda só os próximos treinos. O histórico fica. | Trocar de plano é a parte que mexe no que vem. |
 
 Sem subtítulo: Tudo certo (o resumo embaixo mostra o que mudou).

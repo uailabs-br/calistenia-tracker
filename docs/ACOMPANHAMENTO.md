@@ -20,6 +20,12 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-11-04, nova ordem do onboarding e foto na landing — 764 testes):**
+> o onboarding de primeira vez agora vai do objetivo ao equipamento, mostra o Treino A logo depois do
+> nível e termina com o caminho até o próximo marco, abrindo a sessão direto. Toque único avança
+> sozinho e as respostas sobrevivem a fechar o app. A abertura da landing ganhou foto (barra no
+> celular, parada de mão no computador). Decisão em `PLAN-onboarding-ordem.md`.
+
 > **Atualização (pós-v1.8, 2026-11-02, futurista gelo como padrão e foco no onboarding — 742 testes):**
 > quem nunca escolheu estilo agora abre no futurista com a cor gelo; quem já escolheu segue no
 > seu. No onboarding entrou o objetivo "Perder peso / definir", e depois do objetivo uma tela que

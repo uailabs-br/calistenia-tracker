@@ -312,3 +312,23 @@ export function planIdFromPlanDayId(planDayId: string | null | undefined): strin
   const i = planDayId.lastIndexOf(":");
   return i > 0 ? planDayId.slice(0, i) : null;
 }
+
+/**
+ * Qual escada a tela final mostra: a habilidade que a pessoa escolheu ou, fora de
+ * skills, a que o plano sugerido treina primeiro (o Treino A puxa quando há barra
+ * e empurra quando não há).
+ */
+export function pathSkillId(a: Pick<OnboardingAnswers, "equipment" | "goal" | "focus_skills">): string {
+  if (a.goal === "skills") return a.focus_skills?.[0] ?? "handstand_hold";
+  return hasBar(a.equipment) ? "pull_up" : "push_up";
+}
+
+/**
+ * Semana mais cedo em que dá pra subir a primeira etapa: subir pede o alvo em 2
+ * sessões seguidas do mesmo treino, e a segunda só chega depois de uma volta no
+ * ciclo. É o caminho feliz, por isso a tela diz "é possível", não "você vai".
+ */
+export function earliestStepWeek(workoutCount: number, daysPerWeek: number): number {
+  return Math.ceil((workoutCount + 1) / daysPerWeek);
+}
+

@@ -5,15 +5,18 @@ import { useRouter } from "next/navigation";
 import { hasLiveSessions } from "@/lib/db/queries/sessions";
 import {
   aboveTopSeed,
+  earliestStepWeek,
   focusKind,
   GOALS,
   MAX_FOCUS_GROUPS,
   MAX_FOCUS_SKILLS,
   mapAnswersToSkillLevels,
   levelSkillsFor,
+  pathSkillId,
   seedFits,
   suggestSeed,
   PLACE_GEAR,
+  hasBar,
   type Equipment,
   type Place,
   type Goal,
@@ -25,10 +28,11 @@ import {
 } from "@/lib/domain/onboarding";
 import { getSeed, listedSeeds } from "@/lib/plan/seeds";
 import { getSkillById } from "@/lib/plan/skills";
-import { durationLabel } from "@/lib/domain/estimateDuration";
+import { estimateDurationSeconds } from "@/lib/domain/estimateDuration";
 import { plan } from "@/lib/plan/loader";
 import { getOnboardingAnswers } from "@/lib/utils/onboarding";
 import { commitOnboarding } from "@/lib/utils/onboardingCommit";
+import { clearOnboardingDraft, getOnboardingDraft, saveOnboardingDraft } from "@/lib/utils/onboardingDraft";
 import { showReloadWait } from "@/lib/utils/reloadWait";
 import { getProfileName } from "@/lib/utils/profile";
 import { usePlanReady } from "@/lib/utils/usePlanReady";
@@ -45,14 +49,19 @@ import {
   GOAL_OPTIONS,
   LIMITATION_OPTIONS,
   levelOptions,
+  pathNote,
   SKILL_SHORT_LABEL,
+  stepDestination,
+  stepShort,
   daysFeedback,
   type Option,
 } from "@/components/onboarding/questions";
 
 type Step =
   | "nome"
+  | "lugar"
   | "equipamento"
+  | "parcial"
   | "nivel"
   | "limitacoes"
   | "objetivo"
@@ -60,8 +69,44 @@ type Step =
   | "frequencia"
   | "resumo";
 
-// O nome vem no fim: é a pergunta que menos muda o que o app entrega.
-const STEPS: Step[] = [
+// Primeira vez: o que a pessoa quer vem antes do que ela tem. O plano sai de
+// equipamento + nível, então a tela parcial entra logo depois do nível e já mostra
+// o treino de verdade. O nome vem no fim: é o que menos muda o que o app entrega.
+const FIRST_STEPS: Step[] = [
+  "objetivo",
+  "lugar",
+  "equipamento",
+  "foco",
+  "nivel",
+  "parcial",
+  "limitacoes",
+  "frequencia",
+  "nome",
+  "resumo",
+];
+
+// A barra começa andada e fecha as últimas telas em passos curtos: a sensação de
+// já ter começado é o que segura a pessoa até o fim (Nunes e Drèze, 2006). Fixa por
+// tela, senão ela salta quando o foco é pulado.
+const FIRST_PROGRESS: Partial<Record<Step, number>> = {
+  objetivo: 14,
+  lugar: 24,
+  equipamento: 36,
+  foco: 46,
+  nivel: 56,
+  parcial: 66,
+  limitacoes: 76,
+  frequencia: 86,
+  nome: 94,
+  resumo: 100,
+};
+
+/** Tempo pra ver a marcação antes de a tela sair; sem ele o toque parece perdido. */
+const AUTO_ADVANCE_MS = 220;
+
+// Refazer segue na ordem antiga: quem refaz vai ajustar uma resposta, e o resumo
+// completo é o que interessa pra ele.
+const REDO_STEPS: Step[] = [
   "equipamento",
   "nivel",
   "limitacoes",
@@ -85,7 +130,7 @@ const SAVE_ERROR =
 function StepHeading({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
     <>
-      <h1 className="display text-display leading-[1.1]">{title}</h1>
+      <h1 tabIndex={-1} className="display text-display leading-[1.1] outline-none">{title}</h1>
       {children && <p className="mt-2.5 text-md leading-relaxed text-muted">{children}</p>}
     </>
   );
@@ -123,7 +168,7 @@ function Choices<V extends string>({
   label,
 }: {
   options: Option<V>[];
-  value: V;
+  value: V | null;
   onChange: (v: V) => void;
   label: string;
 }) {
@@ -222,7 +267,15 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
   const router = useRouter();
   const planReady = usePlanReady();
   const [index, setIndex] = useState(0);
+  const [dir, setDir] = useState<"fwd" | "bwd" | null>(null);
   const [view, setView] = useState<View>("step");
+  // Primeira vez: nada vem marcado nas telas de toque único, e a marcação só aparece
+  // depois da resposta. O estado tem valor padrão só pras contas que dependem dele.
+  const [picked, setPicked] = useState({ goal: false, level: false, pain: false });
+  const [showAnswers, setShowAnswers] = useState(false);
+  const [restored, setRestored] = useState(false);
+  const advance = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const firstRender = useRef(true);
   const [name, setName] = useState("");
   const [equipment, setEquipment] = useState<Equipment>(["parede"]);
   // Lugar tocado por último: só pré-marca a lista, não é gravado.
@@ -249,6 +302,21 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
       void hasLiveSessions().then((used) => {
         if (used) router.replace("/");
       });
+      const draft = getOnboardingDraft();
+      if (draft) {
+        setName(draft.name);
+        setEquipment(draft.equipment);
+        setLevel(draft.level);
+        setDays(draft.days);
+        setGoal(draft.goal);
+        setFocusGroups(draft.focusGroups);
+        setFocusSkills(draft.focusSkills);
+        setLimitations(draft.limitations);
+        setPicked(draft.picked);
+        const list = focusKind(draft.goal) ? FIRST_STEPS : FIRST_STEPS.filter((s) => s !== "foco");
+        setIndex(Math.max(0, list.indexOf(draft.step as Step)));
+      }
+      setRestored(true);
       return;
     }
     setName(getProfileName());
@@ -266,7 +334,8 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
 
   // O objetivo só muda na tela dele, antes do foco: o índice não salta com a troca.
   const kind = focusKind(goal);
-  const steps = kind ? STEPS : STEPS.filter((s) => s !== "foco");
+  const allSteps = redo ? REDO_STEPS : FIRST_STEPS;
+  const steps = kind ? allSteps : allSteps.filter((s) => s !== "foco");
   const step = steps[Math.min(index, steps.length - 1)];
   const isLast = step === "resumo" && view === "step";
 
@@ -276,7 +345,20 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
   useEffect(() => {
     scroller.current?.scrollTo({ top: 0 });
     window.scrollTo({ top: 0 });
+    // A tela troca sozinha nos toques únicos: o foco acompanha pra leitor de tela e
+    // teclado não ficarem presos num botão que sumiu.
+    if (firstRender.current) firstRender.current = false;
+    else scroller.current?.querySelector("h1")?.focus({ preventScroll: true });
   }, [index, view]);
+
+  useEffect(() => () => {
+    if (advance.current) clearTimeout(advance.current);
+  }, []);
+
+  useEffect(() => {
+    if (redo || !restored || finishing) return;
+    saveOnboardingDraft({ step, name, equipment: [...equipment], level, days, goal, focusGroups, focusSkills, limitations, picked });
+  }, [redo, restored, finishing, step, name, equipment, level, days, goal, focusGroups, focusSkills, limitations, picked]);
 
   // Voltar e tirar a barra pode deixar marcada uma habilidade que não cabe mais.
   const skillOptions = useMemo(() => focusSkillOptions(equipment), [equipment]);
@@ -329,6 +411,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
     setError(null);
     try {
       commitOnboarding({ answers, name, plan: chosen?.plan ?? null });
+      clearOnboardingDraft();
       showReloadWait("Preparando seu treino");
       window.location.assign(dest ?? (redo ? "/plano" : "/"));
     } catch {
@@ -343,8 +426,74 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
    */
   const cancel = () => router.push("/plano");
 
-  const next = () => (isLast ? finish() : setIndex((i) => i + 1));
-  const back = () => setIndex((i) => Math.max(0, i - 1));
+  const next = () => {
+    if (isLast) return finish();
+    setDir("fwd");
+    setIndex((i) => i + 1);
+  };
+  const back = () => {
+    if (advance.current) clearTimeout(advance.current);
+    advance.current = null;
+    setDir("bwd");
+    setIndex((i) => Math.max(0, i - 1));
+  };
+  /** Toque único de primeira vez: marca, deixa ver e segue. */
+  const autoNext = () => {
+    if (redo || advance.current) return;
+    advance.current = setTimeout(() => {
+      advance.current = null;
+      next();
+    }, AUTO_ADVANCE_MS);
+  };
+  const autoStep =
+    !redo && (step === "objetivo" || step === "lugar" || step === "nivel" || (step === "limitacoes" && limitations.length === 0));
+
+  // Abre direto na sessão, sem passar pela home: o centro do botão vai na URL como
+  // no card do próximo treino (a tela de carregamento abre a partir dele).
+  const startFirstWorkout = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!firstWorkout) return finish();
+    const r = e.currentTarget.getBoundingClientRect();
+    finish(`/treino/${firstWorkout.id}?start=${Math.round(r.left + r.width / 2)},${Math.round(r.top + r.height / 2)}`);
+  };
+  const firstMinutes = firstWorkout ? Math.round(estimateDurationSeconds(firstWorkout) / 60) : 0;
+  const firstExercises = firstWorkout?.blocks.flatMap((b) => b.exercises) ?? [];
+  const pathSteps = useMemo(() => {
+    const id = pathSkillId(answers);
+    const start = mapAnswersToSkillLevels(answers)[id] ?? 0;
+    return (getSkillById(id)?.steps ?? []).slice(start, start + 4).map((s) => s.label);
+  }, [answers]);
+  const pathGoal = pathSteps[pathSteps.length - 1];
+  const firstName = name.trim();
+  const showWeek = level !== "avancado" && goal !== "skills" && !!chosen;
+  const stepWeek = earliestStepWeek(chosen?.plan.workouts.length ?? 3, days);
+  const pathPhoto = pathSkillId(answers) === "handstand_hold" || !hasBar(equipment) ? "parada" : "barra";
+
+  const summaryRows = (
+    <ul className="mt-2 flex flex-col gap-0.5">
+      {ladder.map((r) => (
+        <SummaryRow key={r.key} label={SKILL_SHORT_LABEL[r.key]} value={stepShort(r.label)} />
+      ))}
+      <SummaryRow label="Objetivo" value={GOAL_LABEL[goal]} />
+      {kind && (
+        <SummaryRow
+          label="Foco"
+          value={focusSummary(kind, kind === "grupos" ? focusGroups : liveSkills)}
+        />
+      )}
+      <SummaryRow
+        label="Cuidados"
+        value={
+          limitations.length === 0
+            ? "nenhum"
+            : limitations
+                .map((l) => LIMITATION_OPTIONS.find((o) => o.value === l)!.label)
+                .join(", ")
+        }
+      />
+      <SummaryRow label="Equipamento" value={gearSummary(equipment)} />
+      <SummaryRow label="Meta semanal" value={`${days} treinos`} />
+    </ul>
+  );
 
   return (
     <div
@@ -355,13 +504,13 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
         className="h-1 shrink-0 overflow-hidden rounded-full bg-surface2"
         role="progressbar"
         aria-valuemin={1}
-        aria-valuemax={steps.length}
-        aria-valuenow={index + 1}
+        aria-valuemax={redo ? steps.length : 100}
+        aria-valuenow={redo ? index + 1 : FIRST_PROGRESS[step]}
         aria-label="Progresso do onboarding"
       >
         <div
           className="h-full rounded-full bg-ac transition-all duration-500"
-          style={{ width: `${((index + 1) / steps.length) * 100}%` }}
+          style={{ width: `${redo ? ((index + 1) / steps.length) * 100 : FIRST_PROGRESS[step]}%` }}
         />
       </div>
 
@@ -384,7 +533,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
 
       <div
         ref={scroller}
-        className="anim-fade-in flex min-h-0 flex-1 flex-col overflow-y-auto"
+        className={`${dir === "fwd" ? "anim-step-fwd" : dir === "bwd" ? "anim-step-bwd" : "anim-fade-in"} flex min-h-0 flex-1 flex-col overflow-y-auto`}
         key={view === "plano" ? "plano" : step}
       >
         {/* my-auto centra o conteúdo quando sobra espaço (telas curtas ganham ar
@@ -445,10 +594,10 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
           <>
             {/* Ao refazer, esta é a primeira tela: é aqui que o medo de perder o
                 histórico aparece, e a lista já vem com as respostas de antes. */}
-            <StepHeading title="O que você tem pra treinar?">
-              {redo ? "Seu histórico fica como está." : "Escolha o lugar e tire o que ele não tem."}
+            <StepHeading title="O que você tem disponível?">
+              {redo ? "Seu histórico fica como está." : "Tire o que não tiver."}
             </StepHeading>
-            <div role="radiogroup" aria-label="Onde você treina" className="mt-4 flex flex-wrap gap-2">
+            {redo && <div role="radiogroup" aria-label="Onde você treina" className="mt-4 flex flex-wrap gap-2">
               {PLACE_OPTIONS.map((o) => (
                 <button
                   key={o.value}
@@ -464,7 +613,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
                   {o.label}
                 </button>
               ))}
-            </div>
+            </div>}
             <div role="group" aria-label="Equipamento" className="mt-3 grid grid-cols-2 gap-2">
               {GEAR_OPTIONS.map((o) => {
                 const on = equipment.includes(o.value);
@@ -482,7 +631,7 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
                     className="option tap rounded-card px-3 py-2 text-left active:scale-[0.99]"
                   >
                     <span className="block text-sm font-medium">{o.label}</span>
-                    <span className="block text-xs text-muted">{o.hint}</span>
+                    {o.hint && <span className="block text-xs text-muted">{o.hint}</span>}
                   </button>
                 );
               })}
@@ -492,16 +641,56 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
 
         {view === "step" && step === "nivel" && (
           <>
-            <StepHeading title="Qual seu nível atual?">
-              Na dúvida, escolha o menor. O treino sobe com você.
-            </StepHeading>
+            <StepHeading title="Qual seu nível atual?" />
             <div className="mt-4">
               <Choices
                 label="Seu nível"
                 options={levelOptions(equipment)}
-                value={level}
-                onChange={setLevel}
+                value={redo || picked.level ? level : null}
+                onChange={(v) => {
+                  setLevel(v);
+                  setPicked((p) => ({ ...p, level: true }));
+                  autoNext();
+                }}
               />
+            </div>
+          </>
+        )}
+
+        {view === "step" && step === "lugar" && (
+          <>
+            <StepHeading title="Onde você treina?" />
+            <div className="mt-6">
+              <Choices
+                label="Onde você treina"
+                options={PLACE_OPTIONS}
+                value={place}
+                onChange={(v) => {
+                  setPlace(v);
+                  setEquipment(PLACE_GEAR[v]);
+                  autoNext();
+                }}
+              />
+            </div>
+          </>
+        )}
+
+        {view === "step" && step === "parcial" && firstWorkout && (
+          <>
+            <StepHeading title="Já tenho quase tudo.">
+              Com o que você tem disponível e o seu nível, começamos pelo Treino {firstWorkout.label},{" "}
+              {firstMinutes} min. Só mais três perguntas.
+            </StepHeading>
+            <div className="card glow mt-4 p-3.5">
+              <p className="eyebrow-lg">
+                Treino {firstWorkout.label} · {firstMinutes} min
+              </p>
+              <p className="display mt-1 text-xl leading-tight">{firstWorkout.title}</p>
+              <ul className="mt-2.5 flex flex-col gap-1.5 text-sm">
+                {firstExercises.map((ex) => (
+                  <li key={ex.id}>{ex.name}</li>
+                ))}
+              </ul>
             </div>
           </>
         )}
@@ -509,13 +698,17 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
         {view === "step" && step === "limitacoes" && (
           <>
             <StepHeading title="Alguma dor ou limitação hoje?">
-              O treino não muda. A IA pega leve nessa região no próximo plano.
+              O Gravks pega leve nessa região no próximo plano de treino.
             </StepHeading>
             <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Dor ou limitação">
               <button
                 type="button"
-                aria-pressed={limitations.length === 0}
-                onClick={() => setLimitations([])}
+                aria-pressed={limitations.length === 0 && (redo || picked.pain)}
+                onClick={() => {
+                  setLimitations([]);
+                  setPicked((p) => ({ ...p, pain: true }));
+                  autoNext();
+                }}
                 className="option tap rounded-full px-4 py-2.5 text-sm font-medium active:scale-[0.98]"
               >
                 Nada por enquanto
@@ -562,8 +755,12 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
                   key={o.value}
                   type="button"
                   role="radio"
-                  aria-checked={o.value === goal}
-                  onClick={() => setGoal(o.value)}
+                  aria-checked={(redo || picked.goal) && o.value === goal}
+                  onClick={() => {
+                    setGoal(o.value);
+                    setPicked((p) => ({ ...p, goal: true }));
+                    autoNext();
+                  }}
                   className={`option tap flex flex-col items-center justify-center gap-1 rounded-card px-4 text-center active:scale-[0.99] ${
                     o.value === "definir" ? "col-span-2 min-h-[5.5rem] py-4" : "min-h-[7rem] py-5"
                   }`}
@@ -634,36 +831,85 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
           </>
         )}
 
-        {view === "step" && step === "resumo" && (
+        {view === "step" && step === "resumo" && !redo && (
           <>
-            <StepHeading title={redo ? "Tudo certo" : "Seu ponto de partida"} />
+            {/* Recorte sem fundo: some no tema sem criar retângulo, igual à abertura da landing. */}
+            <div aria-hidden className={`onb-photo onb-photo-${pathPhoto}`}>
+              <img
+                src={pathPhoto === "barra" ? "/landing/hero-barra.webp" : "/landing/hero-parada-de-mao.webp"}
+                alt=""
+              />
+            </div>
+            <div className="onb-photo-text">
+              <StepHeading
+                title={`${firstName ? `${firstName}, seu` : "Seu"} caminho até ${pathGoal ? stepDestination(pathGoal) : "o próximo nível"}`}
+              >
+                {pathNote(goal)}
+              </StepHeading>
+              <ol className="onb-path" aria-label="Etapas até o destino">
+                {pathSteps.map((label, i) => (
+                  <li key={label} data-kind={i === 0 ? "now" : i === pathSteps.length - 1 ? "goal" : undefined}>
+                    <span className="onb-path-name">{stepShort(label)}</span>
+                    {/* A posição fica à vista: palpite alto de nível não se corrige sozinho. */}
+                    {i === 0 && <span className="onb-path-now">Você começa aqui</span>}
+                  </li>
+                ))}
+              </ol>
+              {showWeek && (
+                <p className="mt-3 text-sm text-muted">
+                  Em {stepWeek} {stepWeek === 1 ? "semana" : "semanas"} já é possível subir de nível.
+                </p>
+              )}
+              {acimaDasSementes && (
+                <p className="mt-3 rounded-xl bg-ac-bg px-3 py-1.5 text-sm">
+                  Estes planos param no intermediário — pelo que você respondeu,
+                  vão te ficar fáceis.
+                </p>
+              )}
+              <button
+                type="button"
+                aria-expanded={showAnswers}
+                onClick={() => setShowAnswers((v) => !v)}
+                className="tap mt-2 text-sm font-medium text-ac underline underline-offset-4 active:opacity-70"
+              >
+                {showAnswers ? "Esconder respostas" : "Revisar respostas ou trocar de plano"}
+              </button>
+              {showAnswers && (
+                <div className="card mt-2 p-3.5">
+                  {summaryRows}
+                  <p className="mt-2 text-sm text-muted">{chosen?.name}</p>
+                  <div className="mt-1.5 flex flex-wrap items-center gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setView("plano")}
+                      className="tap text-sm font-medium text-ac underline underline-offset-4 active:opacity-70"
+                    >
+                      Trocar de plano
+                    </button>
+                    {acimaDasSementes && (
+                      <button
+                        type="button"
+                        disabled={finishing}
+                        onClick={() => finish("/config/plano?modo=meu")}
+                        className="tap text-sm font-medium text-ac underline underline-offset-4 active:opacity-70"
+                      >
+                        Trazer meu plano
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {view === "step" && step === "resumo" && redo && (
+          <>
+            <StepHeading title="Tudo certo" />
 
             <div className="card mt-3 p-3.5">
               <p className="eyebrow-lg">Onde você começa</p>
-              <ul className="mt-2 flex flex-col gap-0.5">
-                {ladder.map((r) => (
-                  <SummaryRow key={r.key} label={SKILL_SHORT_LABEL[r.key]} value={r.label} />
-                ))}
-                <SummaryRow label="Objetivo" value={GOAL_LABEL[goal]} />
-                {kind && (
-                  <SummaryRow
-                    label="Foco"
-                    value={focusSummary(kind, kind === "grupos" ? focusGroups : liveSkills)}
-                  />
-                )}
-                <SummaryRow
-                  label="Cuidados"
-                  value={
-                    limitations.length === 0
-                      ? "nenhum"
-                      : limitations
-                          .map((l) => LIMITATION_OPTIONS.find((o) => o.value === l)!.label)
-                          .join(", ")
-                  }
-                />
-                <SummaryRow label="Equipamento" value={gearSummary(equipment)} />
-                <SummaryRow label="Meta semanal" value={`${days} treinos`} />
-              </ul>
+              {summaryRows}
             </div>
 
             <div className="card mt-2 p-3.5">
@@ -671,22 +917,6 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
               <p className="mt-0.5 line-clamp-2 text-sm text-muted">
                 {chosen ? chosen.summary : "Seus treinos continuam os mesmos."}
               </p>
-              {!redo && !acimaDasSementes && firstWorkout && (
-                <p className="mt-2 font-mono text-xs text-muted">
-                  Começa em {firstWorkout.label} · {firstWorkout.title} ·{" "}
-                  {durationLabel(firstWorkout)}
-                </p>
-              )}
-              {/* As sementes param no "intermediário"; quem marcou o máximo em
-                  tudo está acima das três. Não existe plano avançado pra oferecer
-                  (escrever um é curadoria), então o app aponta a saída que ele já
-                  tem: o plano vem de fora, escrito pela IA, e entra pelo import. */}
-              {acimaDasSementes && (
-                <p className="mt-1.5 rounded-xl bg-ac-bg px-3 py-1.5 text-sm">
-                  Estes planos param no intermediário — pelo que você respondeu,
-                  vão te ficar fáceis.
-                </p>
-              )}
               <div className="mt-1.5 flex flex-wrap items-center gap-4">
                 <button
                   type="button"
@@ -695,16 +925,6 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
                 >
                   Trocar de plano
                 </button>
-                {acimaDasSementes && !redo && (
-                  <button
-                    type="button"
-                    disabled={finishing}
-                    onClick={() => finish("/config/plano?modo=meu")}
-                    className="tap text-sm font-medium text-ac underline underline-offset-4 active:opacity-70"
-                  >
-                    Trazer meu plano
-                  </button>
-                )}
               </div>
             </div>
           </>
@@ -718,8 +938,42 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
         </p>
       )}
 
-      <div className="mt-4 flex shrink-0 gap-3">
-        {view === "plano" ? (
+      <div className={`mt-4 flex shrink-0 gap-3 ${isLast && !redo ? "flex-col gap-1" : ""}`}>
+        {isLast && !redo && view === "step" ? (
+          <>
+            <button
+              type="button"
+              onClick={startFirstWorkout}
+              disabled={finishing}
+              className="btn-primary tap w-full rounded-xl py-3.5 font-semibold active:scale-[0.99] disabled:opacity-60"
+            >
+              {finishing
+                ? "Salvando..."
+                : firstWorkout
+                  ? `Começar Treino ${firstWorkout.label} · ${firstMinutes} min`
+                  : "Começar"}
+            </button>
+            <div className="flex items-center justify-between">
+              {/* Voltar fica: é por aqui que se corrige um nível alto antes de gravar. */}
+              <button
+                type="button"
+                onClick={back}
+                disabled={finishing}
+                className="tap p-2.5 text-sm font-medium active:opacity-70"
+              >
+                Voltar
+              </button>
+              <button
+                type="button"
+                onClick={() => finish("/")}
+                disabled={finishing}
+                className="tap p-2.5 text-sm font-medium active:opacity-70"
+              >
+                Treinar depois
+              </button>
+            </div>
+          </>
+        ) : view === "plano" ? (
           <button
             type="button"
             onClick={() => setView("step")}
@@ -739,14 +993,16 @@ export function OnboardingFlow({ mode }: { mode: OnboardingMode }) {
                 Voltar
               </button>
             )}
-            <button
-              type="button"
-              onClick={next}
-              disabled={finishing}
-              className="btn-primary tap flex-1 rounded-xl py-3.5 font-semibold active:scale-[0.99] disabled:opacity-60"
-            >
-              {isLast ? (finishing ? "Salvando..." : redo ? "Salvar" : "Começar") : "Continuar"}
-            </button>
+            {!autoStep && (
+              <button
+                type="button"
+                onClick={next}
+                disabled={finishing}
+                className="btn-primary tap flex-1 rounded-xl py-3.5 font-semibold active:scale-[0.99] disabled:opacity-60"
+              >
+                {isLast ? (finishing ? "Salvando..." : "Salvar") : "Continuar"}
+              </button>
+            )}
           </>
         )}
       </div>

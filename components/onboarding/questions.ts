@@ -35,13 +35,13 @@ export const PLACE_OPTIONS: Option<Place>[] = [
 /** O que a pessoa marca. O chão não entra: todo mundo tem. */
 export const GEAR_OPTIONS: Option<GearItem>[] = [
   { value: "parede", label: "Parede livre", hint: "pra parada de mão" },
-  { value: "barra", label: "Barra fixa", hint: "porta, parede ou praça" },
+  { value: "barra", label: "Barra fixa" },
   { value: "paralelas", label: "Paralelas", hint: "barras de dip" },
-  { value: "banco", label: "Banco ou degrau", hint: "flexão e dip inclinados" },
-  { value: "argolas", label: "Argolas", hint: "penduradas" },
+  { value: "banco", label: "Banco ou degrau" },
+  { value: "argolas", label: "Argolas" },
   { value: "paralettes", label: "Paralettes", hint: "mini paralelas de chão" },
-  { value: "elastico", label: "Elástico", hint: "de resistência" },
-  { value: "peso", label: "Peso", hint: "anilha, halter ou colete" },
+  { value: "elastico", label: "Elástico" },
+  { value: "peso", label: "Peso" },
 ];
 
 /** "chão, parede livre, barra fixa": o resumo do que foi marcado. */
@@ -64,22 +64,22 @@ export function levelOptions(equipment: Equipment): Option<Level>[] {
       value: "iniciante",
       label: "Iniciante",
       hint: bar
-        ? "Ainda construo a base: menos de 10 flexões seguidas e ainda não faço 8 barras."
-        : "Ainda construo a base: menos de 10 flexões limpas seguidas e parada de mão ainda não.",
+        ? "Menos de 10 flexões e ainda não faço 8 barras."
+        : "Menos de 10 flexões limpas. Parada de mão, ainda não.",
     },
     {
       value: "intermediario",
       label: "Intermediário",
       hint: bar
-        ? `Faço 8 barras${dips ? ", dips completos" : ""} e parada de mão na parede por 30s. Começo a treinar skills.`
-        : "Faço 10 flexões limpas e seguro a parada de mão na parede por 30s. Começo a treinar skills.",
+        ? `8 barras${dips ? ", dips completos" : ""} e 30s de parada de mão na parede.`
+        : "10 flexões limpas e 30s de parada de mão na parede.",
     },
     {
       value: "avancado",
       label: "Avançado",
       hint: bar
-        ? "Já faço muscle-up ou treino planche e front lever de verdade. Parada de mão livre."
-        : "Parada de mão livre, flexão archer e planche em progressão. Skills são o meu treino.",
+        ? "Muscle-up, ou planche e front lever de verdade."
+        : "Parada de mão livre, flexão archer e planche.",
     },
   ];
 }
@@ -179,3 +179,72 @@ export function daysFeedback(days: number): string {
   if (days === 4) return "O ponto de equilíbrio entre evoluir e recuperar.";
   return "Alta frequência — capriche no descanso e no sono.";
 }
+
+/** Tela final: nome curto das etapas. Quem não está aqui usa o nome do catálogo. */
+const STEP_SHORT: Record<string, string> = {
+  "Dead Hang + Scapular Pull": "Pendurar e ativar as escápulas",
+  "Row Australiano / Ring Row": "Remada australiana",
+  "Pull-up Negativo": "Barra negativa",
+  "Pull-up (Pronado)": "Barra (pull-up)",
+  "L-sit Pull-up": "Barra com L-sit",
+  "Archer Pull-up": "Barra arqueiro",
+  "One-Arm Pull-up Negativo": "Barra com um braço, negativa",
+  "Flexão Inclinada": "Flexão inclinada",
+  "Flexão no Chão": "Flexão no chão",
+  "Flexão Diamante": "Flexão diamante",
+  "Archer Push-up": "Flexão arqueiro",
+  "One-Arm Push-up Elevado": "Flexão com um braço, elevada",
+  "One-Arm Push-up": "Flexão com um braço",
+  "Wrist Prep + Hollow Body": "Preparo de punho e hollow",
+  "Handstand com Peito à Parede": "Parada com o peito na parede",
+  "Handstand com Costas à Parede": "Parada com as costas na parede",
+  "Toe-pull / Heel-pull off the wall": "Saindo da parede",
+  "Kick-up para Handstand Livre": "Subir pra parada livre",
+  "Handstand Livre (10-30s)": "Parada de mão livre",
+  "Support Hold (Suporte Estático)": "Suporte parado",
+  "Ring Dip": "Dip na argola",
+  "Foot-Supported L-sit / Tuck": "L-sit com os pés apoiados",
+  "One-Leg L-sit": "L-sit com uma perna",
+  "Full L-sit": "L-sit completo",
+  "Straddle L-sit": "L-sit aberto",
+  "Bulgarian Split Squat": "Agachamento búlgaro",
+  "Pistol Assistido (apoio)": "Pistol com apoio",
+  "Pistol em Caixa (Box Pistol)": "Pistol na caixa",
+  "Pistol Squat Completo": "Pistol completo",
+};
+
+export function stepShort(label: string): string {
+  return STEP_SHORT[label] ?? label;
+}
+
+/** Como o título nomeia a etapa quando ela é o destino. Sem entrada, vai o nome curto. */
+const STEP_DESTINATION: Record<string, string> = {
+  "Pull-up (Pronado)": "a sua primeira barra",
+  "Pull-up Negativo": "a barra negativa",
+  "L-sit Pull-up": "a barra com L-sit",
+  "Archer Pull-up": "a barra arqueiro",
+  "One-Arm Pull-up Negativo": "a barra com um braço",
+  "Flexão Diamante": "a flexão diamante",
+  "Archer Push-up": "a flexão arqueiro",
+  "One-Arm Push-up Elevado": "a flexão com um braço",
+  "One-Arm Push-up": "a flexão com um braço",
+  "Handstand Livre (10-30s)": "a parada de mão livre",
+  "Kick-up para Handstand Livre": "a parada de mão livre",
+};
+
+export function stepDestination(label: string): string {
+  return STEP_DESTINATION[label] ?? stepShort(label);
+}
+
+/**
+ * Só onde a escada sozinha criaria uma expectativa errada; nos outros objetivos a
+ * tela não tem frase. Definir não promete corpo, e a habilidade escolhida pode não
+ * estar no plano sugerido.
+ */
+export function pathNote(goal: Goal): string | null {
+  if (goal === "definir") return "O que a balança mostra também depende da comida. O treino cuida da força e do músculo.";
+  if (goal === "mobilidade") return "Mobilidade entra no seu próximo plano. Este aqui constrói a base.";
+  if (goal === "skills") return "Essa fica nos seus objetivos, e o Gravks marca cada etapa que você bater.";
+  return null;
+}
+
