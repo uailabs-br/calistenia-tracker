@@ -16,7 +16,7 @@ export function SignalCard() {
       <p className="text-sm font-semibold" style={{ color: ACCENT }}>
         Próximo nível · desbloqueado
       </p>
-      <p className="mt-2 text-sm font-medium">Pull-up negativo → Pull-up pronado</p>
+      <p className="mt-2 text-sm font-medium">Barra fixa negativa → Barra fixa</p>
       <p className="mt-1 text-sm text-muted">
         Você bateu a meta em 2 sessões seguidas, com execução limpa.
       </p>

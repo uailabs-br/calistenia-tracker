@@ -32,7 +32,7 @@
       "progressions": [
         {
           "level": 1,
-          "name": "Dead Hang + Scapular Pull",
+          "name": "Suspensão + puxada escapular",
           "description": "Sustentar o corpo pendurado com braços estendidos, depois deprimir e retrair as escápulas sem dobrar o cotovelo. Constrói grip e controle escapular, a base do pull-up.",
           "form_flags": [
             "braços retos",
@@ -46,7 +46,7 @@
           },
           "accessories": [
             {
-              "name": "Scapular pull",
+              "name": "Puxada escapular",
               "volume_target": {
                 "sets": 3,
                 "reps": 10
@@ -61,7 +61,7 @@
         },
         {
           "level": 2,
-          "name": "Row Australiano / Ring Row",
+          "name": "Remada australiana",
           "description": "Puxada horizontal com corpo reto, peito à barra baixa ou argolas. Constrói força de puxada em vetor mais fácil antes do vertical.",
           "form_flags": [
             "corpo reto",
@@ -77,7 +77,7 @@
           },
           "accessories": [
             {
-              "name": "Dead hang",
+              "name": "Suspensão na barra",
               "volume_target": {
                 "sets": 2,
                 "duration_seconds": 40
@@ -92,7 +92,7 @@
         },
         {
           "level": 3,
-          "name": "Pull-up Negativo",
+          "name": "Barra fixa negativa",
           "description": "Subir com auxílio (pulo ou caixa) e descer controlado em 3-5s. Constrói força excêntrica na amplitude completa.",
           "form_flags": [
             "descida ≥ 4s",
@@ -122,7 +122,7 @@
         },
         {
           "level": 4,
-          "name": "Pull-up (Pronado)",
+          "name": "Barra fixa",
           "description": "Pull-up padrão, pegada pronada na largura dos ombros. Queixo acima da barra, sem kip, descida controlada.",
           "form_flags": [
             "queixo acima da barra",
@@ -138,7 +138,7 @@
           },
           "accessories": [
             {
-              "name": "Pull-up negativo lento",
+              "name": "Barra fixa negativa lenta",
               "volume_target": {
                 "sets": 2,
                 "reps": 4
@@ -169,7 +169,7 @@
           },
           "accessories": [
             {
-              "name": "Pull-up pronado",
+              "name": "Barra fixa",
               "volume_target": {
                 "sets": 2,
                 "reps": 8
@@ -1395,7 +1395,7 @@
       "progressions": [
         {
           "level": 1,
-          "name": "Pike Push-up",
+          "name": "Flexão pike",
           "description": "Quadril elevado, corpo em V invertido, flexão da cabeça em direção ao chão.",
           "form_flags": [
             "quadril elevado",
@@ -1423,7 +1423,7 @@
         },
         {
           "level": 2,
-          "name": "Pike Push-up Elevado",
+          "name": "Flexão pike elevada",
           "description": "Pés em superfície elevada, quadril acima dos ombros, maior ângulo de carga vertical.",
           "form_flags": [
             "quadril acima dos ombros"
@@ -1465,7 +1465,7 @@
           },
           "accessories": [
             {
-              "name": "Pike push-up elevado",
+              "name": "Flexão pike elevada",
               "volume_target": {
                 "sets": 2,
                 "reps": 8
@@ -1574,7 +1574,7 @@
       "progressions": [
         {
           "level": 1,
-          "name": "Wrist Prep + Hollow Body",
+          "name": "Aquecimento de punhos + canoinha",
           "description": "Preparação de punho completa e hollow body hold. Base de mobilidade e tensão de linha antes de inverter.",
           "form_flags": [
             "punhos sem dor",
@@ -2049,7 +2049,7 @@
       "progressions": [
         {
           "level": 1,
-          "name": "Frog Stand",
+          "name": "Parada de sapo",
           "description": "Agachado, mãos no chão, joelhos apoiados atrás dos cotovelos, inclinar à frente até os pés saírem do chão. É a posição de onde o press começa.",
           "form_flags": [
             "cotovelos sob os joelhos",
@@ -2266,7 +2266,7 @@
       "progressions": [
         {
           "level": 1,
-          "name": "Foot-Supported L-sit / Tuck",
+          "name": "L-sit tuck",
           "description": "Mãos no chão ou parallettes, elevar o quadril com joelhos dobrados (tuck) ou um pé no chão. Base de depressão escapular e compressão.",
           "form_flags": [
             "quadril elevado",
@@ -2595,7 +2595,7 @@
       "progressions": [
         {
           "level": 1,
-          "name": "Hollow Body Hold",
+          "name": "Canoinha",
           "description": "Deitado, baixar pernas e ombros do chão com lombar pressionada. Base de tensão corporal do dragon flag.",
           "form_flags": [
             "lombar colada no chão"
@@ -2635,7 +2635,7 @@
           },
           "accessories": [
             {
-              "name": "Hollow body hold",
+              "name": "Canoinha",
               "volume_target": {
                 "sets": 2,
                 "duration_seconds": 40

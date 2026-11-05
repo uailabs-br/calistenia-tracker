@@ -20,6 +20,8 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-11-04, nomes dos exercícios básicos — 764 testes):** nomes em português e novo "como executar" nos planos genéricos, no catálogo, nas escadas e na landing; texto e fontes em `docs/exercicios-nomes-copy.md`. Ids intactos, nome antigo virou alias de busca, plano pessoal fora. Log antigo mantém o nome do snapshot; plano já aplicado no aparelho só muda ao trocar de plano.
+>
 > **Atualização (pós-v1.8, 2026-11-04, nova ordem do onboarding e foto na landing — 764 testes):**
 > o onboarding de primeira vez agora vai do objetivo ao equipamento, mostra o Treino A logo depois do
 > nível e termina com o caminho até o próximo marco, abrindo a sessão direto. Toque único avança

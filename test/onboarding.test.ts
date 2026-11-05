@@ -37,7 +37,7 @@ describe("mapAnswersToSkillLevels", () => {
   // renumerado (já aconteceu, v1→v3), o teste acusa em vez de gravar a etapa errada.
   const cases: [Level, string, number, string][] = [
     ["intermediario", "push_up", 2, "Flexão Diamante"],
-    ["intermediario", "pull_up", 3, "Pull-up (Pronado)"],
+    ["intermediario", "pull_up", 3, "Barra fixa"],
     ["intermediario", "handstand_hold", 2, "Handstand com Costas à Parede"],
     ["intermediario", "dips", 2, "Dip Completo"],
     ["avancado", "push_up", 3, "Archer Push-up"],
@@ -45,8 +45,8 @@ describe("mapAnswersToSkillLevels", () => {
     ["avancado", "handstand_hold", 5, "Handstand Livre (10-30s)"],
     ["avancado", "dips", 3, "Ring Dip"],
     ["iniciante", "push_up", 0, "Flexão Inclinada"],
-    ["iniciante", "pull_up", 0, "Dead Hang + Scapular Pull"],
-    ["iniciante", "handstand_hold", 0, "Wrist Prep + Hollow Body"],
+    ["iniciante", "pull_up", 0, "Suspensão + puxada escapular"],
+    ["iniciante", "handstand_hold", 0, "Aquecimento de punhos + canoinha"],
     ["iniciante", "dips", 0, "Support Hold (Suporte Estático)"],
   ];
 

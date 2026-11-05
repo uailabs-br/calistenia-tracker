@@ -9,10 +9,10 @@ import { DEFAULT_ACCENT as ACCENT } from "@/components/ui/accent";
  * estática e não deve carregar o catálogo só pra desenhar cinco linhas.
  */
 const STEPS = [
-  { name: "Dead hang + scapular pull", state: "done" },
-  { name: "Row australiano", state: "done" },
-  { name: "Pull-up negativo", state: "here" },
-  { name: "Pull-up", state: "next" },
+  { name: "Suspensão + puxada escapular", state: "done" },
+  { name: "Remada australiana", state: "done" },
+  { name: "Barra fixa negativa", state: "here" },
+  { name: "Barra fixa", state: "next" },
   { name: "Pull-up pegada larga", state: "next" },
 ] as const;
 

@@ -31,7 +31,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "Mãos na parede ou num apoio firme, corpo reto da cabeça aos pés. Desce até o peito chegar perto do apoio e empurra de volta.",
+              "obs": "Mãos numa parede ou num apoio firme, corpo reto da cabeça aos pés. Desce até o peito chegar perto do apoio e empurra de volta. Quanto mais baixo o apoio, mais difícil.",
               "rest": "descanso 60s",
               "flags": [
                 "peito chegou perto",
@@ -55,7 +55,7 @@
           "exercises": [
             {
               "id": "agachamento",
-              "name": "Agachamento livre",
+              "name": "Agachamento",
               "target": "3 × 15",
               "parsed": {
                 "sets": 3,
@@ -63,7 +63,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "Pés na largura dos ombros, joelhos acompanham os pés. Desce até as coxas ficarem paralelas ao chão.",
+              "obs": "Pés na largura dos ombros. Desce como quem senta numa cadeira, até as coxas ficarem paralelas ao chão, e sobe. Os joelhos apontam para o mesmo lado dos pés.",
               "rest": "descanso 60s",
               "flags": [
                 "desci até paralelo",
@@ -95,7 +95,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "Toalha grossa passada por cima de uma porta maciça, fechada e trancada, uma ponta em cada mão. Fica do lado em que a porta abre pra longe de você: assim, puxar aperta a porta contra o batente. Pés perto da porta, corpo reto inclinado pra trás, puxa o peito até as mãos. Quanto mais deitado, mais difícil.",
+              "obs": "Toalha grossa por cima de uma porta maciça, fechada e trancada, uma ponta em cada mão. Fica do lado em que a porta abre pra longe de você: assim, puxar aperta a porta contra o batente. Pés perto da porta, corpo reto inclinado pra trás, puxa o peito até as mãos. Quanto mais deitado, mais difícil.",
               "rest": "descanso 60s",
               "flags": [
                 "peito chegou nas mãos",
@@ -110,7 +110,7 @@
             },
             {
               "id": "dead-bug",
-              "name": "Dead bug",
+              "name": "Abdominal alternado deitado",
               "target": "3 × 8/lado",
               "parsed": {
                 "sets": 3,
@@ -118,7 +118,7 @@
                 "unit": "reps",
                 "per_side": true
               },
-              "obs": "Deitado, lombar colada no chão. Estende braço e perna opostos devagar, sem descolar as costas.",
+              "obs": "Deitado de costas, braços pra cima e joelhos dobrados no ar. Estende um braço e a perna oposta devagar, sem descolar a lombar do chão. Volta e troca de lado.",
               "rest": "descanso 45s",
               "flags": [
                 "lombar colada",
@@ -141,7 +141,7 @@
         },
         {
           "exercise_id": "agachamento",
-          "criteria": "Quando fizer 3 × 15 sem marcar \"desci pouco\" por 2 sessões seguidas → próximo passo: Afundo (lunge)."
+          "criteria": "Quando fizer 3 × 15 sem marcar \"desci pouco\" por 2 sessões seguidas → próximo passo: Afundo."
         },
         {
           "exercise_id": "remada-toalha-porta",
@@ -149,7 +149,7 @@
         },
         {
           "exercise_id": "dead-bug",
-          "criteria": "Quando fizer 3 × 8/lado sem marcar \"lombar descolou\" por 2 sessões seguidas → próximo passo: Hollow body hold."
+          "criteria": "Quando fizer 3 × 8/lado sem marcar \"lombar descolou\" por 2 sessões seguidas → próximo passo: Canoinha."
         }
       ]
     },
@@ -171,7 +171,7 @@
           "exercises": [
             {
               "id": "afundo",
-              "name": "Afundo (lunge)",
+              "name": "Afundo",
               "target": "3 × 8/lado",
               "parsed": {
                 "sets": 3,
@@ -179,7 +179,7 @@
                 "unit": "reps",
                 "per_side": true
               },
-              "obs": "Passo à frente, joelho de trás quase no chão. Tronco reto; empurra com a perna da frente.",
+              "obs": "Dá um passo grande à frente e desce até o joelho de trás quase tocar o chão. Tronco reto. Empurra com a perna da frente pra voltar.",
               "rest": "descanso 60s",
               "flags": [
                 "equilibrei bem",
@@ -202,7 +202,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "Deitado, pés no chão. Sobe o quadril apertando o glúteo; no topo, corpo reto de ombro a joelho.",
+              "obs": "Deitado de costas, joelhos dobrados, pés no chão. Sobe o quadril apertando o glúteo até o corpo ficar reto do ombro ao joelho e desce devagar.",
               "rest": "descanso 45s",
               "flags": [
                 "subi até o topo",
@@ -231,7 +231,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "Joelhos no chão, corpo reto dos joelhos à cabeça. Desce com controle, sem deixar o quadril sobrar nem afundar.",
+              "obs": "Mãos e joelhos no chão, corpo reto dos joelhos à cabeça. Desce até o peito chegar perto do chão e empurra de volta, sem empinar nem afundar o quadril.",
               "rest": "descanso 60s",
               "flags": [
                 "peito chegou perto",
@@ -263,7 +263,7 @@
                 "unit": "seconds",
                 "per_side": false
               },
-              "obs": "Antebraços no chão, corpo reto. Aperta glúteo e barriga; não deixa a lombar afundar.",
+              "obs": "Antebraços e pontas dos pés no chão, corpo reto. Aperta o glúteo e a barriga e não deixa a lombar afundar.",
               "rest": "descanso 45s",
               "flags": [
                 "segurei o tempo todo",
@@ -294,7 +294,7 @@
         },
         {
           "exercise_id": "plank",
-          "criteria": "Quando fizer 3 × 20s sem marcar \"quadril caiu\" por 2 sessões seguidas → próximo passo: Hollow body hold."
+          "criteria": "Quando fizer 3 × 20s sem marcar \"quadril caiu\" por 2 sessões seguidas → próximo passo: Canoinha."
         }
       ]
     },
@@ -307,7 +307,7 @@
       "accent": "#E8945D",
       "accent_bg": "#2A1F19",
       "is_practice": false,
-      "warmup": "Preparo de punhos completo · círculos de ombro × 10 · agachamento × 10 — 3 min",
+      "warmup": "Aquecimento de punhos completo · círculos de ombro × 10 · agachamento × 10 — 3 min",
       "tip": "Corpo inteiro, com ênfase na parada de mão. Equilíbrio aprende melhor descansado, por isso ele vem primeiro. Termine cada série com 1 ou 2 repetições sobrando: a técnica vale mais que a última rep. Se marcar o mesmo problema 2 treinos seguidos, volte um passo.",
       "blocks": [
         {
@@ -316,7 +316,7 @@
           "exercises": [
             {
               "id": "wrist-prep",
-              "name": "Preparo de punhos",
+              "name": "Aquecimento de punhos",
               "target": "2 × 10",
               "parsed": {
                 "sets": 2,
@@ -324,7 +324,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "De quatro, mãos no chão. Faz círculos e balanços de peso para frente e para trás, sem pressa.",
+              "obs": "De quatro, mãos no chão. Gira os punhos e leva o peso do corpo pra frente e pra trás, sem pressa.",
               "rest": "descanso 30s",
               "flags": [
                 "punho tranquilo",
@@ -337,7 +337,7 @@
             },
             {
               "id": "frog-stand",
-              "name": "Frog stand (rã)",
+              "name": "Parada de sapo",
               "target": "3 × 15s",
               "parsed": {
                 "sets": 3,
@@ -345,7 +345,7 @@
                 "unit": "seconds",
                 "per_side": false
               },
-              "obs": "Agachado, apoia os joelhos nos cotovelos e inclina o peso pra frente até tirar os pés do chão.",
+              "obs": "Agacha e põe as mãos no chão, na largura dos ombros. Apoia os joelhos nos braços, perto dos cotovelos, e leva o peso pra frente até os pés saírem do chão.",
               "rest": "descanso 60s",
               "flags": [
                 "tirei os pés do chão",
@@ -369,7 +369,7 @@
           "exercises": [
             {
               "id": "pike-push-up",
-              "name": "Pike push-up",
+              "name": "Flexão pike",
               "target": "3 × 8",
               "parsed": {
                 "sets": 3,
@@ -377,7 +377,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "Quadril alto, corpo em V invertido. Cabeça desce entre as mãos e empurra de volta.",
+              "obs": "Mãos e pés no chão, quadril alto: o corpo forma um V de cabeça pra baixo. Dobra os cotovelos até a cabeça chegar perto do chão, entre as mãos, e empurra de volta.",
               "rest": "descanso 75s",
               "flags": [
                 "cabeça passou das mãos",
@@ -403,7 +403,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "De bruços num piso liso, com uma toalha embaixo das coxas. Braços esticados à frente, mãos firmes no chão: puxa o corpo pra frente até as mãos chegarem na altura do peito, sem dobrar o quadril. Volta empurrando.",
+              "obs": "De bruços num piso liso, com uma toalha embaixo das coxas. Braços esticados à frente, mãos firmes no chão. Puxa o corpo até as mãos chegarem na altura do peito, sem dobrar o quadril, e volta empurrando.",
               "rest": "descanso 60s",
               "flags": [
                 "deslizei até o peito",
@@ -418,7 +418,7 @@
             },
             {
               "id": "agachamento",
-              "name": "Agachamento livre",
+              "name": "Agachamento",
               "target": "3 × 15",
               "parsed": {
                 "sets": 3,
@@ -426,7 +426,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "Pés na largura dos ombros, joelhos acompanham os pés. Desce até as coxas ficarem paralelas ao chão.",
+              "obs": "Pés na largura dos ombros. Desce como quem senta numa cadeira, até as coxas ficarem paralelas ao chão, e sobe. Os joelhos apontam para o mesmo lado dos pés.",
               "rest": "descanso 60s",
               "flags": [
                 "desci até paralelo",
@@ -450,7 +450,7 @@
           "exercises": [
             {
               "id": "hollow-hold",
-              "name": "Hollow body hold",
+              "name": "Canoinha",
               "target": "3 × 15s",
               "parsed": {
                 "sets": 3,
@@ -458,7 +458,7 @@
                 "unit": "seconds",
                 "per_side": false
               },
-              "obs": "Lombar colada no chão, braços e pernas esticados e levantados. Se a lombar descolar, dobra os joelhos.",
+              "obs": "Deitado de costas, braços esticados pra trás da cabeça. Tira os ombros e as pernas do chão e fica parado, com a lombar colada no chão. Se a lombar descolar, dobra os joelhos.",
               "rest": "descanso 60s",
               "flags": [
                 "lombar colada",
@@ -489,11 +489,11 @@
         },
         {
           "exercise_id": "agachamento",
-          "criteria": "Quando fizer 3 × 15 sem marcar \"desci pouco\" por 2 sessões seguidas → próximo passo: Afundo (lunge)."
+          "criteria": "Quando fizer 3 × 15 sem marcar \"desci pouco\" por 2 sessões seguidas → próximo passo: Afundo."
         },
         {
           "exercise_id": "hollow-hold",
-          "criteria": "Quando fizer 3 × 15s sem marcar \"lombar descolou\" por 2 sessões seguidas → próximo passo: L-sit apoiado (tuck)."
+          "criteria": "Quando fizer 3 × 15s sem marcar \"lombar descolou\" por 2 sessões seguidas → próximo passo: L-sit tuck."
         }
       ]
     }

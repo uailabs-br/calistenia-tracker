@@ -94,7 +94,7 @@ describe("AI_SCHEMA_PROMPT — escadas", () => {
 
   it("leva o critério numérico de cada degrau — é ele que o motor verifica", () => {
     // alvo menor que o critério trava o atleta em "tracking" pra sempre
-    expect(AI_SCHEMA_PROMPT).toContain("4=Pull-up (Pronado) → 3×8 reps · 2 sessões seguidas");
+    expect(AI_SCHEMA_PROMPT).toContain("4=Barra fixa → 3×8 reps · 2 sessões seguidas");
   });
 
   it("marca equipamento e pré-requisito, pra não prescrever o impossível", () => {

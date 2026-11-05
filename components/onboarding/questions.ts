@@ -182,10 +182,7 @@ export function daysFeedback(days: number): string {
 
 /** Tela final: nome curto das etapas. Quem não está aqui usa o nome do catálogo. */
 const STEP_SHORT: Record<string, string> = {
-  "Dead Hang + Scapular Pull": "Pendurar e ativar as escápulas",
-  "Row Australiano / Ring Row": "Remada australiana",
-  "Pull-up Negativo": "Barra negativa",
-  "Pull-up (Pronado)": "Barra (pull-up)",
+  "Suspensão + puxada escapular": "Suspensão e puxada escapular",
   "L-sit Pull-up": "Barra com L-sit",
   "Archer Pull-up": "Barra arqueiro",
   "One-Arm Pull-up Negativo": "Barra com um braço, negativa",
@@ -195,7 +192,7 @@ const STEP_SHORT: Record<string, string> = {
   "Archer Push-up": "Flexão arqueiro",
   "One-Arm Push-up Elevado": "Flexão com um braço, elevada",
   "One-Arm Push-up": "Flexão com um braço",
-  "Wrist Prep + Hollow Body": "Preparo de punho e hollow",
+  "Aquecimento de punhos + canoinha": "Aquecimento de punhos e canoinha",
   "Handstand com Peito à Parede": "Parada com o peito na parede",
   "Handstand com Costas à Parede": "Parada com as costas na parede",
   "Toe-pull / Heel-pull off the wall": "Saindo da parede",
@@ -203,7 +200,6 @@ const STEP_SHORT: Record<string, string> = {
   "Handstand Livre (10-30s)": "Parada de mão livre",
   "Support Hold (Suporte Estático)": "Suporte parado",
   "Ring Dip": "Dip na argola",
-  "Foot-Supported L-sit / Tuck": "L-sit com os pés apoiados",
   "One-Leg L-sit": "L-sit com uma perna",
   "Full L-sit": "L-sit completo",
   "Straddle L-sit": "L-sit aberto",
@@ -219,8 +215,8 @@ export function stepShort(label: string): string {
 
 /** Como o título nomeia a etapa quando ela é o destino. Sem entrada, vai o nome curto. */
 const STEP_DESTINATION: Record<string, string> = {
-  "Pull-up (Pronado)": "a sua primeira barra",
-  "Pull-up Negativo": "a barra negativa",
+  "Barra fixa": "a sua primeira barra",
+  "Barra fixa negativa": "a barra negativa",
   "L-sit Pull-up": "a barra com L-sit",
   "Archer Pull-up": "a barra arqueiro",
   "One-Arm Pull-up Negativo": "a barra com um braço",

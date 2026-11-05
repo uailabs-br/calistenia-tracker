@@ -14,7 +14,7 @@
       "accent": "#8174E8",
       "accent_bg": "#1D1B2B",
       "is_practice": false,
-      "warmup": "Hang passivo 30s · escápulas na barra × 8 · círculos de ombro — 3 min",
+      "warmup": "Hang passivo 30s · puxada escapular × 8 · círculos de ombro — 3 min",
       "tip": "Hoje o foco é a barra. Faça as séries com folga: pare quando a técnica começar a piorar, não quando cansar. Se marcar o mesmo problema 2 treinos seguidos, volte um passo.",
       "blocks": [
         {
@@ -23,7 +23,7 @@
           "exercises": [
             {
               "id": "pull-up-peso-morto",
-              "name": "Pull-up (barra fixa)",
+              "name": "Barra fixa",
               "target": "4 × 4",
               "parsed": {
                 "sets": 4,
@@ -49,7 +49,7 @@
             },
             {
               "id": "pull-up-negativa-lenta",
-              "name": "Pull-up negativa",
+              "name": "Barra fixa negativa",
               "target": "3 × 4",
               "parsed": {
                 "sets": 3,
@@ -75,7 +75,7 @@
             },
             {
               "id": "row-inverso-elevado",
-              "name": "Row inverso (pés elevados)",
+              "name": "Remada australiana com pés elevados",
               "target": "3 × 8",
               "parsed": {
                 "sets": 3,
@@ -115,7 +115,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "Pendurado, sobe os joelhos até o quadril sem balançar o corpo.",
+              "obs": "Pendurado na barra, sobe os joelhos até a altura do quadril e desce devagar, sem balançar.",
               "rest": "descanso 60s",
               "flags": [
                 "subi sem balançar",
@@ -138,11 +138,11 @@
         },
         {
           "exercise_id": "pull-up-negativa-lenta",
-          "criteria": "Quando fizer 3 × 4 sem marcar \"caí rápido\" por 2 sessões seguidas → próximo passo: Pull-up (barra fixa)."
+          "criteria": "Quando fizer 3 × 4 sem marcar \"caí rápido\" por 2 sessões seguidas → próximo passo: Barra fixa."
         },
         {
           "exercise_id": "row-inverso-elevado",
-          "criteria": "Quando fizer 3 × 8 sem marcar \"quadril caiu\" por 2 sessões seguidas → próximo passo: Pull-up negativa."
+          "criteria": "Quando fizer 3 × 8 sem marcar \"quadril caiu\" por 2 sessões seguidas → próximo passo: Barra fixa negativa."
         },
         {
           "exercise_id": "hanging-knee-raise",
@@ -252,7 +252,7 @@
             },
             {
               "id": "pike-push-up",
-              "name": "Pike push-up",
+              "name": "Flexão pike",
               "target": "3 × 8",
               "parsed": {
                 "sets": 3,
@@ -260,7 +260,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "Quadril alto, corpo em V invertido. Cabeça desce entre as mãos e empurra de volta.",
+              "obs": "Mãos e pés no chão, quadril alto: o corpo forma um V de cabeça pra baixo. Dobra os cotovelos até a cabeça chegar perto do chão, entre as mãos, e empurra de volta.",
               "rest": "descanso 75s",
               "flags": [
                 "cabeça passou das mãos",
@@ -291,7 +291,7 @@
         },
         {
           "exercise_id": "pike-push-up",
-          "criteria": "Quando fizer 3 × 8 sem marcar \"amplitude curta\" por 2 sessões seguidas → próximo passo: Pike push-up elevado."
+          "criteria": "Quando fizer 3 × 8 sem marcar \"amplitude curta\" por 2 sessões seguidas → próximo passo: Flexão pike elevada."
         }
       ]
     },
@@ -304,7 +304,7 @@
       "accent": "#E8945D",
       "accent_bg": "#2A1F19",
       "is_practice": false,
-      "warmup": "Wrist prep completo · frog stand 15s · agachamento sem peso × 10 — 3 min",
+      "warmup": "Aquecimento de punhos completo · parada de sapo 15s · agachamento sem peso × 10 — 3 min",
       "tip": "Dia de parada de mão, L-sit e pernas. Faça as séries com folga: pare quando a técnica começar a piorar, não quando cansar. Se marcar o mesmo problema 2 treinos seguidos, volte um passo.",
       "blocks": [
         {
@@ -420,7 +420,7 @@
             },
             {
               "id": "hollow-hold",
-              "name": "Hollow body hold",
+              "name": "Canoinha",
               "target": "3 × 15s",
               "parsed": {
                 "sets": 3,
@@ -428,7 +428,7 @@
                 "unit": "seconds",
                 "per_side": false
               },
-              "obs": "Lombar colada no chão, braços e pernas esticados e levantados. Se a lombar descolar, dobra os joelhos.",
+              "obs": "Deitado de costas, braços esticados pra trás da cabeça. Tira os ombros e as pernas do chão e fica parado, com a lombar colada no chão. Se a lombar descolar, dobra os joelhos.",
               "rest": "descanso 60s",
               "flags": [
                 "lombar colada",

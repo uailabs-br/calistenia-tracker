@@ -14,7 +14,7 @@
       "accent": "#8174E8",
       "accent_bg": "#1D1B2B",
       "is_practice": false,
-      "warmup": "Preparo de punhos · flexão × 10 · agachamento × 10 · hollow 15s — 3 min",
+      "warmup": "Aquecimento de punhos · flexão × 10 · agachamento × 10 · canoinha 15s — 3 min",
       "tip": "Corpo inteiro, com ênfase em empurrar. Termine cada série com 1 ou 2 repetições sobrando: a técnica vale mais que a última rep. Se marcar o mesmo problema 2 treinos seguidos, volte um passo.",
       "blocks": [
         {
@@ -121,7 +121,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "Toalha grossa passada por cima de uma porta maciça, fechada e trancada, uma ponta em cada mão. Fica do lado em que a porta abre pra longe de você: assim, puxar aperta a porta contra o batente. Pés perto da porta, corpo reto inclinado pra trás, puxa o peito até as mãos. Quanto mais deitado, mais difícil.",
+              "obs": "Toalha grossa por cima de uma porta maciça, fechada e trancada, uma ponta em cada mão. Fica do lado em que a porta abre pra longe de você: assim, puxar aperta a porta contra o batente. Pés perto da porta, corpo reto inclinado pra trás, puxa o peito até as mãos. Quanto mais deitado, mais difícil.",
               "rest": "descanso 60s",
               "flags": [
                 "peito chegou nas mãos",
@@ -136,7 +136,7 @@
             },
             {
               "id": "hollow-hold",
-              "name": "Hollow body hold",
+              "name": "Canoinha",
               "target": "3 × 20s",
               "parsed": {
                 "sets": 3,
@@ -144,7 +144,7 @@
                 "unit": "seconds",
                 "per_side": false
               },
-              "obs": "Lombar colada no chão, braços e pernas esticados e levantados. Se a lombar descolar, dobra os joelhos.",
+              "obs": "Deitado de costas, braços esticados pra trás da cabeça. Tira os ombros e as pernas do chão e fica parado, com a lombar colada no chão. Se a lombar descolar, dobra os joelhos.",
               "rest": "descanso 60s",
               "flags": [
                 "lombar colada",
@@ -192,7 +192,7 @@
       "accent": "#9BCB5B",
       "accent_bg": "#202719",
       "is_practice": false,
-      "warmup": "Preparo de punhos completo · pike push-up × 5 · agachamento × 10 — 3 min",
+      "warmup": "Aquecimento de punhos completo · flexão pike × 5 · agachamento × 10 — 3 min",
       "tip": "Corpo inteiro, com ênfase na parada de mão. Equilíbrio e HSPU vêm primeiro, com o ombro descansado. Termine cada série com 1 ou 2 repetições sobrando: a técnica vale mais que a última rep. Se marcar o mesmo problema 2 treinos seguidos, volte um passo.",
       "blocks": [
         {
@@ -201,7 +201,7 @@
           "exercises": [
             {
               "id": "wrist-prep",
-              "name": "Preparo de punhos",
+              "name": "Aquecimento de punhos",
               "target": "2 × 10",
               "parsed": {
                 "sets": 2,
@@ -209,7 +209,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "De quatro, mãos no chão. Faz círculos e balanços de peso para frente e para trás, sem pressa.",
+              "obs": "De quatro, mãos no chão. Gira os punhos e leva o peso do corpo pra frente e pra trás, sem pressa.",
               "rest": "descanso 30s",
               "flags": [
                 "punho tranquilo",
@@ -364,7 +364,7 @@
       "accent": "#E8945D",
       "accent_bg": "#2A1F19",
       "is_practice": false,
-      "warmup": "Preparo de punhos completo · flexão × 10 · afundo × 5/lado — 3 min",
+      "warmup": "Aquecimento de punhos completo · flexão × 10 · afundo × 5/lado — 3 min",
       "tip": "Corpo inteiro, com ênfase nas pernas e na base da planche. Termine cada série com 1 ou 2 repetições sobrando: a técnica vale mais que a última rep. Se marcar o mesmo problema 2 treinos seguidos, volte um passo.",
       "blocks": [
         {
@@ -491,7 +491,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "De bruços num piso liso, com uma toalha embaixo das coxas. Braços esticados à frente, mãos firmes no chão: puxa o corpo pra frente até as mãos chegarem na altura do peito, sem dobrar o quadril. Volta empurrando.",
+              "obs": "De bruços num piso liso, com uma toalha embaixo das coxas. Braços esticados à frente, mãos firmes no chão. Puxa o corpo até as mãos chegarem na altura do peito, sem dobrar o quadril, e volta empurrando.",
               "rest": "descanso 60s",
               "flags": [
                 "deslizei até o peito",

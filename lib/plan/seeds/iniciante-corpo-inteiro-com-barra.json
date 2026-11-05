@@ -14,7 +14,7 @@
       "accent": "#8174E8",
       "accent_bg": "#1D1B2B",
       "is_practice": false,
-      "warmup": "Círculos de ombro × 10 · escápulas na barra × 5 · agachamento × 10 — 3 min",
+      "warmup": "Círculos de ombro × 10 · puxada escapular × 5 · agachamento × 10 — 3 min",
       "tip": "Corpo inteiro, com ênfase em puxar. Termine cada série com 1 ou 2 repetições sobrando: a técnica vale mais que a última rep. Se marcar o mesmo problema 2 treinos seguidos, volte um passo.",
       "blocks": [
         {
@@ -23,7 +23,7 @@
           "exercises": [
             {
               "id": "dead-hang",
-              "name": "Dead hang (pendurar)",
+              "name": "Suspensão na barra",
               "target": "3 × 30s",
               "parsed": {
                 "sets": 3,
@@ -31,7 +31,7 @@
                 "unit": "seconds",
                 "per_side": false
               },
-              "obs": "Pendurado na barra, ombros longe das orelhas, corpo parado.",
+              "obs": "Segura a barra com as palmas pra frente e tira os pés do chão. Braços esticados, ombros longe das orelhas, corpo parado.",
               "rest": "descanso 60s",
               "flags": [
                 "segurei o tempo todo",
@@ -49,7 +49,7 @@
             },
             {
               "id": "row-inverso-barra-baixa",
-              "name": "Row inverso (australiano)",
+              "name": "Remada australiana",
               "target": "3 × 10",
               "parsed": {
                 "sets": 3,
@@ -57,7 +57,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "Barra na altura da cintura: a de porta você prende mais baixo, ou usa a barra baixa da praça. Corpo reto e inclinado, puxa o peito até a barra e desce devagar.",
+              "obs": "Prende a barra de porta mais baixo ou usa uma barra baixa de praça. Fica embaixo de uma barra na altura da cintura e segura nela. Calcanhares no chão e corpo reto: puxa o peito até a barra e desce devagar.",
               "rest": "descanso 75s",
               "flags": [
                 "peito tocou a barra",
@@ -89,7 +89,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "Mãos na parede ou num apoio firme, corpo reto da cabeça aos pés. Desce até o peito chegar perto do apoio e empurra de volta.",
+              "obs": "Mãos numa parede ou num apoio firme, corpo reto da cabeça aos pés. Desce até o peito chegar perto do apoio e empurra de volta. Quanto mais baixo o apoio, mais difícil.",
               "rest": "descanso 60s",
               "flags": [
                 "peito chegou perto",
@@ -107,7 +107,7 @@
             },
             {
               "id": "agachamento",
-              "name": "Agachamento livre",
+              "name": "Agachamento",
               "target": "3 × 15",
               "parsed": {
                 "sets": 3,
@@ -115,7 +115,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "Pés na largura dos ombros, joelhos acompanham os pés. Desce até as coxas ficarem paralelas ao chão.",
+              "obs": "Pés na largura dos ombros. Desce como quem senta numa cadeira, até as coxas ficarem paralelas ao chão, e sobe. Os joelhos apontam para o mesmo lado dos pés.",
               "rest": "descanso 60s",
               "flags": [
                 "desci até paralelo",
@@ -147,7 +147,7 @@
                 "unit": "seconds",
                 "per_side": false
               },
-              "obs": "Antebraços no chão, corpo reto. Aperta glúteo e barriga; não deixa a lombar afundar.",
+              "obs": "Antebraços e pontas dos pés no chão, corpo reto. Aperta o glúteo e a barriga e não deixa a lombar afundar.",
               "rest": "descanso 45s",
               "flags": [
                 "segurei o tempo todo",
@@ -166,11 +166,11 @@
       "progression": [
         {
           "exercise_id": "dead-hang",
-          "criteria": "Quando fizer 3 × 30s sem marcar \"soltei antes\" por 2 sessões seguidas → próximo passo: Scapular pull."
+          "criteria": "Quando fizer 3 × 30s sem marcar \"soltei antes\" por 2 sessões seguidas → próximo passo: Puxada escapular."
         },
         {
           "exercise_id": "row-inverso-barra-baixa",
-          "criteria": "Quando fizer 3 × 10 sem marcar \"quadril caiu\" por 2 sessões seguidas → próximo passo: Pull-up negativa."
+          "criteria": "Quando fizer 3 × 10 sem marcar \"quadril caiu\" por 2 sessões seguidas → próximo passo: Barra fixa negativa."
         },
         {
           "exercise_id": "push-up-inclinada",
@@ -178,11 +178,11 @@
         },
         {
           "exercise_id": "agachamento",
-          "criteria": "Quando fizer 3 × 15 sem marcar \"desci pouco\" por 2 sessões seguidas → próximo passo: Afundo (lunge)."
+          "criteria": "Quando fizer 3 × 15 sem marcar \"desci pouco\" por 2 sessões seguidas → próximo passo: Afundo."
         },
         {
           "exercise_id": "plank",
-          "criteria": "Quando fizer 3 × 20s sem marcar \"quadril caiu\" por 2 sessões seguidas → próximo passo: Hollow body hold."
+          "criteria": "Quando fizer 3 × 20s sem marcar \"quadril caiu\" por 2 sessões seguidas → próximo passo: Canoinha."
         }
       ]
     },
@@ -212,7 +212,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "Joelhos no chão, corpo reto dos joelhos à cabeça. Desce com controle, sem deixar o quadril sobrar nem afundar.",
+              "obs": "Mãos e joelhos no chão, corpo reto dos joelhos à cabeça. Desce até o peito chegar perto do chão e empurra de volta, sem empinar nem afundar o quadril.",
               "rest": "descanso 60s",
               "flags": [
                 "peito chegou perto",
@@ -236,7 +236,7 @@
           "exercises": [
             {
               "id": "scapular-pull",
-              "name": "Scapular pull",
+              "name": "Puxada escapular",
               "target": "3 × 8",
               "parsed": {
                 "sets": 3,
@@ -244,7 +244,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "Pendurado, braços esticados. Só os ombros trabalham: desce e sobe as escápulas sem dobrar o cotovelo.",
+              "obs": "Pendurado, braços esticados. Empurra os ombros pra baixo, longe das orelhas: o corpo sobe uns poucos centímetros. Volta devagar. O cotovelo não dobra.",
               "rest": "descanso 60s",
               "flags": [
                 "movimento só nos ombros",
@@ -259,7 +259,7 @@
             },
             {
               "id": "afundo",
-              "name": "Afundo (lunge)",
+              "name": "Afundo",
               "target": "3 × 8/lado",
               "parsed": {
                 "sets": 3,
@@ -267,7 +267,7 @@
                 "unit": "reps",
                 "per_side": true
               },
-              "obs": "Passo à frente, joelho de trás quase no chão. Tronco reto; empurra com a perna da frente.",
+              "obs": "Dá um passo grande à frente e desce até o joelho de trás quase tocar o chão. Tronco reto. Empurra com a perna da frente pra voltar.",
               "rest": "descanso 60s",
               "flags": [
                 "equilibrei bem",
@@ -288,7 +288,7 @@
           "exercises": [
             {
               "id": "hollow-hold",
-              "name": "Hollow body hold",
+              "name": "Canoinha",
               "target": "3 × 15s",
               "parsed": {
                 "sets": 3,
@@ -296,7 +296,7 @@
                 "unit": "seconds",
                 "per_side": false
               },
-              "obs": "Lombar colada no chão, braços e pernas esticados e levantados. Se a lombar descolar, dobra os joelhos.",
+              "obs": "Deitado de costas, braços esticados pra trás da cabeça. Tira os ombros e as pernas do chão e fica parado, com a lombar colada no chão. Se a lombar descolar, dobra os joelhos.",
               "rest": "descanso 60s",
               "flags": [
                 "lombar colada",
@@ -319,7 +319,7 @@
         },
         {
           "exercise_id": "scapular-pull",
-          "criteria": "Quando fizer 3 × 8 sem marcar \"dobrei o cotovelo\" por 2 sessões seguidas → próximo passo: Row inverso (australiano)."
+          "criteria": "Quando fizer 3 × 8 sem marcar \"dobrei o cotovelo\" por 2 sessões seguidas → próximo passo: Remada australiana."
         },
         {
           "exercise_id": "afundo",
@@ -327,7 +327,7 @@
         },
         {
           "exercise_id": "hollow-hold",
-          "criteria": "Quando fizer 3 × 15s sem marcar \"lombar descolou\" por 2 sessões seguidas → próximo passo: L-sit apoiado (tuck)."
+          "criteria": "Quando fizer 3 × 15s sem marcar \"lombar descolou\" por 2 sessões seguidas → próximo passo: L-sit tuck."
         }
       ]
     },
@@ -340,7 +340,7 @@
       "accent": "#E8945D",
       "accent_bg": "#2A1F19",
       "is_practice": false,
-      "warmup": "Preparo de punhos completo · escápulas na barra × 5 · ponte de glúteo × 10 — 3 min",
+      "warmup": "Aquecimento de punhos completo · puxada escapular × 5 · ponte de glúteo × 10 — 3 min",
       "tip": "Corpo inteiro, com ênfase na parada de mão. Equilíbrio aprende melhor descansado, por isso ele vem primeiro. Termine cada série com 1 ou 2 repetições sobrando: a técnica vale mais que a última rep. Se marcar o mesmo problema 2 treinos seguidos, volte um passo.",
       "blocks": [
         {
@@ -349,7 +349,7 @@
           "exercises": [
             {
               "id": "wrist-prep",
-              "name": "Preparo de punhos",
+              "name": "Aquecimento de punhos",
               "target": "2 × 10",
               "parsed": {
                 "sets": 2,
@@ -357,7 +357,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "De quatro, mãos no chão. Faz círculos e balanços de peso para frente e para trás, sem pressa.",
+              "obs": "De quatro, mãos no chão. Gira os punhos e leva o peso do corpo pra frente e pra trás, sem pressa.",
               "rest": "descanso 30s",
               "flags": [
                 "punho tranquilo",
@@ -370,7 +370,7 @@
             },
             {
               "id": "frog-stand",
-              "name": "Frog stand (rã)",
+              "name": "Parada de sapo",
               "target": "3 × 15s",
               "parsed": {
                 "sets": 3,
@@ -378,7 +378,7 @@
                 "unit": "seconds",
                 "per_side": false
               },
-              "obs": "Agachado, apoia os joelhos nos cotovelos e inclina o peso pra frente até tirar os pés do chão.",
+              "obs": "Agacha e põe as mãos no chão, na largura dos ombros. Apoia os joelhos nos braços, perto dos cotovelos, e leva o peso pra frente até os pés saírem do chão.",
               "rest": "descanso 60s",
               "flags": [
                 "tirei os pés do chão",
@@ -402,7 +402,7 @@
           "exercises": [
             {
               "id": "row-inverso-barra-baixa",
-              "name": "Row inverso (australiano)",
+              "name": "Remada australiana",
               "target": "3 × 10",
               "parsed": {
                 "sets": 3,
@@ -410,7 +410,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "Barra na altura da cintura: a de porta você prende mais baixo, ou usa a barra baixa da praça. Corpo reto e inclinado, puxa o peito até a barra e desce devagar.",
+              "obs": "Prende a barra de porta mais baixo ou usa uma barra baixa de praça. Fica embaixo de uma barra na altura da cintura e segura nela. Calcanhares no chão e corpo reto: puxa o peito até a barra e desce devagar.",
               "rest": "descanso 75s",
               "flags": [
                 "peito tocou a barra",
@@ -436,7 +436,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "Deitado, pés no chão. Sobe o quadril apertando o glúteo; no topo, corpo reto de ombro a joelho.",
+              "obs": "Deitado de costas, joelhos dobrados, pés no chão. Sobe o quadril apertando o glúteo até o corpo ficar reto do ombro ao joelho e desce devagar.",
               "rest": "descanso 45s",
               "flags": [
                 "subi até o topo",
@@ -465,7 +465,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "Pendurado, sobe os joelhos até o quadril sem balançar o corpo.",
+              "obs": "Pendurado na barra, sobe os joelhos até a altura do quadril e desce devagar, sem balançar.",
               "rest": "descanso 60s",
               "flags": [
                 "subi sem balançar",
@@ -488,7 +488,7 @@
         },
         {
           "exercise_id": "row-inverso-barra-baixa",
-          "criteria": "Quando fizer 3 × 10 sem marcar \"quadril caiu\" por 2 sessões seguidas → próximo passo: Pull-up negativa."
+          "criteria": "Quando fizer 3 × 10 sem marcar \"quadril caiu\" por 2 sessões seguidas → próximo passo: Barra fixa negativa."
         },
         {
           "exercise_id": "ponte-gluteo",

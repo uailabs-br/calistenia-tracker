@@ -14,10 +14,10 @@ describe("escada da tela final", () => {
   // Os nomes curtos são chaveados pelo rótulo do catálogo: um renomeio lá voltaria
   // a mostrar o nome em inglês sem nenhum erro.
   it("traduz todas as etapas das escadas que a tela mostra por padrão", () => {
-    expect(stepShort("Pull-up (Pronado)")).toBe("Barra (pull-up)");
-    expect(stepDestination("Pull-up (Pronado)")).toBe("a sua primeira barra");
+    expect(stepShort("Barra fixa")).toBe("Barra fixa");
+    expect(stepDestination("Barra fixa")).toBe("a sua primeira barra");
     expect(stepDestination("Tuck Planche")).toBe("Tuck Planche");
-    expect(getSkillById("pull_up")!.steps.map((s) => stepShort(s.label))).toContain("Barra (pull-up)");
+    expect(getSkillById("pull_up")!.steps.map((s) => stepShort(s.label))).toContain("Barra fixa");
     expect(getSkillById("push_up")!.steps.map((s) => stepShort(s.label))).toContain("Flexão arqueiro");
   });
 });

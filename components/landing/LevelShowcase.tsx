@@ -15,7 +15,7 @@ const HOST = "https://exercise-dataset.com/images/flat/";
 const LEVELS = [
   {
     tag: "Ainda não faz uma barra",
-    name: "Remada invertida",
+    name: "Remada australiana",
     file: "inverted-row-peak.webp",
   },
   {

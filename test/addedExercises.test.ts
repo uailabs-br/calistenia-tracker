@@ -218,7 +218,7 @@ describe("exercício adicionado entra nas métricas", () => {
   it("export pra IA marca o exercício como adicionado, com o nome do snapshot", async () => {
     await doAdded(CAT, [8, 8, 8]);
     const { sessions } = await exportForAI();
-    const ex = sessions[0].exercises.find((e) => e.name === "Chin-up (barra supinada)");
+    const ex = sessions[0].exercises.find((e) => e.name === "Barra fixa com palmas para você");
     expect(ex?.added).toBe(true);
     expect(ex?.performed).toEqual([8, 8, 8]);
   });

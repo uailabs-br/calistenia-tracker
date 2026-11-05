@@ -161,7 +161,7 @@ describe("exportForAI — perfil_declarado", () => {
     expect(perfil.equipamento).toEqual(LEGACY_GEAR.praca);
     expect(perfil.nivel).toBe("intermediario");
     expect(perfil.dias_por_semana).toBe(4);
-    expect(perfil.skills).toContainEqual({ skill: "Pull-up", etapa_em_foco: "Pull-up (Pronado)" });
+    expect(perfil.skills).toContainEqual({ skill: "Pull-up", etapa_em_foco: "Barra fixa" });
     expect(perfil.skills).toContainEqual({ skill: "Push-up", etapa_em_foco: "Flexão Diamante" });
     expect(perfil.skills).toHaveLength(4);
   });

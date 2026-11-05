@@ -14,7 +14,7 @@
       "accent": "#8174E8",
       "accent_bg": "#1D1B2B",
       "is_practice": false,
-      "warmup": "Círculos de ombro × 10 · escápulas na barra × 8 · flexão × 10 — 3 min",
+      "warmup": "Círculos de ombro × 10 · puxada escapular × 8 · flexão × 10 — 3 min",
       "tip": "Corpo inteiro, com ênfase em puxar. Termine cada série com 1 ou 2 repetições sobrando: a técnica vale mais que a última rep. Se marcar o mesmo problema 2 treinos seguidos, volte um passo.",
       "blocks": [
         {
@@ -23,7 +23,7 @@
           "exercises": [
             {
               "id": "pull-up-peso-morto",
-              "name": "Pull-up (barra fixa)",
+              "name": "Barra fixa",
               "target": "3 × 8",
               "parsed": {
                 "sets": 3,
@@ -121,7 +121,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "Pendurado, sobe os joelhos até o quadril sem balançar o corpo.",
+              "obs": "Pendurado na barra, sobe os joelhos até a altura do quadril e desce devagar, sem balançar.",
               "rest": "descanso 60s",
               "flags": [
                 "subi sem balançar",
@@ -165,7 +165,7 @@
       "accent": "#9BCB5B",
       "accent_bg": "#202719",
       "is_practice": false,
-      "warmup": "Preparo de punhos completo · pike push-up × 5 · escápulas na barra × 8 — 3 min",
+      "warmup": "Aquecimento de punhos completo · flexão pike × 5 · puxada escapular × 8 — 3 min",
       "tip": "Corpo inteiro, com ênfase na parada de mão. Equilíbrio e HSPU vêm primeiro, com o ombro descansado. Termine cada série com 1 ou 2 repetições sobrando: a técnica vale mais que a última rep. Se marcar o mesmo problema 2 treinos seguidos, volte um passo.",
       "blocks": [
         {
@@ -174,7 +174,7 @@
           "exercises": [
             {
               "id": "wrist-prep",
-              "name": "Preparo de punhos",
+              "name": "Aquecimento de punhos",
               "target": "2 × 10",
               "parsed": {
                 "sets": 2,
@@ -182,7 +182,7 @@
                 "unit": "reps",
                 "per_side": false
               },
-              "obs": "De quatro, mãos no chão. Faz círculos e balanços de peso para frente e para trás, sem pressa.",
+              "obs": "De quatro, mãos no chão. Gira os punhos e leva o peso do corpo pra frente e pra trás, sem pressa.",
               "rest": "descanso 30s",
               "flags": [
                 "punho tranquilo",
@@ -254,7 +254,7 @@
           "exercises": [
             {
               "id": "chin-up",
-              "name": "Chin-up (barra supinada)",
+              "name": "Barra fixa com palmas para você",
               "target": "3 × 8",
               "parsed": {
                 "sets": 3,
@@ -344,7 +344,7 @@
         },
         {
           "exercise_id": "chin-up",
-          "criteria": "Quando fizer 3 × 8 sem marcar \"balançou\" por 2 sessões seguidas → próximo passo: Pull-up (barra fixa)."
+          "criteria": "Quando fizer 3 × 8 sem marcar \"balançou\" por 2 sessões seguidas → próximo passo: Barra fixa."
         },
         {
           "exercise_id": "afundo-caminhando",
@@ -365,7 +365,7 @@
       "accent": "#E8945D",
       "accent_bg": "#2A1F19",
       "is_practice": false,
-      "warmup": "Círculos de ombro × 10 · dead hang 20s · flexão × 10 — 3 min",
+      "warmup": "Círculos de ombro × 10 · suspensão na barra 20s · flexão × 10 — 3 min",
       "tip": "Corpo inteiro, com a primeira skill de barra: o tuck front lever. Termine cada série com 1 ou 2 repetições sobrando: a técnica vale mais que a última rep. Se marcar o mesmo problema 2 treinos seguidos, volte um passo.",
       "blocks": [
         {
