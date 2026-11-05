@@ -20,6 +20,14 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-11-05, landing nova e canal de feedback — 767 testes):** a página
+> /sobre fala com quem vai de iniciante pra intermediário: abertura em tela cheia ("Saiba o que treinar
+> e quando subir de nível"), "Um nível de cada vez" com três níveis e a meta, aviso de novo nível,
+> demo com o Treino A do plano intermediário terminando em "Ver meu plano", Quem fez com foto e nove
+> perguntas. Dados copiados do app em `components/landing/content.ts`, conferidos por teste. O e-mail
+> virou o canal de contato, o que liga o feedback em Ajustes e na home. Decisão em
+> `PLAN-landing-aquisicao.md`.
+>
 > **Atualização (pós-v1.8, 2026-11-04, nomes dos exercícios básicos — 764 testes):** nomes em português e novo "como executar" nos planos genéricos, no catálogo, nas escadas e na landing; texto e fontes em `docs/exercicios-nomes-copy.md`. Ids intactos, nome antigo virou alias de busca, plano pessoal fora. Log antigo mantém o nome do snapshot; plano já aplicado no aparelho só muda ao trocar de plano.
 >
 > **Atualização (pós-v1.8, 2026-11-04, nova ordem do onboarding e foto na landing — 764 testes):**

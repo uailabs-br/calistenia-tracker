@@ -5,8 +5,11 @@
 export const APP_NAME = "Gravks";
 
 /**
- * Canal pra quem quer mandar feedback. `null` enquanto não houver um: a página
- * /sobre esconde o link e mantém o texto, em vez de prometer um destino morto.
+ * Canal pra quem quer mandar feedback. Com ele, a home pode convidar pro feedback,
+ * Ajustes ganha "Mandar feedback" e a política mostra o item de feedback. `null`
+ * desliga tudo isso de volta, sem deixar link morto. O e-mail é provisório
+ * (decisão de 05/11/2026): um endereço só do Gravks pode substituir depois.
  */
-export const CONTACT_URL: string | null = null;
+export const CONTACT_EMAIL = "uailabs.br@gmail.com";
+export const CONTACT_URL: string | null = `mailto:${CONTACT_EMAIL}`;
 export const CONTACT_LABEL = "me manda uma mensagem";

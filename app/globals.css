@@ -306,16 +306,6 @@ a {
   }
 }
 
-/* Cursor do título rotativo da landing. `step-end` pra piscar seco, como terminal. */
-@keyframes caret {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
-}
 
 @keyframes pop {
   0% {
@@ -356,9 +346,6 @@ a {
 }
 .anim-scale-in {
   animation: scale-in 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.anim-caret {
-  animation: caret 1.1s step-end infinite;
 }
 .anim-pop {
   animation: pop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) both;
@@ -1919,13 +1906,16 @@ a {
   }
 }
 @media (min-width: 768px) {
-  /* Teto em 720px: a parada de mão tem 693px de altura e estoura em tela grande. */
+  /* Teto em 720px: a parada de mão tem 693px de altura e estoura em tela grande.
+     A partir do meio da tela, ao lado do texto. O filtro tira contraste pra bermuda
+     preta não sumir no fundo, e clareia um pouco o resto. */
   .landing-photo {
     top: 50%;
-    left: max(calc(50% - 150px), min(440px, calc(100% - 370px)));
+    left: max(50%, min(440px, calc(100% - 370px)));
     width: auto;
     height: min(97%, 720px);
     transform: translateY(-50%);
+    filter: brightness(1.12) contrast(0.84);
   }
   .landing-photo-scrim {
     background: linear-gradient(90deg, var(--color-bg) calc(50% - 360px), transparent calc(50% - 50px));

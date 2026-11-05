@@ -5,6 +5,8 @@ import { CheckIcon, ChevronDownIcon, MinusIcon, PlusIcon } from "@/components/ui
 import { RollingNumber } from "@/components/ui/RollingNumber";
 import { EffortFace, RPE_LABELS } from "@/components/session/RpeSheet";
 import { accentVars, DEFAULT_ACCENT } from "@/components/ui/accent";
+import { LandingCta } from "@/components/landing/LandingCta";
+import { DEMO_EXERCISES as EXERCISES, DEMO_WORKOUT as WORKOUT } from "@/components/landing/content";
 
 /**
  * Um treino inteiro numa caixa, ao lado de "um toque por série": o cartão de
@@ -17,16 +19,10 @@ import { accentVars, DEFAULT_ACCENT } from "@/components/ui/accent";
  * a tela de abertura do treino e o descanso, pra caber numa caixa.
  *
  * Conteúdo fixo de propósito: nada aqui sai de `plan.json`, que vem do
- * localStorage e quebraria a hidratação desta página estática (regra 10).
+ * localStorage e quebraria a hidratação desta página estática (regra 10). O
+ * treino é o primeiro da semente intermediária, porque a página fala com quem
+ * já treina (ver components/landing/content.ts).
  */
-
-const WORKOUT = { label: "A", title: "Barra + Paralelas", minutes: 24 };
-
-const EXERCISES = [
-  { name: "Muscle-up negativa", sets: [3, 3, 3], last: "3, 3, 2" },
-  { name: "Pull-up", sets: [8, 8, 8, 8], last: "8, 8, 7, 6" },
-  { name: "Dip nas paralelas", sets: [10, 10, 10], last: "10, 10, 8" },
-] as const;
 
 type Step = "home" | "run" | "rate" | "done";
 
@@ -42,7 +38,7 @@ const CAPTION: Record<Step, string> = {
   done: "Isso é um treino registrado.",
 };
 
-const target = (sets: readonly number[]) => `${sets.length} × ${sets[0]}`;
+const target = (ex: (typeof EXERCISES)[number]) => `${ex.sets.length} × ${ex.sets[0]}${ex.perSide ? "/lado" : ""}`;
 
 export function OneTapDemo() {
   const [step, setStep] = useState<Step>("home");
@@ -101,7 +97,7 @@ export function OneTapDemo() {
               <span className="letter-chip rounded-full bg-ac px-2 py-0.5 font-mono text-xs text-on-accent">
                 {WORKOUT.label}
               </span>
-              <span className="font-mono text-xs text-muted">~25min</span>
+              <span className="font-mono text-xs text-muted">~{WORKOUT.estimate}min</span>
               <span className="font-mono text-xs text-muted">· {EXERCISES.length} exercícios</span>
             </div>
             <h3 className="display mt-2 text-3xl leading-tight">{WORKOUT.title}</h3>
@@ -127,7 +123,7 @@ export function OneTapDemo() {
                 {EXERCISES.map((ex) => (
                   <li key={ex.name} className="flex items-center justify-between gap-3 px-2 py-2 text-sm">
                     <span className="truncate font-medium">{ex.name}</span>
-                    <span className="tnum shrink-0 text-xs text-muted">{target(ex.sets)}</span>
+                    <span className="tnum shrink-0 text-xs text-muted">{target(ex)}</span>
                   </li>
                 ))}
               </ul>
@@ -181,7 +177,7 @@ export function OneTapDemo() {
                 return (
                   <div key={ex.name} className="card flex items-center justify-between gap-3 px-4 py-3">
                     <p className="display truncate text-lg leading-tight text-muted">{ex.name}</p>
-                    <span className="tnum shrink-0 text-xs text-muted">{target(ex.sets)}</span>
+                    <span className="tnum shrink-0 text-xs text-muted">{target(ex)}</span>
                   </div>
                 );
               }
@@ -190,7 +186,7 @@ export function OneTapDemo() {
                 <div key={ex.name} className="anim-fade-in-up rounded-card border border-ac bg-surface p-4">
                   <div className="flex items-baseline justify-between gap-2">
                     <h3 className="display truncate text-2xl leading-tight text-ac">{ex.name}</h3>
-                    <span className="tnum shrink-0 text-sm text-muted">{target(ex.sets)}</span>
+                    <span className="tnum shrink-0 text-sm text-muted">{target(ex)}</span>
                   </div>
                   <p className="tnum mt-0.5 text-xs text-muted">última: {ex.last}</p>
 
@@ -383,12 +379,12 @@ export function OneTapDemo() {
                 <span className="mt-1 font-mono text-xs text-muted">séries</span>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={restart}
-              className="btn-primary tap mt-4 flex w-full items-center justify-center rounded-xl py-3.5 font-semibold"
-            >
-              Voltar pro início
+            {/* Fim da demo é onde o interesse está mais alto: a saída da página fica aqui. */}
+            <div className="mt-4">
+              <LandingCta />
+            </div>
+            <button type="button" onClick={restart} className="tap mx-auto mt-1 block py-2 text-sm text-muted underline underline-offset-4">
+              Testar de novo
             </button>
           </div>
         )}

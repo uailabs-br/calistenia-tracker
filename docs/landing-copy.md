@@ -1,152 +1,150 @@
-# Textos da página de boas-vindas (/sobre)
+# Textos da landing page (/sobre)
 
-> Fonte editável do texto que está no ar. Mexa à vontade: eu levo pra página.
+> Todos os textos que estão no ar, na ordem em que aparecem na página. Versão de 05/11/2026,
+> aprovada no protótipo (claude.ai/artifact/YUKVtFK3R7NreNegJsZb4h). Mexa à vontade: eu levo pra
+> página.
 >
-> **Nesta versão:** o texto encolheu quase pela metade e saiu de parágrafos pra blocos
-> curtos. O argumento agora é carregado pela interface — o cartão tocável, a escada de
-> progressão, o sinal de subir de nível, as ilustrações dos movimentos — e o texto só amarra.
-> Nada de conteúdo foi perdido: virou tile, item de lista ou legenda.
-
----
-
-## Decisões pendentes
-
-- **Nome do app:** `_______________`
-  (hoje o README e o manifest dizem "Calistenia Tracker"; o IDEAS.md diz "Treinei")
-
-- **Canal de contato:** `_______________`
-  (e-mail, WhatsApp, Instagram, formulário... sem isso o "me manda" fica sem link)
-
----
+> Público: quem vai de iniciante pra intermediário. Vocabulário: habilidade, progressão e nível,
+> nunca escada nem degrau. O produto é "o Gravks"; "app" e "IA" não aparecem, com uma exceção na
+> pergunta sobre quem passou do intermediário. Títulos sem ponto final.
+>
+> Entre colchetes estão as notas de onde e como o texto aparece. Níveis, critério, treino da demo e
+> perguntas moram em `components/landing/content.ts`, conferidos por `test/landingContent.test.ts`.
 
 ## 1. Abertura
 
-[Título principal. As palavras do meio trocam sozinhas, como se estivessem sendo digitadas.
-Pra mudar a lista, é uma linha em components/landing/TypedHeadline.tsx.]
-
-Desbloqueie
-  a força / a mobilidade / o equilíbrio
-do seu corpo
-
-[Uma linha só embaixo]
-
-Plano, registro e progressão no mesmo app. É o que eu uso para evoluir na calistenia.
-
-[Botão]
-
-Começar grátis
-
-[Ao lado, no desktop: o cartão de treino tocável. Legenda embaixo dele:]
-
-Toque e veja: é assim que você registra, entre uma série e outra.
-
----
-
-## 2. Durante o treino
+[Tela inteira. Foto: barra no celular, parada de mão no computador, ao lado do texto]
 
 [Título]
 
-O treino do dia te espera na tela inicial
+Saiba o que treinar e quando subir de nível
 
-[Uma linha]
+[Texto de apoio]
 
-Um toque pra começar, um toque por série. Sem teclado, sem formulário.
+O Gravks personaliza seu treino e te acompanha até você bater sua meta. É o que eu uso pra evoluir na calistenia.
 
-[Três tiles com ícone — título e uma linha cada]
+[Botão]
 
-Descanso automático — O cronômetro começa quando você fecha a série.
-Sem internet — Academia com sinal ruim ou barra da praça, tanto faz.
-Te diz quando subir de nível — Mostra quantas sessões faltam pro próximo nível e avisa quando você chegar lá.
+Ver meu plano
 
----
+[Abaixo do botão]
 
-## 3. Do iniciante ao avançado
+Grátis e sem anúncio.
 
-[Título acima. Texto, ao lado de duas ilustrações de movimento:]
+## 2. Progressão
 
-Já segue um programa? Sobe ele aqui. Ainda não tem? O app monta um com IA, a partir do seu nível e do que você tem pra treinar.
+[Título]
 
-[Legendas das ilustrações]
+Um nível de cada vez
 
-Ainda não faz uma barra → Remada invertida
-Já faz muscle-up → Front lever
+[Linha abaixo]
 
----
+Cada habilidade é dividida em níveis, e cada nível tem uma meta clara. Bateu a meta, você sobe.
 
-## 4. A evolução vem em etapas, e o app sabe em qual você está
+[Linha menor]
 
-[Título acima. Duas colunas, cada uma com uma frase e um pedaço do app.]
+Barra fixa é só um exemplo. São 17 habilidades, da flexão à planche.
 
-[Coluna 1 — sobre a escada de progressão]
+[Cartão com três níveis, sem toque]
 
-Cada movimento é uma escada de etapas. O app traz 16 delas e marca onde você está em cada uma, conforme você registra.
+- ✓ Barra fixa negativa
+- ● Barra fixa · seu nível
+  Meta: 3 séries de 8, em 2 treinos seguidos
+  [barrinha] 1 de 2 treinos
+- ○ L-sit Pull-up
+  Próximo nível
 
-[Coluna 2 — sobre o aviso de subir de nível]
+## 3. Aviso de novo nível
 
-Bateu o alvo duas sessões seguidas, com execução limpa? Ele avisa que dá pra subir. O que trava a maioria não é força, é técnica e progressão.
+[Título]
 
-[Cartão de exemplo embaixo]
+Bateu a meta? O Gravks avisa
 
-Próximo nível · desbloqueado
-Pull-up negativo → Pull-up pronado
-Você bateu a meta em 2 sessões seguidas, com execução limpa.
+[Linha abaixo]
 
----
+Ele olha o que você registrou e te diz a hora de subir.
 
-## 5. O que mais você vai ver no app
+[Cartão, acompanhando o nível marcado na seção 2]
 
-[Título acima. Lista com ícone, uma linha cada. Corte o que achar demais.]
+**Próximo nível · desbloqueado**
+Barra fixa → L-sit Pull-up
+Você bateu a meta em 2 treinos seguidos, com execução limpa.
 
-- Sua última vez naquele exercício, no próprio cartão
-- Demonstração e dica de execução em cada movimento
-- Tirar ou botar série e adicionar exercício no meio do treino
-- Constância, volume e recordes calculados sozinhos
-- Seus dados ficam no aparelho e você exporta quando quiser
+## 4. Demonstração
 
----
+[Título]
 
-## 6. Quem fez isso
+Testa um treino aí
 
-[Título acima. Um parágrafo:]
+[Linha abaixo]
 
-Treino calistenia por conta própria desde o começo de 2024 e estudei muito atleta de elite pra aprender execução e progressão. Sou engenheiro, há 10 anos na área de tecnologia, e usei IA pra construir a ferramenta que eu queria ter.
+Um toque por série. O descanso começa sozinho e sua última vez fica no cartão.
 
----
+[Demonstração tocável com o Treino A do plano intermediário com barra: Puxar + Corpo inteiro,
+~27 min. Barra fixa 3 × 8, Flexão diamante 3 × 10, Pistol assistido 3 × 6/lado, Elevação de
+joelhos na barra 3 × 10. No fim, o botão "Ver meu plano"]
 
-## 7. Isso aqui não é empresa
+## 5. Programa próprio
 
-[Título acima, ao lado do bloco anterior. Um parágrafo:]
+[Título]
 
-Comecei em julho de 2026 e mudo o app quase toda semana. É de graça e sem anúncio — se um dia tiver plano pago, é pra pagar o servidor. Sentiu falta de alguma coisa, me manda.
+Já segue um programa? Traz ele
+
+[Linha abaixo]
+
+O Gravks te guia pra colocar seu programa aqui. Não tem? Ele te passa um pro seu nível.
+
+## 6. Quem fez
+
+[Ao lado, sua foto em parada de mão na praia, em preto e branco]
+
+[Título]
+
+Quem fez
+
+[Texto. O e-mail é link]
+
+Treino calistenia por conta própria desde o começo de 2024 e estudei muitos atletas de elite pra aprender execuções e progressões. Atualmente meu foco é muscle-up, parada de mão e front lever. Sou engenheiro e criei o Gravks em 2026 pra me ajudar a organizar meus treinos e progredir com consistência. Sigo usando e atualizando. Sentiu falta de algo? Me manda um e-mail: uailabs.br@gmail.com
+
+## 7. Perguntas
+
+[Fechadas; abrem ao tocar]
+
+- **Preciso baixar alguma coisa?** Não. O Gravks abre direto no navegador. Se curtir, adiciona na tela inicial do celular e ele fica com ícone, igual aos outros.
+- **É grátis mesmo? Qual a pegadinha?** Nenhuma. É grátis, sem anúncio e você nem precisa criar conta. Fiz pra mim e quero que ajude mais gente a progredir.
+- **Já treino. Vou ter que começar do zero?** Não. Você conta em que nível está e o Gravks segue dali. Se chutar alto demais, dá pra ajustar depois em Nível e equipamento.
+- **E se eu não souber fazer um exercício?** Todo exercício tem demonstração e dica de execução, pra você não ficar no achismo.
+- **Não tenho barra. Serve pra mim?** Serve. Tem plano montado sem barra, com flexão, perna e parada de mão. Se arrumar uma barra depois, é só atualizar seu equipamento.
+- **Já passei do intermediário. Ainda vale?** Vale. Os planos prontos vão até o intermediário, e daí pra frente o Gravks te guia a montar seu treino com IA, a partir do seu histórico.
+- **Como o Gravks sabe se fiz direito?** No fim de cada exercício você marca se algo saiu errado, e só conta pra subir de nível o que saiu limpo.
+- **E se eu trocar de celular?** Como não tem conta, seus treinos ficam no celular. Antes de trocar, salva um backup em Ajustes e abre no aparelho novo.
+- **De onde vêm as progressões?** De referências conhecidas da calistenia, como o livro Overcoming Gravity e a rotina recomendada do r/bodyweightfitness.
 
 [Botão final]
 
-Começar grátis
+Ver meu plano
 
-[Rodapé, crédito obrigatório das ilustrações]
+Grátis e sem anúncio.
 
-Ilustrações dos exercícios por RepDB (repdb.co)
+## 8. Rodapé
 
----
+Política de privacidade e termos de uso: texto em `components/landing/PrivacyPolicy.tsx`, fechado por
+padrão. Com o canal de contato, aparece o item "Quando você manda feedback" e o link "me manda uma
+mensagem" ao lado da data (atualizada pra 05/11/2026).
 
-## 8. Política de privacidade (colapsada, no fim da página)
+Ilustrações dos exercícios por RepDB
 
-Texto vive em `components/landing/PrivacyPolicy.tsx` (lista `ITEMS`). Descreve o que o app faz
-hoje: nada sai do aparelho. A fórmula "dados usados para aprimoramento do app" ficou como
-promessa futura ("se um dia medir o uso, só pra isso e avisando aqui antes"), porque não existe
-coleta hoje e afirmá-la seria descrever o que não acontece.
+## Fora da página
 
----
+### Aba do navegador e busca
 
-## Textos menores
+- **Título:** Gravks: seu assistente de treino de calistenia
+- **Descrição:** Saiba o que treinar e quando subir de nível. Plano pro seu nível, grátis e sem anúncio.
 
-[Aba do navegador / compartilhamento. Preenchi; troque se quiser.]
+### Leitor de tela
 
-Título: Calistenia Tracker — treino de calistenia com plano e registro
-Descrição: Registre seus treinos de calistenia com um toque por série, acompanhe as escadas de progressão dos movimentos e veja sua evolução. Funciona sem internet.
+- **Foto do Quem fez:** O autor do Gravks fazendo parada de mão na praia
+- **Demonstração:** Demonstração: um treino do começo ao fim
+- **Cartão do aviso:** Exemplo de aviso de novo nível
 
----
-
-## Espaço livre
-
-[Se faltou alguma coisa que você quer dizer e não achou lugar, escreve aqui que eu encaixo.]
+As fotos da abertura não têm descrição, de propósito: são decorativas.

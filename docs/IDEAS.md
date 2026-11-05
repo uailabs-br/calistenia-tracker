@@ -12,7 +12,6 @@
 - refatorar tela de ajuste focando em UX - tela tem muitas opçoes e acaba ficando confusa
 - transformar o menu histórico em um item do menu de evolução. o histórico nao precisa ser um menu, pois não é tão util no dia a dia.
 - avaliar um menu para substituir o histório: o que é mais prioritário e que faz sentido virar um menu? talvez a criaçao/ajuste de treino.
-- adicionar uma forma de o usuário dar feedback ou sugerir melhorias do app. Esse item pode ficar em ajustes e na home
 
 ---
 

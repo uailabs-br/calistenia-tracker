@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
-import { APP_NAME, CONTACT_LABEL, CONTACT_URL } from "@/lib/appInfo";
-import { TypedHeadline } from "@/components/landing/TypedHeadline";
+import { APP_NAME, CONTACT_EMAIL, CONTACT_URL } from "@/lib/appInfo";
 import { OneTapDemo } from "@/components/landing/OneTapDemo";
-import { ProofTiles } from "@/components/landing/ProofTiles";
-import { LevelShowcase } from "@/components/landing/LevelShowcase";
 import { LadderPreview } from "@/components/landing/LadderPreview";
 import { SignalCard } from "@/components/landing/SignalCard";
-import { FeatureGrid } from "@/components/landing/FeatureGrid";
+import { Faq } from "@/components/landing/Faq";
 import { PrivacyPolicy } from "@/components/landing/PrivacyPolicy";
 import { LandingCta } from "@/components/landing/LandingCta";
+import { SKILL_COUNT } from "@/components/landing/content";
 import { accentVars, DEFAULT_ACCENT } from "@/components/ui/accent";
 
 /**
@@ -16,23 +14,25 @@ import { accentVars, DEFAULT_ACCENT } from "@/components/ui/accent";
  * não deriva do plano, e por isso a única que pode ser estática de verdade:
  * nada de `loadPlan()` aqui (regra 10) e nada de Dexie.
  *
- * O ritmo é alternado de propósito — bloco de texto curto, bloco de app — porque
- * a primeira versão virou textão. Quem carrega o argumento é a interface: o
- * cartão tocável, a escada, o sinal de progressão. O texto só amarra. A abertura
- * fica com título, botão e foto: o cartão ao lado dela poluía o primeiro olhar, e
- * desceu pra seção que fala do registro.
+ * Fala com quem já treina e quer sair do básico, não com quem nunca treinou:
+ * demo com treino intermediário, níveis e meta antes de tudo. Texto curto e em
+ * primeira pessoa, decidido no protótipo (texto em docs/landing-copy.md). Na
+ * página, o produto é "o Gravks", com habilidades, progressões e níveis.
  */
 export const metadata: Metadata = {
-  title: `${APP_NAME} — treino de calistenia com plano e registro`,
+  title: `${APP_NAME}: seu assistente de treino de calistenia`,
   description:
-    "Registre seus treinos de calistenia com um toque por série, acompanhe as progressões de cada movimento e veja sua evolução. Funciona sem internet.",
+    "Saiba o que treinar e quando subir de nível. Plano pro seu nível, grátis e sem anúncio.",
 };
+
+const H2 = "display text-2xl leading-tight sm:text-3xl";
+const LEDE = "mt-3 max-w-lg leading-relaxed text-muted";
 
 export default function SobrePage() {
   return (
     <div className="w-full" style={accentVars(DEFAULT_ACCENT)}>
-      {/* ── Abertura ─────────────────────────────────────────────────── */}
-      <header className="relative flex min-h-[85svh] items-end overflow-hidden md:items-center">
+      {/* ── Abertura: a tela inteira ─────────────────────────────────── */}
+      <header className="relative flex min-h-svh items-end overflow-hidden md:items-center">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-72"
@@ -57,10 +57,12 @@ export default function SobrePage() {
         <div aria-hidden className="landing-photo-scrim" />
         <div className="landing-photo-text relative mx-auto grid w-full max-w-5xl gap-8 px-4 sm:px-6 py-10 lg:py-16">
           <div>
-            <p className="font-mono text-xs text-muted">{APP_NAME}</p>
-            <TypedHeadline />
+            <h1 className="display max-w-md text-4xl leading-[1.05] sm:text-5xl">
+              Saiba o que treinar e quando subir de nível
+            </h1>
             <p className="mt-5 max-w-md text-lg leading-relaxed text-muted">
-              Plano, registro e progressão de treino personalizados. É o que eu uso para evoluir na calistenia.
+              O {APP_NAME} personaliza seu treino e te acompanha até você bater sua meta. É o que eu uso pra
+              evoluir na calistenia.
             </p>
           </div>
 
@@ -70,125 +72,91 @@ export default function SobrePage() {
         </div>
       </header>
 
-      {/* ── Durante o treino ─────────────────────────────────────────── */}
+      {/* ── Níveis ───────────────────────────────────────────────────── */}
       <section className="border-y border-border bg-surface/40">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10 sm:py-12">
-          <div className="grid gap-8 lg:grid-cols-[1fr_minmax(0,22rem)] lg:items-center lg:gap-14">
-            <div>
-              <h2 className="display max-w-lg text-2xl leading-tight sm:text-3xl">
-                Saiba o que treinar, sem complicação
-              </h2>
-              <p className="mt-3 max-w-lg leading-relaxed text-muted">
-                Um toque pra começar, um toque por série.
-              </p>
-            </div>
-            <div className="mx-auto w-full max-w-sm lg:max-w-none">
-              <OneTapDemo />
-            </div>
-          </div>
-          <div className="mt-8">
-            <ProofTiles />
-          </div>
-        </div>
-      </section>
-
-      {/* ── Nível ────────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
-        <div className="grid gap-8 sm:grid-cols-2 sm:items-center sm:gap-12">
+        <div className="mx-auto grid max-w-5xl gap-8 px-4 sm:px-6 py-12 sm:grid-cols-2 sm:items-center sm:gap-12 sm:py-16">
           <div>
-            <h2 className="display text-2xl leading-tight sm:text-3xl">
-              Do iniciante ao avançado
-            </h2>
-            <p className="mt-4 leading-relaxed text-muted">
-              Já segue um programa de treinamento? Sobe ele aqui. Ainda não tem? O Gravks monta um personalizado, a
-              partir do seu nível e do que você tem pra treinar.
+            <h2 className={H2}>Um nível de cada vez</h2>
+            <p className={LEDE}>
+              Cada habilidade é dividida em níveis, e cada nível tem uma meta clara. Bateu a meta, você sobe.
+            </p>
+            <p className="mt-3 text-sm text-muted">
+              Barra fixa é só um exemplo. São {SKILL_COUNT} habilidades, da flexão à planche.
             </p>
           </div>
-          <LevelShowcase />
+          <LadderPreview />
         </div>
       </section>
 
-      {/* ── Progressão ───────────────────────────────────────────────── */}
+      {/* ── Aviso ────────────────────────────────────────────────────── */}
+      <section className="mx-auto grid max-w-5xl gap-8 px-4 sm:px-6 py-12 sm:grid-cols-2 sm:items-center sm:gap-12 sm:py-16">
+        <div>
+          <h2 className={H2}>Bateu a meta? O {APP_NAME} avisa</h2>
+          <p className={LEDE}>Ele olha o que você registrou e te diz a hora de subir.</p>
+        </div>
+        <SignalCard />
+      </section>
+
+      {/* ── Demonstração ─────────────────────────────────────────────── */}
       <section className="border-y border-border bg-surface/40">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
-          <h2 className="display max-w-lg text-2xl leading-tight sm:text-3xl">
-            A evolução vem em níveis e o Gravks te guia nessa jornada
-          </h2>
-
-          <div className="mt-8 grid gap-8 sm:grid-cols-2 sm:gap-10">
-            <div>
-              <p className="leading-relaxed text-muted">
-                Cada movimento tem uma sequência de progressões. O Gravks traz 16 delas e marca onde
-                você está em cada uma, conforme você treina e registra.
-              </p>
-              <div className="mt-5">
-                <LadderPreview />
-              </div>
-            </div>
-
-            <div>
-              <p className="leading-relaxed text-muted">
-                Bateu a meta definida? Ele avisa que dá
-                pra subir de nível. O que trava a maioria não é força, é técnica e progressão.
-              </p>
-              <div className="mt-5">
-                <SignalCard />
-              </div>
-            </div>
+        <div className="mx-auto grid max-w-5xl gap-8 px-4 sm:px-6 py-12 lg:grid-cols-[1fr_minmax(0,22rem)] lg:items-center lg:gap-14 sm:py-16">
+          <div>
+            <h2 className={H2}>Testa um treino aí</h2>
+            <p className={LEDE}>Um toque por série. O descanso começa sozinho e sua última vez fica no cartão.</p>
+          </div>
+          <div className="mx-auto w-full max-w-sm lg:max-w-none">
+            <OneTapDemo />
           </div>
         </div>
       </section>
 
-      {/* ── Resto do app ─────────────────────────────────────────────── */}
+      {/* ── Programa próprio ─────────────────────────────────────────── */}
       <section className="mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
-        <h2 className="display text-2xl leading-tight sm:text-3xl">
-          O que mais você vai ver no app
-        </h2>
-        <div className="mt-8">
-          <FeatureGrid />
-        </div>
+        <h2 className={H2}>Já segue um programa? Traz ele</h2>
+        <p className={LEDE}>
+          O {APP_NAME} te guia pra colocar seu programa aqui. Não tem? Ele te passa um pro seu nível.
+        </p>
       </section>
 
-      {/* ── Quem fez / não é empresa ─────────────────────────────────── */}
+      {/* ── Quem fez e perguntas ─────────────────────────────────────── */}
       <section className="border-t border-border bg-surface/40">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
-          <div className="grid gap-8 sm:grid-cols-2 sm:gap-12">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 py-12 sm:py-16">
+          <div className="grid gap-6 sm:grid-cols-[15rem_1fr] sm:items-center sm:gap-8">
+            {/* Preto e branco de propósito, pra conversar com o tema escuro da página. */}
+            <img
+              src="/landing/quem-fez.webp"
+              alt={`O autor do ${APP_NAME} fazendo parada de mão na praia`}
+              width={720}
+              height={991}
+              loading="lazy"
+              className="aspect-[4/5] w-full rounded-card object-cover"
+            />
             <div>
-              <h2 className="display text-2xl leading-tight sm:text-3xl">Quem fez isso</h2>
-              <p className="mt-4 leading-relaxed text-muted">
-                Treino calistenia por conta própria desde o começo de 2024 e estudei muitos
-                atletas de elite pra aprender execuções e progressões. Sou engenheiro e construí o Gravks para me ajudar a organizar os treinos e desenvolver movimentos avançados da calistenia.
-              </p>
-            </div>
-
-            <div>
-              <h2 className="display text-2xl leading-tight sm:text-3xl">
-                Esse é um projeto sem fins lucrativos
-              </h2>
-              <p className="mt-4 leading-relaxed text-muted">
-                Comecei em julho de 2026 e estou sempre atualizando o app. É de graça e sem
-                anúncio. Meu objetivo é ajudar mais pessoas a progredir (se um dia tiver plano pago, é pra pagar o servidor). Se sentir falta
-                de alguma coisa,{" "}
+              <h2 className={H2}>Quem fez</h2>
+              <p className="mt-3 leading-relaxed text-muted">
+                Treino calistenia por conta própria desde o começo de 2024 e estudei muitos atletas de elite pra
+                aprender execuções e progressões. Atualmente meu foco é muscle-up, parada de mão e front lever.
+                Sou engenheiro e criei o {APP_NAME} em 2026 pra me ajudar a organizar meus treinos e progredir
+                com consistência. Sigo usando e atualizando. Sentiu falta de algo? Me manda um e-mail:{" "}
                 {CONTACT_URL ? (
-                  <a
-                    href={CONTACT_URL}
-                    className="text-ac underline underline-offset-4"
-                  >
-                    {CONTACT_LABEL}
+                  <a href={CONTACT_URL} className="text-ac underline underline-offset-4">
+                    {CONTACT_EMAIL}
                   </a>
                 ) : (
-                  "me manda"
+                  CONTACT_EMAIL
                 )}
-                .
               </p>
             </div>
           </div>
 
-          <div className="mt-12 flex justify-center">
+          <h2 className={`${H2} mt-14`}>Perguntas</h2>
+          <Faq />
+
+          <div className="mt-12">
             <LandingCta />
           </div>
 
-          <PrivacyPolicy accent={DEFAULT_ACCENT} />
+          <PrivacyPolicy accent="var(--ac)" />
 
           <p className="mt-10 text-center font-mono text-2xs text-muted">
             Ilustrações dos exercícios por{" "}

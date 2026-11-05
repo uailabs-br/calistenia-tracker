@@ -2,7 +2,7 @@ import { ChevronDownIcon } from "@/components/ui/icons";
 import { CONTACT_LABEL, CONTACT_URL } from "@/lib/appInfo";
 
 /** Data da última revisão do texto. Mexeu no conteúdo, mexe aqui. */
-const UPDATED_AT = "31/10/2026";
+const UPDATED_AT = "05/11/2026";
 
 /**
  * Cada item é uma pergunta que esse tipo de documento precisa responder, em uma

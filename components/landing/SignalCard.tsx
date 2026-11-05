@@ -1,10 +1,12 @@
-import { DEFAULT_ACCENT as ACCENT } from "@/components/ui/accent";
+import { LADDER } from "@/components/landing/content";
+
+// Cor herdada do `--ac` da página, como em LadderPreview.
+const ACCENT = "var(--ac)";
 
 /**
  * Resumo do aviso de subir de nível, com o rótulo da tela do app
- * (components/session/LevelUpMoment.tsx). Mostra o nível que vem depois porque é
- * isso que a página promete: o critério sozinho não diz o próximo passo.
- * Os dois nomes e as 2 sessões são os níveis 3 e 4 de lib/plan/progressions.json.
+ * (components/session/LevelUpMoment.tsx). Continua o exemplo da seção de cima:
+ * o nível atual de lá é o que acabou de ser batido aqui.
  */
 export function SignalCard() {
   return (
@@ -16,9 +18,11 @@ export function SignalCard() {
       <p className="text-sm font-semibold" style={{ color: ACCENT }}>
         Próximo nível · desbloqueado
       </p>
-      <p className="mt-2 text-sm font-medium">Barra fixa negativa → Barra fixa</p>
+      <p className="mt-2 text-sm font-medium">
+        {LADDER.here} → {LADDER.next}
+      </p>
       <p className="mt-1 text-sm text-muted">
-        Você bateu a meta em 2 sessões seguidas, com execução limpa.
+        Você bateu a meta em {LADDER.sessions} treinos seguidos, com execução limpa.
       </p>
     </section>
   );
