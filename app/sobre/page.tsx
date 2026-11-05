@@ -19,7 +19,7 @@ import { accentVars, DEFAULT_ACCENT } from "@/components/ui/accent";
  * O ritmo é alternado de propósito — bloco de texto curto, bloco de app — porque
  * a primeira versão virou textão. Quem carrega o argumento é a interface: o
  * cartão tocável, a escada, o sinal de progressão. O texto só amarra. A abertura
- * fica só com título e botão: o cartão ao lado dela poluía o primeiro olhar, e
+ * fica com título, botão e foto: o cartão ao lado dela poluía o primeiro olhar, e
  * desceu pra seção que fala do registro.
  */
 export const metadata: Metadata = {
@@ -32,7 +32,7 @@ export default function SobrePage() {
   return (
     <div className="w-full" style={accentVars(DEFAULT_ACCENT)}>
       {/* ── Abertura ─────────────────────────────────────────────────── */}
-      <header className="relative flex min-h-[85svh] items-center overflow-hidden">
+      <header className="relative flex min-h-[85svh] items-end overflow-hidden md:items-center">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-72"
@@ -41,7 +41,21 @@ export default function SobrePage() {
               "radial-gradient(70% 100% at 50% 0%, color-mix(in oklab, var(--ac) 20%, transparent), transparent)",
           }}
         />
-        <div className="relative mx-auto grid w-full max-w-5xl gap-8 px-4 sm:px-6 py-10 lg:py-16">
+        {/* Duas fotos porque nenhuma serve nas duas telas: a parada de mão no celular
+            jogava o tronco pra trás do botão. Com <picture>, cada aparelho baixa só a sua. */}
+        <picture>
+          <source media="(min-width: 768px)" srcSet="/landing/hero-parada-de-mao.webp" width={365} height={693} />
+          <img
+            src="/landing/hero-barra.webp"
+            alt=""
+            width={1000}
+            height={1333}
+            fetchPriority="high"
+            className="landing-photo"
+          />
+        </picture>
+        <div aria-hidden className="landing-photo-scrim" />
+        <div className="landing-photo-text relative mx-auto grid w-full max-w-5xl gap-8 px-4 sm:px-6 py-10 lg:py-16">
           <div>
             <p className="font-mono text-xs text-muted">{APP_NAME}</p>
             <TypedHeadline />
@@ -50,7 +64,7 @@ export default function SobrePage() {
             </p>
           </div>
 
-          <div className="lg:max-w-xs">
+          <div className="md:max-w-xs">
             <LandingCta />
           </div>
         </div>

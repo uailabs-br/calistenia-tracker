@@ -229,7 +229,8 @@ A barra do sistema (`theme-color`) segue o tema só no papel: `barColor` em
 
 A landing usa `accentVars(DEFAULT_ACCENT)`: quem chega nela ainda não escolheu tema, então cai
 no futurista gelo e a cor vira o gelo. O demo (`OneTapDemo`) fica numa moldura de tela, com fundo
-sólido, pra não se misturar com os cards da página.
+sólido, pra não se misturar com os cards da página. A foto da abertura (`.landing-photo*`) troca
+em 768px: barra no celular, parada de mão no computador, com uma camada na cor do fundo por cima.
 
 ---
 

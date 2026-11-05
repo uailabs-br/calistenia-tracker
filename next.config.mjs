@@ -9,6 +9,9 @@ const withSerwist = withSerwistInit({
   // mesmo sem SW novo — em sinal instável isso derruba sessão em
   // andamento e passa a impressão de o app ter travado/reiniciado.
   reloadOnOnline: false,
+  // Fora as fotos da landing: no precache, quem abre uma tela baixaria as duas
+  // e o app instalado engordaria com imagens que ele nunca mostra.
+  globPublicPatterns: ["icons/**/*", "manifest.webmanifest"],
   disable: process.env.NODE_ENV === "development",
 });
 

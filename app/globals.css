@@ -1887,3 +1887,47 @@ a {
   color: var(--color-text);
   font-weight: 500;
 }
+
+/* ── Foto da abertura da landing ─────────────────────────────────────────
+   No celular tudo escala em vw, para a barra sempre sair pelas duas bordas e o
+   texto começar logo abaixo dela, em qualquer largura. A camada usa a cor do
+   fundo do tema: as fotos são recortes, sem fundo próprio. */
+.landing-photo {
+  position: absolute;
+  top: 2vw;
+  left: 50%;
+  width: 120.5vw;
+  max-width: none;
+  height: auto;
+  transform: translateX(-53%);
+}
+.landing-photo-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 73vw,
+    color-mix(in oklab, var(--color-bg) 62%, transparent) 106vw,
+    color-mix(in oklab, var(--color-bg) 50%, transparent) 158vw,
+    var(--color-bg) 184vw
+  );
+}
+@media (max-width: 767.98px) {
+  .landing-photo-text {
+    padding-top: 82vw;
+  }
+}
+@media (min-width: 768px) {
+  /* Teto em 720px: a parada de mão tem 693px de altura e estoura em tela grande. */
+  .landing-photo {
+    top: 50%;
+    left: max(calc(50% - 150px), min(440px, calc(100% - 370px)));
+    width: auto;
+    height: min(97%, 720px);
+    transform: translateY(-50%);
+  }
+  .landing-photo-scrim {
+    background: linear-gradient(90deg, var(--color-bg) calc(50% - 360px), transparent calc(50% - 50px));
+  }
+}
