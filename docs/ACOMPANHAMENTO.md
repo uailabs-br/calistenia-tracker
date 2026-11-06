@@ -20,6 +20,14 @@ Cada etapa fecha quando **todos** os itens de aceite estão marcados.
 | 6 | Durabilidade (backup) | `[x]` |
 | 7 | Validação real (1 semana de uso) | `[ ]` ← **você** |
 
+> **Atualização (pós-v1.8, 2026-11-05, bordas sutis no futurista e Quem fez — 767 testes):** no tema
+> futurista, a borda dos cards comuns ficou mais apagada que a das linhas e campos, e o filete de luz em
+> cima mais fraco. Os destaques (próximo treino, exercício ativo, Conquista, Recorde) mantêm a cor da
+> borda pela metade, e o fundo colorido segura o destaque. Escolhido no protótipo entre três intensidades
+> ("Sutil + destaques"). O número de Conquista e Recorde passou pra fonte do título: o `.tnum` genérico
+> trocava pela mono. Na landing, Quem fez diz que o autor é entusiasta, não coach, e a foto foi cortada
+> pra ele aparecer maior.
+>
 > **Atualização (pós-v1.8, 2026-11-05, landing nova e canal de feedback — 767 testes):** a página
 > /sobre fala com quem vai de iniciante pra intermediário: abertura em tela cheia ("Saiba o que treinar
 > e quando subir de nível"), "Um nível de cada vez" com três níveis e a meta, aviso de novo nível,

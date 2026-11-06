@@ -1188,6 +1188,32 @@ a {
     rgb(150 175 255 / 0.03)
   ) !important;
 }
+/* Bordas mais apagadas no futurista (pedido de 05/11, opção "Sutil + destaques" do
+   protótipo): com o filete de luz em cima, a borda cheia pesava. O card comum fica
+   abaixo do `--color-border` das linhas e campos, e os destaques mantêm a cor só pela
+   metade: quem segura o destaque é o fundo colorido. Vem depois do vidro e do
+   destaque porque a especificidade empata e a ordem decide. */
+:root[data-theme="futurista"] :is(.card, .glass):not(.glow, .glass-key, [class*="border-ac"]) {
+  border-color: rgb(170 195 255 / 0.08);
+}
+:root[data-theme="futurista"] :is(.card, .glow, .glass)::before {
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.22), transparent);
+}
+:root[data-theme="futurista"] :is(.glow, .glass-key) {
+  border-color: color-mix(in oklab, var(--ac) 22%, transparent);
+}
+:root[data-theme="futurista"] .ach-badge {
+  border-color: color-mix(in oklab, var(--ac) 20%, transparent);
+}
+/* `!important` porque o recorde traz a borda dourada inline */
+:root[data-theme="futurista"] .ach-record {
+  border-color: color-mix(in oklab, var(--color-gold) 12%, rgb(170 195 255 / 0.08)) !important;
+}
+/* Número de conquista e recorde na fonte do título: o `.tnum` genérico trocava
+   pela mono. */
+:root[data-theme="futurista"] .stat-num {
+  font-family: var(--font-display);
+}
 
 /* Constância: o medidor em segmentos à esquerda e quanto falta pra semana. */
 :root:is([data-theme="futurista"], [data-theme="espaco"]) .consistency-gauge,

@@ -40,7 +40,7 @@ export function AchievementsCard({ data }: { data: HomeAchievements }) {
     >
       <Link
         href="/metricas"
-        className="glass tap flex flex-col rounded-card border border-ac/40 bg-ac/14 px-3.5 py-2.5 active:scale-[0.99]"
+        className="glass ach-badge tap flex flex-col rounded-card border border-ac/40 bg-ac/14 px-3.5 py-2.5 active:scale-[0.99]"
       >
         <span className="flex items-center gap-1.5 font-mono text-2xs uppercase tracking-wide text-ac">
           <MedalIcon className="h-3.5 w-3.5" />
@@ -62,7 +62,7 @@ export function AchievementsCard({ data }: { data: HomeAchievements }) {
       {record && (
         <Link
           href="/metricas"
-          className="glass tap flex min-w-0 flex-col rounded-card border px-3.5 py-2.5 active:scale-[0.99]"
+          className="glass ach-record tap flex min-w-0 flex-col rounded-card border px-3.5 py-2.5 active:scale-[0.99]"
           style={{
             borderColor: "color-mix(in oklab, var(--color-gold) 25%, var(--color-border))",
             background: "color-mix(in oklab, var(--color-gold) 5%, var(--color-surface))",

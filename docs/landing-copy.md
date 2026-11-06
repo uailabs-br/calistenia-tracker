@@ -104,7 +104,7 @@ Quem fez
 
 [Texto. O e-mail é link]
 
-Treino calistenia por conta própria desde o começo de 2024 e estudei muitos atletas de elite pra aprender execuções e progressões. Atualmente meu foco é muscle-up, parada de mão e front lever. Sou engenheiro e criei o Gravks em 2026 pra me ajudar a organizar meus treinos e progredir com consistência. Sigo usando e atualizando. Sentiu falta de algo? Me manda um e-mail: uailabs.br@gmail.com
+Treino calistenia por conta própria desde o começo de 2024. Sou um entusiasta: não sou coach e não tenho formação na área, então estudei muitos atletas de elite pra aprender execuções e progressões. Atualmente meu foco é muscle-up, parada de mão e front lever. Sou engenheiro e criei o Gravks em 2026 pra me ajudar a organizar meus treinos e progredir com consistência. Sigo usando e atualizando. Sentiu falta de algo? Me manda um e-mail: uailabs.br@gmail.com
 
 ## 7. Perguntas
 
